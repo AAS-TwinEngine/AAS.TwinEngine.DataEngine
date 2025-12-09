@@ -1,0 +1,27 @@
+vars:pre-request {
+  aasIdentifier: https://mm-software.com/ids/aas/000-001
+  submodelIdentifierContact: https://mm-software.com/submodel/000-001/ContactInformation
+  submodelIdentifierNameplate: https://mm-software.com/submodel/000-001/Nameplate
+  submodelIdentifierReliability: https://mm-software.com/submodel/000-001/Reliability
+}
+
+script:pre-request {
+  function b64EncodeUnicode(str){
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m,p)=>String.fromCharCode('0x'+p)));
+  }
+  
+  const varsToEncode = [
+    'aasIdentifier',
+    'submodelIdentifierContact',
+    'submodelIdentifierNameplate',
+    'submodelIdentifierReliability'
+  ];
+  
+  varsToEncode.forEach(name => {
+    const plain = bru.getCollectionVar(name);
+    const encoded = b64EncodeUnicode(plain);
+    bru.setVar(name, encoded);
+  });
+  
+  
+}

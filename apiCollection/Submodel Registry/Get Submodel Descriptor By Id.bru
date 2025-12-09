@@ -1,0 +1,19 @@
+meta {
+  name: Get Submodel Descriptor By Id
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodel-descriptors/:submodelIdentifier
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierContact}}
+}
+
+settings {
+  encodeUrl: true
+}

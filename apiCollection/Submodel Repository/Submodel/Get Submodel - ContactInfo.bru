@@ -1,0 +1,19 @@
+meta {
+  name: Get Submodel - ContactInfo
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierContact}}
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":ignoreModulesAndTests",
+    "group:monorepos",
+    "group:recommended",
+    "group:dotNetCore",
+    "workarounds:all"
+  ],
+  "packageRules": [
+    {
+      "groupName": "ASP.NET core",
+      "matchPackageNames": [
+        "microsoft.aspnetcore{/,}**"
+      ]
+    },
+    {
+      "groupName": "Entity Framework core",
+      "matchPackageNames": [
+        "microsoft.entityframeworkcore{/,}**"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "matchPackageNames": [
+        "*"
+      ]
+    }
+  ],
+  "logLevelRemap": [
+    {
+      "matchMessage": "/Error updating branch/",
+      "newLogLevel": "error"
+    }
+  ]
+}

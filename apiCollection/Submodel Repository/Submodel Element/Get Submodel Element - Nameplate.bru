@@ -1,0 +1,20 @@
+meta {
+  name: Get Submodel Element - Nameplate
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate}}
+  idShortPath: ManufacturerName
+}
+
+settings {
+  encodeUrl: true
+}

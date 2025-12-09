@@ -1,0 +1,20 @@
+meta {
+  name: Get Submodel Element - Reliability
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierReliability}}
+  idShortPath: ReliabilityCharacteristics.MTTF
+}
+
+settings {
+  encodeUrl: true
+}

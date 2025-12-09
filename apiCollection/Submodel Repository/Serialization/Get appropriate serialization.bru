@@ -1,0 +1,24 @@
+meta {
+  name: Get appropriate serialization
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/serialization?aasIds={{aasIdentifier}}&submodelIds={{submodelIdentifierContact}}&submodelIds={{submodelIdentifierNameplate}}&submodelIds={{submodelIdentifierReliability}}&includeConceptDescriptions=false
+  body: none
+  auth: inherit
+}
+
+params:query {
+  aasIds: {{aasIdentifier}}
+  submodelIds: {{submodelIdentifierContact}}
+  submodelIds: {{submodelIdentifierNameplate}}
+  submodelIds: {{submodelIdentifierReliability}}
+  includeConceptDescriptions: false
+  ~aasIds: 
+}
+
+settings {
+  encodeUrl: true
+}

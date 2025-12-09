@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+
+          <!-- Exclude specific files and folders -->
+          <ExcludeByFile>
+            **/Startup.cs,
+            **/Program.cs,
+            **/DomainModel/**/*.cs,
+            **/Api/**/Response/*.cs,
+            **/ServiceConfiguration/*.cs,
+            **/ApplicationLogic/Exceptions/**/*.cs,
+            **/ApplicationLogic/Services/**/Config/*.cs,
+            **/Infrastructure/Providers/**/Config/*.cs,
+            **/Infrastructure/DataAccess/Entities/**/*.cs,
+            **/Infrastructure/DataAccess/MapperProfiles/**/*.cs,
+            **/*Dto*.cs
+          </ExcludeByFile>
+          <ExcludeByAttribute>GeneratedCode</ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

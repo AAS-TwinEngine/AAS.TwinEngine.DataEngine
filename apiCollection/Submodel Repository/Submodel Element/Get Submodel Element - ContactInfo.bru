@@ -1,0 +1,20 @@
+meta {
+  name: Get Submodel Element - ContactInfo
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierContact}}
+  idShortPath: ContactInformation1
+}
+
+settings {
+  encodeUrl: true
+}

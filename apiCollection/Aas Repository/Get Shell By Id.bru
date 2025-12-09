@@ -1,0 +1,19 @@
+meta {
+  name: Get Shell By Id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier
+  body: none
+  auth: inherit
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier}}
+}
+
+settings {
+  encodeUrl: true
+}

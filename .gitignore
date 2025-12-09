@@ -1,0 +1,45 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+
+# Ignore files
+*.sln.DotSettings.user
+*.csproj.user
+*.tgz
+.tmp
+.env
+*.tmp
+*.tmp.*
+*.sublime-project
+*.sublime-workspace
+*.log
+log.txt
+npm-debug.log*
+.DS_Store
+Thumbs.db
+UserInterfaceState.xcuserstate
+licenses.json
+*.user
+*.aasx
+
+# Ignore folders
+.vs/
+.vscode/
+.idea/
+.ionic/
+.sass-cache/
+.sourcemaps/
+.versions/
+.nyc_output/
+bin/
+obj/
+build/
+dist/
+Logfiles/
+TempUpdatePackage/
+node_modules/
+coverage/
+platforms/
+www/
+TestResults/
+$RECYCLE.BIN/
+.sonarqube/
