@@ -1,0 +1,55 @@
+name: .NET
+
+on:
+  pull_request:
+    branches: 
+    - 'main'
+    - 'develop'
+  push:
+    branches: 
+    - 'main'
+    - 'develop'
+
+permissions:
+  contents: read
+
+env:
+  BUILD_CONFIGURATION: "Release"
+  SOLUTION_PATH: source/AAS.TwinEngine.DataEngine.sln
+  TEST_PROJECT: source/AAS.TwinEngine.DataEngine.UnitTests/AAS.TwinEngine.DataEngine.UnitTests.csproj
+
+jobs:
+
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    permissions:
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_PATH }} --locked-mode
+
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Run Unit Tests
+        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+
+        # https://github.com/dorny/test-reporter
+      - name: Publish Test Results
+        uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
+        with:
+          name: Unit Tests
+          path: "**/test_results.trx"
+          reporter: dotnet-trx
