@@ -46,6 +46,7 @@ jobs:
       - name: Run Unit Tests
         run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
 
+        # Displays test results
         # https://github.com/dorny/test-reporter
       - name: Publish Test Results
         uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
