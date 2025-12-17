@@ -46,7 +46,7 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_PATH }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
       - name: Run Unit Tests
-        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --collect:"XPlat Code Coverage" --settings source/coverlet.runsettings
 
         # https://github.com/dorny/test-reporter
       - name: Publish Test Results
