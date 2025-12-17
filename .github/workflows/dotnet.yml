@@ -9,7 +9,7 @@ on:
     branches: 
     - 'main'
     - 'develop'
-    - 'feature/dotnet'
+    - 'feature/dotnet' #TODO
 
 permissions:
   contents: read
@@ -18,6 +18,7 @@ env:
   BUILD_CONFIGURATION: "Release"
   SOLUTION_PATH: source/AAS.TwinEngine.DataEngine.sln
   TEST_PROJECT: source/AAS.TwinEngine.DataEngine.UnitTests/AAS.TwinEngine.DataEngine.UnitTests.csproj
+  MODULE_TEST_PROJECT: source/AAS.TwinEngine.DataEngine.ModuleTests/AAS.TwinEngine.DataEngine.ModuleTests.csproj
 
 jobs:
 
@@ -46,15 +47,17 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_PATH }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
       - name: Run Unit Tests
-        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --collect:"XPlat Code Coverage" --settings source/coverlet.runsettings
+        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=unit_test_results.trx" --collect:"XPlat Code Coverage" --settings source/coverlet.runsettings
 
-        # https://github.com/dorny/test-reporter
+      - name: Run Module Tests
+        run: dotnet test ${{ env.MODULE_TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=module_test_results.trx" --collect:"XPlat Code Coverage" --settings source/coverlet.runsettings
+
       - name: Publish Test Results
         uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
         if: github.event.pull_request.head.repo.fork == false
         with:
-          name: Unit Tests
-          path: "**/test_results.trx"
+          name: Test Results (Unit & Module)
+          path: "**/*_test_results.trx"
           reporter: dotnet-trx
 
       - name: Code Coverage Report
@@ -83,4 +86,4 @@ jobs:
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: test-results
-          path: "**/test_results.trx"
+          path: "**/*_test_results.trx"
