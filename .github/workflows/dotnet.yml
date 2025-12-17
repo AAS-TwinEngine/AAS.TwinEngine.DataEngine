@@ -51,7 +51,36 @@ jobs:
         # https://github.com/dorny/test-reporter
       - name: Publish Test Results
         uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
+        if: github.event.pull_request.head.repo.fork == false
         with:
           name: Unit Tests
           path: "**/test_results.trx"
           reporter: dotnet-trx
+
+      - name: Code Coverage Report
+        if: github.event.pull_request.head.repo.fork == false
+        uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
+        with:
+          filename: "**/coverage.cobertura.xml"
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: "60 80"
+
+      - name: Add Coverage PR Comment
+        if: github.event.pull_request.head.repo.fork == false
+        uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 # v2.9.0
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+      - name: Upload TRX as artifact (Fork PR fallback)
+        if: github.event.pull_request.head.repo.fork == true
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: test-results
+          path: "**/test_results.trx"
