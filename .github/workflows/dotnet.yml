@@ -9,7 +9,6 @@ on:
     branches: 
     - 'main'
     - 'develop'
-    - 'feature/dotnet' #TODO
 
 permissions:
   contents: read
@@ -54,33 +53,81 @@ jobs:
 
       - name: Publish Test Results
         uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
+        id: test-results
         if: github.event.pull_request.head.repo.fork == false
         with:
           name: Test Results (Unit & Module)
           path: "**/*_test_results.trx"
           reporter: dotnet-trx
 
-      - name: Code Coverage Report
+      - name: Combine Reports (Test Results)
+        if: github.event.pull_request.head.repo.fork == false
+        run: |
+          echo "# Test & Coverage Report" > results.md
+          echo "" >> results.md
+          echo "## Test Results Summary" >> results.md
+          echo "" >> results.md
+          echo "| Metric | Count |" >> results.md
+          echo "|--------|-------|" >> results.md
+          echo "| ✅ Passed | ${{ steps.test-results.outputs.passed }} |" >> results.md
+          echo "| ❌ Failed | ${{ steps.test-results.outputs.failed }} |" >> results.md
+          echo "| ⏭️ Skipped | ${{ steps.test-results.outputs.skipped }} |" >> results.md
+          echo "" >> results.md
+          echo "[View Detailed Test Results](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> results.md
+          echo "" >> results.md
+          echo "---" >> results.md
+          echo "" >> results.md
+
+      - name: Code Coverage Report - Unit Tests
         if: github.event.pull_request.head.repo.fork == false
         uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
         with:
-          filename: "**/coverage.cobertura.xml"
-          badge: true
+          filename: "source/AAS.TwinEngine.DataEngine.UnitTests/TestResults/*/coverage.cobertura.xml"
+          badge: false
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: "80 80"
+
+      - name: Combine Reports (Unit Test Coverage Results)
+        if: github.event.pull_request.head.repo.fork == false
+        run: |
+          echo "## Code Coverage" >> results.md
+          echo "" >> results.md
+          echo "### Unit Tests Coverage" >> results.md
+          cat code-coverage-results.md >> results.md
+          echo "" >> results.md
+
+      - name: Code Coverage Report - Module Tests
+        if: github.event.pull_request.head.repo.fork == false
+        uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
+        with:
+          filename: "source/AAS.TwinEngine.DataEngine.ModuleTests/TestResults/*/coverage.cobertura.xml"
+          badge: false
           fail_below_min: false
           format: markdown
           hide_branch_rate: false
           hide_complexity: false
           indicators: true
           output: both
-          thresholds: "60 80"
 
-      - name: Add Coverage PR Comment
+      - name: Combine Reports (Module Test Coverage Results)
+        if: github.event.pull_request.head.repo.fork == false
+        run: |
+          echo "### Module Tests Coverage" >> results.md
+          cat code-coverage-results.md >> results.md
+
+
+      - name: Add PR Comment
         if: github.event.pull_request.head.repo.fork == false
         uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 # v2.9.0
         with:
           recreate: true
-          path: code-coverage-results.md
-
+          path: results.md
+          
       - name: Upload TRX as artifact (Fork PR fallback)
         if: github.event.pull_request.head.repo.fork == true
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
