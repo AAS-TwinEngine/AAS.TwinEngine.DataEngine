@@ -263,8 +263,8 @@ INSERT INTO "Asset" (
     "QuantityOfMeasureForCalculation","PublicationDate","ExpirationDate","ExplanatoryStatement"
 ) VALUES
 ('000-001','Product1','https://mm-software.com/ids/assets/000-001','https://mm-software.com/ids/aas/000-001','image/jpeg',
- 'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg',
- 'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/features/example/example/data/Camera.png',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/features/example/example/data/Camera.png',
  'FM-ABC-1234','FMABC1234','FM11-ABC22-123456','9804820',2022,'2022-01-01',
  '1.0.0','1.0.0','1.0.0','DE','987654321','M&M Germany',
  'FM-ABC-1234','ABC-123','Camera','Kamera','Electronics','Elektronik',
@@ -275,7 +275,7 @@ INSERT INTO "Asset" (
  'Restricted use','Eingeschränkte Nutzung','2035-05-05',
  'ISO 14067','C4 - landfill',17.2,'ml',5,
  '2025-12-24T14:30:00Z','2035-12-24T14:30:00Z',
- 'https://pdfobject.com/pdf/sample.pdf'),
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/features/example/example/data/sample_product_catalog.pdf'),
 ('000-002','Product2','https://mm-software.com/ids/assets/000-002','https://mm-software.com/ids/aas/000-002','image/jpeg',
  'https://images.pexels.com/photos/279906/pexels-photo-279906.jpeg',
  'https://images.pexels.com/photos/279906/pexels-photo-279906.jpeg',
