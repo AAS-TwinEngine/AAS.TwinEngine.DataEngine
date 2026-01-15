@@ -1,6 +1,8 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+﻿using System.Globalization;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration;
 
 using Asp.Versioning;
@@ -23,7 +25,6 @@ public class Program
         _ = builder.Services.AddHealthChecks().AddCheck<PluginManifestHealthCheck>("system_health");
 
         _ = builder.Services.AddHttpContextAccessor();
-        _ = builder.Services.AddTransient<ForwardAuthorizationHeaderHandler>();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
         _ = builder.Services.AddAuthorization();
