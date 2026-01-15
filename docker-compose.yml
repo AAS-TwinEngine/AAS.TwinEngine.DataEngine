@@ -1,0 +1,230 @@
+networks:
+  twinengine-network:
+    name: twinengine-network
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./example/nginx/html:/usr/share/nginx/html
+      - ./example/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+    restart: always
+    depends_on:
+      aas-template-registry:
+        condition: service_healthy
+      sm-template-regisry:
+        condition: service_healthy
+      template-repository:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  twinengine-dataengine:
+    build:
+      context: ./source
+      dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
+    image: twinengine-dataengine:latest
+    ports:
+    - '8085:8080'
+    container_name: twinengine-dataengine
+    restart: always
+    environment:
+      - AasEnvironment__DataEngineRepositoryBaseUrl=http://localhost:8080
+      - AasEnvironment__AasEnvironmentRepositoryBaseUrl=http://template-repository:8081
+      - AasEnvironment__SubModelRepositoryPath=submodels
+      - AasEnvironment__AasRegistryBaseUrl=http://aas-template-registry:8080
+      - AasEnvironment__AasRegistryPath=shell-descriptors
+      - AasEnvironment__SubModelRegistryBaseUrl=http://sm-template-regisry:8080
+      - AasEnvironment__SubModelRegistryPath=submodel-descriptors
+      - AasEnvironment__AasRepositoryPath=shells
+      - AasEnvironment__SubmodelRefPath=submodel-refs
+      - AasEnvironment__CustomerDomainUrl=https://mm-software.com
+      - TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2
+      - TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=TechnicalData
+      - TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
+      - TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=Nameplate
+      - TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0
+      - TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=ContactInformation
+      - TemplateMappingRules__SubmodelTemplateMappings__3__templateId=https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0
+      - TemplateMappingRules__SubmodelTemplateMappings__3__pattern__0=CarbonFootprint
+      - TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
+      - TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
+      - TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
+      - TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
+      - TemplateMappingRules__AasIdExtractionRules__0__pattern=Regex
+      - TemplateMappingRules__AasIdExtractionRules__0__index=6
+      - TemplateMappingRules__AasIdExtractionRules__0__separator=/
+      - Semantics__MultiLanguageSemanticPostfixSeparator=_
+      - Semantics__SubmodelElementIndexContextPrefix=_aastwinengineindex_
+      - Semantics__InternalSemanticId=InternalSemanticId
+      - AasxOptions__RootFolder=aasx
+      - AasRegistryTimeTrigger__ShellDescriptorCron=0 */3 * * * *
+      - AasRegistryTimeTrigger__IsPreComputed=false
+      - MultiPluginConflictOption__HandlingMode=TakeFirst
+      - PluginConfig__Plugins__0__PluginName=Plugin1
+      - PluginConfig__Plugins__0__PluginUrl=http://plugin:8080
+    networks:
+      - twinengine-network
+
+  plugin:
+    build:
+      context: ../AAS.TwinEngine.Plugin.DPP/source 
+      dockerfile: ./Aas.TwinEngine.Plugin.RelationalDatabase/Dockerfile
+    image: plugin:latest
+    ports:
+    - '8086:8080'
+    container_name: plugin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      - Semantics__IndexContextPrefix=_aastwinengineindex_
+      - Capabilities__HasShellDescriptor=true
+      - Capabilities__HasAssetInformation=true
+      - RelationalDatabaseConfiguration__ConnectionString=Host=postgres;Port=5432;Database=twinengine;Username=postgres;Password=admin
+      - ExtractionRules__SubmodelNameExtractionRules__0__SubmodelName=NamePlate
+      - ExtractionRules__SubmodelNameExtractionRules__0__pattern__0=Nameplate
+      - ExtractionRules__SubmodelNameExtractionRules__0__pattern__1=NamePlate
+
+      - ExtractionRules__SubmodelNameExtractionRules__1__SubmodelName=ContactInformation
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__0=ContactInformation
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__1=ContactInformations
+
+      - ExtractionRules__SubmodelNameExtractionRules__2__SubmodelName=HandoverDocumentation
+      - ExtractionRules__SubmodelNameExtractionRules__2__pattern__0=HandoverDocumentation
+      - ExtractionRules__SubmodelNameExtractionRules__2__pattern__1=HandoverDocumentations
+
+      - ExtractionRules__SubmodelNameExtractionRules__3__SubmodelName=TechnicalData
+      - ExtractionRules__SubmodelNameExtractionRules__3__pattern__0=TechnicalData
+
+      - ExtractionRules__SubmodelNameExtractionRules__4__SubmodelName=CarbonFootprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__0=CarbonFootprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__1=Footprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__2=Carbon
+
+      - ExtractionRules__ProductIdExtractionRules__0__Pattern=Regex
+      - ExtractionRules__ProductIdExtractionRules__0__Index=5
+      - ExtractionRules__ProductIdExtractionRules__0__Separator=/
+
+    networks:
+      - twinengine-network
+
+  template-repository:
+    image: eclipsebasyx/aas-environment:2.0.0-SNAPSHOT
+    container_name: template-repository
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./example/aas:/application/aas
+      - ./example/basyx/aas-env.properties:/application/application.properties
+    environment:
+      BASYX_EXTERNALURL : http://localhost:8080
+    restart: always
+    depends_on:
+      aas-template-registry:
+        condition: service_healthy
+      sm-template-regisry:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  aas-template-registry:
+    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT
+    container_name: aas-template-registry
+    ports:
+      - '8082:8080'
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+    networks:
+      - twinengine-network
+
+  sm-template-regisry:
+    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT
+    container_name: sm-template-regisry
+    ports:
+      - '8083:8080'
+    depends_on:
+      - mongo
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+    networks:
+      - twinengine-network
+
+  shell-template-creator:
+    image: curlimages/curl:latest
+    container_name: shell-template-creator
+    depends_on:
+      template-repository:
+        condition: service_healthy
+    entrypoint: >
+      sh -c '
+        echo "Waiting for template-repository to be ready...";
+        sleep 10;
+        curl -X POST http://template-repository:8081/shells \
+          -H "accept: application/json" \
+          -H "Content-Type: application/json" \
+          -d "{\"id\":\"https://mm-software.com/aas/aasTemplate\",\"assetInformation\":{\"assetKind\":\"Instance\"},\"submodels\":[{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"Nameplate\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"ContactInformation\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"TechnicalData\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"CarbonFootprint\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"HandoverDocumentation\"}]}],\"modelType\":\"AssetAdministrationShell\"}";
+          echo "Shell creation request sent.";
+        '
+    networks:
+      - twinengine-network
+
+  aas-web-ui:
+    image: eclipsebasyx/aas-gui:SNAPSHOT
+    container_name: aas-ui
+    volumes:
+      - ./example/logo:/usr/src/app/dist/Logo
+    environment:
+      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
+      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
+      AAS_REPO_PATH: http://localhost:8080/shells
+      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
+      CD_REPO_PATH: http://localhost:8080/concept-descriptions
+      BASE_PATH: "/aas-ui"
+      LOGO_PATH: "MM_Logo.svg"
+      PRIMARY_DARK_COLOR: "#00F2E5"
+      PRIMARY_LIGHT_COLOR: "#041b2b"
+    restart: always
+    depends_on:
+      template-repository:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoAdmin
+      MONGO_INITDB_ROOT_PASSWORD: mongoPassword
+    networks:
+      - twinengine-network
+      
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: twinengine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./example/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - twinengine-network
