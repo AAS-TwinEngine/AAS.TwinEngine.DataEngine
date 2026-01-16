@@ -87,147 +87,42 @@ The docker-compose setup includes the following services, all running on a share
 |---------|---------|
 | **shell-template-creator** | One-time initialization service that creates the default shell template |
 
-## ⚙️ Configuration & Customization
+## Configuration
 
-#### PostgreSQL (Used by Plugin)
+### PostgreSQL Database (Plugin)
 
-The PostgreSQL database is used by the **plugin** service to store data. Configure it through:
-
-**1. Docker Compose Environment Variables:**
+Edit credentials in `docker-compose.yml`:
 ```yaml
-postgres:
-  environment:
-    POSTGRES_DB: twinengine
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: admin
+POSTGRES_PASSWORD: admin  # Change this
 ```
 
-**2. Plugin Connection String:**
-```yaml
-plugin:
-  environment:
-    RelationalDatabaseConfiguration__ConnectionString=Host=postgres;Port=5432;Database=twinengine;Username=postgres;Password=admin
-```
+Update plugin connection string to match. Edit `example/postgres/init.sql` for custom schema/data.
 
-**Customization:**
+**Using External Database:**  
+To use your own database:
+1. Change `RelationalDatabaseConfiguration__ConnectionString` in the plugin service environment variables
+2. Remove the postgres container from `docker-compose.yml`
 
-- **Change Database Credentials:**
-  ```yaml
-  POSTGRES_PASSWORD: your_secure_password
-  # Update plugin connection string to match
-  RelationalDatabaseConfiguration__ConnectionString=Host=postgres;Port=5432;Database=twinengine;Username=postgres;Password=your_secure_password
-  ```
+**Database Initialization:**  
+The initial database script is located in `postgres/init.sql`. Modify this file according to your needs.
 
-- **Modify Database Initialization Data:**
-  Edit `example/postgres/init.sql` to:
-  - Create initial tables and schemas
-  - Insert seed data
-  - Configure user privileges
-  - Define data structures for plugin to use
+### Port Changes
 
-- **Change Database Name:**
-  ```yaml
-  POSTGRES_DB: your_database_name
-  # Update plugin connection string accordingly
-  ```
+Modify port mappings in `docker-compose.yml`. Update corresponding environment variables in affected services.
 
-**Important:** Any changes to credentials in docker-compose.yml must be reflected in the plugin's `RelationalDatabaseConfiguration__ConnectionString` environment variable.
+## Troubleshooting
 
-## 🐛 Troubleshooting
+**UI not loading:** `docker-compose logs nginx` - Verify ports 8080-8086 are available.
 
-### Issue: Web UI doesn't load at http://localhost:8080/aas-ui/
+**Port conflicts:** `netstat -ano | findstr :8080` (Windows) to find conflicts. Change ports in `docker-compose.yml`.
 
-**Solution:**
-1. Check nginx logs for errors:
-   ```bash
-   docker-compose logs nginx
-   ```
-2. Verify nginx is running:
-   ```bash
-   docker-compose ps nginx
-   ```
-3. Check that dependencies are healthy:
-   ```bash
-   docker-compose logs template-repository
-   docker-compose logs aas-template-registry
-   docker-compose logs sm-template-regisry
-   ```
+**Startup issues:** `docker-compose pull` then `docker-compose up -d --force-recreate`
 
-### Issue: Port already in use
+**Database errors:** Check `docker-compose ps` for health status. Verify connection strings match credentials.
 
-**Solution:**
-1. Identify which service is using the port:
-   ```bash
-   netstat -ano | findstr :8080  # Windows
-   lsof -i :8080                 # macOS/Linux
-   ```
-2. Either:
-   - Stop the conflicting service
-   - Change the port mapping in `docker-compose.yml`
-   - Use a different host port (e.g., `8090:80` instead of `8080:80`)
+## Security Note
 
-### Issue: Containers fail to start
-
-**Solution:**
-1. Check logs for specific service:
-   ```bash
-   docker-compose logs twinengine-dataengine
-   ```
-2. Verify all images can be pulled:
-   ```bash
-   docker-compose pull
-   ```
-
-### Issue: Database connection errors
-
-**Solution:**
-1. Verify database service is healthy:
-   ```bash
-   docker-compose logs postgres
-   docker-compose logs mongo
-   ```
-2. Check connection string matches configured credentials
-3. For PostgreSQL: Wait 10+ seconds after starting (migration scripts may be running)
-4. Verify init.sql executed successfully:
-   ```bash
-   docker-compose exec postgres psql -U postgres -d twinengine -c "\dt"
-   ```
-
-### Issue: Plugin can't connect to database
-
-**Solution:**
-1. Ensure postgres is healthy:
-   ```bash
-   docker-compose ps postgres
-   ```
-2. Check connection string in plugin environment variables
-3. Verify database `twinengine` exists:
-   ```bash
-   docker-compose exec postgres psql -U postgres -l
-   ```
-4. Verify credentials match (postgres password must be 'admin')
-
-
-## 🔐 Security Considerations
-
-For production deployments:
-
-- **Change default passwords:**
-  - PostgreSQL: Update `POSTGRES_PASSWORD`
-  - MongoDB: Update `MONGO_INITDB_ROOT_PASSWORD`
-  - Update corresponding connection strings
-
-- **Use environment files:**
-  ```bash
-  # Create .env file (do not commit)
-  DB_PASSWORD=your_secure_password
-  ```
-
-- **Enable HTTPS:** Configure nginx to use SSL certificates
-
-- **Restrict network access:** Use firewall rules and VPC security groups
-
-- **Use secrets management:** For production, consider Docker Secrets or external secret managers
+⚠️ **Change default passwords before production.** Default credentials (postgres: admin) are for development only.
 
 ## 📚 Additional Resources
 
