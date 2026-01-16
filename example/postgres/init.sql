@@ -263,47 +263,47 @@ INSERT INTO "Asset" (
     "QuantityOfMeasureForCalculation","PublicationDate","ExpirationDate","ExplanatoryStatement"
 ) VALUES
 ('000-001','Product1','https://mm-software.com/ids/assets/000-001','https://mm-software.com/ids/aas/000-001','image/jpeg',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/Camera.jpg',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/Camera.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/Camera.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/Camera.jpg',
  'FM-ABC-1234','FMABC1234','FM11-ABC22-123456','9804820',2022,'2022-01-01',
  '1.0.0','1.0.0','1.0.0','DE','987654321','M&M Germany',
  'FM-ABC-1234','ABC-123','Camera','Kamera','Electronics','Elektronik',
  'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
  '123456','EEA-EX-200-S/47-Q3',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/Camera.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/Camera.jpg',
  'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
  'Restricted use','Eingeschränkte Nutzung','2035-05-05',
  'ISO 14067','C4 - landfill',17.2,'ml',5,
  '2025-12-24T14:30:00Z','2035-12-24T14:30:00Z',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf'),
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf'),
 ('000-002','Product2','https://mm-software.com/ids/assets/000-002','https://mm-software.com/ids/aas/000-002','image/jpeg',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/camera1.jpg',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/camera1.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/camera1.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/camera1.jpg',
  'FM-ABC-1235','FMABC1238','FM11-ABC22-123458','9804821',2023,'2023-01-01',
- '1.0.1','1.0.1','1.0.1','IN','123567890','M&M Software Development Center India',
+ '1.0.1','1.0.1','1.0.1','IN','123567890','M&M Software mainment Center India',
  'FM-ABC-123','ABC-123','Camera','Kamera','Electronics','Elektronik',
  'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
  '123456','EEA-EX-200-S/47-Q4',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/camera1.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/camera1.jpg',
  'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
  'Restricted use','Eingeschränkte Nutzung','2035-06-05',
  'EN 15804','A5 - Installation',6.2,'cbm',2.2999999999999998,
  '2026-01-15T09:15:00+05:30','2036-01-15T09:15:00+05:31',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf'),
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf'),
 ('001-001','Product3','https://mm-software.com/ids/assets/001-001','https://mm-software.com/ids/aas/001-001','image/jpeg',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/perfume.jpg',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/perfume.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/perfume.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/perfume.jpg',
  'TM-ABC-1680','TMABC1680','TM11-ABC22-123456','9804760',2024,'2024-01-01',
  '2.0.0','1.0.0','1.0.2','CN','874512451','M&M China',
  'TM-ABC-1234','ABC-1234','perfume','Parfüm','Cosmetics','Kosmetika',
  'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
  '123456','EEA-EX-200-S/47-Q5',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/perfume.jpg',
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/perfume.jpg',
  'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
  'Restricted use','Eingeschränkte Nutzung','2035-07-05',
  'PACT v2.0.0','C3 - recycling, waste treatment',2.2999999999999998,'piece',7.8,
  '2024-07-01T18:45:00-04:00','2034-07-01T18:45:00-04:01',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf');
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf');
  
 INSERT INTO "SpecificAssetIds" ("AssetId","Name","Value") VALUES
 (1,'Camera','M&M - 001'),
@@ -312,15 +312,15 @@ INSERT INTO "SpecificAssetIds" ("AssetId","Name","Value") VALUES
 
 INSERT INTO "Marking" ("Index","MarkingName","DesignationOfCertificateOrApproval","IssueDate","ExpiryDate","MarkingAdditionalText","MarkingFile") VALUES
 (0,'0173-1#07-DAA603#004','KEMA99IECEX1105/128','2022-01-01','2030-01-01','additional information on the marking - 00',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/checkmark.png'),
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
 (0,'0173-1#07-DAA603#005','KEMA99IECEX1105/129','2022-02-01','2030-02-01','additional information on the marking - 01',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/checkmark.png'),
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
 (1,'0173-1#07-DAA603#006','KEMA99IECEX1105/130','2022-03-01','2030-03-01','additional information on the marking - 02',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/checkmark.png'),
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
 (0,'0173-1#07-DAA603#007','KEMA99IECEX1105/131','2022-04-01','2030-04-01','additional information on the marking - 03',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/checkmark.png'),
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
 (1,'0173-1#07-DAA603#008','KEMA99IECEX1105/132','2022-05-01','2030-05-01','additional information on the marking - 04',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/checkmark.png');
+ 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png');
 
 INSERT INTO "AssetMarking" ("AssetId","MarkingId") VALUES
 (1,1),
@@ -339,7 +339,7 @@ INSERT INTO "ContactInformation" (
   "FurtherDetailsOfContact_en","FurtherDetailsOfContact_de"
 ) VALUES
 (0,'0173-1#07-AAS927#001','EN','Z+05:30','https://www.mm-software.com/','IN','IN','Mumbai','München',
- 'M&M Software Development Center India','M&M Software Development Center India','Human Resources','Human Resources',
+ 'M&M Software mainment Center India','M&M Software mainment Center India','Human Resources','Human Resources',
  '221B Baker Street','221B Baker Street','110001','110001','PO Box 123','PO Box 124','110002','110002',
  'Delhi','Delhi','Aarav Sharma','Aarav Sharma','Aarav','Aarav','Sharma','Sharma','Mr.','Herr','Dr.','Dr.',
  'Responsible for B2B sales in region-1','Responsible for B2B sales in region-1'),
@@ -348,7 +348,7 @@ INSERT INTO "ContactInformation" (
  '10116','10116','Berlin','Berlin','Lukas Mueller','Lukas Müller','Lukas','Lukas','Müller','Mueller','Mr.','Herr','Dr.','Dr.',
  'Responsible for B2B sales in region-2','Responsible for B2B sales in region-2'),
 (0,'0173-1#07-AAS931#001','EN','Z+05:30','https://www.mm-software.com/more-the-newsroom/detail/mm-software-auf-der-sps-2025/','IN','IN','Mumbai','München',
- 'M&M Software Development Center India','M&M Software Development Center India','Operations','Operations',
+ 'M&M Software mainment Center India','M&M Software mainment Center India','Operations','Operations',
  '221B Baker Street','221B Baker Street','110001','110001','PO Box 123','PO Box 124','110002','110002','Delhi','Delhi',
  'Priya Mehta','Priya Mehta','Priya','Priya','Mehta','Mehta','Ms','Frau','Prof.','Prof.','Responsible for B2B sales in region-3','Responsible for B2B sales in region-3'),
 (1,'0173-1#07-AAS930#001','DE','Z+01:00','https://www.mm-software.com/more-the-newsroom/detail/entscheide-dich-teil-2/','DE','DE','Berlin','Berlin',
@@ -507,40 +507,40 @@ INSERT INTO "DocumentVersion" (
   "OrganizationOfficialName","Title_en","Title_de","Subtitle_en","Subtitle_de","Description_en","Description_de",
   "KeyWords_en","KeyWords_de","PreviewFile"
 ) VALUES
-(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','1','2023-01-01','Released','M&M','M&M Germany',
+(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','1','2023-01-01','Released','M&M','M&M Germany',
  'User Guide – DSLR Camera Model X100','Benutzerhandbuch – DSLR-Kamera Modell X100','Complete Instructions for Professional Photography','Vollständige Anleitung für professionelle Fotografie',
  'Detailed instructions for operating the X100 DSLR camera, including setup and troubleshooting.','Detaillierte Anweisungen zur Bedienung der DSLR-Kamera X100, einschließlich Einrichtung und Fehlerbehebung',
  'DSLR, Camera, Photography, User Guide, Setup','DSLR, Kamera, Fotografie, Benutzerhandbuch, Einrichtung','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(1,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','1.1','2024-05-05','InReview','M&M','M&M Software Development Center India',
+(1,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','1.1','2024-05-05','InReview','M&M','M&M Software mainment Center India',
  'Technical Specification – Mirrorless Camera Z-Series','Technische Spezifikation – Systemkamera der Z-Serie','Detailed Specs for Advanced Imaging','Detaillierte Spezifikationen für fortschrittliche Bildgebung',
  'Comprehensive technical details of the Z-Series mirrorless camera, covering sensor and performance.','Umfassende technische Details der spiegellosen Kamera Z-Serie, einschließlich Sensor und Leistung.','Mirrorless, Camera, Specs, Imaging, Performance','Spiegellos, Kamera, Spezifikationen, Bildgebung, Leistung','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','2.1','2026-01-01','Released','M&M','M&M China',
+(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','2.1','2026-01-01','Released','M&M','M&M China',
  'Maintenance Manual – Professional Camera Lens 50mm','Wartungshandbuch – Professionelles Kameraobjektiv 50 mm','Care and Cleaning Procedures','Pflege und Reinigungsverfahren',
  'Guidelines for cleaning and maintaining the 50mm professional lens for optimal performance.','Richtlinien zur Reinigung und Wartung des professionellen 50-mm-Objektivs für optimale Leistung.','Lens, Maintenance, Cleaning, Professional, Care','Objektiv, Wartung, Reinigung, Professionell, Pflege','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','2.3','2025-10-10','InReview','M&M','M&M Germany',
+(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','2.3','2025-10-10','InReview','M&M','M&M Germany',
  'Installation Guide – Wide-Angle Lens Kit','Installationsanleitung – Weitwinkel-Objektiv-Kit','Step-by-Step Setup Instructions','Schritt-für-Schritt-Installationsanleitung',
  'Step-by-step instructions for installing and configuring the wide-angle lens kit.','Schritt-für-Schritt-Anleitung zur Installation und Konfiguration des Weitwinkel-Objektivsets.','Wide-Angle, Lens, Installation, Setup, Kit','Weitwinkel, Objektiv, Installation, Einrichtung, Set','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','0.9','2024-01-01','Released','M&M','M&M Software Development Center India',
+(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','0.9','2024-01-01','Released','M&M','M&M Software mainment Center India',
  'Product Data Sheet – Telephoto Lens 200mm','Produktdatenblatt – Teleobjektiv 200 mm','Technical Data and Performance Metrics','Technische Daten und Leistungskennzahlen',
  'Technical data and compatibility details for the 200mm telephoto lens.','Technische Daten und Kompatibilitätsdetails für das 200-mm-Teleobjektiv.','Telephoto, Lens, Data Sheet, Specifications, Optics','Teleobjektiv, Objektiv, Datenblatt, Spezifikationen, Optik','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','1.2','2024-03-03','InReview','M&M','M&M China',
+(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','1.2','2024-03-03','InReview','M&M','M&M China',
  'Safety Instructions – Digital Camera Accessories','Sicherheitsanweisungen – Zubehör für Digitalkameras','Guidelines for Safe Usage','Richtlinien für sichere Verwendung',
  'Safety guidelines for handling batteries, chargers, and other camera accessories.','Sicherheitsrichtlinien für den Umgang mit Batterien, Ladegeräten und anderem Kamera-Zubehör.','Safety, Camera, Accessories, Guidelines, Handling','Sicherheit, Kamera, Zubehör, Richtlinien, Handhabung','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(1,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','1.4','2023-01-01','Released','M&M','M&M Germany',
+(1,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','1.4','2023-01-01','Released','M&M','M&M Germany',
  'Perfume Catalog – Luxury Fragrance Collection 2025','Parfümkatalog – Luxusduftkollektion 2025','Explore Elegant Scents for Every Occasion','Entdecken Sie elegante Düfte für jeden Anlass',
  'A curated catalog showcasing premium perfumes with scent profiles and packaging details.','Ein kuratierter Katalog mit Premium-Parfums, Duftprofilen und Verpackungsdetails.','Perfume, Fragrance, Luxury, Catalog, Collection','Parfum, Duft, Luxus, Katalog, Kollektion','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(2,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','2','2024-03-03','InReview','M&M','M&M Software Development Center India',
+(2,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','2','2024-03-03','InReview','M&M','M&M Software mainment Center India',
  'Quality Assurance Report – Eau de Parfum Series A','Qualitätssicherungsbericht – Eau de Parfum Serie A','Verified Standards and Testing Results','Geprüfte Standards und Testergebnisse',
  'Report detailing quality checks and compliance standards for Series A perfumes.','Bericht mit Qualitätsprüfungen und Konformitätsstandards für Parfums der Serie A.','Packaging, Perfume, Bottles, Caps, Compliance','Verpackung, Parfum, Flaschen, Verschlüsse, Konformität','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)'),
 
-(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/data/dummy_document.pdf','1','2022-02-02','Released','M&M','M&M Germany',
+(0,'en','https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/dummy_document.pdf','1','2022-02-02','Released','M&M','M&M Germany',
  'Packaging Standards – Perfume Bottles and Caps','Verpackungsstandards – Parfümflaschen und Verschlüsse','Design and Material Compliance Guidelines','Richtlinien für Design und Materialkonformität',
  'Design and material compliance guidelines for perfume packaging.','Richtlinien für Design und Materialkonformität bei Parfumverpackungen.','Perfume, Fragrance, Luxury, Catalog, Collection','Parfum, Duft, Luxus, Katalog, Kollektion','preview-ribbon-isolated-transparent-background-395176472.jpg (800×291)');
 
