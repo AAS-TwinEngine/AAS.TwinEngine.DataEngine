@@ -13,6 +13,8 @@ on:
     branches:
       - 'main'
       - 'develop'
+      - 'release/**'
+      - 'hotfix/**'
 
 # If using a dependency submission action in this workflow this permission will need to be set to:
 #
