@@ -23,10 +23,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    build:
-      context: ./source
-      dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
-    image: twinengine-dataengine:latest
+    image: ghcr.io/aas-twinengine/dataengine:latest
     ports:
     - '8085:8080'
     container_name: twinengine-dataengine
@@ -70,10 +67,7 @@ services:
       - twinengine-network
 
   plugin:
-    build:
-      context: ../AAS.TwinEngine.Plugin.DPP/source 
-      dockerfile: ./Aas.TwinEngine.Plugin.RelationalDatabase/Dockerfile
-    image: plugin:latest
+    image: ghcr.io/aas-twinengine/plugindpp:latest
     ports:
     - '8086:8080'
     container_name: plugin
@@ -89,23 +83,18 @@ services:
       - ExtractionRules__SubmodelNameExtractionRules__0__SubmodelName=NamePlate
       - ExtractionRules__SubmodelNameExtractionRules__0__pattern__0=Nameplate
       - ExtractionRules__SubmodelNameExtractionRules__0__pattern__1=NamePlate
-
       - ExtractionRules__SubmodelNameExtractionRules__1__SubmodelName=ContactInformation
       - ExtractionRules__SubmodelNameExtractionRules__1__pattern__0=ContactInformation
       - ExtractionRules__SubmodelNameExtractionRules__1__pattern__1=ContactInformations
-
       - ExtractionRules__SubmodelNameExtractionRules__2__SubmodelName=HandoverDocumentation
       - ExtractionRules__SubmodelNameExtractionRules__2__pattern__0=HandoverDocumentation
       - ExtractionRules__SubmodelNameExtractionRules__2__pattern__1=HandoverDocumentations
-
       - ExtractionRules__SubmodelNameExtractionRules__3__SubmodelName=TechnicalData
       - ExtractionRules__SubmodelNameExtractionRules__3__pattern__0=TechnicalData
-
       - ExtractionRules__SubmodelNameExtractionRules__4__SubmodelName=CarbonFootprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__0=CarbonFootprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__1=Footprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__2=Carbon
-
       - ExtractionRules__ProductIdExtractionRules__0__Pattern=Regex
       - ExtractionRules__ProductIdExtractionRules__0__Index=5
       - ExtractionRules__ProductIdExtractionRules__0__Separator=/
