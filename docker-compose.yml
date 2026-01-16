@@ -15,7 +15,7 @@ services:
     depends_on:
       aas-template-registry:
         condition: service_healthy
-      sm-template-regisry:
+      sm-template-registry:
         condition: service_healthy
       template-repository:
         condition: service_healthy
@@ -34,7 +34,7 @@ services:
       - AasEnvironment__SubModelRepositoryPath=submodels
       - AasEnvironment__AasRegistryBaseUrl=http://aas-template-registry:8080
       - AasEnvironment__AasRegistryPath=shell-descriptors
-      - AasEnvironment__SubModelRegistryBaseUrl=http://sm-template-regisry:8080
+      - AasEnvironment__SubModelRegistryBaseUrl=http://sm-template-registry:8080
       - AasEnvironment__SubModelRegistryPath=submodel-descriptors
       - AasEnvironment__AasRepositoryPath=shells
       - AasEnvironment__SubmodelRefPath=submodel-refs
@@ -116,7 +116,7 @@ services:
     depends_on:
       aas-template-registry:
         condition: service_healthy
-      sm-template-regisry:
+      sm-template-registry:
         condition: service_healthy
     networks:
       - twinengine-network
@@ -134,9 +134,9 @@ services:
     networks:
       - twinengine-network
 
-  sm-template-regisry:
+  sm-template-registry:
     image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT
-    container_name: sm-template-regisry
+    container_name: sm-template-registry
     ports:
       - '8083:8080'
     depends_on:

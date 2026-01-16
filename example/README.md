@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This project provides a complete, containerized setup to demonstrate how **TwinEngine.DataEngine** can be integrated and run locally. It creates a fully functional environment for managing Asset Administration Shells (AAS), submodels, and related digital asset components using Docker Compose.
+This folder provides a complete, containerized setup to demonstrate how **TwinEngine.DataEngine** can be integrated and run locally. It creates a fully functional environment for managing Asset Administration Shells (AAS), submodels, and related digital asset components using Docker Compose.
 
 The setup includes a complete tech stack with services for AAS registry, repository, submodel management, data persistence, UI access, and a plugin system—all orchestrated through Docker containers on a shared network.
 
@@ -10,11 +10,11 @@ The setup includes a complete tech stack with services for AAS registry, reposit
 
 This example includes 5 standardized Submodel templates from the **Digital Product Passport for Industry 4.0**:
 
-- **Nameplate** — Digital identification and metadata
-- **ContactInformation** — Contact details and communication channels
-- **TechnicalData** — Technical specifications and properties
-- **CarbonFootprint** — Environmental and sustainability information
-- **HandoverDocumentation** — Documentation and handover materials
+- **Nameplate** 
+- **ContactInformation** 
+- **TechnicalData** 
+- **CarbonFootprint** 
+- **HandoverDocumentation** 
 
 ## 🚀 Quick Start
 
@@ -88,8 +88,6 @@ The docker-compose setup includes the following services, all running on a share
 | **shell-template-creator** | One-time initialization service that creates the default shell template |
 
 ## ⚙️ Configuration & Customization
-
-### Database Configuration
 
 #### PostgreSQL (Used by Plugin)
 
