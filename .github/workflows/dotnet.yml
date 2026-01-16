@@ -5,10 +5,14 @@ on:
     branches: 
     - 'main'
     - 'develop'
+    - 'release/**'
+    - 'hotfix/**'
   push:
     branches: 
     - 'main'
     - 'develop'
+    - 'release/**'
+    - 'hotfix/**'
 
 permissions:
   contents: read
