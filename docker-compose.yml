@@ -210,7 +210,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
     volumes:
-      - ./example/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./example/postgres:/docker-entrypoint-initdb.d
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d twinengine"]
