@@ -81,19 +81,13 @@ The docker-compose setup includes the following services, all running on a share
 | **postgres** | 5432 | `postgres:16-alpine` | Relational database for plugin data |
 | **mongo** | 27017 | `mongo:6.0` | NoSQL database for registry metadata |
 
-### Utility Services
-
-| Service | Purpose |
-|---------|---------|
-| **shell-template-creator** | One-time initialization service that creates the default shell template |
-
 ## Configuration
 
 ### PostgreSQL Database (Plugin)
 
 Edit credentials in `docker-compose.yml`:
 ```yaml
-POSTGRES_PASSWORD: admin  # Change this
+POSTGRES_PASSWORD: admin 
 ```
 
 Update plugin connection string to match. Edit `example/postgres/init.sql` for custom schema/data.
@@ -126,18 +120,6 @@ Modify port mappings in `docker-compose.yml`. Update corresponding environment v
 
 ## 📚 Additional Resources
 
-- [TwinEngine Documentation](https://github.com/aas-twinengine) # Todo Add Public wiki link 
-- [DPP-Plugin Documentation]()
-- [Eclipse BaSyx Documentation](https://wiki.eclipse.org/BaSyx)
-- [Asset Administration Shell Specification](https://industrialdigitaltwin.org/)
-- [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [TwinEngine Documentation](https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine)
+- [DPP-Plugin Documentation](https://github.com/AAS-TwinEngine/AAS.TwinEngine.Plugin.DPP)
 
-
-## 🤝 Support & Contribution
-
-For issues, questions, or contributions:
-
-1. Check existing GitHub issues
-2. Review logs: `docker-compose logs`
-3. Create a detailed issue with reproduction steps
-4. Include Docker version and docker-compose version output
