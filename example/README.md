@@ -8,7 +8,7 @@ The setup includes a complete tech stack with services for AAS registry, reposit
 
 ## ✨ Included Submodel Templates
 
-This example includes 5 standardized Submodel templates from the **Digital Product Passport for Industry 4.0**:
+This example includes 5 standardized submodel templates from the **Digital Product Passport for Industry 4.0**:
 
 - **Nameplate** 
 - **ContactInformation** 
@@ -38,7 +38,7 @@ Before running the demonstrator, ensure you have installed:
 
 1. **Clone or extract this repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine.git
    cd AAS.TwinEngine.DataEngine
    ```
 
@@ -85,20 +85,20 @@ The docker-compose setup includes the following services, all running on a share
 
 ### PostgreSQL Database (Plugin)
 
-Edit credentials in `docker-compose.yml`:
+If desired, you can edit credentials in `docker-compose.yml`:
 ```yaml
 POSTGRES_PASSWORD: admin 
 ```
 
 Update plugin connection string to match. Edit `example/postgres/init.sql` for custom schema/data.
 
-**Using External Database:**  
-To use your own database:
+**Using an External Database:**  
+To use your own database instead:
 1. Change `RelationalDatabaseConfiguration__ConnectionString` in the plugin service environment variables
 2. Remove the postgres container from `docker-compose.yml`
 
 **Database Initialization:**  
-The initial database script is located in `postgres/init.sql`. Modify this file according to your needs.
+The initial database script is located in `postgres/init.sql`. Modify this file as needed for your requirements.
 
 ### Port Changes
 
@@ -110,7 +110,7 @@ Modify port mappings in `docker-compose.yml`. Update corresponding environment v
 
 **Port conflicts:** `netstat -ano | findstr :8080` (Windows) to find conflicts. Change ports in `docker-compose.yml`.
 
-**Startup issues:** `docker-compose pull` then `docker-compose up -d --force-recreate`
+**Startup issues:** Run `docker-compose pull` followed by `docker-compose up -d --force-recreate`
 
 **Database errors:** Check `docker-compose ps` for health status. Verify connection strings match credentials.
 
