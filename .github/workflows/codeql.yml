@@ -5,10 +5,14 @@ on:
     branches: 
       - 'main'
       - 'develop'
+      - 'release/**'
+      - 'hotfix/**'
   pull_request:
     branches:
       - 'main'
       - 'develop'
+      - 'release/**'
+      - 'hotfix/**'
   schedule:
     - cron: '30 19 * * 0'
     
