@@ -1,12 +1,15 @@
 vars:pre-request {
-  aasIdentifier-1: https://mm-software.com/ids/aas/000-001
-  submodelIdentifierContact-1: https://mm-software.com/submodel/000-001/ContactInformation
-  submodelIdentifierNameplate-1: https://mm-software.com/submodel/000-001/Nameplate
-  aasIdentifier-2: https://mm-software.com/ids/aas/000-002
-  aasIdentifier-3: https://mm-software.com/ids/aas/001-001
-  submodelIdentifierTechnicalData-1: https://mm-software.com/submodel/000-001/TechnicalData
-  submodelIdentifierCarbonFootprint-1: https://mm-software.com/submodel/000-001/CarbonFootprint
-  submodelIdentifierHandoverDocumentation-1: https://mm-software.com/submodel/000-001/HandoverDocumentation
+  aasIdentifier-1: https://mm-software.com/ids/aas/{{productId-1}}
+  submodelIdentifierContact-1: https://mm-software.com/submodel/{{productId-1}}/ContactInformation
+  submodelIdentifierNameplate-1: https://mm-software.com/submodel/{{productId-1}}/Nameplate
+  aasIdentifier-2: https://mm-software.com/ids/aas/{{productId-2}}
+  aasIdentifier-3: https://mm-software.com/ids/aas/{{productId-3}}
+  submodelIdentifierTechnicalData-1: https://mm-software.com/submodel/{{productId-1}}/TechnicalData
+  submodelIdentifierCarbonFootprint-1: https://mm-software.com/submodel/{{productId-1}}/CarbonFootprint
+  submodelIdentifierHandoverDocumentation-1: https://mm-software.com/submodel/{{productId-1}}/HandoverDocumentation
+  productId-1: 000-001
+  productId-2: 000-002
+  productId-3: 001-001
 }
 
 script:pre-request {
