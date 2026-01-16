@@ -1,0 +1,25 @@
+meta {
+  name: Get Shell Descriptor By Id - Product1
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shell-descriptors/:aasIdentifier
+  body: none
+  auth: inherit
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+}
+
+script:pre-request {
+  
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

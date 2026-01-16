@@ -1,0 +1,21 @@
+meta {
+  name: Get Submodel Element - CarbonFootprint
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierCarbonFootprint-1}}
+  idShortPath: ProductCarbonFootprints[0].LifeCyclePhases[0]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

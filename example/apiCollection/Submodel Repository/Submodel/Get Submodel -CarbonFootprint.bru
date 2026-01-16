@@ -1,0 +1,20 @@
+meta {
+  name: Get Submodel -CarbonFootprint
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierCarbonFootprint}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

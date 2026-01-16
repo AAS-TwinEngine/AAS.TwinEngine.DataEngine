@@ -1,0 +1,20 @@
+meta {
+  name: Get Asset Information By Id
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/asset-information
+  body: none
+  auth: inherit
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-3}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

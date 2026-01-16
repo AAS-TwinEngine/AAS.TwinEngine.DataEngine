@@ -1,0 +1,35 @@
+vars:pre-request {
+  aasIdentifier-1: https://mm-software.com/ids/aas/000-001
+  submodelIdentifierContact-1: https://mm-software.com/submodel/000-001/ContactInformation
+  submodelIdentifierNameplate-1: https://mm-software.com/submodel/000-001/Nameplate
+  aasIdentifier-2: https://mm-software.com/ids/aas/000-002
+  aasIdentifier-3: https://mm-software.com/ids/aas/001-001
+  submodelIdentifierTechnicalData-1: https://mm-software.com/submodel/000-001/TechnicalData
+  submodelIdentifierCarbonFootprint-1: https://mm-software.com/submodel/000-001/CarbonFootprint
+  submodelIdentifierHandoverDocumentation-1: https://mm-software.com/submodel/000-001/HandoverDocumentation
+}
+
+script:pre-request {
+  function b64EncodeUnicode(str){
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m,p)=>String.fromCharCode('0x'+p)));
+  }
+  
+  const varsToEncode = [
+    'aasIdentifier-1',
+    'aasIdentifier-2',
+    'aasIdentifier-3',
+    'submodelIdentifierContact-1',
+    'submodelIdentifierNameplate-1',
+    'submodelIdentifierHandoverDocumentation-1',
+    'submodelIdentifierTechnicalData-1',
+    'submodelIdentifierCarbonFootprint-1'
+  ];
+  
+  varsToEncode.forEach(name => {
+    const plain = bru.getCollectionVar(name);
+    const encoded = b64EncodeUnicode(plain);
+    bru.setVar(name, encoded);
+  });
+  
+  
+}

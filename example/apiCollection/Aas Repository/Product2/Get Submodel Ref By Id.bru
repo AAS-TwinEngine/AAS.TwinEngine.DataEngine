@@ -1,0 +1,25 @@
+meta {
+  name: Get Submodel Ref By Id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodel-refs?limit&cursor
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 
+  cursor: 
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-2}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
