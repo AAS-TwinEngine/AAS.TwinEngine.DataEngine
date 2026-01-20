@@ -8,17 +8,21 @@ name: Docker
 on:
   push:
     branches: 
-      - 'main'
       - 'develop'
-
+      - 'release/**'
+      - 'hotfix/**'
+    # Publish semver tags as releases.
+    tags: [ 'v**' ]
   pull_request:
     branches:
       - 'main'
       - 'develop'
-    
+      - 'release/**'
+      - 'hotfix/**'
+
 permissions:
   contents: read
-  
+
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
@@ -65,7 +69,10 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=ref,event=branch
+            type=semver,pattern={{raw}}
+            type=raw,value=develop-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/develop')}}
+            type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/release/')}}
+            type=raw,value={{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/hotfix/')}}
             type=ref,event=pr
 
       # Build and push Docker image with Buildx (don't push on PR)
