@@ -6,20 +6,15 @@ This directory contains the Bruno collection and instructions to test the **AAS.
 
 ---
 
-## 📚 Contents
-
-[[_TOC_]]
-
-
 ## 🔍 Quick Summary
 
 | Item                     | Description                                         |
 |--------------------------|-----------------------------------------------------|
 | **API**                  | `AAS.TwinEngine.DataEngine` (.NET)                  |
 | **Testing Tool**         | [Bruno](https://www.usebruno.com/downloads)         |
-| **Default API URL**      | `https://localhost:5059`                            |
+| **Default API URL**      | `local` `http://localhost:8085` <br> - started with Docker compose  <br>   `local_net` `https://localhost:5059` <br> - started with devleopment environment (dotnet run)                        |
 | **SDK Required**         | .NET 8 (recommended)                                |
-| **Run docker compose file**           |  Run `docker-compose-up` form AasTwin.DataEngine                |
+| **Run docker compose file**           |  Run `docker-compose up -d` from AAS.TwinEngine.Plugin.TestPlugin Example folder              |
 
 ---
 
@@ -63,7 +58,7 @@ By default the API listens at `https://localhost:5059` unless overridden by envi
 
 1. Open Bruno
 2. `Collection -> Open Collection` and choose the Bruno collection folder (`apiCollection`) from the AasTwin.DataEngine repository
-3. From the top-right environment dropdown select an environment: `local` or `dev` (use `local` for local testing)
+3. From the top-right environment dropdown select an environment: `local` or `local_net` (use `local_net` for local testing with development environment)
 4. Expand folders to find requests, select a request and click **Send**
 5. Inspect the request/response in the right panel
 
@@ -88,17 +83,16 @@ Default values are set as shown.
 
 ## Default api-test configuration
 
-* The default configuration includes four shell descriptors with these IDs:
+* The default configuration includes three shell descriptors with these IDs:
 
   * `https://mm-software.com/ids/aas/000-001`
   * `https://mm-software.com/ids/aas/000-002`
   * `https://mm-software.com/ids/aas/000-003`
-  * `https://mm-software.com/ids/aas/000-004`
 
-* Default submodel templates (under `/infrastructure/config-files/aas`):
+* Default submodel templates (under `/Example/aas`):
 
-  * `ContactInformation`
-  * `Nameplate`
+  * `ContactInformationAAS`
+  * `DigitalNameplateAAS`
   * `Reliability`
 
 * Default shell template used by all four shells:
