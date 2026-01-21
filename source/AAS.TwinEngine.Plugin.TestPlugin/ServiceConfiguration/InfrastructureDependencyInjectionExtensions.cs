@@ -1,14 +1,14 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
+namespace AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
 
 public static class InfrastructureDependencyInjectionExtensions
 {

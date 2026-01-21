@@ -1,15 +1,15 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 
 using Microsoft.AspNetCore.Mvc;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData;
 
 public class MetaDataControllerTests
 {

@@ -1,8 +1,8 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
 using Json.Schema;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 
 /// <summary>
 /// Parses a complex JSON schema and converts it into a semantic tree structure.

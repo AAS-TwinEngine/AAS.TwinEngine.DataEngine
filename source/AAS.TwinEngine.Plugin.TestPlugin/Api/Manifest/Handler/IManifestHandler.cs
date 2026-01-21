@@ -1,6 +1,6 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
 
 public interface IManifestHandler
 {

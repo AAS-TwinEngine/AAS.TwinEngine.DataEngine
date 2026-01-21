@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
 
 public class MockDataInitializer(IHostEnvironment env, ILogger<MockDataInitializer> logger)
 {

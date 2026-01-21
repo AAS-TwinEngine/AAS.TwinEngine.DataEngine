@@ -1,16 +1,16 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.SubmodelProviders;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.SubmodelProviders;
 
 public class SubmodelProviderTests
 {

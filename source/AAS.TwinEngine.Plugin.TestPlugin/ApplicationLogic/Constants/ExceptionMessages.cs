@@ -1,4 +1,4 @@
-﻿namespace Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+﻿namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 
 public static class ExceptionMessages
 {

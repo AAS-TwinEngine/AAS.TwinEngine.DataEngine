@@ -2,12 +2,12 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
 using Json.Schema;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 
 public class SemanticTreeHandler(IJsonSchemaValidator jsonSchemaValidator) : ISemanticTreeHandler
 {

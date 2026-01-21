@@ -1,12 +1,12 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.Common.Extensions;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 
 public class MetaDataHandler(
     ILogger<MetaDataHandler> logger,

@@ -1,16 +1,16 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-using Provider = Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.ManifestProvider;
+using Provider = AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.ManifestProvider;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.ManifestProvider;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.ManifestProvider;
 
 public class ManifestProviderTests
 {

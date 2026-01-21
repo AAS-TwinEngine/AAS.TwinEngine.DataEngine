@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.Entity;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.Entity;
 
 public class MetaDataEntity
 {

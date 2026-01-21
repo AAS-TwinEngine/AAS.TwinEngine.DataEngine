@@ -1,9 +1,9 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.ApplicationLogic.Services.Manifest;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.ApplicationLogic.Services.Manifest;
 
 public class ManifestServiceTests
 {

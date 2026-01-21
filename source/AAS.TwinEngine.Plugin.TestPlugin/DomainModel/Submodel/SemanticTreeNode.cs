@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+namespace AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
 public abstract class SemanticTreeNode(string semanticId, DataType dataType)
 {

@@ -1,9 +1,9 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
-using Aas.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+using AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
 
 using Asp.Versioning;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin;
+namespace AAS.TwinEngine.Plugin.TestPlugin;
 
 public static class Program
 {

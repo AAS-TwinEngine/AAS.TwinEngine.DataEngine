@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
+namespace AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
 
 public class ManifestData
 {

@@ -1,15 +1,15 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData.Handler;
 
 public class MetaDataHandlerTests
 {

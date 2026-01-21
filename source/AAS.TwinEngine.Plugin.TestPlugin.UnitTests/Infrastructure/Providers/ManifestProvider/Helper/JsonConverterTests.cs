@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.Helper;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.Helper;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.ManifestProvider.Helper;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.ManifestProvider.Helper;
 
 public class JsonConverterTests
 {

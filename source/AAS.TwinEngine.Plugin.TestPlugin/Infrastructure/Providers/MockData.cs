@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
 
 public record MockData
 {

@@ -1,9 +1,9 @@
 ﻿using System.Text.Json.Nodes;
 
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.Common.Extensions;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
 
 using Asp.Versioning;
 
@@ -11,7 +11,7 @@ using Json.Schema;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel;
 
 [ApiController]
 [Route("")]

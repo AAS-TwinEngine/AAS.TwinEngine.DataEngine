@@ -24,7 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Aas.TwinEngine.Plugin.TestPlugin\Aas.TwinEngine.Plugin.TestPlugin.csproj" />
+		<ProjectReference Include="..\AAS.TwinEngine.Plugin.TestPlugin\AAS.TwinEngine.Plugin.TestPlugin.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

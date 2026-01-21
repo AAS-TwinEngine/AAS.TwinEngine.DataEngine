@@ -1,14 +1,14 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
 
 using FluentValidation;
-namespace Aas.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
+namespace AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
 
 public static class ApplicationDependencyInjectionExtensions
 {

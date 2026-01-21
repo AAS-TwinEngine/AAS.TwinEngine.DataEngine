@@ -1,7 +1,7 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.Entity;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.Entity;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.MapperProfiles;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.MapperProfiles;
 
 public static class ShellDescriptorMappingProfile
 {

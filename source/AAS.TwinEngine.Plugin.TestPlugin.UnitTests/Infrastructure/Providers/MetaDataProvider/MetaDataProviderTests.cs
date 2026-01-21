@@ -1,16 +1,16 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
 
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-using Provider = Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider.MetaDataProvider;
+using Provider = AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider.MetaDataProvider;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.MetaDataProvider;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers.MetaDataProvider;
 
 public class MetaDataProviderTests
 {

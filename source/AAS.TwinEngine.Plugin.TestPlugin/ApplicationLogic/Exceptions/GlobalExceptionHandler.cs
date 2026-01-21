@@ -1,10 +1,10 @@
 ﻿using System.Net;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions.Responses;
 
 using Microsoft.AspNetCore.Diagnostics;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {

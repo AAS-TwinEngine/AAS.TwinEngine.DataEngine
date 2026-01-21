@@ -1,11 +1,11 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.ApplicationLogic.Services.MetaData;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.ApplicationLogic.Services.MetaData;
 
 public class MetaDataServiceTests
 {

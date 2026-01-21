@@ -1,4 +1,4 @@
-﻿namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers;
+﻿namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers;
 
 public static class TestData
 {

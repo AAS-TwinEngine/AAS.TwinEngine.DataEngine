@@ -1,13 +1,13 @@
 ﻿using System.Text.Json.Nodes;
 
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
 
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest;
 
 [ApiController]
 [Route("")]

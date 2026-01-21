@@ -3,7 +3,7 @@
   "defaultVariables": "Output=v1.json,Configuration=Debug,Version=1.0",
   "documentGenerator": {
     "aspNetCoreToOpenApi": {
-      "project": "Aas.TwinEngine.Plugin.TestPlugin.csproj",
+      "project": "AAS.TwinEngine.Plugin.TestPlugin.csproj",
       "msBuildProjectExtensionsPath": null,
       "configuration": "$(Configuration)",
       "runtime": null,

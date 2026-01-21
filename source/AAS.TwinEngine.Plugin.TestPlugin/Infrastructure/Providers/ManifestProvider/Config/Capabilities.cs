@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
 
 public class Capabilities
 {

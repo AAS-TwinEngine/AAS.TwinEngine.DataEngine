@@ -1,13 +1,13 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Infrastructure.Providers;
 
 public class MockDataInitializerTests
 {

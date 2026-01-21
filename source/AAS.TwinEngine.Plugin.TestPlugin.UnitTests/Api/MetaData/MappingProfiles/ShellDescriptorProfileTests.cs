@@ -1,7 +1,7 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData.MappingProfiles;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData.MappingProfiles;
 
 public class ShellDescriptorProfileTests
 {

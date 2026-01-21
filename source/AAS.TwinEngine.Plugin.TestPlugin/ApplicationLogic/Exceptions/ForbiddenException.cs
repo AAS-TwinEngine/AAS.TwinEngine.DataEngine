@@ -1,4 +1,4 @@
-﻿namespace Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+﻿namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 
 public class ForbiddenException : Exception
 {

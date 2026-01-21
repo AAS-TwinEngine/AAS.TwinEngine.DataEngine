@@ -4,7 +4,7 @@ using ArchUnitNET.xUnit;
 
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests;
 
 /// <summary>
 ///     This validates that the Onion Architecture as described in the SAD is not broken.
@@ -12,7 +12,7 @@ namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests;
 /// </summary>
 public class CleanArchitectureTests
 {
-    private const string BaseNamespace = "Aas.TwinEngine.Plugin.TestPlugin";
+    private const string BaseNamespace = "AAS.TwinEngine.Plugin.TestPlugin";
 
     private readonly Architecture _architecture;
     private readonly IObjectProvider<IType> _apiLayer;

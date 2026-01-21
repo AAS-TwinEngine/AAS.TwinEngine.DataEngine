@@ -1,9 +1,9 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.ApplicationLogic.Services.Submodel;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.ApplicationLogic.Services.Submodel;
 
 public class SubmodelServiceTests
 {

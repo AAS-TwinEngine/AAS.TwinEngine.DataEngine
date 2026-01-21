@@ -1,4 +1,4 @@
-﻿namespace Aas.TwinEngine.Plugin.TestPlugin.ServiceConfiguration.Config;
+﻿namespace AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration.Config;
 
 public class OpenTelemetrySettings
 {

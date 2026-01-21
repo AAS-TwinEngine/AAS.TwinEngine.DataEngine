@@ -1,7 +1,7 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
 
 public static class ShellDescriptorProfile
 {

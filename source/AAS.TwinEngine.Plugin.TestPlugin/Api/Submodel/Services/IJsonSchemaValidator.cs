@@ -1,6 +1,6 @@
 ﻿using Json.Schema;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 
 public interface IJsonSchemaValidator
 {

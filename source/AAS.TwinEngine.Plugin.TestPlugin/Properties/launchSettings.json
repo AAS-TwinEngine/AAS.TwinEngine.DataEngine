@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Aas.TwinEngine.Plugin.TestPlugin": {
+    "AAS.TwinEngine.Plugin.TestPlugin": {
       "commandName": "Project",
       "launchUrl": "swagger",
       "environmentVariables": {

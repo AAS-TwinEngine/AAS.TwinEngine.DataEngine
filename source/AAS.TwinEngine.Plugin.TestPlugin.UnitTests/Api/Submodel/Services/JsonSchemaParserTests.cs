@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
 using Json.Schema;
 
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel.Services;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel.Services;
 
 public class JsonSchemaParserTests
 {

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ServiceConfiguration.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration.Config;
 
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -11,7 +11,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
+namespace AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
 
 [ExcludeFromCodeCoverage]
 internal static class LoggingConfigurationExtension

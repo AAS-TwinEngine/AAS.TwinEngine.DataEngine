@@ -1,15 +1,15 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.Common.Extensions;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.Entity;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.MapperProfiles;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider.Helper;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.Entity;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.MapperProfiles;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider.Helper;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider;
 
 public class MetaDataProvider : IMetaDataProvider
 {

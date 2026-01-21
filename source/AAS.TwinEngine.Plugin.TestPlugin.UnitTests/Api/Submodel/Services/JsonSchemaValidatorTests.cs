@@ -1,6 +1,6 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
 
 using Json.Schema;
 
@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel.Services;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel.Services;
 
 public class JsonSchemaValidatorTests
 {

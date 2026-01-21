@@ -41,7 +41,7 @@ docker-compose up -d
 
     Check docker-compose logs nginx for errors
 
-    Make sure port **8080, 8081, 8082, 8083** is not used by another service
+    Make sure port **8080, 8081, 8082, 8083, 8085, 8086** is not used by another service.
 
 - If a container fails to start because of bind port, stop whatever uses that port or change the mapping in `docker-compose.yml`.
 

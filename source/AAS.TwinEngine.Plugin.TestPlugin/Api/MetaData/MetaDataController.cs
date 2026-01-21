@@ -1,14 +1,14 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions.Responses;
-using Aas.TwinEngine.Plugin.TestPlugin.Common.Extensions;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
 
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData;
 
 [ApiController]
 [Route("metadata")]

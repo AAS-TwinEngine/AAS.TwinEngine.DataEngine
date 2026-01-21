@@ -1,7 +1,7 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 
 public interface IMetaDataHandler
 {

@@ -1,7 +1,7 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Common.Extensions;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider.Helper;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider.Helper;
 
 public static class Paginator
 {

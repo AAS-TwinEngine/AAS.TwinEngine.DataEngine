@@ -1,10 +1,10 @@
 ﻿using System.Text.Json.Nodes;
 
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 
 public class SubmodelHandler(
     ILogger<SubmodelHandler> logger,

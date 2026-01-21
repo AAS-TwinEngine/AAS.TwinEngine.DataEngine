@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Common.Extensions;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
 
 public static class StringExtensions
 {

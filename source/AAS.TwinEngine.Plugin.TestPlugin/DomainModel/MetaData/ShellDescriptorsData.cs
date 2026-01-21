@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+namespace AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
 public class ShellDescriptorsData
 {

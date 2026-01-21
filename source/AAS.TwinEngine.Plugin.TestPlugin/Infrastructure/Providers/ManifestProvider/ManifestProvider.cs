@@ -1,12 +1,12 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.Helper;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.Helper;
 
 using Microsoft.Extensions.Options;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider;
 
 public class ManifestProvider(
     ILogger<ManifestProvider> logger,

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
 
 public class ManifestDto
 {

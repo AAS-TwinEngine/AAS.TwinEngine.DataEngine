@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions.Responses;
+namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions.Responses;
 
 public class ServiceErrorResponse : ProblemDetails
 {

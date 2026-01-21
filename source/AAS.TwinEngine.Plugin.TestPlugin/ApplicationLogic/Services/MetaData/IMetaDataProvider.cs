@@ -1,6 +1,6 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
 
 public interface IMetaDataProvider
 {

@@ -3,10 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 
 using Json.Schema;
 
@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel;
 
 public class SubmodelControllerTests
 {

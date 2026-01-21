@@ -1,14 +1,14 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
-using Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders.Helper;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders.Helper;
 
 using Microsoft.Extensions.Options;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders;
 
 public class SubmodelProvider : ISubmodelProvider
 {

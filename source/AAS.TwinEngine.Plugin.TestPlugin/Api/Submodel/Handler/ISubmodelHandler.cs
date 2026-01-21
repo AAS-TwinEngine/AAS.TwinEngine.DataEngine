@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Nodes;
 
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 
 public interface ISubmodelHandler
 {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
+namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
 
 public class Semantics
 {

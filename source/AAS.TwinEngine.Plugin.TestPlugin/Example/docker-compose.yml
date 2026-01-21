@@ -70,7 +70,7 @@ services:
   twinengine-plugin:
     build:
       context: ../../
-      dockerfile: ./Aas.TwinEngine.Plugin.TestPlugin/Dockerfile
+      dockerfile: ./AAS.TwinEngine.Plugin.TestPlugin/Dockerfile
     image: twinengine-plugin:latest
     ports:
     - '8086:8080'

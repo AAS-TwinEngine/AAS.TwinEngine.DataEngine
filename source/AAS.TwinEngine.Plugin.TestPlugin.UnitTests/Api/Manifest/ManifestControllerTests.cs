@@ -1,12 +1,12 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
 
 using Microsoft.AspNetCore.Mvc;
 
 using NSubstitute;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Manifest;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Manifest;
 
 public class ManifestControllerTests
 {

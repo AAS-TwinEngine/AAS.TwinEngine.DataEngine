@@ -1,14 +1,14 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
 
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Manifest.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Manifest.Handler;
 
 public class ManifestHandlerTests
 {

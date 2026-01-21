@@ -1,8 +1,8 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.MappingProfiles;
-using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
-using Aas.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.MappingProfiles;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
 
 public class ManifestHandler(ILogger<ManifestHandler> logger,
                              IManifestService manifestService) : IManifestHandler

@@ -1,4 +1,4 @@
-﻿namespace Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+﻿namespace AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
 public enum DataType
 {

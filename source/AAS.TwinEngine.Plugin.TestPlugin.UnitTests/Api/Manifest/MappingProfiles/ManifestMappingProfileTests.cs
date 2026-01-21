@@ -1,7 +1,7 @@
-﻿using Aas.TwinEngine.Plugin.TestPlugin.Api.Manifest.MappingProfiles;
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.MappingProfiles;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Manifest;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Manifest.MappingProfiles;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Manifest.MappingProfiles;
 
 public class ManifestMappingProfileTests
 {

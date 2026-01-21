@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders.Helper;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders.Helper;
 
 public class JsonNodeInfo
 {

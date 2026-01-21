@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 
-using Aas.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
+using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
-namespace Aas.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.Helper;
+namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.ManifestProvider.Helper;
 
 public static class JsonConverter
 {
