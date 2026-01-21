@@ -38,7 +38,7 @@ This directory contains the Bruno collection and instructions to test the **AAS.
 
 ### 1. Run docker compose file 
 
-Before starting , run twinengine environmnet with multi-plugin.
+Before starting , run twinengine environmnet with plugin.
 [click here for getting starated with docker-compose](../README.md)
 
 ### 2. Start the DataEngine .NET API
