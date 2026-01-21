@@ -6,7 +6,7 @@ This directory contains the Bruno collection and instructions to test the **AAS.
 
 ---
 
-## 🔍 Quick Summary
+## Quick Summary
 
 | Item                     | Description                                         |
 |--------------------------|-----------------------------------------------------|
@@ -146,7 +146,7 @@ By default, DataEngine requests the dev Template Repository, Submodel Registry, 
 
 ## Troubleshooting
 
-#### ❌ Bruno shows `SSL/TLS handshake failed`
+#### Bruno shows `SSL/TLS handshake failed`
 
 - Run `dotnet dev-certs https --trust`
 - Ensure plugin and API endpoints match port and schema (`https://`)
