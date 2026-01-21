@@ -6,6 +6,7 @@ name: Docker
 # documentation.
 
 on:
+  workflow_dispatch:
   push:
     branches: 
       - 'develop'
@@ -74,6 +75,7 @@ jobs:
             type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/release/')}}
             type=raw,value={{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/hotfix/')}}
             type=ref,event=pr
+            type=raw,value=manual-{{branch}}-{{sha}},enable=${{github.event_name == 'workflow_dispatch'}}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
