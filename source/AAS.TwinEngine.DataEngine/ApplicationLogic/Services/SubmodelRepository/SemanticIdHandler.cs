@@ -882,11 +882,6 @@ public partial class SemanticIdHandler(ILogger<SemanticIdHandler> logger, IOptio
             throw new InternalDataProcessingException();
         }
 
-        if (list.TypeValueListElement is AasSubmodelElements.SubmodelElementCollection or AasSubmodelElements.SubmodelElementList && list.Value?.Count >0)
-        {
-            return list.Value.FirstOrDefault()!;
-        }
-
         if (index >= 0 && index < list.Value!.Count)
         {
             return list.Value[index];
