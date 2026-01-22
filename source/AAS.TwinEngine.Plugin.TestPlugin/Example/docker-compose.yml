@@ -77,8 +77,8 @@ services:
     container_name: twinengine-plugin
     restart: always
     volumes:
-      - ./plugin/mock-metadata.json:/app/Data/mock-metadata.json
-      - ./plugin/mock-submodel-data.json:/app/Data/mock-submodel-data.json
+      - ./plugin/mock-metadata.json:/App/Data/mock-metadata.json
+      - ./plugin/mock-submodel-data.json:/App/Data/mock-submodel-data.json
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - Semantics__IndexContextPrefix=_aastwinengineindex_
