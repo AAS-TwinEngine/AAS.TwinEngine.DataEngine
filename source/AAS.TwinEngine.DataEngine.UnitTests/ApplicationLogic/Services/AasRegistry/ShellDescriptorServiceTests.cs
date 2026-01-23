@@ -254,97 +254,92 @@ public class ShellDescriptorServiceTests
     }
 
     [Fact]
-    public async Task SyncShellDescriptorsAsync_ShouldThrow_InternalDataProcessingException_WhenRegistryDescriptorHasNoId()
+    public async Task SyncShellDescriptorsAsync_WhenRegistryDescriptorHasNoId_ShouldLogAndReturn()
     {
         var metaData = new ShellDescriptorsMetaData
         {
-            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
+            PagingMetaData = new PagingMetaData(),
             ShellDescriptors = [new ShellDescriptorMetaData { Id = "valid" }]
         };
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new ShellDescriptor { Id = "" }]);
-        var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "TestPlugin",
-                PluginUrl = new Uri("http://test-plugin"),
-                SupportedSemanticIds = new List<string>(),
-                Capabilities = new Capabilities { HasShellDescriptor = true }
-            }
-        };
-        _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, manifests, Arg.Any<CancellationToken>()).Returns(metaData);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
+        _aasRegistryProvider
+            .GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns([new ShellDescriptor { Id = "" }]);
+
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
+            .Returns(metaData);
+
+        var exception = await Record.ExceptionAsync(
+            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
+
+        Assert.Null(exception);
+
+        await _aasRegistryProvider
+            .DidNotReceive()
+            .CreateAsync(Arg.Any<ShellDescriptor>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsResourceNotFoundException_ThrowsShellDescriptorNotFoundException()
+    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsResourceNotFoundException_ShouldNotThrow()
     {
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>())
-                            .Throws(new ResourceNotFoundException());
+        _aasRegistryProvider
+            .GetAllAsync(Arg.Any<CancellationToken>())
+            .Throws(new ResourceNotFoundException());
 
-        var ex = await Assert.ThrowsAsync<ShellDescriptorNotFoundException>(() => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
+        var exception = await Record.ExceptionAsync(
+            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
 
-        Assert.NotNull(ex.InnerException);
-        Assert.IsType<ResourceNotFoundException>(ex.InnerException);
+        Assert.Null(exception);
     }
 
     [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsResponseParsingException_ThrowsInternalDataProcessingException()
+    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsResponseParsingException_ShouldNotThrow()
     {
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
+        _aasRegistryProvider
+            .GetAllAsync(Arg.Any<CancellationToken>())
+            .Throws(new ResponseParsingException());
 
-        var ex = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
+        var exception = await Record.ExceptionAsync(
+            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
 
-        Assert.NotNull(ex.InnerException);
-        Assert.IsType<ResponseParsingException>(ex.InnerException);
+        Assert.Null(exception);
     }
 
     [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsRequestTimeoutException_ThrowsRegistryNotAvailableException()
+    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsRequestTimeoutException_ShouldNotThrow()
     {
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Throws(new RequestTimeoutException());
+        _aasRegistryProvider
+            .GetAllAsync(Arg.Any<CancellationToken>())
+            .Throws(new RequestTimeoutException());
 
-        var ex = await Assert.ThrowsAsync<RegistryNotAvailableException>(() => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
+        var exception = await Record.ExceptionAsync(
+            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
 
-        Assert.NotNull(ex.InnerException);
-        Assert.IsType<RequestTimeoutException>(ex.InnerException);
+        Assert.Null(exception);
     }
 
     [Fact]
-    public async Task SyncShellDescriptorsAsync_ShouldThrow_InternalDataProcessingException_WhenPluginMetadataHasNoId()
+    public async Task SyncShellDescriptorsAsync_WhenPluginMetadataHasNoId_ShouldLogAndReturn()
     {
         var metaData = new ShellDescriptorsMetaData
         {
-            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
+            PagingMetaData = new PagingMetaData(),
             ShellDescriptors = [new ShellDescriptorMetaData { Id = "" }]
         };
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new ShellDescriptor { Id = "1" }]);
-        var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "TestPlugin",
-                PluginUrl = new Uri("http://test-plugin"),
-                SupportedSemanticIds = new List<string>(),
-                Capabilities = new Capabilities { HasShellDescriptor = true }
-            }
-        };
-        _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, manifests, Arg.Any<CancellationToken>()).Returns(metaData);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
-    }
+        _aasRegistryProvider
+            .GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns([new ShellDescriptor { Id = "1" }]);
 
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_ShouldThrowException_WhenPluginFails()
-    {
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new ShellDescriptor { Id = "1" }]);
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
+            .Returns(metaData);
 
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>()).Throws(new InternalDataProcessingException());
+        var exception = await Record.ExceptionAsync(
+            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
+        Assert.Null(exception);
     }
 
     [Fact]
