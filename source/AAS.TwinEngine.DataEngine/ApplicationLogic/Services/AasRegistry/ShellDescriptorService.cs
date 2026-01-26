@@ -72,26 +72,37 @@ public class ShellDescriptorService(
             throw new InvalidUserInputException(ex);
         }
     }
+
     public async Task SyncShellDescriptorsAsync(CancellationToken cancellationToken)
     {
         try
         {
-            var existingDescriptors = await aasRegistryProvider.GetAllAsync(cancellationToken).ConfigureAwait(false) ?? throw new RegistryNotAvailableException();
+            var existingDescriptors = await aasRegistryProvider.GetAllAsync(cancellationToken).ConfigureAwait(false);
+            if (existingDescriptors == null)
+            {
+                logger.LogError("AAS Registry returned null. Sync skipped.");
+                return;
+            }
 
             var pluginManifests = pluginManifestConflictHandler.Manifests;
 
-            var pluginMetadata = await pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, pluginManifests, cancellationToken).ConfigureAwait(false) ?? throw new PluginNotAvailableException();
+            var pluginMetadata = await pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, pluginManifests, cancellationToken).ConfigureAwait(false);
+            if (pluginMetadata == null)
+            {
+                logger.LogError("Plugin metadata unavailable. Sync skipped.");
+                return;
+            }
 
             if (existingDescriptors.Any(d => string.IsNullOrWhiteSpace(d.Id)))
             {
                 logger.LogError("One or more registry descriptors have missing IDs: {@Descriptors}", existingDescriptors);
-                throw new InternalDataProcessingException();
+                return;
             }
 
             if (pluginMetadata.ShellDescriptors.Any(m => string.IsNullOrWhiteSpace(m.Id)))
             {
                 logger.LogError("One or more plugin metadata entries have missing IDs: {@Metadata}", pluginMetadata);
-                throw new InternalDataProcessingException();
+                return;
             }
 
             var existingDescriptorsMap = existingDescriptors.ToDictionary(d => d.Id!);
@@ -100,26 +111,9 @@ public class ShellDescriptorService(
             await CreateOrUpdateShellDescriptorsAsync(existingDescriptorsMap!, pluginMetadata.ShellDescriptors, cancellationToken).ConfigureAwait(false);
             await DeleteMissingShellDescriptorsAsync(existingDescriptors, pluginMetadataMap!, cancellationToken).ConfigureAwait(false);
         }
-        catch (ResourceNotFoundException ex)
-        {
-            throw new ShellDescriptorNotFoundException(ex);
-        }
-        catch (ResponseParsingException ex)
-        {
-            throw new InternalDataProcessingException(ex);
-        }
-        catch (RequestTimeoutException ex)
-        {
-            throw new RegistryNotAvailableException(ex);
-        }
-        catch (PluginMetaDataInvalidRequestException ex)
-        {
-            throw new InvalidUserInputException(ex);
-        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error during ShellDescriptor synchronization.");
-            throw new InternalDataProcessingException();
         }
     }
 
@@ -144,22 +138,10 @@ public class ShellDescriptorService(
                     await aasRegistryProvider.CreateAsync(newDescriptor, cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch (ResourceNotFoundException ex)
-            {
-                throw new ShellDescriptorNotFoundException(ex);
-            }
-            catch (ResponseParsingException ex)
-            {
-                throw new InternalDataProcessingException(ex);
-            }
-            catch (RequestTimeoutException ex)
-            {
-                throw new RegistryNotAvailableException(ex);
-            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unhandled error while processing descriptor with ID '{Id}'", metadata.Id);
-                throw new InternalDataProcessingException(ex);
+                continue;
             }
         }
     }
@@ -184,14 +166,10 @@ public class ShellDescriptorService(
             {
                 await aasRegistryProvider.DeleteByIdAsync(descriptorId!, cancellationToken).ConfigureAwait(false);
             }
-            catch (RequestTimeoutException ex)
-            {
-                throw new ShellDescriptorNotFoundException(ex);
-            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error while deleting descriptor with ID '{Id}'", descriptorId);
-                throw new InternalDataProcessingException(ex);
+                continue;
             }
         }
     }
