@@ -59,8 +59,8 @@ services:
       - Semantics__SubmodelElementIndexContextPrefix=_aastwinengineindex_
       - Semantics__InternalSemanticId=InternalSemanticId
       - AasxOptions__RootFolder=aasx
-      - AasRegistryTimeTrigger__ShellDescriptorCron=0 */3 * * * *
-      - AasRegistryTimeTrigger__IsPreComputed=false
+      - AasRegistryPreComputed__ShellDescriptorCron=0 */3 * * * *
+      - AasRegistryPreComputed__IsPreComputed=false
       - MultiPluginConflictOption__HandlingMode=TakeFirst
       - PluginConfig__Plugins__0__PluginName=Plugin
       - PluginConfig__Plugins__0__PluginUrl=http://twinengine-plugin:8080

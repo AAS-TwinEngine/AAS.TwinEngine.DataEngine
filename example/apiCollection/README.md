@@ -6,13 +6,13 @@ This directory contains the Bruno collection and instructions to test the **AAS.
 
 ---
 
-## 🔍 Quick Summary
+## Quick Summary
 
 | Item                     | Description                                         |
 |--------------------------|-----------------------------------------------------|
 | **API**                  | `AAS.TwinEngine.DataEngine` (.NET)                  |
 | **Testing Tool**         | [Bruno](https://www.usebruno.com/downloads)         |
-| **Default API URL**      | `https://localhost:5059`                            |
+| **Default API URL**      | `http://localhost:8080`                            |
 | **SDK Required**         | .NET 8 (recommended)                                |
 | **Run docker compose file**           |  Run `docker-compose-up` [form AasTwin.DataEngine](../README.md)                |
 
@@ -41,24 +41,12 @@ This directory contains the Bruno collection and instructions to test the **AAS.
 Before starting , run twinengine environmnet with dpp-plugin.
 [click here for getting starated with docker-compose](../README.md)
 
-### 2. Start the DataEngine .NET API
-
-Run the API:
-
-```bash
-cd source\AAS.TwinEngine.DataEngine
-dotnet run
-```
-
-By default the API listens at `https://localhost:5059` unless overridden by environment settings or `launchSettings.json`.
-
----
 
 ## Bruno Collection — Quick Start
 
 1. Open Bruno
 2. `Collection -> Open Collection` and choose the Bruno collection folder (`apiCollection`) from the AasTwin.DataEngine repository
-3. From the top-right environment dropdown select an environment: `Local` or `Dev` (use `Local` for local testing)
+3. From the top-right environment dropdown select an environment: `local`
 4. Expand folders to find requests, select a request and click **Send**
 5. Inspect the request/response in the right panel
 
@@ -163,7 +151,7 @@ The collection includes a set of environment/collection variables you can edit t
 
 ## Troubleshooting
 
-#### ❌ Bruno shows `SSL/TLS handshake failed`
+#### Bruno shows `SSL/TLS handshake failed`
 
 - Run `dotnet dev-certs https --trust`
 - Ensure plugin and API endpoints match port and schema (`https://`)

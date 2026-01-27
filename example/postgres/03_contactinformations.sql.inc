@@ -116,7 +116,7 @@ INSERT INTO "ContactInformation" (
   "FurtherDetailsOfContact_en","FurtherDetailsOfContact_de"
 ) VALUES
 (0,'0173-1#07-AAS927#001','EN','Z+05:30','https://www.mm-software.com/','IN','IN','Mumbai','München',
- 'M&M Software mainment Center India','M&M Software mainment Center India','Human Resources','Human Resources',
+ 'M&M India','M&M India','Human Resources','Human Resources',
  '221B Baker Street','221B Baker Street','110001','110001','PO Box 123','PO Box 124','110002','110002',
  'Delhi','Delhi','Aarav Sharma','Aarav Sharma','Aarav','Aarav','Sharma','Sharma','Mr.','Herr','Dr.','Dr.',
  'Responsible for B2B sales in region-1','Responsible for B2B sales in region-1'),
@@ -125,7 +125,7 @@ INSERT INTO "ContactInformation" (
  '10116','10116','Berlin','Berlin','Lukas Mueller','Lukas Müller','Lukas','Lukas','Müller','Mueller','Mr.','Herr','Dr.','Dr.',
  'Responsible for B2B sales in region-2','Responsible for B2B sales in region-2'),
 (0,'0173-1#07-AAS931#001','EN','Z+05:30','https://www.mm-software.com/more-the-newsroom/detail/mm-software-auf-der-sps-2025/','IN','IN','Mumbai','München',
- 'M&M Software mainment Center India','M&M Software mainment Center India','Operations','Operations',
+ 'M&M India','M&M India','Operations','Operations',
  '221B Baker Street','221B Baker Street','110001','110001','PO Box 123','PO Box 124','110002','110002','Delhi','Delhi',
  'Priya Mehta','Priya Mehta','Priya','Priya','Mehta','Mehta','Ms','Frau','Prof.','Prof.','Responsible for B2B sales in region-3','Responsible for B2B sales in region-3'),
 (1,'0173-1#07-AAS930#001','DE','Z+01:00','https://www.mm-software.com/more-the-newsroom/detail/entscheide-dich-teil-2/','DE','DE','Berlin','Berlin',

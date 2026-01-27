@@ -816,6 +816,16 @@
                               <aas:value>Operation@en</aas:value>
                             </aas:qualifier>
                           </aas:qualifiers>
+                          <aas:value>
+                            <aas:langStringTextType>
+                              <aas:language>en</aas:language>
+                              <aas:text></aas:text>
+                            </aas:langStringTextType>
+                            <aas:langStringTextType>
+                              <aas:language>de</aas:language>
+                              <aas:text></aas:text>
+                            </aas:langStringTextType>
+                          </aas:value>
                         </aas:multiLanguageProperty>
                       </aas:value>
                     </aas:submodelElementCollection>
@@ -996,6 +1006,7 @@
                           <aas:valueTypeListElement>xs:string</aas:valueTypeListElement>
                           <aas:value>
                             <aas:property>
+                              <aas:idShort> language</aas:idShort>
                               <aas:displayName>
                                 <aas:langStringNameType>
                                   <aas:language>en</aas:language>
@@ -1011,7 +1022,7 @@
                                 <aas:keys>
                                   <aas:key>
                                     <aas:type>GlobalReference</aas:type>
-                                    <aas:value>0173-1#02-AAN468#008</aas:value>
+                                    <aas:value>0173-1#02-AAN468#009</aas:value>
                                   </aas:key>
                                 </aas:keys>
                               </aas:semanticId>
@@ -1286,7 +1297,7 @@
                                 <aas:keys>
                                   <aas:key>
                                     <aas:type>GlobalReference</aas:type>
-                                    <aas:value>0173-1#02-ABK126#002</aas:value>
+                                    <aas:value>0173-1#02-ABK126#003</aas:value>
                                   </aas:key>
                                 </aas:keys>
                               </aas:semanticId>
@@ -1730,6 +1741,16 @@
                               <aas:value>Examplary title@en</aas:value>
                             </aas:qualifier>
                           </aas:qualifiers>
+                          <aas:value>
+                            <aas:langStringTextType>
+                              <aas:language>en</aas:language>
+                              <aas:text></aas:text>
+                            </aas:langStringTextType>
+                            <aas:langStringTextType>
+                              <aas:language>de</aas:language>
+                              <aas:text></aas:text>
+                            </aas:langStringTextType>
+                          </aas:value>
                         </aas:multiLanguageProperty>
                         <aas:multiLanguageProperty>
                           <aas:category>PARAMETER</aas:category>
@@ -1796,6 +1817,16 @@
                               <aas:value>Examplary subtitle@en</aas:value>
                             </aas:qualifier>
                           </aas:qualifiers>
+                          <aas:value>
+                            <aas:langStringTextType>
+                              <aas:language>en</aas:language>
+                              <aas:text>s</aas:text>
+                            </aas:langStringTextType>
+                            <aas:langStringTextType>
+                              <aas:language>de</aas:language>
+                              <aas:text>s</aas:text>
+                            </aas:langStringTextType>
+                          </aas:value>
                         </aas:multiLanguageProperty>
                         <aas:multiLanguageProperty>
                           <aas:category>PARAMETER</aas:category>
@@ -1862,6 +1893,16 @@
                               <aas:value>Abstract@en</aas:value>
                             </aas:qualifier>
                           </aas:qualifiers>
+                          <aas:value>
+                            <aas:langStringTextType>
+                              <aas:language>en</aas:language>
+                              <aas:text>s</aas:text>
+                            </aas:langStringTextType>
+                            <aas:langStringTextType>
+                              <aas:language>de</aas:language>
+                              <aas:text>s</aas:text>
+                            </aas:langStringTextType>
+                          </aas:value>
                         </aas:multiLanguageProperty>
                         <aas:multiLanguageProperty>
                           <aas:category>PARAMETER</aas:category>
@@ -1928,6 +1969,16 @@
                               <aas:value>Examplary keywords@en</aas:value>
                             </aas:qualifier>
                           </aas:qualifiers>
+                          <aas:value>
+                            <aas:langStringTextType>
+                              <aas:language>en</aas:language>
+                              <aas:text>s</aas:text>
+                            </aas:langStringTextType>
+                            <aas:langStringTextType>
+                              <aas:language>de</aas:language>
+                              <aas:text>s</aas:text>
+                            </aas:langStringTextType>
+                          </aas:value>
                         </aas:multiLanguageProperty>
                         <aas:file>
                           <aas:category>PARAMETER</aas:category>
@@ -2450,84 +2501,6 @@
                   <aas:text>Identifikation des Klassifikationssystems </aas:text>
                 </aas:langStringDefinitionTypeIec61360>
               </aas:definition>
-            </aas:dataSpecificationIec61360>
-          </aas:dataSpecificationContent>
-        </aas:embeddedDataSpecification>
-      </aas:embeddedDataSpecifications>
-    </aas:conceptDescription>
-    <aas:conceptDescription>
-      <aas:idShort>Language</aas:idShort>
-      <aas:displayName>
-        <aas:langStringNameType>
-          <aas:language>en</aas:language>
-          <aas:text>Language</aas:text>
-        </aas:langStringNameType>
-        <aas:langStringNameType>
-          <aas:language>de</aas:language>
-          <aas:text>Sprache</aas:text>
-        </aas:langStringNameType>
-      </aas:displayName>
-      <aas:id>0173-1#02-AAN468#008</aas:id>
-      <aas:embeddedDataSpecifications>
-        <aas:embeddedDataSpecification>
-          <aas:dataSpecification>
-            <aas:type>ExternalReference</aas:type>
-            <aas:keys>
-              <aas:key>
-                <aas:type>GlobalReference</aas:type>
-                <aas:value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</aas:value>
-              </aas:key>
-            </aas:keys>
-          </aas:dataSpecification>
-          <aas:dataSpecificationContent>
-            <aas:dataSpecificationIec61360>
-              <aas:preferredName>
-                <aas:langStringPreferredNameTypeIec61360>
-                  <aas:language>en</aas:language>
-                  <aas:text>Language of document</aas:text>
-                </aas:langStringPreferredNameTypeIec61360>
-                <aas:langStringPreferredNameTypeIec61360>
-                  <aas:language>de</aas:language>
-                  <aas:text>Sprache des Dokuments</aas:text>
-                </aas:langStringPreferredNameTypeIec61360>
-              </aas:preferredName>
-              <aas:shortName>
-                <aas:langStringShortNameTypeIec61360>
-                  <aas:language>en</aas:language>
-                  <aas:text>DocLang</aas:text>
-                </aas:langStringShortNameTypeIec61360>
-                <aas:langStringShortNameTypeIec61360>
-                  <aas:language>de</aas:language>
-                  <aas:text>DokSprache</aas:text>
-                </aas:langStringShortNameTypeIec61360>
-              </aas:shortName>
-              <aas:dataType>STRING</aas:dataType>
-              <aas:definition>
-                <aas:langStringDefinitionTypeIec61360>
-                  <aas:language>en</aas:language>
-                  <aas:text>Language style of the document</aas:text>
-                </aas:langStringDefinitionTypeIec61360>
-                <aas:langStringDefinitionTypeIec61360>
-                  <aas:language>de</aas:language>
-                  <aas:text>Sprachstil des Dokuments</aas:text>
-                </aas:langStringDefinitionTypeIec61360>
-              </aas:definition>
-              <aas:valueList>
-                <aas:valueReferencePairs>
-                  <aas:valueReferencePair>
-                    <aas:value>en</aas:value>
-                    <aas:valueId>
-                      <aas:type>ExternalReference</aas:type>
-                      <aas:keys>
-                        <aas:key>
-                          <aas:type>GlobalReference</aas:type>
-                          <aas:value>0173-1#02-AAN468#008</aas:value>
-                        </aas:key>
-                      </aas:keys>
-                    </aas:valueId>
-                  </aas:valueReferencePair>
-                </aas:valueReferencePairs>
-              </aas:valueList>
             </aas:dataSpecificationIec61360>
           </aas:dataSpecificationContent>
         </aas:embeddedDataSpecification>

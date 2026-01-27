@@ -62,15 +62,15 @@ CREATE TABLE "ProductOrSectorSpecificCarbonFootprint" (
 
 INSERT INTO "Marking" ("Index","MarkingName","DesignationOfCertificateOrApproval","IssueDate","ExpiryDate","MarkingAdditionalText","MarkingFile") VALUES
 (0,'0173-1#07-DAA603#004','KEMA99IECEX1105/128','2022-01-01','2030-01-01','additional information on the marking - 00',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
+ 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
 (0,'0173-1#07-DAA603#005','KEMA99IECEX1105/129','2022-02-01','2030-02-01','additional information on the marking - 01',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
+ 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
 (1,'0173-1#07-DAA603#006','KEMA99IECEX1105/130','2022-03-01','2030-03-01','additional information on the marking - 02',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
+ 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
 (0,'0173-1#07-DAA603#007','KEMA99IECEX1105/131','2022-04-01','2030-04-01','additional information on the marking - 03',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png'),
+ 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
 (1,'0173-1#07-DAA603#008','KEMA99IECEX1105/132','2022-05-01','2030-05-01','additional information on the marking - 04',
- 'https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/main/example/data/checkmark.png');
+ 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png');
 
 -- ============================================================
 -- Asset-Marking Relationships

@@ -4,13 +4,13 @@ networks:
 
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:trixie-perl
     container_name: nginx
     ports:
       - "8080:80"
     volumes:
-      - ./example/nginx/html:/usr/share/nginx/html
-      - ./example/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template
     restart: always
     depends_on:
       aas-template-registry:
@@ -23,12 +23,10 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:latest
-    ports:
-    - '8085:8080'
+    image: ghcr.io/aas-twinengine/dataengine:v1.0.0
     container_name: twinengine-dataengine
     depends_on:
-      plugin:
+      dpp-plugin:
         condition: service_started
     restart: always
     environment:
@@ -61,19 +59,17 @@ services:
       - Semantics__SubmodelElementIndexContextPrefix=_aastwinengineindex_
       - Semantics__InternalSemanticId=InternalSemanticId
       - AasxOptions__RootFolder=aasx
-      - AasRegistryTimeTrigger__ShellDescriptorCron=0 */3 * * * *
-      - AasRegistryTimeTrigger__IsPreComputed=false
+      - AasRegistryPreComputed__ShellDescriptorCron=0 */3 * * * *
+      - AasRegistryPreComputed__IsPreComputed=false
       - MultiPluginConflictOption__HandlingMode=TakeFirst
       - PluginConfig__Plugins__0__PluginName=Plugin1
-      - PluginConfig__Plugins__0__PluginUrl=http://plugin:8080
+      - PluginConfig__Plugins__0__PluginUrl=http://dpp-plugin:8080
     networks:
       - twinengine-network
 
-  plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:latest
-    ports:
-    - '8086:8080'
-    container_name: plugin
+  dpp-plugin:
+    image: ghcr.io/aas-twinengine/plugindpp:v1.0.0
+    container_name: dpp-plugin
     depends_on:
       postgres:
         condition: service_healthy
@@ -107,11 +103,9 @@ services:
   template-repository:
     image: eclipsebasyx/aas-environment:2.0.0-SNAPSHOT
     container_name: template-repository
-    ports:
-      - "8081:8081"
     volumes:
-      - ./example/aas:/application/aas
-      - ./example/basyx/aas-env.properties:/application/application.properties
+      - ./aas:/application/aas
+      - ./basyx/aas-env.properties:/application/application.properties
     environment:
       BASYX_EXTERNALURL : http://localhost:8080
     restart: always
@@ -126,8 +120,6 @@ services:
   aas-template-registry:
     image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT
     container_name: aas-template-registry
-    ports:
-      - '8082:8080'
     restart: always
     depends_on:
       - mongo
@@ -139,8 +131,6 @@ services:
   sm-template-registry:
     image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT
     container_name: sm-template-registry
-    ports:
-      - '8083:8080'
     depends_on:
       - mongo
     environment:
@@ -149,7 +139,7 @@ services:
       - twinengine-network
 
   shell-template-creator:
-    image: curlimages/curl:latest
+    image: curlimages/curl:8.18.0
     container_name: shell-template-creator
     depends_on:
       template-repository:
@@ -171,7 +161,7 @@ services:
     image: eclipsebasyx/aas-gui:SNAPSHOT
     container_name: aas-ui
     volumes:
-      - ./example/logo:/usr/src/app/dist/Logo
+      - ./logo:/usr/src/app/dist/Logo
     environment:
       AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
       SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
@@ -192,8 +182,6 @@ services:
   mongo:
     image: mongo:6.0
     container_name: mongo
-    ports:
-      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongoAdmin
       MONGO_INITDB_ROOT_PASSWORD: mongoPassword
@@ -203,19 +191,32 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: postgres
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: twinengine
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
     volumes:
-      - ./example/postgres:/docker-entrypoint-initdb.d
+      - ./postgres:/docker-entrypoint-initdb.d
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d twinengine"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - twinengine-network
+
+  pgadmin:
+    image: dpage/pgadmin4:snapshot
+    container_name: pgadmin
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
     networks:
       - twinengine-network

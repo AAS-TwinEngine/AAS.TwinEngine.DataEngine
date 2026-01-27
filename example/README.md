@@ -1,12 +1,12 @@
 # TwinEngine Demonstrator Setup
 
-## 📋 Overview
+## Overview
 
 This folder provides a complete, containerized setup to demonstrate how **TwinEngine.DataEngine** can be integrated and run locally. It creates a fully functional environment for managing Asset Administration Shells (AAS), submodels, and related digital asset components using Docker Compose.
 
 The setup includes a complete tech stack with services for AAS registry, repository, submodel management, data persistence, UI access, and a plugin system—all orchestrated through Docker containers on a shared network.
 
-## ✨ Included Submodel Templates
+## Included Submodel Templates
 
 This example includes 5 standardized submodel templates from the **Digital Product Passport for Industry 4.0**:
 
@@ -16,7 +16,7 @@ This example includes 5 standardized submodel templates from the **Digital Produ
 - **CarbonFootprint** 
 - **HandoverDocumentation** 
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -26,13 +26,7 @@ Before running the demonstrator, ensure you have installed:
 - **Docker Compose** (v1.29+) — Usually included with Docker Desktop
 - **Available Ports** — The following ports must be available on your machine:
   - `8080` — Main API Gateway (nginx)
-  - `8081` — AAS Environment Repository
-  - `8082` — AAS Registry
-  - `8083` — Submodel Registry
-  - `8085` — TwinEngine DataEngine
-  - `8086` — Plugin DPP
-  - `5432` — PostgreSQL Database
-  - `27017` — MongoDB Database
+  - `8081` - PGAdmin 
 
 ### Running the Setup
 
@@ -41,6 +35,11 @@ Before running the demonstrator, ensure you have installed:
    git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine.git
    cd AAS.TwinEngine.DataEngine
    ```
+2. **Go Inside example Folder**
+
+```bash
+cd AAS.TwinEngine.DataEngine\example
+```
 
 2. **Start all services:**
    ```bash
@@ -58,30 +57,65 @@ Before running the demonstrator, ensure you have installed:
    docker-compose down
    ```
 
-## 🏗️ Architecture & Services
+## Architecture & Services
 
 The docker-compose setup includes the following services, all running on a shared `twinengine-network`:
 
 ### Core Services
 
 | Service | Port | Image | Purpose |
-|---------|------|-------|---------|
-| **nginx** | 8080 | `nginx:latest` | API Gateway & Web UI proxy |
-| **twinengine-dataengine** | 8085 | `ghcr.io/aas-twinengine/dataengine:latest` | Main TwinEngine DataEngine service |
-| **template-repository** | 8081 | `eclipsebasyx/aas-environment:2.0.0-SNAPSHOT` | AAS Environment & Submodel repository |
-| **aas-template-registry** | 8082 | `eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT` | AAS Shell Descriptor Registry |
-| **sm-template-registry** | 8083 | `eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT` | Submodel Descriptor Registry |
-| **plugin** | 8086 | `ghcr.io/aas-twinengine/plugindpp:latest` | Digital Product Passport Plugin |
+|---------|------|-------|----------|
+| **nginx** | 8080 | `nginx:trixie-perl` | API Gateway & Web UI proxy |
+| **twinengine-dataengine** | - | `ghcr.io/aas-twinengine/dataengine:1.0.0` | Main TwinEngine DataEngine service |
+| **template-repository** | - | `eclipsebasyx/aas-environment:2.0.0-SNAPSHOT` | AAS Environment & Submodel repository |
+| **aas-template-registry** | - | `eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT` | AAS Shell Descriptor Registry |
+| **sm-template-registry** | - | `eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT` | Submodel Descriptor Registry |
+| **dpp-plugin** | - | `ghcr.io/aas-twinengine/plugindpp:1.0.0` | Digital Product Passport Plugin |
 | **aas-web-ui** | — | `eclipsebasyx/aas-gui:SNAPSHOT` | Web User Interface (served via nginx) |
 
 ### Infrastructure Services
 
 | Service | Port | Image | Purpose |
-|---------|------|-------|---------|
-| **postgres** | 5432 | `postgres:16-alpine` | Relational database for plugin data |
-| **mongo** | 27017 | `mongo:6.0` | NoSQL database for registry metadata |
+|---------|------|-------|----------|
+| **postgres** | - | `postgres:16-alpine` | Relational database for plugin data |
+| **pgadmin** | 8081 | `dpage/pgadmin4:snapshot` | Web UI for managing PostgreSQL database |
+| **mongo** | - | `mongo:6.0` | NoSQL database for registry metadata |
 
-## Configuration
+## Creating/Changing Your AAS-Data
+
+### Using PGAdmin
+
+PGAdmin provides a web-based interface to manage the PostgreSQL database without writing SQL queries.
+
+**Access PGAdmin:**
+1. Navigate to `http://localhost:8081`
+2. Login with:
+   - **Email:** admin@example.com
+   - **Password:** admin
+
+**Connect to PostgreSQL Server:**
+1. In PGAdmin, click **"Add New Server"**
+2. Fill in the connection details:
+   - **Name:** twinengine
+   - **Host name:** postgres
+   - **Port:** 5432
+   - **Username:** postgres
+   - **Password:** admin
+   - **Database:** twinengine
+3. Click **"Save"**
+
+**Browse and Modify Data:**
+- In the left sidebar, navigate to: **Servers → twinengine → Databases → twinengine → Schemas → public → Tables**
+- Right-click any table and select **"View/Edit Data"** to manage records
+- Create new records or modify existing ones directly through the UI
+
+**How changes affect the Plugin:**
+- Updates to application data (e.g., shell records, submodels, submodel element values) are reflected in what the Plugin serves.
+- Submodel and shell templates are managed by BaSyx services and are not modified via PostgreSQL.
+
+--
+
+## Additional Notes
 
 ### PostgreSQL Database (Plugin)
 
@@ -100,9 +134,24 @@ To use your own database instead:
 **Database Initialization:**  
 The initial database script is located in `postgres/init.sql`. Modify this file as needed for your requirements.
 
+**Security and Production Notice**
+
+Change all default passwords before any use beyond local development. Default credentials (postgres: admin) are for **development** only.
+
+In production, hosting and managing the PostgreSQL database is the customer's responsibility, not the DataEngine's. Use a managed or self-hosted, production-grade PostgreSQL instance and configure the plugin connection string accordingly.
+
+
 ### Port Changes
 
 Modify port mappings in `docker-compose.yml`. Update corresponding environment variables in affected services.
+
+### Security Note
+
+**Change default passwords before any use beyond local development.** Default credentials (postgres: admin) are for development only.
+
+In production: use a secure API gateway (Azure API Management, AWS API Gateway, Kong), and manage database security (encryption, access control, backups) is a customer responsibility.
+*Do not use this Docker Compose configuration in production.*
+---
 
 ## Troubleshooting
 
@@ -114,12 +163,10 @@ Modify port mappings in `docker-compose.yml`. Update corresponding environment v
 
 **Database errors:** Check `docker-compose ps` for health status. Verify connection strings match credentials.
 
-## Security Note
+**PGAdmin not accessible:** Verify the postgres service is healthy with `docker-compose ps`. Check port mappings are correctly configured.
 
-⚠️ **Change default passwords before production.** Default credentials (postgres: admin) are for development only.
 
-## 📚 Additional Resources
 
-- [TwinEngine Documentation](https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine)
-- [DPP-Plugin Documentation](https://github.com/AAS-TwinEngine/AAS.TwinEngine.Plugin.DPP)
+## Additional Resources
 
+- [TwinEngine Documentation](https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/wiki)
