@@ -70,7 +70,7 @@ The docker-compose setup includes the following services, all running on a share
 | **template-repository** | - | `eclipsebasyx/aas-environment:2.0.0-SNAPSHOT` | AAS Environment & Submodel repository |
 | **aas-template-registry** | - | `eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT` | AAS Shell Descriptor Registry |
 | **sm-template-registry** | - | `eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT` | Submodel Descriptor Registry |
-| **plugin** | - | `ghcr.io/aas-twinengine/plugindpp:1.0.0` | Digital Product Passport Plugin |
+| **dpp-plugin** | - | `ghcr.io/aas-twinengine/plugindpp:1.0.0` | Digital Product Passport Plugin |
 | **aas-web-ui** | — | `eclipsebasyx/aas-gui:SNAPSHOT` | Web User Interface (served via nginx) |
 
 ### Infrastructure Services
