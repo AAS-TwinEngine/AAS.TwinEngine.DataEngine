@@ -71,7 +71,7 @@ public class MetaDataProvider : IMetaDataProvider
             });
         }
 
-        _logger.LogWarning("Invalid cursor provided: {Cursor}", cursor);
+        _logger.LogWarning("Invalid cursor provided.");
         throw new NotFoundException(ExceptionMessages.ShellDescriptorDataNotFound);
     }
 
