@@ -92,3 +92,34 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+
+      # Extract the pure application SBOM from the artifact stage, we want to handle it separately from the container SBOM
+      # This automaticaly re-uses the previously generated stage from cache, so we get the exact sbom from previous build step
+      - name: Export Application SBOM from artifact stage
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: ${{ env.BUILD_CONTEXT }}
+          file: ${{ env.DOCKERFILE_PATH }}
+          target: app-sbom-artifact
+          push: false
+          outputs: type=local,dest=sbom-output
+
+      # Generate container SBOM. 
+      - name: Run Trivy in GitHub SBOM mode to generate CycloneDX SBOM for container
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
+        with:
+          scan-type: 'image'
+          format: 'cyclonedx'
+          output: 'sbom-output/sbom_container.cyclonedx.json'
+          image-ref: ${{ steps.meta.outputs.tags }}
+          skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a seperate SBOM for easier vulnerability management and because trivy misses important fields
+          
+      - name: Upload trivy/container AND application SBOMs as a Github artifact
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sbom
+          path: '${{ github.workspace }}/sbom-output/'

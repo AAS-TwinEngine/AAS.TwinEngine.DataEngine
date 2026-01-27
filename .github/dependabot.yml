@@ -8,6 +8,13 @@ updates:
   - package-ecosystem: "nuget"
     target-branch: "develop"
     directory: "/source"
+    groups:
+      major-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
     schedule:
       interval: "weekly"
     cooldown:
@@ -16,12 +23,26 @@ updates:
   - package-ecosystem: "docker"
     target-branch: "develop"
     directory: "/source/AAS.TwinEngine.DataEngine"
+    groups:
+      major-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
     schedule:
       interval: "daily"
 
   - package-ecosystem: "github-actions"
     target-branch: "develop"
     directory: "/"
+    groups:
+      major-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
     schedule:
       interval: "weekly"
     cooldown:
