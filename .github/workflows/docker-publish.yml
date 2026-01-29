@@ -93,7 +93,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-
       # Extract the pure application SBOM from the artifact stage, we want to handle it separately from the container SBOM
       # This automaticaly re-uses the previously generated stage from cache, so we get the exact sbom from previous build step
       - name: Export Application SBOM from artifact stage
