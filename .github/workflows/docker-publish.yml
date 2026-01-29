@@ -121,7 +121,7 @@ jobs:
           format: 'cyclonedx'
           output: 'sbom-output/sbom_container.cyclonedx.json'
           image-ref: ${{ steps.first-tag.outputs.value }}
-          skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a seperate SBOM for easier vulnerability management and because trivy misses important fields
+          skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a separate SBOM for easier vulnerability management and because trivy misses important fields
           
       - name: Upload trivy/container AND application SBOMs as a Github artifact
         if: ${{ github.event_name != 'pull_request' }}
