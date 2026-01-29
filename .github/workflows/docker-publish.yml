@@ -71,11 +71,11 @@ jobs:
             latest=false
           tags: |
             type=semver,pattern={{raw}}
-            type=raw,value=develop-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/develop')}}
-            type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/release/')}}
-            type=raw,value={{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/hotfix/')}}
+            type=raw,value=develop-{{sha}},enable=${{startsWith(github.ref,'refs/heads/develop')}},priority=201
+            type=raw,value=develop,enable=${{startsWith(github.ref,'refs/heads/develop')}}
+            type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref,'refs/heads/release/')}}
+            type=raw,value={{branch}}-{{sha}},enable=${{startsWith(github.ref,'refs/heads/') && !startsWith(github.ref,'refs/heads/develop') && !startsWith(github.ref,'refs/heads/release/')}}
             type=ref,event=pr
-            type=raw,value=manual-{{branch}}-{{sha}},enable=${{github.event_name == 'workflow_dispatch'}}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -106,6 +106,12 @@ jobs:
           push: false
           outputs: type=local,dest=sbom-output
 
+      # Extract the first tag from the list for Trivy scanning
+      - name: Get first image tag
+        if: ${{ github.event_name != 'pull_request' }}
+        id: first-tag
+        run: echo "value=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)" >> $GITHUB_OUTPUT
+
       # Generate container SBOM. 
       - name: Run Trivy in GitHub SBOM mode to generate CycloneDX SBOM for container
         if: ${{ github.event_name != 'pull_request' }}
@@ -114,7 +120,7 @@ jobs:
           scan-type: 'image'
           format: 'cyclonedx'
           output: 'sbom-output/sbom_container.cyclonedx.json'
-          image-ref: ${{ steps.meta.outputs.tags }}
+          image-ref: ${{ steps.first-tag.outputs.value }}
           skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a seperate SBOM for easier vulnerability management and because trivy misses important fields
           
       - name: Upload trivy/container AND application SBOMs as a Github artifact
