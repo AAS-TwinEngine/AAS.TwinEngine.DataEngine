@@ -16,7 +16,8 @@ public static class JsonSerializationOptions
     public static readonly JsonSerializerOptions Serialization = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     public static readonly JsonSerializerOptions SerializationWithEnum = new()
@@ -29,11 +30,5 @@ public static class JsonSerializationOptions
     public static readonly JsonSerializerOptions DeserializationOption = new()
     {
         PropertyNameCaseInsensitive = true
-    };
-
-    public static readonly JsonSerializerOptions SerializationIgnoreNulls = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 }

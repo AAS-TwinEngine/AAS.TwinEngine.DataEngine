@@ -113,7 +113,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
     {
         var client = clientFactory.CreateClient(HttpClientName);
 
-        var json = JsonSerializer.Serialize(data, JsonSerializationOptions.SerializationIgnoreNulls);
+        var json = JsonSerializer.Serialize(data, JsonSerializationOptions.Serialization);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         logger.LogInformation("Sending HTTP {Method} request to {Url}", method, url);
