@@ -30,4 +30,10 @@ public static class JsonSerializationOptions
     {
         PropertyNameCaseInsensitive = true
     };
+
+    public static readonly JsonSerializerOptions SerializationIgnoreNulls = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 }

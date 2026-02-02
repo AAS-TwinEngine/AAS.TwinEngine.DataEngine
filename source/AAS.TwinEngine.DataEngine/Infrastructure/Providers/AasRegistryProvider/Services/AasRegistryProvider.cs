@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
@@ -114,7 +113,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
     {
         var client = clientFactory.CreateClient(HttpClientName);
 
-        var json = JsonSerializer.Serialize(data, JsonOptions);
+        var json = JsonSerializer.Serialize(data, JsonSerializationOptions.SerializationIgnoreNulls);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         logger.LogInformation("Sending HTTP {Method} request to {Url}", method, url);
@@ -128,12 +127,6 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
 
         await HandleResponseAsync(response, $"{method} ShellDescriptor", url, cancellationToken).ConfigureAwait(false);
     }
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
 
     private async Task HandleResponseAsync(HttpResponseMessage response, string action, string url, CancellationToken cancellationToken)
     {
