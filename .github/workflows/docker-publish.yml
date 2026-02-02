@@ -71,6 +71,7 @@ jobs:
             latest=false
           tags: |
             type=semver,pattern={{raw}}
+            # Priority is set to ensure the develop-{{sha}} tag is preferred over other tags for the develop branch
             type=raw,value=develop-{{sha}},enable=${{startsWith(github.ref,'refs/heads/develop')}},priority=201
             type=raw,value=develop,enable=${{startsWith(github.ref,'refs/heads/develop')}}
             type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref,'refs/heads/release/')}}
