@@ -75,6 +75,7 @@ jobs:
             type=raw,value=develop-{{sha}},enable=${{startsWith(github.ref,'refs/heads/develop')}},priority=201
             type=raw,value=develop,enable=${{startsWith(github.ref,'refs/heads/develop')}}
             type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref,'refs/heads/release/')}}
+            # The following tag is only applied to regular branches except 'develop' and 'release/*' (i.e., not for tags or PRs)
             type=raw,value={{branch}}-{{sha}},enable=${{startsWith(github.ref,'refs/heads/') && !startsWith(github.ref,'refs/heads/develop') && !startsWith(github.ref,'refs/heads/release/')}}
             type=ref,event=pr
 
