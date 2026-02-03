@@ -112,12 +112,17 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
     private async Task SendRequestWithBodyAsync(HttpMethod method, string url, ShellDescriptor data, CancellationToken cancellationToken)
     {
         var client = clientFactory.CreateClient(HttpClientName);
-        var content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
+
+        var json = JsonSerializer.Serialize(data, JsonSerializationOptions.Serialization);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         logger.LogInformation("Sending HTTP {Method} request to {Url}", method, url);
 
-        using var request = new HttpRequestMessage(method, url);
-        request.Content = content;
+        using var request = new HttpRequestMessage(method, url)
+        {
+            Content = content
+        };
+
         var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         await HandleResponseAsync(response, $"{method} ShellDescriptor", url, cancellationToken).ConfigureAwait(false);

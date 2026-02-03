@@ -16,12 +16,11 @@ public static class JsonSerializationOptions
     public static readonly JsonSerializerOptions Serialization = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     public static readonly JsonSerializerOptions SerializationWithEnum = new()
     {
-        WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
