@@ -7,7 +7,7 @@
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
-        "path": "https://cdn.pixabay.com/photo/2023/06/06/16/10/computer-8045026_1280.jpg"
+        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg"
       }
     }
   },
@@ -19,7 +19,7 @@
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
-        "path": "https://cdn.pixabay.com/photo/2023/07/08/07/25/ai-generated-8113887_1280.jpg"
+        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg"
       }
     }
   },
@@ -31,7 +31,7 @@
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
-        "path": "https://images.pexels.com/photos/27934787/pexels-photo-27934787.jpeg"
+        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg"
       }
     }
   }

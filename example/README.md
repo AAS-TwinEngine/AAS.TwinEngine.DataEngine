@@ -33,7 +33,6 @@ Before running the demonstrator, ensure you have installed:
 1. **Clone or extract this repository:**
    ```bash
    git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine.git
-   cd AAS.TwinEngine.DataEngine
    ```
 2. **Go Inside example Folder**
 
