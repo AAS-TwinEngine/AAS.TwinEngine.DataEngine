@@ -38,7 +38,7 @@
           ],
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/": [
             {
-              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "http://example.com/more-info",
+              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
               "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/IPCommunication/TypeOfCommunication": "Chat",
               "https://mm-software.com/IPCommunication/AvailableTime": {
                 "https://mm-software.com/IPCommunication/AvailableTime_de": "8:00 AM to 6:00 PM"
@@ -57,7 +57,7 @@
           "0173-1#02-AAO205#002": {
             "0173-1#02-AAO205#002_en": "John Doe"
           },
-          "https://mm-software.com/AddressOfAdditionalLink": "http://example.com/more-info"
+          "https://mm-software.com/AddressOfAdditionalLink": "https://www.mm-software.com/mobile-arbeitsmaschinen/"
         },
         {
           "0173-1#02-AAO204#003": "Marketing Manager",
@@ -95,7 +95,7 @@
           ],
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/": [
             {
-              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "http://example.com/more-info",
+              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
               "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/IPCommunication/TypeOfCommunication": "Chat",
               "https://mm-software.com/IPCommunication/AvailableTime": {
                 "https://mm-software.com/IPCommunication/AvailableTime_de": "8:00 AM to 6:00 PM"
@@ -114,7 +114,7 @@
           "0173-1#02-AAO205#002": {
             "0173-1#02-AAO205#002_en": "John Doe"
           },
-          "https://mm-software.com/AddressOfAdditionalLink": "http://example.com/more-info"
+          "https://mm-software.com/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/"
         }
       ]
     }
@@ -144,7 +144,7 @@
               "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128",
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
-              "0112/2///61987#ABO100#002": "file",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
               "0112/2///61987#ABB146#007": "0044"
             },
             {
@@ -152,27 +152,27 @@
               "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128-2",
               "0112/2///61987#ABO097#001": "2025-01-01",
               "0112/2///61987#ABH830#002": "2025-01-01",
-              "0112/2///61987#ABO100#002": "file01",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
               "0112/2///61987#ABB146#007": "00100"
             }
           ]
         }
       ],
       "0112/2///61987#ABP462#001": "DE",
-      "0112/2///61987#ABP463#001": "mm-logo",
+      "0112/2///61987#ABP463#001": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/bd4a1fca199e8a7c38fb20d3290f2a374b3d2ab8/example/logo/MM_Logo.svg",
       "0173-1#02-ABI218#003/0173-1#01-AGZ672#004": [
         {
           "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP": {
             "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP_en": "M&MTestsample"
           },
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "sampleFile",
+          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
           "0173-1#02-ABI219#003/0173-1#01-AHD205#004": [
             {
               "0173-1#01-AHD205#004": [
                 {
                   "0173-1#02-AAO856#002": "",
                   "https://admin-shell.io/SMT/General/ArbitraryProp": "",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "TestFile",
+                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
                   "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP": {
                     "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
                   }
@@ -248,7 +248,7 @@
           ],
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/": [
             {
-              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "http://example.com/more-info",
+              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
               "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/IPCommunication/TypeOfCommunication": "Chat",
               "https://mm-software.com/IPCommunication/AvailableTime": {
                 "https://mm-software.com/IPCommunication/AvailableTime_de": "8:00 AM to 6:00 PM"
@@ -267,7 +267,7 @@
           "0173-1#02-AAO205#002": {
             "0173-1#02-AAO205#002_en": "John Doe"
           },
-          "https://mm-software.com/AddressOfAdditionalLink": "http://example.com/more-info"
+          "https://mm-software.com/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/"
         },
         {
           "0173-1#02-AAO204#003": "Assistant Manager",
@@ -296,7 +296,7 @@
           ],
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/": [
             {
-              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "http://example.com/more-info2",
+              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/2",
               "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/IPCommunication/TypeOfCommunication": "Email",
               "https://mm-software.com/IPCommunication/AvailableTime": {
                 "https://mm-software.com/IPCommunication/AvailableTime_de": "9:00 AM to 5:00 PM"
@@ -315,7 +315,7 @@
           "0173-1#02-AAO205#002": {
             "0173-1#02-AAO205#002_en": "Jane Doe"
           },
-          "https://mm-software.com/AddressOfAdditionalLink": "http://example.com/info2"
+          "https://mm-software.com/AddressOfAdditionalLink": "https://www.mm-software.com/"
         }
       ]
     }
@@ -345,27 +345,27 @@
               "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128",
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
-              "0112/2///61987#ABO100#002": "file",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
               "0112/2///61987#ABB146#007": "0044"
             }
           ]
         }
       ],
       "0112/2///61987#ABP462#001": "DE",
-      "0112/2///61987#ABP463#001": "mm-logo",
+      "0112/2///61987#ABP463#001": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/bd4a1fca199e8a7c38fb20d3290f2a374b3d2ab8/example/logo/MM_Logo.svg",
       "0173-1#02-ABI218#003/0173-1#01-AGZ672#004": [
         {
           "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP": {
             "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP_en": "M&MTestsample"
           },
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "sampleFile",
+          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
           "0173-1#02-ABI219#003/0173-1#01-AHD205#004": [
             {
               "0173-1#01-AHD205#004": [
                 {
                   "0173-1#02-AAO856#002": "",
                   "https://admin-shell.io/SMT/General/ArbitraryProp": "",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "TestFile",
+                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
                   "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP": {
                     "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
                   }
@@ -441,7 +441,7 @@
           ],
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/": [
             {
-              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "http://example.com/more-info",
+              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
               "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/IPCommunication/TypeOfCommunication": "Chat",
               "https://mm-software.com/IPCommunication/AvailableTime": {
                 "https://mm-software.com/IPCommunication/AvailableTime_de": "8:00 AM to 6:00 PM"
@@ -460,7 +460,7 @@
           "0173-1#02-AAO205#002": {
             "0173-1#02-AAO205#002_en": "John Doe"
           },
-          "https://mm-software.com/AddressOfAdditionalLink": "http://example.com/more-info"
+          "https://mm-software.com/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/"
         },
         {
           "0173-1#02-AAO204#003": "Manager",
@@ -498,7 +498,7 @@
           ],
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/": [
             {
-              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "http://example.com/more-info",
+              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
               "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/IPCommunication/TypeOfCommunication": "Chat",
               "https://mm-software.com/IPCommunication/AvailableTime": {
                 "https://mm-software.com/IPCommunication/AvailableTime_de": "8:00 AM to 6:00 PM"
@@ -517,7 +517,7 @@
           "0173-1#02-AAO205#002": {
             "0173-1#02-AAO205#002_en": "John Doe"
           },
-          "https://mm-software.com/AddressOfAdditionalLink": "http://example.com/more-info"
+          "https://mm-software.com/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/"
         },
         {
           "0173-1#02-AAO204#003": "Assistant Manager",
@@ -546,7 +546,7 @@
           ],
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/": [
             {
-              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "http://example.com/more-info2",
+              "https://mm-software.com/ipCommunication/AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/2",
               "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/IPCommunication/TypeOfCommunication": "Email",
               "https://mm-software.com/IPCommunication/AvailableTime": {
                 "https://mm-software.com/IPCommunication/AvailableTime_de": "9:00 AM to 5:00 PM"
@@ -565,7 +565,7 @@
           "0173-1#02-AAO205#002": {
             "0173-1#02-AAO205#002_en": "Jane Doe"
           },
-          "https://mm-software.com/AddressOfAdditionalLink": "http://example.com/info2"
+          "https://mm-software.com/AddressOfAdditionalLink": "https://www.mm-software.com/"
         }
       ]
     }
@@ -592,7 +592,7 @@
               "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128",
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
-              "0112/2///61987#ABO100#002": "file",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
               "0112/2///61987#ABB146#007": "0044"
             }
           ]
@@ -603,20 +603,20 @@
       "0112/2///61987#ABP000#002": "2022",
       "0112/2///61987#ABB757#007": "2022-01-01",
       "0112/2///61987#ABP462#001": "DE",
-      "0112/2///61987#ABP463#001": "mm-logo",
+      "0112/2///61987#ABP463#001": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/bd4a1fca199e8a7c38fb20d3290f2a374b3d2ab8/example/logo/MM_Logo.svg",
       "0173-1#02-ABI218#003/0173-1#01-AGZ672#004": [
         {
           "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP": {
             "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
           },
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "sampleFile",
+          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
           "0173-1#02-ABI219#003/0173-1#01-AHD205#004": [
             {
               "0173-1#01-AHD205#004": [
                 {
                   "0173-1#02-AAO856#002": "",
                   "https://admin-shell.io/SMT/General/ArbitraryProp": "",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "TestFile",
+                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
                   "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP": {
                     "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
                   }

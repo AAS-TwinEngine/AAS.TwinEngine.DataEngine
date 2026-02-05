@@ -71,11 +71,13 @@ jobs:
             latest=false
           tags: |
             type=semver,pattern={{raw}}
-            type=raw,value=develop-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/develop')}}
-            type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/release/')}}
-            type=raw,value={{branch}}-{{sha}},enable=${{startsWith(github.ref, 'refs/heads/hotfix/')}}
+            # Priority is set to ensure the develop-{{sha}} tag is preferred over other tags for the develop branch
+            type=raw,value=develop-{{sha}},enable=${{startsWith(github.ref,'refs/heads/develop')}},priority=201
+            type=raw,value=develop,enable=${{startsWith(github.ref,'refs/heads/develop')}}
+            type=raw,value=rc-{{branch}}-{{sha}},enable=${{startsWith(github.ref,'refs/heads/release/')}}
+            # The following tag is only applied to regular branches except 'develop' and 'release/*' (i.e., not for tags or PRs)
+            type=raw,value={{branch}}-{{sha}},enable=${{startsWith(github.ref,'refs/heads/') && !startsWith(github.ref,'refs/heads/develop') && !startsWith(github.ref,'refs/heads/release/')}}
             type=ref,event=pr
-            type=raw,value=manual-{{branch}}-{{sha}},enable=${{github.event_name == 'workflow_dispatch'}}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -93,7 +95,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-
       # Extract the pure application SBOM from the artifact stage, we want to handle it separately from the container SBOM
       # This automaticaly re-uses the previously generated stage from cache, so we get the exact sbom from previous build step
       - name: Export Application SBOM from artifact stage
@@ -106,6 +107,14 @@ jobs:
           push: false
           outputs: type=local,dest=sbom-output
 
+      # Extract the tag with the highest priority from the list for Trivy scanning
+      - name: Get highest priority image tag
+        if: ${{ github.event_name != 'pull_request' }}
+        id: highest-priority-tag
+        run: |
+          # The first tag in the list is the one with the highest priority
+          echo "value=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)" >> $GITHUB_OUTPUT
+
       # Generate container SBOM. 
       - name: Run Trivy in GitHub SBOM mode to generate CycloneDX SBOM for container
         if: ${{ github.event_name != 'pull_request' }}
@@ -114,8 +123,8 @@ jobs:
           scan-type: 'image'
           format: 'cyclonedx'
           output: 'sbom-output/sbom_container.cyclonedx.json'
-          image-ref: ${{ steps.meta.outputs.tags }}
-          skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a seperate SBOM for easier vulnerability management and because trivy misses important fields
+          image-ref: ${{ steps.highest-priority-tag.outputs.value }}
+          skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a separate SBOM for easier vulnerability management and because trivy misses important fields
           
       - name: Upload trivy/container AND application SBOMs as a Github artifact
         if: ${{ github.event_name != 'pull_request' }}
