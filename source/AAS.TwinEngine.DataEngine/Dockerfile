@@ -6,7 +6,7 @@ ENV PATH="$PATH:/root/.dotnet/tools"
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /App
 COPY ["AAS.TwinEngine.DataEngine/", "AAS.TwinEngine.DataEngine/"]
-RUN dotnet restore "AAS.TwinEngine.DataEngine/AAS.TwinEngine.DataEngine.csproj"
+RUN dotnet restore "AAS.TwinEngine.DataEngine/AAS.TwinEngine.DataEngine.csproj" --locked-mode
 RUN dotnet publish "AAS.TwinEngine.DataEngine/AAS.TwinEngine.DataEngine.csproj" -c "$BUILD_CONFIGURATION" -o out
 # Generate Application SBOM at sbom/bom.xml (omitting dev/test dependencies as they do not appear in final build)
 RUN dotnet-CycloneDX "AAS.TwinEngine.DataEngine/AAS.TwinEngine.DataEngine.csproj" -o "sbom/" --exclude-dev --exclude-test-projects --set-nuget-purl --spec-version 1.6  --disable-package-restore
