@@ -9,7 +9,6 @@
 # Public documentation: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review#dependency-review-enforcement
 name: 'Dependency review'
 on:
-  workflow_dispatch:
   pull_request:
     branches:
       - 'main'
