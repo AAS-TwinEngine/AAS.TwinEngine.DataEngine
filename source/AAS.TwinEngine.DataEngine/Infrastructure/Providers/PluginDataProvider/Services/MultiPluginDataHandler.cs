@@ -43,9 +43,7 @@ public class MultiPluginDataHandler(IOptions<Semantics> semantics, ILogger<Multi
 
         var missingSemanticIds = allSemanticNodes
             .Where(node =>
-                (node.Cardinality == Cardinality.ZeroToOne ||
-                 node.Cardinality == Cardinality.One ||
-                 node.Cardinality == Cardinality.ZeroToMany ||
+                (node.Cardinality == Cardinality.One ||
                  node.Cardinality == Cardinality.OneToMany) && !allSupportedSemanticIds.Contains(GetSemanticId(node.SemanticId)))
             .Select(node => node.SemanticId)
             .ToList();
