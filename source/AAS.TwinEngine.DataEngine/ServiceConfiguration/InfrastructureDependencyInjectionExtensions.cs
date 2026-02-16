@@ -35,11 +35,11 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.Configure<AasEnvironmentConfig>(configuration.GetSection(AasEnvironmentConfig.Section));
         _ = services.Configure<AasxExportOptions>(configuration.GetSection(AasxExportOptions.Section));
         _ = services.Configure<PluginConfig>(configuration.GetSection(PluginConfig.Section));
-
+        _ = services.Configure<Semantics>(configuration.GetSection(Semantics.Section));
         var aasEnvironment = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
         var plugins = configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
 
-        _ = services.AddOptions<Semantics>().Bind(configuration.GetSection(Semantics.Section)).ValidateDataAnnotations().ValidateOnStart();
+        
         _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!);
         _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasRegistryHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasRegistryBaseUrl!);
         _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.SubmodelRegistryHttpClientName, HttpRetryPolicyOptions.SubmodelDescriptorProvider, aasEnvironment?.SubModelRegistryBaseUrl!);
