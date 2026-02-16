@@ -86,9 +86,7 @@ public class MultiPluginDataHandlerTests
     }
 
     [Theory]
-    [InlineData(Cardinality.ZeroToOne)]
     [InlineData(Cardinality.One)]
-    [InlineData(Cardinality.ZeroToMany)]
     [InlineData(Cardinality.OneToMany)]
     public void SplitByPluginManifests_ShouldThrow_WhenRequiredSemanticIdNotSupported(Cardinality cardinality)
     {
