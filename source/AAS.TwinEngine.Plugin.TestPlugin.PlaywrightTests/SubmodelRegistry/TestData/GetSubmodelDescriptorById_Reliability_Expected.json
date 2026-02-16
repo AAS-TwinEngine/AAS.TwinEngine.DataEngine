@@ -1,0 +1,34 @@
+{
+  "description": null,
+  "displayName": null,
+  "extensions": null,
+  "administration": {
+    "embeddedDataSpecifications": null,
+    "version": null,
+    "revision": null,
+    "creator": null,
+    "templateId": null
+  },
+  "idShort": "Reliability",
+  "id": "https://mm-software.com/submodel/000-001/Reliability",
+  "semanticId": {
+    "type": 0,
+    "referredSemanticId": null,
+    "keys": null
+  },
+  "supplementalSemanticId": null,
+  "endpoints": [
+    {
+      "interface": "SUBMODEL-3.0",
+      "protocolInformation": {
+        "href": "http://localhost:8080/submodels/aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9SZWxpYWJpbGl0eQ",
+        "endpointProtocol": "http",
+        "endpointProtocolVersion": null,
+        "subprotocol": null,
+        "subprotocolBody": null,
+        "subprotocolBodyEncoding": null,
+        "securityAttributes": null
+      }
+    }
+  ]
+}

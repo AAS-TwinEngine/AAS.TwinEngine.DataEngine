@@ -1,0 +1,45 @@
+{
+  "idShort": "MTTF",
+  "description": [
+    {
+      "language": "en",
+      "text": "mean operating time to failure"
+    },
+    {
+      "language": "fr",
+      "text": "durée moyenne de fonctionnement avant défaillance"
+    },
+    {
+      "language": "de",
+      "text": "mittlere Betriebszeit bis zum Ausfall"
+    },
+    {
+      "language": "jp",
+      "text": "平均故障間動作時間"
+    },
+    {
+      "language": "cn",
+      "text": "平均失效前工作时间"
+    }
+  ],
+  "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0112/2///62683#ACE061#001"
+      }
+    ]
+  },
+  "qualifiers": [
+    {
+      "kind": "ConceptQualifier",
+      "type": "SMT/Cardinality",
+      "valueType": "xs:string",
+      "value": "ZeroToMany"
+    }
+  ],
+  "valueType": "xs:int",
+  "value": "2",
+  "modelType": "Property"
+}
