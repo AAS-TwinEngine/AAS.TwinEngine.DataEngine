@@ -552,6 +552,22 @@ internal static class TestData
             ]);
     }
 
+    public static Submodel CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate()
+    {
+        return new Submodel(
+                            id: "http://example.com/idta/digital-nameplate",
+                            idShort: "DigitalNameplate",
+                            semanticId: new Reference(
+                                                      ReferenceTypes.ExternalReference,
+                                                      [
+                                                          new Key(KeyTypes.Submodel, "http://example.com/idta/digital-nameplate/semantic-id")
+                                                      ]
+                                                     ),
+                            submodelElements: [
+                                CreateManufacturerName()
+                            ]);
+    }
+
     public static SubmodelElementList CreateModel3DListWithoutValues()
     {
         return new SubmodelElementList(
@@ -887,6 +903,13 @@ internal static class TestData
         return semanticTreeNode;
     }
 
+    public static SemanticTreeNode CreateSubmodelWithManufacturerName()
+    {
+        var semanticTreeNode = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.Unknown);
+        semanticTreeNode.AddChild(CreateManufacturerNameTreeNodeWithDefaultLanguageProperty());
+        return semanticTreeNode;
+    }
+
     public static SemanticTreeNode CreateManufacturerNameTreeNode(string testObject = "")
     {
         var manufacturerName = new SemanticBranchNode("http://example.com/idta/digital-nameplate/manufacturer-name", Cardinality.One);
@@ -1002,10 +1025,33 @@ internal static class TestData
     }
 
     public static MultiLanguageProperty CreateFilledManufacturerName() => new(
+                                                                              idShort: "ManufacturerName",
+                                                                              value: [
+                                                                                  new LangStringTextType("en", "Test Example Manufacturer"),
+                                                                                  new LangStringTextType("de", "Test Beispiel Hersteller")
+                                                                              ],
+                                                                              semanticId: new Reference(
+                                                                                                        ReferenceTypes.ExternalReference,
+                                                                                                        [
+                                                                                                            new Key(KeyTypes.MultiLanguageProperty, "http://example.com/idta/digital-nameplate/manufacturer-name")
+                                                                                                        ]
+                                                                                                       ));
+
+    public static SemanticTreeNode CreateManufacturerNameTreeNodeWithDefaultLanguageProperty()
+    {
+        var manufacturerName = new SemanticBranchNode("http://example.com/idta/digital-nameplate/manufacturer-name", Cardinality.One);
+        manufacturerName.AddChild(new SemanticLeafNode("http://example.com/idta/digital-nameplate/manufacturer-name_en", "Test Example Manufacturer", DataType.String, Cardinality.ZeroToOne));
+        manufacturerName.AddChild(new SemanticLeafNode("http://example.com/idta/digital-nameplate/manufacturer-name_de", "Test Beispiel Hersteller", DataType.String, Cardinality.ZeroToOne));
+        manufacturerName.AddChild(new SemanticLeafNode("http://example.com/idta/digital-nameplate/manufacturer-name_fr", "Exemple de test Fabricant", DataType.String, Cardinality.ZeroToOne));
+        return manufacturerName;
+    }
+
+    public static MultiLanguageProperty CreateFilledManufacturerNameWithTemplateAndDefaultLanguageProperty() => new(
       idShort: "ManufacturerName",
       value: [
         new LangStringTextType("en", "Test Example Manufacturer"),
-      new LangStringTextType("de", "Test Beispiel Hersteller")
+      new LangStringTextType("de", "Test Beispiel Hersteller"),
+        new LangStringTextType("fr", "Exemple de test Fabricant")
       ],
       semanticId: new Reference(
         ReferenceTypes.ExternalReference,

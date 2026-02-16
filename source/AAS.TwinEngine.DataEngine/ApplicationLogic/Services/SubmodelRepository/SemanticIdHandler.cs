@@ -15,7 +15,7 @@ using Range = AasCore.Aas3_0.Range;
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 
 public partial class SemanticIdHandler(
-    ILogger<SemanticIdHandler> logger, 
+    ILogger<SemanticIdHandler> logger,
     IOptions<Semantics> semantics,
     IOptions<MultiLanguagePropertySettings> mlpSettings) : ISemanticIdHandler
 {
@@ -30,7 +30,7 @@ public partial class SemanticIdHandler(
 
     private readonly HashSet<string>? _defaultLanguagesSet = mlpSettings.Value.DefaultLanguages != null && mlpSettings.Value.DefaultLanguages.Count > 0
                                                                  ? new HashSet<string>(mlpSettings.Value.DefaultLanguages, StringComparer.OrdinalIgnoreCase)
-                                                                 : null; 
+                                                                 : null;
 
     private static readonly HashSet<DataTypeDefXsd> StringTypes =
     [
@@ -283,8 +283,7 @@ public partial class SemanticIdHandler(
     private SemanticBranchNode? ExtractMultiLanguageProperty(MultiLanguageProperty mlp)
     {
         var semanticId = ExtractSemanticId(mlp);
-        var cardinality = GetCardinality(mlp);
-        var node = new SemanticBranchNode(semanticId, cardinality);
+        var node = new SemanticBranchNode(semanticId, GetCardinality(mlp));
 
         var allLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -297,12 +296,12 @@ public partial class SemanticIdHandler(
         }
         else
         {
-            logger.LogWarning("No languages defined in template for MultiLanguageProperty {MlpIdShort}", mlp.IdShort);
+            logger.LogInformation("No languages defined in template for MultiLanguageProperty {MlpIdShort}", mlp.IdShort);
         }
 
         if (_defaultLanguagesSet != null)
         {
-            var addedCount = _defaultLanguagesSet.Count(defaultLang => allLanguages.Add(defaultLang));
+            var addedCount = _defaultLanguagesSet.Count(allLanguages.Add);
 
             if (addedCount > 0)
             {
@@ -310,9 +309,8 @@ public partial class SemanticIdHandler(
             }
         }
 
-        foreach (var language in allLanguages)
+        foreach (var langSemanticId in allLanguages.Select(language => string.Concat(semanticId, _mlpPostFixSeparator, language)))
         {
-            var langSemanticId = string.Concat(semanticId, _mlpPostFixSeparator, language);
             node.AddChild(new SemanticLeafNode(langSemanticId, string.Empty, DataType.String, Cardinality.ZeroToOne));
         }
 
@@ -609,20 +607,16 @@ public partial class SemanticIdHandler(
     {
         var semanticId = ExtractSemanticId(mlp);
 
-        var valueNode = FindNodeBySemanticId(values, semanticId).First() as SemanticBranchNode;
-
-        if (valueNode == null)
+        if (FindNodeBySemanticId(values, semanticId).First() is not SemanticBranchNode valueNode)
         {
-            logger.LogWarning("No value node found for MultiLanguageProperty {MlpIdShort}", mlp.IdShort);
+            logger.LogInformation("No value node found for MultiLanguageProperty {MlpIdShort}", mlp.IdShort);
             return;
         }
-        
+
         mlp.Value ??= [];
 
-        var allLanguages = new HashSet<string>(
-                                               mlp.Value.Select(v => v.Language),
-                                               StringComparer.OrdinalIgnoreCase
-                                              );
+        var allLanguages = new HashSet<string>(mlp.Value.Select(v => v.Language), StringComparer.OrdinalIgnoreCase);
+
         if (_defaultLanguagesSet != null)
         {
             foreach (var defaultLang in _defaultLanguagesSet)

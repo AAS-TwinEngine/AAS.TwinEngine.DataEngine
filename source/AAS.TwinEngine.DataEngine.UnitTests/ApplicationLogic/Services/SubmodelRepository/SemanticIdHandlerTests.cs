@@ -24,13 +24,17 @@ public class SemanticIdHandlerTests
 {
     private readonly SemanticIdHandler _sut;
     private readonly ILogger<SemanticIdHandler> _logger;
+    private readonly IOptions<MultiLanguagePropertySettings> _mlpSettings;
+    private readonly IOptions<Semantics> _semantics;
 
     public SemanticIdHandlerTests()
     {
         _logger = Substitute.For<ILogger<SemanticIdHandler>>();
-        var semantics = Substitute.For<IOptions<Semantics>>();
-        _ = semantics.Value.Returns(new Semantics { MultiLanguageSemanticPostfixSeparator = "_", SubmodelElementIndexContextPrefix = "_aastwinengineindex_" });
-        _sut = new SemanticIdHandler(_logger, semantics);
+        _mlpSettings = Substitute.For<IOptions<MultiLanguagePropertySettings>>();
+        _ = _mlpSettings.Value.Returns(new MultiLanguagePropertySettings { DefaultLanguages = null });
+        _semantics = Substitute.For<IOptions<Semantics>>();
+        _ = _semantics.Value.Returns(new Semantics { MultiLanguageSemanticPostfixSeparator = "_", SubmodelElementIndexContextPrefix = "_aastwinengineindex_" });
+        _sut = new SemanticIdHandler(_logger, _semantics, _mlpSettings);
     }
 
     [Fact]
@@ -55,7 +59,7 @@ public class SemanticIdHandlerTests
         var options = Options.Create<Semantics>(options: null!);
         var logger = Substitute.For<ILogger<SemanticIdHandler>>();
 
-        _ = Throws<NullReferenceException>(() => new SemanticIdHandler(logger, options));
+        _ = Throws<NullReferenceException>(() => new SemanticIdHandler(logger, options, _mlpSettings));
     }
 
     [Fact]
@@ -214,7 +218,7 @@ public class SemanticIdHandlerTests
     }
 
     [Fact]
-    public void Extract_EmptyMultiLanguageProperty_LogsWarningAndReturnsNode()
+    public void Extract_EmptyMultiLanguageProperty_WithDefaultLanguagesAsNull()
     {
         var mlp = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
 
@@ -225,11 +229,56 @@ public class SemanticIdHandlerTests
         var manufacturerNameNode = node.Children[0] as SemanticBranchNode;
         Equal("http://example.com/idta/digital-nameplate/manufacturer-name", manufacturerNameNode?.SemanticId);
         Empty(manufacturerNameNode!.Children);
-        _logger.Received(1).Log(LogLevel.Warning, Arg.Any<EventId>(),
-        Arg.Is<object>(state => state.ToString()!
-                                     .Contains("No languages defined in MultiLanguageProperty ManufacturerName")),
-        null,
-        Arg.Any<Func<object, Exception, string>>()!);
+    }
+
+    [Fact]
+    public void Extract_EmptyMultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr()
+    {
+        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
+        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var mlp = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
+
+        var node = sut.Extract(mlp) as SemanticBranchNode;
+
+        Equal("http://example.com/idta/digital-nameplate/semantic-id", node?.SemanticId);
+        Single(node!.Children);
+        var manufacturerNameNode = node.Children[0] as SemanticBranchNode;
+        Equal("http://example.com/idta/digital-nameplate/manufacturer-name", manufacturerNameNode?.SemanticId);
+        Equal(3, manufacturerNameNode!.Children.Count);
+        var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).ToList();
+        Equal(["de", "en", "fr"], languages);
+        _logger.Received(1).Log(
+                               LogLevel.Information,
+                               Arg.Any<EventId>(),
+                               Arg.Is<object>(state => state.ToString()!.Contains("Added 3 default language(s) to MultiLanguageProperty")),
+                               null,
+                               Arg.Any<Func<object, Exception?, string>>()!
+                              );
+    }
+
+    [Fact]
+    public void Extract_MultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr()
+    {
+        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
+        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var mlp = TestData.CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate();
+
+        var node = sut.Extract(mlp) as SemanticBranchNode;
+
+        Equal("http://example.com/idta/digital-nameplate/semantic-id", node?.SemanticId);
+        Single(node!.Children);
+        var manufacturerNameNode = node.Children[0] as SemanticBranchNode;
+        Equal("http://example.com/idta/digital-nameplate/manufacturer-name", manufacturerNameNode?.SemanticId);
+        Equal(3, manufacturerNameNode!.Children.Count);
+        var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).ToList();
+        Equal(["en", "de", "fr"], languages);
+        _logger.Received(1).Log(
+                                LogLevel.Information,
+                                Arg.Any<EventId>(),
+                                Arg.Is<object>(state => state.ToString()!.Contains("Added 1 default language(s) to MultiLanguageProperty")),
+                                null,
+                                Arg.Any<Func<object, Exception?, string>>()!
+                               );
     }
 
     [Fact]
@@ -773,6 +822,102 @@ public class SemanticIdHandlerTests
         Equal("Internal Server Error.", ex.Message);
     }
 
+    [Fact]
+    public void FillOutTemplate_MultiLanguageProperty_WithDefaultLanguagesAsNull_PopulatesOnlyTemplateLanguages()
+    {
+        var submodel = TestData.CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate();
+        var semanticTree = TestData.CreateSubmodelWithManufacturerName();
+
+        var result = _sut.FillOutTemplate(submodel, semanticTree);
+
+        NotNull(result);
+        Single(result.SubmodelElements!);
+        var mlp = result.SubmodelElements![0] as MultiLanguageProperty;
+        NotNull(mlp);
+        Equal(2, mlp.Value!.Count);
+        var enValue = mlp.Value.FirstOrDefault(v => v.Language == "en");
+        NotNull(enValue);
+        Equal("Test Example Manufacturer", enValue.Text);
+        var deValue = mlp.Value.FirstOrDefault(v => v.Language == "de");
+        NotNull(deValue);
+        Equal("Test Beispiel Hersteller", deValue.Text);
+    }
+
+    [Fact]
+    public void FillOutTemplate_EmptyMultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr_AddsAllLanguages()
+    {
+        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
+        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var submodel = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
+        var semanticTree = TestData.CreateSubmodelWithManufacturerName();
+
+        var result = sut.FillOutTemplate(submodel, semanticTree);
+
+        NotNull(result);
+        Single(result.SubmodelElements!);
+        var mlp = result.SubmodelElements![0] as MultiLanguageProperty;
+        NotNull(mlp);
+        Equal(3, mlp.Value!.Count);
+        var languages = mlp.Value.Select(v => v.Language).OrderBy(l => l).ToList();
+        Equal(["de", "en", "fr"], languages);
+        _logger.Received(3).Log(
+                                LogLevel.Information,
+                                Arg.Any<EventId>(),
+                                Arg.Is<object>(state => state.ToString()!.Contains("Added language")),
+                                null,
+                                Arg.Any<Func<object, Exception?, string>>()!
+                               );
+    }
+
+    [Fact]
+    public void FillOutTemplate_MultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr_MergesWithTemplateLanguages()
+    {
+        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
+        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var submodel = TestData.CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate();
+        var semanticTree = TestData.CreateSubmodelWithManufacturerName();
+
+        var result = sut.FillOutTemplate(submodel, semanticTree);
+
+        NotNull(result);
+        Single(result.SubmodelElements!);
+        var mlp = result.SubmodelElements![0] as MultiLanguageProperty;
+        NotNull(mlp);
+        Equal(3, mlp.Value!.Count);
+        var enValue = mlp.Value.FirstOrDefault(v => v.Language == "en");
+        NotNull(enValue);
+        Equal("Test Example Manufacturer", enValue.Text);
+        var deValue = mlp.Value.FirstOrDefault(v => v.Language == "de");
+        NotNull(deValue);
+        Equal("Test Beispiel Hersteller", deValue.Text);
+        var frValue = mlp.Value.FirstOrDefault(v => v.Language == "fr");
+        NotNull(frValue);
+        Equal("Exemple de test Fabricant", frValue.Text);
+        _logger.Received(1).Log(
+                                LogLevel.Information,
+                                Arg.Any<EventId>(),
+                                Arg.Is<object>(state => state.ToString()!.Contains("Added language 'fr'")),
+                                null,
+                                Arg.Any<Func<object, Exception?, string>>()!
+                               );
+    }
+
+    [Fact]
+    public void FillOutTemplate_MultiLanguageProperty_WithNullValue_InitializesAndPopulates()
+    {
+        var submodel = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
+        var semanticTree = TestData.CreateSubmodelWithManufacturerName();
+
+        var result = _sut.FillOutTemplate(submodel, semanticTree);
+
+        NotNull(result);
+        Single(result.SubmodelElements!);
+        var mlp = result.SubmodelElements![0] as MultiLanguageProperty;
+        NotNull(mlp);
+        NotNull(mlp.Value);
+        Empty(mlp.Value);
+    }
+
     private static SubmodelElementCollection GetSubmodelElementCollection(Submodel submodel, int index) => (submodel.SubmodelElements?[index] as SubmodelElementCollection)!;
 
     private static void AssertMultiLanguageProperty(
@@ -839,4 +984,13 @@ public class SemanticIdHandlerTests
     }
 
     private static string GetSemanticId(IHasSemantics hasSemantics) => hasSemantics.SemanticId?.Keys?.FirstOrDefault()?.Value ?? string.Empty;
+
+    private static IOptions<MultiLanguagePropertySettings> CreateMlpSettings(List<string>? defaultLanguages)
+    {
+        var settings = new MultiLanguagePropertySettings
+        {
+            DefaultLanguages = defaultLanguages
+        };
+        return Options.Create(settings);
+    }
 }
