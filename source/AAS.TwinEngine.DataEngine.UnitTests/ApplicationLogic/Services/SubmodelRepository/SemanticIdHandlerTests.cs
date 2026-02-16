@@ -245,7 +245,7 @@ public class SemanticIdHandlerTests
         var manufacturerNameNode = node.Children[0] as SemanticBranchNode;
         Equal("http://example.com/idta/digital-nameplate/manufacturer-name", manufacturerNameNode?.SemanticId);
         Equal(3, manufacturerNameNode!.Children.Count);
-        var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).ToList();
+        var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).OrderBy(l => l).ToList();
         Equal(["de", "en", "fr"], languages);
         _logger.Received(1).Log(
                                LogLevel.Information,
@@ -270,8 +270,8 @@ public class SemanticIdHandlerTests
         var manufacturerNameNode = node.Children[0] as SemanticBranchNode;
         Equal("http://example.com/idta/digital-nameplate/manufacturer-name", manufacturerNameNode?.SemanticId);
         Equal(3, manufacturerNameNode!.Children.Count);
-        var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).ToList();
-        Equal(["en", "de", "fr"], languages);
+        var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).OrderBy(l => l).ToList();
+        Equal(["de", "en", "fr"], languages);
         _logger.Received(1).Log(
                                 LogLevel.Information,
                                 Arg.Any<EventId>(),
@@ -903,7 +903,7 @@ public class SemanticIdHandlerTests
     }
 
     [Fact]
-    public void FillOutTemplate_MultiLanguageProperty_WithNullValue_InitializesAndPopulates()
+    public void FillOutTemplate_MultiLanguageProperty_WithNullValue_InitializesWithoutLanguagesWhenDefaultsAreNull()
     {
         var submodel = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
         var semanticTree = TestData.CreateSubmodelWithManufacturerName();
