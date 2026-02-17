@@ -4,7 +4,7 @@ public class AasRegistryPreComputed
 {
     public const string Section = "AasRegistryPreComputed";
 
-    public required string ShellDescriptorCron { get; set; }
+    public string ShellDescriptorCron { get; set; } = "0 */3 * * * *";
 
-    public required bool IsPreComputed { get; set; }
+    public bool IsPreComputed { get; set; } = false;
 }

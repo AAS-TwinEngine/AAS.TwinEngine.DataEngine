@@ -36,13 +36,8 @@ services:
     environment:
       - AasEnvironment__DataEngineRepositoryBaseUrl=http://localhost:8080
       - AasEnvironment__AasEnvironmentRepositoryBaseUrl=http://template-repository:8081
-      - AasEnvironment__SubModelRepositoryPath=submodels
       - AasEnvironment__AasRegistryBaseUrl=http://aas-template-registry:8080
-      - AasEnvironment__AasRegistryPath=shell-descriptors
       - AasEnvironment__SubModelRegistryBaseUrl=http://sm-template-regisry:8080
-      - AasEnvironment__SubModelRegistryPath=submodel-descriptors
-      - AasEnvironment__AasRepositoryPath=shells
-      - AasEnvironment__SubmodelRefPath=submodel-refs
       - AasEnvironment__CustomerDomainUrl=https://mm-software.com
       - TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0
       - TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=Reliability
@@ -55,13 +50,6 @@ services:
       - TemplateMappingRules__AasIdExtractionRules__0__pattern=Regex
       - TemplateMappingRules__AasIdExtractionRules__0__index=6
       - TemplateMappingRules__AasIdExtractionRules__0__separator=/
-      - Semantics__MultiLanguageSemanticPostfixSeparator=_
-      - Semantics__SubmodelElementIndexContextPrefix=_aastwinengineindex_
-      - Semantics__InternalSemanticId=InternalSemanticId
-      - AasxOptions__RootFolder=aasx
-      - AasRegistryPreComputed__ShellDescriptorCron=0 */3 * * * *
-      - AasRegistryPreComputed__IsPreComputed=false
-      - MultiPluginConflictOption__HandlingMode=TakeFirst
       - PluginConfig__Plugins__0__PluginName=Plugin
       - PluginConfig__Plugins__0__PluginUrl=http://twinengine-plugin:8080
     networks:
