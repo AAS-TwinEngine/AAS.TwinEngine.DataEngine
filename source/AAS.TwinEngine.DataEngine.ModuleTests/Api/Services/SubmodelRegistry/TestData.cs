@@ -2,7 +2,7 @@
 
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 
-namespace AAS.TwinEngine.DataEngine.ModuleTests.ApplicationLogic.Services.SubmodelRegistry;
+namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRegistry;
 
 internal static class TestData
 {

@@ -247,13 +247,6 @@ public class SemanticIdHandlerTests
         Equal(3, manufacturerNameNode!.Children.Count);
         var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).OrderBy(l => l).ToList();
         Equal(["de", "en", "fr"], languages);
-        _logger.Received(1).Log(
-                               LogLevel.Information,
-                               Arg.Any<EventId>(),
-                               Arg.Is<object>(state => state.ToString()!.Contains("Added 3 default language(s) to MultiLanguageProperty")),
-                               null,
-                               Arg.Any<Func<object, Exception?, string>>()!
-                              );
     }
 
     [Fact]
@@ -272,13 +265,6 @@ public class SemanticIdHandlerTests
         Equal(3, manufacturerNameNode!.Children.Count);
         var languages = manufacturerNameNode.Children.Select(c => c.SemanticId.Split('_').Last()).OrderBy(l => l).ToList();
         Equal(["de", "en", "fr"], languages);
-        _logger.Received(1).Log(
-                                LogLevel.Information,
-                                Arg.Any<EventId>(),
-                                Arg.Is<object>(state => state.ToString()!.Contains("Added 1 default language(s) to MultiLanguageProperty")),
-                                null,
-                                Arg.Any<Func<object, Exception?, string>>()!
-                               );
     }
 
     [Fact]
@@ -576,7 +562,7 @@ public class SemanticIdHandlerTests
         var entityleafNode = entityNode.Statements![0] as Property;
         NotNull(entityleafNode);
         Equal("urn:uuid:123e4567-e89b-12d3-a456-426614174000", entityNode.GlobalAssetId);
-        Equal("manufacturer_Value", entityNode.SpecificAssetIds[0].Value);
+        Equal("manufacturer_Value", entityNode.SpecificAssetIds![0].Value);
         Equal("serialnumber_Value", entityNode.SpecificAssetIds[1].Value);
     }
 
