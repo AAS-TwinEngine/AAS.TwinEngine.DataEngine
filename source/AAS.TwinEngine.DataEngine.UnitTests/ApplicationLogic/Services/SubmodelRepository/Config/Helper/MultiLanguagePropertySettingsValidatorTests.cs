@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.Config;
+namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
 
 public class MultiLanguagePropertySettingsValidatorTests
 {
