@@ -16,19 +16,19 @@ public class AasEnvironmentConfig
 
     public Uri? AasRegistryBaseUrl { get; set; } = null!;
 
-    public string SubModelRepositoryPath { get; set; } = null!;
+    public string SubModelRepositoryPath { get; set; } = "submodels";
 
-    public string AasRegistryPath { get; set; } = null!;
+    public string AasRegistryPath { get; set; } = "shell-descriptors";
 
     public Uri? SubModelRegistryBaseUrl { get; set; } = null!;
 
-    public string SubModelRegistryPath { get; set; } = null!;
+    public string SubModelRegistryPath { get; set; } = "submodel-descriptors";
 
-    public string AasRepositoryPath { get; set; } = null!;
+    public string AasRepositoryPath { get; set; } = "shells";
 
-    public string SubmodelRefPath { get; set; } = null!;
+    public string SubmodelRefPath { get; set; } = "submodel-refs";
 
-    public string ConceptDescriptionPath { get; set; } = null!;
+    public string ConceptDescriptionPath { get; set; } = "concept-descriptions";
 
     public Uri CustomerDomainUrl { get; set; } = null!;
 }

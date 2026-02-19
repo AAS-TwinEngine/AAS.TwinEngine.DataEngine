@@ -1,17 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
+﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 
 public class Semantics
 {
     public const string Section = "Semantics";
 
-    [Required]
-    public string MultiLanguageSemanticPostfixSeparator { get; set; }
+    public string MultiLanguageSemanticPostfixSeparator { get; set; } = "_";
 
-    [Required]
-    public string SubmodelElementIndexContextPrefix { get; set; }
+    public string SubmodelElementIndexContextPrefix { get; set; } = "_aastwinengineindex_";
 
-    [Required]
-    public string InternalSemanticId { get; set; }
+    public string InternalSemanticId { get; set; } = "InternalSemanticId";
 }
