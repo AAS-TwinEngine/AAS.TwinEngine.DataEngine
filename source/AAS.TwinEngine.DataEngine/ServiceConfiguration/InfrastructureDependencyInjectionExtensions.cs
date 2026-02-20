@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
