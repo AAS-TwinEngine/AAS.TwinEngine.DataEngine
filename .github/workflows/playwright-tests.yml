@@ -1,0 +1,167 @@
+name: Playwright Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: 
+      - 'main'
+      - 'develop'
+      - 'release/**'
+      - 'hotfix/**'
+  push:
+    branches: 
+      - 'main'
+      - 'develop'
+      - 'release/**'
+      - 'hotfix/**'
+
+permissions:
+  contents: read
+
+env:
+  BUILD_CONFIGURATION: "Release"
+  SOLUTION_PATH: source/AAS.TwinEngine.DataEngine.sln
+  PLAYWRIGHT_TEST_PROJECT: source/AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests/AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests.csproj
+  DOCKER_COMPOSE_PATH: source/AAS.TwinEngine.Plugin.TestPlugin/Example
+  BASE_URL: "http://localhost:8085"
+
+jobs:
+  playwright-tests:
+    name: Run Playwright Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_PATH }} --locked-mode
+
+      - name: Build solution
+        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Build Playwright test project
+        run: dotnet build ${{ env.PLAYWRIGHT_TEST_PROJECT }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Start Docker Compose services
+        run: |
+          cd ${{ env.DOCKER_COMPOSE_PATH }}
+          docker compose up -d
+        env:
+          COMPOSE_HTTP_TIMEOUT: 200
+
+      - name: Wait for services to be healthy
+        run: |
+          cd ${{ env.DOCKER_COMPOSE_PATH }}
+          
+          echo "Waiting for services to be healthy..."
+          
+          MAX_WAIT=300
+          ELAPSED=0
+          INTERVAL=10
+          
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            # Check if all services are running
+            RUNNING=$(docker compose ps --status running --format json 2>/dev/null | jq -s 'length' 2>/dev/null || echo "0")
+            TOTAL=$(docker compose ps --format json 2>/dev/null | jq -s 'length' 2>/dev/null || echo "0")
+            
+            echo "Running containers: $RUNNING/$TOTAL"
+            
+            # Check for any unhealthy services
+            UNHEALTHY=$(docker compose ps --format json 2>/dev/null | jq -r 'select(.Health != "" and .Health != "healthy") | .Service' 2>/dev/null | wc -l)
+            
+            if [ $RUNNING -ge 6 ] && [ $UNHEALTHY -eq 0 ]; then
+              echo "Services are up and running!"
+              docker compose ps
+              break
+            fi
+            
+            echo "Waiting for services... ($ELAPSED/$MAX_WAIT seconds)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+          
+          if [ $ELAPSED -ge $MAX_WAIT ]; then
+            echo "Timeout waiting for services to be ready"
+            echo "Current service status:"
+            docker compose ps
+            echo "Service logs:"
+            docker compose logs --tail=100
+            exit 1
+          fi
+          
+          # Additional wait to ensure services are fully ready
+          echo "Waiting additional 20 seconds for services to stabilize..."
+          sleep 20
+          
+          # Verify critical endpoints are responding
+          echo "Checking DataEngine endpoint..."
+          for i in {1..15}; do
+            if curl -f -s -o /dev/null ${{ env.BASE_URL }}/shell-descriptors 2>&1; then
+              echo "DataEngine is responding!"
+              break
+            fi
+            if [ $i -eq 15 ]; then
+              echo "DataEngine is not responding after 15 attempts"
+              docker compose logs twinengine-dataengine --tail=50
+              exit 1
+            fi
+            echo "Attempt $i: DataEngine not ready yet..."
+            sleep 5
+          done
+          
+          echo "All services are ready for testing!"
+
+      - name: Show running containers
+        if: always()
+        run: |
+          cd ${{ env.DOCKER_COMPOSE_PATH }}
+          docker compose ps
+          echo "---"
+          docker compose logs --tail=50
+
+      - name: Run Playwright Tests
+        run: dotnet test ${{ env.PLAYWRIGHT_TEST_PROJECT }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --logger "trx;LogFileName=playwright_test_results.trx" --verbosity normal
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
+        if: github.event.pull_request.head.repo.fork == false
+        with:
+          name: Playwright Test Results
+          path: "**/playwright_test_results.trx"
+          reporter: dotnet-trx
+          fail-on-error: true
+
+      - name: Upload TRX as artifact
+        if: github.event.pull_request.head.repo.fork == false
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: playwright-test-results
+          path: "**/*playwright_test_results.trx"
+
+      - name: Capture Docker Compose Logs
+        if: always()
+        run: |
+          cd ${{ env.DOCKER_COMPOSE_PATH }}
+          mkdir -p logs
+          docker compose logs > logs/docker-compose-full.log 2>&1 || true
+          docker compose ps > logs/docker-compose-status.txt 2>&1 || true
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: |
+          cd ${{ env.DOCKER_COMPOSE_PATH }}
+          docker compose down -v
