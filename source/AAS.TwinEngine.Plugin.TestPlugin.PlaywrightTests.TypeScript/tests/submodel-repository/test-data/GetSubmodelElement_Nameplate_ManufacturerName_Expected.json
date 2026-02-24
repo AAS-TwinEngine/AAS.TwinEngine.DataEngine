@@ -1,0 +1,47 @@
+{
+  "idShort": "ManufacturerName",
+  "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0112/2///61987#ABA565#009"
+      }
+    ]
+  },
+  "supplementalSemanticIds": [
+    {
+      "type": "ExternalReference",
+      "keys": [
+        {
+          "type": "GlobalReference",
+          "value": "0173-1#02-AAO677#004"
+        }
+      ]
+    }
+  ],
+  "qualifiers": [
+    {
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+          }
+        ]
+      },
+      "kind": "TemplateQualifier",
+      "type": "SMT/Cardinality",
+      "valueType": "xs:string",
+      "value": "One"
+    }
+  ],
+  "value": [
+    {
+      "language": "de",
+      "text": "M&M"
+    }
+  ],
+  "modelType": "MultiLanguageProperty"
+}

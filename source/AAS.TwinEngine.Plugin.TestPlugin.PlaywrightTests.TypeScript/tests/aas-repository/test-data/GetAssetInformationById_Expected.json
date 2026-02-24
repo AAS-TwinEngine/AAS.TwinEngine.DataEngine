@@ -1,0 +1,9 @@
+{
+  "assetKind": "Instance",
+  "globalAssetId": "https://mm-software.com/ids/assets/000-001",
+  "specificAssetIds": [],
+  "defaultThumbnail": {
+    "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg",
+    "contentType": "image/jpeg"
+  }
+}
