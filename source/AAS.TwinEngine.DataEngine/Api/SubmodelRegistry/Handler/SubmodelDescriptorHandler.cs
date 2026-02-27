@@ -15,8 +15,8 @@ public class SubmodelDescriptorHandler(
     {
         logger.LogInformation("Start executing get request for submodel descriptor");
 
-        var decodedId = request.SubmodelIdentifier?.DecodeBase64Url(logger);
-        var submodelDescriptor = await submodelDescriptorService.GetSubmodelDescriptorByIdAsync(decodedId, cancellationToken).ConfigureAwait(false);
+        var decodedId = request?.SubmodelIdentifier?.DecodeBase64Url(logger);
+        var submodelDescriptor = await submodelDescriptorService.GetSubmodelDescriptorByIdAsync(decodedId!, cancellationToken).ConfigureAwait(false);
 
         if (submodelDescriptor != null)
         {
@@ -25,7 +25,7 @@ public class SubmodelDescriptorHandler(
         }
 
         logger.LogWarning("Submodel Descriptor content not found. Submodel ID: {SubmodelId}", decodedId);
-        throw new SubmodelDescriptorNotFoundException(decodedId);
+        throw new SubmodelDescriptorNotFoundException();
     }
 }
 
