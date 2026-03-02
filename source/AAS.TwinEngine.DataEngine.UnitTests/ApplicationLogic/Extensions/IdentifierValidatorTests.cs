@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Validation;
+namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Extensions;
 
 public class IdentifierValidatorTests
 {
