@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -10,6 +11,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
@@ -204,6 +206,137 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
         var response = await _client.GetAsync($"/shell-descriptors/{AasId}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #region Identifier Validation Tests
+
+    [Theory]
+    [InlineData("not-valid-base64!!!")]
+    [InlineData("invalid!!base64")]
+    public async Task GetShellDescriptorById_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    {
+        var response = await _client.GetAsync($"/shell-descriptors/{invalidBase64}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Invalid User Input", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("javascript:alert('xss')")]
+    [InlineData("<script>alert('xss')</script>")]
+    [InlineData("<img onerror=alert('xss')>")]
+    [InlineData("<svg/onload=alert('xss')>")]
+    public async Task GetShellDescriptorById_XssInDecodedId_Returns400BadRequest(string maliciousContent)
+    {
+        var encoded = EncodeBase64Url(maliciousContent);
+
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Invalid User Input", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("' OR '1'='1")]
+    [InlineData("'; DROP TABLE shells--")]
+    [InlineData("1 UNION SELECT * FROM descriptors")]
+    [InlineData("admin'; DELETE FROM shells--")]
+    public async Task GetShellDescriptorById_SqlInjectionInDecodedId_Returns400BadRequest(string maliciousContent)
+    {
+        var encoded = EncodeBase64Url(maliciousContent);
+
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Invalid User Input", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("../../../etc/passwd")]
+    [InlineData("..\\..\\..\\windows\\system32")]
+    [InlineData("%2e%2e/config")]
+    [InlineData("..%2fconfig")]
+    public async Task GetShellDescriptorById_PathTraversalInDecodedId_Returns400BadRequest(string maliciousContent)
+    {
+        var encoded = EncodeBase64Url(maliciousContent);
+
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Invalid User Input", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("data:text/html,<script>")]
+    [InlineData("vbscript:msgbox('xss')")]
+    [InlineData("file:///etc/passwd")]
+    public async Task GetShellDescriptorById_DangerousProtocolInDecodedId_Returns400BadRequest(string maliciousContent)
+    {
+        var encoded = EncodeBase64Url(maliciousContent);
+
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Invalid User Input", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("test\0value")]
+    public async Task GetShellDescriptorById_NullByteInDecodedId_Returns400BadRequest(string contentWithNullByte)
+    {
+        var encoded = EncodeBase64Url(contentWithNullByte);
+
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Invalid User Input", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorById_IdentifierExceedsMaxLength_Returns400BadRequest()
+    {
+        var longIdentifier = "https://example.com/" + new string('a', 2050);
+        var encoded = EncodeBase64Url(longIdentifier);
+
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("https://example.com/ids/aas/1170_1160_3052_6568")]
+    [InlineData("https://admin-shell.io/idta/aas/ContactInformation/1/0")]
+    [InlineData("urn:uuid:123e4567-e89b-12d3-a456-426614174000")]
+    [InlineData("https://mm-software.com/submodel/test/Nameplate")]
+    public async Task GetShellDescriptorById_ValidAasIdentifiers_DoesNotReturn400(string validIdentifier)
+    {
+        var encoded = EncodeBase64Url(validIdentifier);
+        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>())
+                                 .Throws(new ResourceNotFoundException());
+
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}").ConfigureAwait(false);
+
+        Assert.NotEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #endregion
+
+    private static string EncodeBase64Url(string plainText)
+    {
+        if (string.IsNullOrWhiteSpace(plainText))
+        {
+            return string.Empty;
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(plainText);
+        return WebEncoders.Base64UrlEncode(bytes);
     }
 }
 

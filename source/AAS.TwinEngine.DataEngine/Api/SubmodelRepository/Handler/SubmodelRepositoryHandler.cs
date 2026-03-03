@@ -20,22 +20,22 @@ public class SubmodelRepositoryHandler(
 
     public Task<ISubmodelElement> GetSubmodelElement(GetSubmodelElementRequest request, CancellationToken cancellationToken)
     {
-        request?.IdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
         return GetResourceByIdAsync(
             request?.SubmodelId,
  "submodel element",
-            id => submodelRepositoryService.GetSubmodelElementAsync(id, request!.IdShortPath, cancellationToken)!
+            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, cancellationToken)!
             );
     }
 
-    private async Task<T> GetResourceByIdAsync<T>(
-   string? encodedId,
-        string resourceName,
-        Func<string, Task<T?>> serviceFetchFunc)
-  {
+    private async Task<T> GetResourceByIdAsync<T>(string? encodedId,
+                                                  string resourceName,
+                                                  Func<string, Task<T?>> serviceFetchFunc)
+    {
         var decodedId = encodedId?.DecodeBase64Url(logger);
-    logger.LogInformation("Start executing get request for {ResourceName}. ID: {DecodedId}", resourceName, decodedId);
+        logger.LogInformation("Start executing get request for {ResourceName}. ID: {DecodedId}", resourceName, decodedId);
 
         var result = await serviceFetchFunc(decodedId!).ConfigureAwait(false);
         ValidateResourceExists(result, resourceName, decodedId!);

@@ -12,7 +12,7 @@ namespace AAS.TwinEngine.DataEngine;
 public class Program
 {
     private static readonly Version ApiVersion = new(1, 0);
-    private const string ApiTitle = "TestPlugin API";
+    private const string ApiTitle = "DataEngine API";
 
     public static async Task Main(string[] args)
     {
@@ -72,6 +72,7 @@ public class Program
         _ = app.UseAuthorization();
         app.UseCorsServices();
         _ = app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
+        _ = app.UseSwaggerUI(c => c.SwaggerEndpoint($"/swagger/{ApiVersion}/swagger.json", ApiTitle));
         _ = app.MapControllers();
 
         await app.RunAsync().ConfigureAwait(false);

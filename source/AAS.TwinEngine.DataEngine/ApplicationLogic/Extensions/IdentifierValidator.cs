@@ -144,31 +144,31 @@ public static partial class IdentifierValidator
 
         if (ContainsDangerousProtocol(idShortPath))
         {
-            logger?.LogWarning("IdShortPath contains dangerous protocol: {IdShortPath}", idShortPath);
+            logger?.LogWarning("IdShortPath contains dangerous protocol");
             return false;
         }
 
         if (ContainsDangerousPattern(idShortPath))
         {
-            logger?.LogWarning("IdShortPath contains dangerous pattern: {IdShortPath}", idShortPath);
+            logger?.LogWarning("IdShortPath contains dangerous pattern:");
             return false;
         }
 
         if (ContainsXssPattern(idShortPath))
         {
-            logger?.LogWarning("IdShortPath contains potential XSS pattern: {IdShortPath}", idShortPath);
+            logger?.LogWarning("IdShortPath contains potential XSS pattern");
             return false;
         }
 
         if (ContainsSqlInjectionPattern(idShortPath))
         {
-            logger?.LogWarning("IdShortPath contains potential SQL injection pattern: {IdShortPath}", idShortPath);
+            logger?.LogWarning("IdShortPath contains potential SQL injection pattern");
             return false;
         }
 
         if (ContainsPathTraversalPattern(idShortPath))
         {
-            logger?.LogWarning("IdShortPath contains potential path traversal pattern: {IdShortPath}", idShortPath);
+            logger?.LogWarning("IdShortPath contains potential path traversal pattern");
             return false;
         }
 
@@ -176,13 +176,13 @@ public static partial class IdentifierValidator
         {
             if (!IdShortPattern.IsMatch(idShortPath))
             {
-                logger?.LogWarning("IdShortPath contains invalid characters: {IdShortPath}", idShortPath);
+                logger?.LogWarning("IdShortPath contains invalid characters");
                 return false;
             }
         }
         catch (RegexMatchTimeoutException)
         {
-            logger?.LogWarning("IdShortPath validation timeout: {IdShortPath}", idShortPath);
+            logger?.LogWarning("IdShortPath validation timeout");
             return false;
         }
 

@@ -18,8 +18,8 @@ public class SerializationHandlerTests
     private readonly SerializationHandler _sut;
 
     private readonly SerializeAasxRequest _request = new(["dmFsaWRBQVNJRA=="],
-             ["dmFsaWRTdWJtb2RlbElE"],
-            false);
+                                                         ["dmFsaWRTdWJtb2RlbElE"],
+                                                         false);
 
     public SerializationHandlerTests()
     {
@@ -33,10 +33,10 @@ public class SerializationHandlerTests
     {
         var stream = new MemoryStream("dummy content"u8.ToArray());
         _serializationService.GetAasxFileStreamAsync(
- Arg.Is<IList<string>>(ids => ids[0] == "validAASID"),
- Arg.Is<IList<string>>(ids => ids[0] == "validSubmodelID"),
-   false,
-       Arg.Any<CancellationToken>()).Returns(stream);
+                                                     Arg.Is<IList<string>>(ids => ids[0] == "validAASID"),
+                                                     Arg.Is<IList<string>>(ids => ids[0] == "validSubmodelID"),
+                                                     false,
+                                                     Arg.Any<CancellationToken>()).Returns(stream);
 
         var result = await _sut.GetAasxFileAsync(_request, CancellationToken.None);
 
@@ -51,7 +51,7 @@ public class SerializationHandlerTests
         var request = new SerializeAasxRequest(null!, ["dmFsaWRTdWJtb2RlbElE"], false);
 
         var ex = await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
-         _sut.GetAasxFileAsync(request, CancellationToken.None));
+                                                                               _sut.GetAasxFileAsync(request, CancellationToken.None));
 
         Assert.Equal("Internal Server Error.", ex.Message);
     }
@@ -63,7 +63,7 @@ public class SerializationHandlerTests
         var request = new SerializeAasxRequest([validEncodedAasId], null!, false);
 
         var ex = await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
-        _sut.GetAasxFileAsync(request, CancellationToken.None));
+                                                                               _sut.GetAasxFileAsync(request, CancellationToken.None));
 
         Assert.Equal("Internal Server Error.", ex.Message);
     }
@@ -74,7 +74,7 @@ public class SerializationHandlerTests
         var request = new SerializeAasxRequest([""], ["dmFsaWRTdWJtb2RlbElE"], false);
 
         var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
-        _sut.GetAasxFileAsync(request, CancellationToken.None));
+                                                                         _sut.GetAasxFileAsync(request, CancellationToken.None));
 
         Assert.Equal("Invalid User Input.", ex.Message);
     }
@@ -82,15 +82,14 @@ public class SerializationHandlerTests
     [Fact]
     public async Task GetAasxFileAsync_ThrowsResourceNotFoundException_WhenStreamIsNull()
     {
-        _serializationService.GetAasxFileStreamAsync(
-     Arg.Any<string[]>(),
-        Arg.Any<string[]>(),
-           true,
-   Arg.Any<CancellationToken>())!
-       .Returns((Stream?)null);
+        _serializationService.GetAasxFileStreamAsync(Arg.Any<string[]>(),
+                                                     Arg.Any<string[]>(),
+                                                     true,
+                                                     Arg.Any<CancellationToken>())!
+                             .Returns((Stream?)null);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
-             _sut.GetAasxFileAsync(_request, CancellationToken.None));
+                                                                _sut.GetAasxFileAsync(_request, CancellationToken.None));
     }
 
     [Fact]
@@ -99,7 +98,7 @@ public class SerializationHandlerTests
         var request = new SerializeAasxRequest(["not-valid-base64!!!"], ["dmFsaWRTdWJtb2RlbElE"], false);
 
         var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
-        _sut.GetAasxFileAsync(request, CancellationToken.None));
+                                                                         _sut.GetAasxFileAsync(request, CancellationToken.None));
 
         Assert.Equal("Invalid User Input.", ex.Message);
     }
@@ -111,7 +110,7 @@ public class SerializationHandlerTests
         var request = new SerializeAasxRequest([validEncodedAasId], ["not-valid-base64!!!"], false);
 
         var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
-        _sut.GetAasxFileAsync(request, CancellationToken.None));
+                                                                         _sut.GetAasxFileAsync(request, CancellationToken.None));
 
         Assert.Equal("Invalid User Input.", ex.Message);
     }
@@ -119,13 +118,13 @@ public class SerializationHandlerTests
     [Fact]
     public async Task GetAasxFileAsync_ThrowsInvalidUserInputException_WhenDecodedAasIdContainsMaliciousPattern()
     {
-        var maliciousId = "javascript:alert('xss')";
-        var encodedMaliciousId = maliciousId.EncodeBase64Url();
+        const string MaliciousId = "javascript:alert('xss')";
+        var encodedMaliciousId = MaliciousId.EncodeBase64Url();
         var validEncodedSubmodelId = "https://example.com/submodel".EncodeBase64Url();
         var request = new SerializeAasxRequest([encodedMaliciousId], [validEncodedSubmodelId], false);
 
         var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
-        _sut.GetAasxFileAsync(request, CancellationToken.None));
+                                                                         _sut.GetAasxFileAsync(request, CancellationToken.None));
 
         Assert.Equal("Invalid User Input.", ex.Message);
     }
@@ -134,12 +133,12 @@ public class SerializationHandlerTests
     public async Task GetAasxFileAsync_ThrowsInvalidUserInputException_WhenDecodedSubmodelIdContainsMaliciousPattern()
     {
         var validEncodedAasId = "https://example.com/aas".EncodeBase64Url();
-        var maliciousId = "<script>alert('xss')</script>";
-        var encodedMaliciousId = maliciousId.EncodeBase64Url();
+        const string MaliciousId = "<script>alert('xss')</script>";
+        var encodedMaliciousId = MaliciousId.EncodeBase64Url();
         var request = new SerializeAasxRequest([validEncodedAasId], [encodedMaliciousId], false);
 
         var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
-        _sut.GetAasxFileAsync(request, CancellationToken.None));
+                                                                         _sut.GetAasxFileAsync(request, CancellationToken.None));
 
         Assert.Equal("Invalid User Input.", ex.Message);
     }

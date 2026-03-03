@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -10,6 +11,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
@@ -73,13 +75,13 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
         const string HttpClientNamePlugin2 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin2";
         _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
 
-        var submodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
         var mockSubmodel = TestData.CreateSubmodel();
 
         _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockSubmodel);
 
         // Act
-        var response = await _client.GetAsync($"/submodels/{submodelId}");
+        var response = await _client.GetAsync($"/submodels/{SubmodelId}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -148,7 +150,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
         _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockSubmodel);
 
         // Act
-        var response = await _client.GetAsync($"/submodels/{SubmodelId}/submodel-elements/{IdShortPath}");
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, IdShortPath));
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -192,6 +194,132 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
+
+    [Theory]
+    [InlineData("../../../etc/passwd")]
+    [InlineData(@"..\..\windows\system32")]
+    [InlineData("element/../otherElement")]
+    [InlineData("%2e%2e/config")]
+    public async Task GetSubmodelElement_PathTraversalInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    {
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(validSubmodelId, maliciousIdShortPath));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("<script>alert('xss')</script>")]
+    [InlineData("<img onerror=alert('xss')>")]
+    [InlineData("element<script>alert(1)</script>")]
+    [InlineData("<svg/onload=alert('xss')>")]
+    public async Task GetSubmodelElement_XssInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    {
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(validSubmodelId, maliciousIdShortPath));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("' OR '1'='1")]
+    [InlineData("element'; DROP TABLE--")]
+    [InlineData("1 UNION SELECT *")]
+    [InlineData("admin'--")]
+    public async Task GetSubmodelElement_SqlInjectionInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    {
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(validSubmodelId, maliciousIdShortPath));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("javascript:alert('xss')")]
+    [InlineData("data:text/html,<script>")]
+    [InlineData("file:///etc/passwd")]
+    [InlineData("vbscript:msgbox('xss')")]
+    public async Task GetSubmodelElement_DangerousProtocolInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    {
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(validSubmodelId, maliciousIdShortPath));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("element with spaces")]
+    [InlineData("element/slash")]
+    [InlineData("element\\backslash")]
+    [InlineData("element|pipe")]
+    [InlineData("element;semicolon")]
+    public async Task GetSubmodelElement_InvalidCharactersInIdShortPath_Returns400BadRequest(string invalidIdShortPath)
+    {
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(validSubmodelId, invalidIdShortPath));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("ContactInformation1")]
+    [InlineData("ManufacturerName")]
+    [InlineData("element.subelement.property")]
+    [InlineData("list[0]")]
+    [InlineData("element[3].property")]
+    [InlineData("collection_item-name")]
+    public async Task GetSubmodelElement_ValidIdShortPath_DoesNotReturn400(string validIdShortPath)
+    {
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
+        _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        .Throws(new ResourceNotFoundException());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(validSubmodelId, validIdShortPath));
+
+        Assert.NotEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("not!!valid")]
+    [InlineData("invalid base64")]
+    public async Task GetSubmodel_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    {
+        var response = await _client.GetAsync($"/submodels/{invalidBase64}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("<svg/onload=alert('xss')>")]
+    [InlineData("1 UNION SELECT * FROM submodels")]
+    [InlineData("javascript:alert(1)")]
+    public async Task GetSubmodel_MaliciousPattern_Returns400BadRequest(string maliciousContent)
+    {
+        var encoded = EncodeBase64Url(maliciousContent);
+
+        var response = await _client.GetAsync($"/submodels/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static string EncodeBase64Url(string plainText)
+    {
+        if (string.IsNullOrWhiteSpace(plainText))
+        {
+            return string.Empty;
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(plainText);
+        return WebEncoders.Base64UrlEncode(bytes);
+    }
+
+    private static string CreateSubmodelElementPath(string submodelIdentifier, string idShortPath)
+        => $"/submodels/{submodelIdentifier}/submodel-elements/{Uri.EscapeDataString(idShortPath)}";
 }
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
