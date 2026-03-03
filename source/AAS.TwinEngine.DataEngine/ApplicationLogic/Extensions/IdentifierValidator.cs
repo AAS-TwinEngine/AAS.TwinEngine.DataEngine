@@ -13,7 +13,7 @@ public static partial class IdentifierValidator
 
     private static readonly Regex XssPattern = new(@"<[^>]*on\w+\s*=|<\s*script|<\s*/\s*script", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
     private static readonly Regex SqlInjectionPattern = new(@"(\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE)?|INSERT( +INTO)?|MERGE|SELECT|UPDATE|UNION( +ALL)?)\b)|('|(--)|;|\/\*|\*\/|xp_)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
-    private static readonly Regex PathTraversalPattern = new(@"(\.\.[/\\])|(%2e%2e[/\\])|(\.\.[%2f%5c])", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
+    private static readonly Regex PathTraversalPattern = new(@"(?:(?:\.\.)|(?:%2e%2e))(?:[/\\]|%2f|%5c)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
 
     // IdShort validation: allows alphanumeric, dot, underscore, hyphen, and square brackets (for array indexing)
     // Pattern: ^[a-zA-Z0-9._\-\[\]%]+$
@@ -180,9 +180,9 @@ public static partial class IdentifierValidator
                 return false;
             }
         }
-        catch (RegexMatchTimeoutException)
+        catch (RegexMatchTimeoutException ex)
         {
-            logger?.LogWarning("IdShortPath validation timeout");
+            logger?.LogWarning(ex, "IdShortPath validation timeout");
             return false;
         }
 
@@ -199,7 +199,7 @@ public static partial class IdentifierValidator
         {
             return XssPattern.IsMatch(identifier);
         }
-        catch (RegexMatchTimeoutException)
+        catch (RegexMatchTimeoutException ex)
         {
             return true;
         }
@@ -211,7 +211,7 @@ public static partial class IdentifierValidator
         {
             return SqlInjectionPattern.IsMatch(identifier);
         }
-        catch (RegexMatchTimeoutException)
+        catch (RegexMatchTimeoutException ex)
         {
             return true;
         }
@@ -223,7 +223,7 @@ public static partial class IdentifierValidator
         {
             return PathTraversalPattern.IsMatch(identifier);
         }
-        catch (RegexMatchTimeoutException)
+        catch (RegexMatchTimeoutException ex)
         {
             return true;
         }
