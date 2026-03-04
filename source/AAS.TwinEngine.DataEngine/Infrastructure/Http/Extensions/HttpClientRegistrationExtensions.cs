@@ -14,7 +14,7 @@ public static class HttpClientRegistrationExtensions
         string clientName,
         string retryPolicySectionKey,
         Uri baseUrl,
-        bool forwardAuthorizationHeader = false
+        bool enableHeaderForwarding = false
         )
     {
         _ = services.Configure<HttpRetryPolicyOptions>(configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{retryPolicySectionKey}"));
@@ -26,7 +26,7 @@ public static class HttpClientRegistrationExtensions
         })
         .AddStandardResilienceHandler(retryPolicySectionKey);
 
-        if (forwardAuthorizationHeader)
+        if (enableHeaderForwarding)
         {
             _ = httpClientBuilder.AddHttpMessageHandler(sp =>
                 new HeaderForwardingHandler(

@@ -61,6 +61,8 @@ public class HeaderMappingServiceTests
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://example.com");
 
         service.ApplyMappings(context, requestMessage, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+
+        Assert.False(requestMessage.Headers.Contains("X-Optional"));
     }
 
     [Fact]

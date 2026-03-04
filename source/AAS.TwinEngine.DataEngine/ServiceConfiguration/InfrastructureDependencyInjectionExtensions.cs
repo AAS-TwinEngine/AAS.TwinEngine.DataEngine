@@ -52,13 +52,13 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddSingleton<IValidateOptions<MultiLanguagePropertySettings>, MultiLanguagePropertySettingsValidator>();
         _ = services.Configure<HeaderForwardingOptions>(configuration.GetSection(HeaderForwardingOptions.Section));
 
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!, forwardAuthorizationHeader: true);
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasRegistryHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasRegistryBaseUrl!, forwardAuthorizationHeader: true);
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.SubmodelRegistryHttpClientName, HttpRetryPolicyOptions.SubmodelDescriptorProvider, aasEnvironment?.SubModelRegistryBaseUrl!, forwardAuthorizationHeader: true);
+        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!, enableHeaderForwarding: true);
+        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasRegistryHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasRegistryBaseUrl!, enableHeaderForwarding: true);
+        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.SubmodelRegistryHttpClientName, HttpRetryPolicyOptions.SubmodelDescriptorProvider, aasEnvironment?.SubModelRegistryBaseUrl!, enableHeaderForwarding: true);
 
         foreach (var plugin in plugins.Plugins)
         {
-            _ = services.AddHttpClientWithResilience(configuration, PluginConfig.HttpClientNamePrefix + plugin.PluginName, HttpRetryPolicyOptions.PluginDataProvider, plugin?.PluginUrl, forwardAuthorizationHeader: true);
+            _ = services.AddHttpClientWithResilience(configuration, PluginConfig.HttpClientNamePrefix + plugin.PluginName, HttpRetryPolicyOptions.PluginDataProvider, plugin.PluginUrl, enableHeaderForwarding: true);
         }
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();

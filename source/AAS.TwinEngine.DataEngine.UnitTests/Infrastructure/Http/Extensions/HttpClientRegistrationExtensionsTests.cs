@@ -116,7 +116,7 @@ public class HttpClientRegistrationExtensionsTests
             AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
             HttpRetryPolicyOptions.TemplateProvider,
             new Uri("https://example.com"),
-            forwardAuthorizationHeader: true);
+            enableHeaderForwarding: true);
 
         using var handler = new FaultyHttpMessageHandler();
         services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
@@ -164,7 +164,7 @@ public class HttpClientRegistrationExtensionsTests
             AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
             HttpRetryPolicyOptions.TemplateProvider,
             new Uri("https://example.com"),
-            forwardAuthorizationHeader: false);
+            enableHeaderForwarding: false);
 
         using var handler = new FaultyHttpMessageHandler();
         services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,

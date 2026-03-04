@@ -16,7 +16,7 @@ public class HeaderMappingService(ILogger<HeaderMappingService> logger, IOptions
     private Regex _headerNameRegex = null!;
     private Regex _headerValueRegex = null!;
     private List<Regex> _blockedPatterns = [];
-    private bool _initialized;
+    private volatile bool _initialized;
     private readonly object _lock = new();
 
     public void ValidateIncomingHeaders(HttpContext? httpContext)
@@ -37,15 +37,15 @@ public class HeaderMappingService(ILogger<HeaderMappingService> logger, IOptions
                 continue;
             }
 
-            var combinedValue = string.Join(",", values!);
+            var combinedValue = string.Join(",", (IEnumerable<string>)values!);
 
             if (IsHeaderNameValid(headerName) && IsHeaderValueValid(combinedValue))
             {
                 continue;
             }
 
-            logger.LogWarning("Incoming header {HeaderName} failed sanitization.", headerName);
-            throw new BadRequestException();
+            logger.LogWarning("Incoming header failed sanitization.");
+            throw new BadRequestException("Incoming header failed sanitization.");
         }
     }
 
@@ -69,81 +69,123 @@ public class HeaderMappingService(ILogger<HeaderMappingService> logger, IOptions
 
         foreach (var rule in mappings)
         {
-            if (string.IsNullOrWhiteSpace(rule.Source) || string.IsNullOrWhiteSpace(rule.Target))
+            ProcessRule(rule, httpContext, outgoingRequest, clientName);
+        }
+    }
+
+    private void ProcessRule(HeaderMappingRule rule, HttpContext httpContext, HttpRequestMessage outgoingRequest, string clientName)
+    {
+        if (!IsRuleValid(rule))
+        {
+            return;
+        }
+
+        var sourceName = rule.Source!;
+        var targetName = rule.Target!;
+
+        if (!TryGetHeaderValue(httpContext, sourceName, rule.Required, clientName, out var combinedValue))
+        {
+            return;
+        }
+
+        if (!ValidateTargetHeader(targetName, rule.Required))
+        {
+            return;
+        }
+
+        if (!ValidateHeaderValue(combinedValue, sourceName, clientName, rule.Required))
+        {
+            return;
+        }
+
+        ApplyHeader(outgoingRequest, targetName, combinedValue, sourceName, clientName, rule.Required);
+    }
+
+    private bool TryGetHeaderValue(HttpContext httpContext, string sourceName, bool required, string clientName, out string combinedValue)
+    {
+        combinedValue = string.Empty;
+
+        var hasHeader = httpContext.Request.Headers.TryGetValue(sourceName, out var values) && values.Count > 0 && !StringValues.IsNullOrEmpty(values);
+
+        if (!hasHeader)
+        {
+            if (required)
             {
-                continue;
+                logger.LogWarning("Required header {HeaderName} is missing for client {ClientName}.", sourceName, clientName);
+
+                throw new BadRequestException();
             }
 
-            var sourceName = rule.Source;
-            var targetName = rule.Target;
+            return false;
+        }
 
-            var hasHeader = httpContext.Request.Headers.TryGetValue(sourceName, out var values) &&
-                            values.Count > 0 && !StringValues.IsNullOrEmpty(values);
+        combinedValue = string.Join(",", [.. values]);
+        return true;
+    }
 
-            if (!hasHeader)
+    private bool ValidateTargetHeader(string targetName, bool required)
+    {
+        if (IsHeaderNameValid(targetName))
+        {
+            return true;
+        }
+
+        logger.LogWarning("Target header name {HeaderName} is invalid and will not be forwarded.", targetName);
+
+        return required ? throw new BadRequestException() : false;
+    }
+
+    private bool ValidateHeaderValue(string value, string sourceName, string clientName, bool required)
+    {
+        if (IsHeaderValueValid(value))
+        {
+            return true;
+        }
+
+        logger.LogWarning("Header {HeaderName} for client {ClientName} failed sanitization and will not be forwarded.", sourceName, clientName);
+
+        return required ? throw new BadRequestException() : false;
+    }
+
+    private void ApplyHeader(HttpRequestMessage outgoingRequest, string targetName, string value, string sourceName, string clientName, bool required)
+    {
+        try
+        {
+            if (string.Equals(targetName, "Authorization", StringComparison.OrdinalIgnoreCase))
             {
-                if (rule.Required)
-                {
-                    logger.LogWarning("Required header {HeaderName} is missing for client {ClientName}.", sourceName, clientName);
-                    throw new BadRequestException();
-                }
-
-                continue;
+                ApplyAuthorizationHeader(outgoingRequest, value, required);
+                return;
             }
 
-            if (!IsHeaderNameValid(targetName))
+            _ = outgoingRequest.Headers.Remove(targetName);
+            _ = outgoingRequest.Headers.TryAddWithoutValidation(targetName, value);
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidOperationException)
+        {
+            logger.LogWarning(ex, "Failed to apply header mapping from {Source} to {Target} for client {ClientName}.", sourceName, targetName, clientName);
+
+            if (required)
             {
-                logger.LogWarning("Target header name {HeaderName} is invalid and will not be forwarded.", targetName);
-                if (rule.Required)
-                {
-                    throw new BadRequestException();
-                }
-
-                continue;
-            }
-
-            var combinedValue = string.Join(",", [.. values]);
-
-            if (!IsHeaderValueValid(combinedValue))
-            {
-                logger.LogWarning("Header {HeaderName} for client {ClientName} failed sanitization and will not be forwarded.", sourceName, clientName);
-                if (rule.Required)
-                {
-                    throw new BadRequestException();
-                }
-
-                continue;
-            }
-
-            try
-            {
-                if (string.Equals(targetName, "Authorization", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (AuthenticationHeaderValue.TryParse(combinedValue, out var authHeader))
-                    {
-                        outgoingRequest.Headers.Authorization = authHeader;
-                    }
-                    else if (rule.Required)
-                    {
-                        throw new BadRequestException();
-                    }
-
-                    continue;
-                }
-
-                _ = outgoingRequest.Headers.Remove(targetName);
-                _ = outgoingRequest.Headers.TryAddWithoutValidation(targetName, combinedValue);
-            }
-            catch (Exception ex) when (ex is FormatException or InvalidOperationException)
-            {
-                logger.LogWarning(ex, "Failed to apply header mapping from {Source} to {Target} for client {ClientName}.", sourceName, targetName, clientName);
-                if (rule.Required)
-                {
-                    throw new BadRequestException();
-                }
+                throw new BadRequestException();
             }
         }
     }
+
+    private static void ApplyAuthorizationHeader(HttpRequestMessage outgoingRequest, string value, bool required)
+    {
+        if (AuthenticationHeaderValue.TryParse(value, out var authHeader))
+        {
+            outgoingRequest.Headers.Authorization = authHeader;
+            return;
+        }
+
+        if (required)
+        {
+            throw new BadRequestException();
+        }
+    }
+
+    private static bool IsRuleValid(HeaderMappingRule rule) => !string.IsNullOrWhiteSpace(rule.Source) && !string.IsNullOrWhiteSpace(rule.Target);
 
     private List<HeaderMappingRule>? ResolveMappingsForClient(string clientName)
     {
@@ -189,8 +231,8 @@ public class HeaderMappingService(ILogger<HeaderMappingService> logger, IOptions
 
             var sanitization = options.Value.HeaderSanitization;
 
-            _headerNameRegex = new Regex(sanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled);
-            _headerValueRegex = new Regex(sanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled);
+            _headerNameRegex = new Regex(sanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
+            _headerValueRegex = new Regex(sanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
 
             _blockedPatterns = [];
             foreach (var pattern in sanitization.BlockedPatterns)
@@ -200,7 +242,7 @@ public class HeaderMappingService(ILogger<HeaderMappingService> logger, IOptions
                     continue;
                 }
 
-                _blockedPatterns.Add(new Regex(pattern, RegexOptions.Compiled));
+                _blockedPatterns.Add(new Regex(pattern, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000)));
             }
 
             _initialized = true;
@@ -233,12 +275,9 @@ public class HeaderMappingService(ILogger<HeaderMappingService> logger, IOptions
             return false;
         }
 
-        foreach (var blocked in _blockedPatterns)
+        if (_blockedPatterns.Any(b => b.IsMatch(value)))
         {
-            if (blocked.IsMatch(value))
-            {
-                return false;
-            }
+            return false;
         }
 
         return true;
