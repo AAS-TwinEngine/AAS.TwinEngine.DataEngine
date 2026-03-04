@@ -4,6 +4,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
@@ -27,6 +29,8 @@ public static class InfrastructureDependencyInjectionExtensions
     {
         _ = services.AddHttpClient();
 
+        _ = services.AddScoped<IHeaderMappingService, HeaderMappingService>();
+
         _ = services.AddScoped<PluginManifestInitializer>();
         _ = services.AddScoped<ITemplateProvider, TemplateProvider>();
         _ = services.AddScoped<ISubmodelTemplateMappingProvider, SubmodelTemplateMappingProvider>();
@@ -39,14 +43,15 @@ public static class InfrastructureDependencyInjectionExtensions
         var aasEnvironment = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
         var plugins = configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
 
-        
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!);
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasRegistryHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasRegistryBaseUrl!);
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.SubmodelRegistryHttpClientName, HttpRetryPolicyOptions.SubmodelDescriptorProvider, aasEnvironment?.SubModelRegistryBaseUrl!);
+        _ = services.Configure<HeaderForwardingOptions>(configuration.GetSection(HeaderForwardingOptions.Section));
+
+        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!, forwardAuthorizationHeader: true);
+        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasRegistryHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasRegistryBaseUrl!, forwardAuthorizationHeader: true);
+        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.SubmodelRegistryHttpClientName, HttpRetryPolicyOptions.SubmodelDescriptorProvider, aasEnvironment?.SubModelRegistryBaseUrl!, forwardAuthorizationHeader: true);
 
         foreach (var plugin in plugins.Plugins)
         {
-            _ = services.AddHttpClientWithResilience(configuration, PluginConfig.HttpClientNamePrefix + plugin.PluginName, HttpRetryPolicyOptions.PluginDataProvider, plugin?.PluginUrl);
+            _ = services.AddHttpClientWithResilience(configuration, PluginConfig.HttpClientNamePrefix + plugin.PluginName, HttpRetryPolicyOptions.PluginDataProvider, plugin?.PluginUrl, forwardAuthorizationHeader: true);
         }
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();
