@@ -1,6 +1,12 @@
 ﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
-public class PluginManifestHealthStatus : IPluginManifestHealthStatus
+public sealed class PluginManifestHealthStatus : IPluginManifestHealthStatus
 {
-    public bool IsHealthy { get; set; } = true;
+    private volatile bool _isHealthy = true;
+
+    public bool IsHealthy
+    {
+        get => _isHealthy;
+        set => _isHealthy = value;
+    }
 }

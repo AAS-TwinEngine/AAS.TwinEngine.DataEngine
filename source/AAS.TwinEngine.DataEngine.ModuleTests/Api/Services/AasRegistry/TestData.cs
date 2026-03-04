@@ -3,7 +3,7 @@
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 
-namespace AAS.TwinEngine.DataEngine.ModuleTests.ApplicationLogic.Services.AasRegistry;
+namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRegistry;
 
 internal static class TestData
 {

@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
@@ -20,6 +21,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Serv
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
+
+using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration;
 
@@ -43,6 +46,10 @@ public static class InfrastructureDependencyInjectionExtensions
         var aasEnvironment = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
         var plugins = configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
 
+        _ = services.AddOptions<MultiLanguagePropertySettings>()
+            .Bind(configuration.GetSection(MultiLanguagePropertySettings.Section))
+            .ValidateOnStart();
+        _ = services.AddSingleton<IValidateOptions<MultiLanguagePropertySettings>, MultiLanguagePropertySettingsValidator>();
         _ = services.Configure<HeaderForwardingOptions>(configuration.GetSection(HeaderForwardingOptions.Section));
 
         _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!, forwardAuthorizationHeader: true);

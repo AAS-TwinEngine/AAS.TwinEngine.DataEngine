@@ -133,9 +133,18 @@ jobs:
           recreate: true
           path: results.md
           
-      - name: Upload TRX as artifact (Fork PR fallback)
-        if: github.event.pull_request.head.repo.fork == true
+      - name: Upload TRX as artifact
+        if: always()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
-          name: test-results
+          name: dotnet-test-results
           path: "**/*_test_results.trx"
+
+      - name: Upload Code Coverage as artifact
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: dotnet-code-coverage
+
+
+          path: "**/coverage.cobertura.xml"

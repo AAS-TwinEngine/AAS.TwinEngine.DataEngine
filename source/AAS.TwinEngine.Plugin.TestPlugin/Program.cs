@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Monitoring;
+using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
 using AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
 
 using Asp.Versioning;
@@ -21,6 +22,8 @@ public static class Program
         builder.Services.ConfigureApplication(builder.Configuration);
         builder.Services.AddAuthorization();
 
+        builder.Services.AddHealthChecks().AddCheck<MockDataHealthCheck>("mock_data");
+
         builder.Services.AddControllers();
 
         builder.Services.AddEndpointsApiExplorer();
@@ -40,6 +43,8 @@ public static class Program
         .AddMvc();
 
         var app = builder.Build();
+
+        app.MapHealthChecks("/healthz");
 
         using (var scope = app.Services.CreateScope())
         {

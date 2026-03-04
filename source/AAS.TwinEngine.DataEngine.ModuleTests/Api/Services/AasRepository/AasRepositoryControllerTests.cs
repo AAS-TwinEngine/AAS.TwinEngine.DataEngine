@@ -9,7 +9,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
-using AAS.TwinEngine.DataEngine.ModuleTests.ApplicationLogic.Services.AasRepository;
 
 using AasCore.Aas3_0;
 

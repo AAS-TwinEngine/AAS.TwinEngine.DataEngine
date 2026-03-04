@@ -4,7 +4,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 
 using AasCore.Aas3_0;
-namespace AAS.TwinEngine.DataEngine.ModuleTests.ApplicationLogic.Services.AasRepository;
+
+namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRepository;
 
 internal static class TestData
 {
