@@ -513,7 +513,7 @@ public partial class SemanticIdHandler(
         return submodelElementTemplate;
     }
 
-    public void FillOutSubmodelElementList(SubmodelElementList list, SemanticTreeNode values)
+    private void FillOutSubmodelElementList(SubmodelElementList list, SemanticTreeNode values)
     {
         if (list?.Value == null || list.Value.Count == 0)
         {
@@ -523,7 +523,7 @@ public partial class SemanticIdHandler(
         FillOutSubmodelElementValue(list.Value, values, false);
     }
 
-    public void FillOutSubmodelElementCollection(SubmodelElementCollection collection, SemanticTreeNode values)
+    private void FillOutSubmodelElementCollection(SubmodelElementCollection collection, SemanticTreeNode values)
     {
         if (collection?.Value == null || collection.Value.Count == 0)
         {
@@ -647,7 +647,7 @@ public partial class SemanticIdHandler(
         }
     }
 
-    public void FillOutEntity(Entity entity, SemanticTreeNode values)
+    private void FillOutEntity(Entity entity, SemanticTreeNode values)
     {
         if (entity.EntityType == EntityType.SelfManagedEntity)
         {
