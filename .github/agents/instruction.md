@@ -4,7 +4,9 @@ Default to changes that strengthen Onion Architecture, Clean Code, SOLID, securi
 ## Project Overview (Current Scope)
 
 * **DataEngine**: A .NET API service aligned with **IDTA (Industrial Digital Twin Association) specifications** that dynamically generates Asset Administration Shell (AAS) structures (shell descriptors, submodels, and submodel elements).
-  On each request, DataEngine loads a template from from external registries/repositories at this time  templates don't have any values. once DataEngine get the template it request plugin to get values to fill in the template. once data engine get the values from plugin, it will fill all the values in template and returns a complete AAS models to user. 
+  - On each request, DataEngine loads a template from external registries/repositories. At this time, templates contain only structure and semantic IDs; they do not contain values.
+  - After DataEngine retrieves the template, it requests a plugin to provide the values needed to populate the template.
+  - Once DataEngine receives the values from the plugin, it fills the template and returns a complete AAS model to the client.
 
 ### Plugin (General Concept)
 
@@ -19,7 +21,7 @@ Plugins are responsible for:
 
 ### Registry & Repository (General Concept)
 
-The AAS **registry** and **repository** services provide template and descriptor endpoints consumed by DataEngine To get templates.
+The AAS **registry** and **repository** services expose template and descriptor endpoints that DataEngine consumes to retrieve templates.
 
 * These services are external platform dependencies.
 * Registry/repository components are **not developed or maintained by this project**.
@@ -94,9 +96,9 @@ flowchart LR
   - Keep validation rules close to request DTOs (or dedicated validators) and avoid duplication.
 
 ## Error Handling
-- Use centralized exception handling via `ErrorController` (avoid scattered controller-level try/catch).
+- Use centralized exception handling via `GlobalExceptionHandler` (ASP.NET Core `IExceptionHandler` implementation; avoid scattered controller-level try/catch).
 - Return stable JSON error contracts with correct HTTP status codes.
-- Map **base exception types** in `ErrorController` (for example `NotFoundException`, `BadRequestException`, `ServiceUnavailableException`) rather than listing every custom exception.
+- Map **base exception types** in `GlobalExceptionHandler` (for example `NotFoundException`, `BadRequestException`, `ServiceUnavailableException`) rather than listing every custom exception.
 - Ensure custom exceptions inherit from the correct base type and define safe, reusable default messages (`public const string DefaultMessage`).
 - Keep exception messages human-readable, consistent in tone, and safe for external consumers (no stack traces, internal endpoint details, or sensitive data).
 - Keep exception organization consistent:
