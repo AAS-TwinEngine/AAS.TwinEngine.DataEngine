@@ -3,15 +3,15 @@ using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
+namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 
-public class HeaderMappingService(ILogger<HeaderMappingService> logger, IOptions<HeaderForwardingOptions> options) : IHeaderMappingService
+public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<HeaderForwardingOptions> options) : IRequestHeaderMapper
 {
     private Regex _headerNameRegex = null!;
     private Regex _headerValueRegex = null!;

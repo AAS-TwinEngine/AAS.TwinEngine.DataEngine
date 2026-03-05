@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Policies;
 
@@ -13,9 +13,7 @@ public static class HttpClientRegistrationExtensions
         IConfiguration configuration,
         string clientName,
         string retryPolicySectionKey,
-        Uri baseUrl,
-        bool enableHeaderForwarding = false
-        )
+        Uri baseUrl)
     {
         _ = services.Configure<HttpRetryPolicyOptions>(configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{retryPolicySectionKey}"));
 
@@ -26,14 +24,11 @@ public static class HttpClientRegistrationExtensions
         })
         .AddStandardResilienceHandler(retryPolicySectionKey);
 
-        if (enableHeaderForwarding)
-        {
-            _ = httpClientBuilder.AddHttpMessageHandler(sp =>
+        _ = httpClientBuilder.AddHttpMessageHandler(sp =>
                 new HeaderForwardingHandler(
                     sp.GetRequiredService<IHttpContextAccessor>(),
-                    sp.GetRequiredService<IHeaderMappingService>(),
+                    sp.GetRequiredService<IRequestHeaderMapper>(),
                     clientName));
-        }
 
         return services;
     }

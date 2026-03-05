@@ -1,4 +1,4 @@
-﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 
 public class HeaderSanitizationMiddleware(RequestDelegate next)
 {
@@ -8,7 +8,7 @@ public class HeaderSanitizationMiddleware(RequestDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var headerMappingService = context.RequestServices.GetRequiredService<IHeaderMappingService>();
+        var headerMappingService = context.RequestServices.GetRequiredService<IRequestHeaderMapper>();
 
         headerMappingService.ValidateIncomingHeaders(context);
 

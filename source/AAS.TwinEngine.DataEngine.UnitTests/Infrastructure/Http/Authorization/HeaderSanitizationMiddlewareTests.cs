@@ -1,11 +1,11 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Shared.Authorization;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
 
 public class HeaderSanitizationMiddlewareTests
 {
@@ -13,7 +13,7 @@ public class HeaderSanitizationMiddlewareTests
     public async Task InvokeAsync_CallsValidateIncomingHeaders_AndNext()
     {
         var services = new ServiceCollection();
-        var mappingService = Substitute.For<IHeaderMappingService>();
+        var mappingService = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddSingleton(mappingService);
         var serviceProvider = services.BuildServiceProvider();
 

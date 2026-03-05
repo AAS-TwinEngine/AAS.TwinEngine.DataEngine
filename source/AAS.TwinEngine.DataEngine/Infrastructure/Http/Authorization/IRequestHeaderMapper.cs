@@ -1,6 +1,6 @@
-﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 
-public interface IHeaderMappingService
+public interface IRequestHeaderMapper
 {
     void ApplyMappings(HttpContext? httpContext, HttpRequestMessage outgoingRequest, string clientName);
 

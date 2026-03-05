@@ -1,7 +1,7 @@
 ﻿using System.Net;
 
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using Microsoft.AspNetCore.Http;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Shared.Authorization;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
 
 public class HeaderForwardingHandlerTests
 {
@@ -38,7 +38,7 @@ public class HeaderForwardingHandlerTests
             }
         };
 
-        var mappingService = new HeaderMappingService(new NullLogger<HeaderMappingService>(), Options.Create(options));
+        var mappingService = new RequestHeaderMapper(new NullLogger<RequestHeaderMapper>(), Options.Create(options));
 
         return new HeaderForwardingHandler(accessor, mappingService, clientName)
         {
@@ -78,7 +78,7 @@ public class HeaderForwardingHandlerTests
         var httpContext = new DefaultHttpContext();
 
         var accessor = new HttpContextAccessor { HttpContext = httpContext };
-        var mappingService = Substitute.For<IHeaderMappingService>();
+        var mappingService = Substitute.For<IRequestHeaderMapper>();
 
         using var handler = new HeaderForwardingHandler(accessor, mappingService, clientName)
         {

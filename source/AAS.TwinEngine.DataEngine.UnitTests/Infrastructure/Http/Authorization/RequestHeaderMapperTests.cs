@@ -1,22 +1,22 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Shared.Authorization;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
 
-public class HeaderMappingServiceTests
+public class RequestHeaderMapperTests
 {
-    private static HeaderMappingService CreateService(HeaderForwardingOptions options)
+    private static RequestHeaderMapper CreateService(HeaderForwardingOptions options)
     {
-        var logger = new NullLogger<HeaderMappingService>();
+        var logger = new NullLogger<RequestHeaderMapper>();
         var opts = Options.Create(options);
-        return new HeaderMappingService(logger, opts);
+        return new RequestHeaderMapper(logger, opts);
     }
 
     [Fact]

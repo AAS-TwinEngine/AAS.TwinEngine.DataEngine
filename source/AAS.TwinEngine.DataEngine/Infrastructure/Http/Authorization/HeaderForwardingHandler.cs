@@ -1,8 +1,8 @@
-﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 
 public sealed class HeaderForwardingHandler(
     IHttpContextAccessor httpContextAccessor,
-    IHeaderMappingService headerMappingService,
+    IRequestHeaderMapper headerMappingService,
     string clientName) : DelegatingHandler
 {
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

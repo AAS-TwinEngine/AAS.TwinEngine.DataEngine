@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Authorization.Config;
+namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 
 public class HeaderForwardingOptions
 {
@@ -24,16 +24,16 @@ public class HeaderSanitizationOptions
     [Required]
     public AllowedCharactersOptions AllowedCharacters { get; set; } = new();
 
-    public IList<string> BlockedPatterns { get; set; } = [];
+    public IList<string> BlockedPatterns { get; set; } = ["\\r|\\n", "\\x00", "<script"];
 }
 
 public class AllowedCharactersOptions
 {
     [Required]
-    public string HeaderNames { get; set; } = "^[a-zA-Z0-9-_]+$";
+    public string HeaderNames { get; set; } = "^[a-zA-Z0-9\\-_]+$";
 
     [Required]
-    public string HeaderValues { get; set; } = "^[\x20-\x7E]+$";
+    public string HeaderValues { get; set; } = "^[\\x20-\\x7E]+$";
 }
 
 public class HeaderMappings
