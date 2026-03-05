@@ -199,7 +199,7 @@ public static partial class IdentifierValidator
         {
             return XssPattern.IsMatch(identifier);
         }
-        catch (RegexMatchTimeoutException ex)
+        catch (RegexMatchTimeoutException)
         {
             return true;
         }
@@ -211,7 +211,7 @@ public static partial class IdentifierValidator
         {
             return SqlInjectionPattern.IsMatch(identifier);
         }
-        catch (RegexMatchTimeoutException ex)
+        catch (RegexMatchTimeoutException)
         {
             return true;
         }
@@ -223,7 +223,7 @@ public static partial class IdentifierValidator
         {
             return PathTraversalPattern.IsMatch(identifier);
         }
-        catch (RegexMatchTimeoutException ex)
+        catch (RegexMatchTimeoutException)
         {
             return true;
         }
