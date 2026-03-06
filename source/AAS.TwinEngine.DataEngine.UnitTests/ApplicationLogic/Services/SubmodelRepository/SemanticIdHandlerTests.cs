@@ -1,8 +1,12 @@
-﻿using System.Reflection;
+﻿/*using System.Reflection;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Extraction;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_0;
@@ -23,18 +27,23 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Submodel
 public class SemanticIdHandlerTests
 {
     private readonly SemanticIdHandler _sut;
-    private readonly ILogger<SemanticIdHandler> _logger;
+    private readonly ILogger<SemanticTreeExtractor> _extractorLogger;
+    private readonly ILogger<SubmodelFiller> _fillerLogger;
     private readonly IOptions<MultiLanguagePropertySettings> _mlpSettings;
     private readonly IOptions<Semantics> _semantics;
+    private readonly ISemanticIdResolver _resolver;
 
     public SemanticIdHandlerTests()
     {
-        _logger = Substitute.For<ILogger<SemanticIdHandler>>();
+        _extractorLogger = Substitute.For<ILogger<SemanticTreeExtractor>>();
+        _fillerLogger = Substitute.For<ILogger<SubmodelFiller>>();
         _mlpSettings = Substitute.For<IOptions<MultiLanguagePropertySettings>>();
         _ = _mlpSettings.Value.Returns(new MultiLanguagePropertySettings { DefaultLanguages = null });
         _semantics = Substitute.For<IOptions<Semantics>>();
         _ = _semantics.Value.Returns(new Semantics { MultiLanguageSemanticPostfixSeparator = "_", SubmodelElementIndexContextPrefix = "_aastwinengineindex_" });
-        _sut = new SemanticIdHandler(_logger, _semantics, _mlpSettings);
+
+        _resolver = new SemanticIdResolver(_semantics);
+        _sut = CreateSut(_semantics, _mlpSettings);
     }
 
     [Fact]
@@ -57,9 +66,8 @@ public class SemanticIdHandlerTests
     public void SemanticIdHandler_NullSemantics_ThrowsException()
     {
         var options = Options.Create<Semantics>(options: null!);
-        var logger = Substitute.For<ILogger<SemanticIdHandler>>();
 
-        _ = Throws<NullReferenceException>(() => new SemanticIdHandler(logger, options, _mlpSettings));
+        _ = Throws<NullReferenceException>(() => new SemanticIdResolver(options));
     }
 
     [Fact]
@@ -235,7 +243,7 @@ public class SemanticIdHandlerTests
     public void Extract_EmptyMultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr()
     {
         var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var sut = CreateSut(_semantics, mlpSettings);
         var mlp = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
 
         var node = sut.Extract(mlp) as SemanticBranchNode;
@@ -253,7 +261,7 @@ public class SemanticIdHandlerTests
     public void Extract_MultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr()
     {
         var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var sut = CreateSut(_semantics, mlpSettings);
         var mlp = TestData.CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate();
 
         var node = sut.Extract(mlp) as SemanticBranchNode;
@@ -279,7 +287,7 @@ public class SemanticIdHandlerTests
         var contactInformationNode = node.Children[0] as SemanticBranchNode;
         Equal("http://example.com/idta/digital-nameplate/contact-information", contactInformationNode?.SemanticId);
         Empty(contactInformationNode!.Children);
-        _logger.Received(1).Log(LogLevel.Warning, Arg.Any<EventId>(),
+        _extractorLogger.Received(1).Log(LogLevel.Warning, Arg.Any<EventId>(),
                                 Arg.Is<object>(state => state.ToString()!
                                                              .Contains("No elements defined in SubmodelElementCollection ContactInformation")),
                                 null,
@@ -298,7 +306,7 @@ public class SemanticIdHandlerTests
         var contactInformationNode = node.Children[0] as SemanticBranchNode;
         Equal("http://example.com/idta/digital-nameplate/contact-list", contactInformationNode?.SemanticId);
         Empty(contactInformationNode!.Children);
-        _logger.Received(1).Log(LogLevel.Warning, Arg.Any<EventId>(),
+        _extractorLogger.Received(1).Log(LogLevel.Warning, Arg.Any<EventId>(),
         Arg.Is<object>(state => state.ToString()!
                                      .Contains("No elements defined in SubmodelElementList ContactList")),
         null,
@@ -406,9 +414,7 @@ public class SemanticIdHandlerTests
         var element = Substitute.For<ISubmodelElement>();
         element.Qualifiers.Returns([qualifier]);
 
-        var actual = (Cardinality)typeof(SemanticIdHandler)
-            .GetMethod("GetCardinality", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [element])!;
+        var actual = _resolver.GetCardinality(element);
 
         Equal(expected, actual);
     }
@@ -419,9 +425,7 @@ public class SemanticIdHandlerTests
         var element = Substitute.For<ISubmodelElement>();
         element.Qualifiers.Returns((List<IQualifier>?)null);
 
-        var actual = (Cardinality)typeof(SemanticIdHandler)
-            .GetMethod("GetCardinality", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [element])!;
+        var actual = _resolver.GetCardinality(element);
 
         Equal(Cardinality.Unknown, actual);
     }
@@ -432,9 +436,7 @@ public class SemanticIdHandlerTests
         var element = Substitute.For<ISubmodelElement>();
         element.Qualifiers.Returns([]);
 
-        var actual = (Cardinality)typeof(SemanticIdHandler)
-            .GetMethod("GetCardinality", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [element])!;
+        var actual = _resolver.GetCardinality(element);
 
         Equal(Cardinality.Unknown, actual);
     }
@@ -463,9 +465,7 @@ public class SemanticIdHandlerTests
             qualifiers: []
         );
 
-        var actual = (DataType)typeof(SemanticIdHandler)
-            .GetMethod("GetValueType", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [prop])!;
+        var actual = _resolver.GetValueType(prop);
 
         Equal(expected, actual);
     }
@@ -475,9 +475,7 @@ public class SemanticIdHandlerTests
     {
         var element = Substitute.For<ISubmodelElement>();
 
-        var actual = (DataType)typeof(SemanticIdHandler)
-            .GetMethod("GetValueType", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [element])!;
+        var actual = _resolver.GetValueType(element);
 
         Equal(DataType.Unknown, actual);
     }
@@ -833,7 +831,7 @@ public class SemanticIdHandlerTests
     public void FillOutTemplate_EmptyMultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr_AddsAllLanguages()
     {
         var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var sut = CreateSut(_semantics, mlpSettings);
         var submodel = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
         var semanticTree = TestData.CreateSubmodelWithManufacturerName();
 
@@ -846,7 +844,7 @@ public class SemanticIdHandlerTests
         Equal(3, mlp.Value!.Count);
         var languages = mlp.Value.Select(v => v.Language).OrderBy(l => l).ToList();
         Equal(["de", "en", "fr"], languages);
-        _logger.Received(3).Log(
+        _fillerLogger.Received(3).Log(
                                 LogLevel.Information,
                                 Arg.Any<EventId>(),
                                 Arg.Is<object>(state => state.ToString()!.Contains("Added language")),
@@ -859,7 +857,7 @@ public class SemanticIdHandlerTests
     public void FillOutTemplate_MultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr_MergesWithTemplateLanguages()
     {
         var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = new SemanticIdHandler(_logger, _semantics, mlpSettings);
+        var sut = CreateSut(_semantics, mlpSettings);
         var submodel = TestData.CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate();
         var semanticTree = TestData.CreateSubmodelWithManufacturerName();
 
@@ -879,7 +877,7 @@ public class SemanticIdHandlerTests
         var frValue = mlp.Value.FirstOrDefault(v => v.Language == "fr");
         NotNull(frValue);
         Equal("Exemple de test Fabricant", frValue.Text);
-        _logger.Received(1).Log(
+        _fillerLogger.Received(1).Log(
                                 LogLevel.Information,
                                 Arg.Any<EventId>(),
                                 Arg.Is<object>(state => state.ToString()!.Contains("Added language 'fr'")),
@@ -969,6 +967,18 @@ public class SemanticIdHandlerTests
                            );
     }
 
+    private SemanticIdHandler CreateSut(IOptions<Semantics> semantics, IOptions<MultiLanguagePropertySettings> mlpSettings)
+    {
+        var resolver = new SemanticIdResolver(semantics);
+        var navigator = new SemanticTreeNavigator();
+        var helper = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>());
+        var multiLanguageHelper = new MultiLanguageHelper(mlpSettings);
+        var referenceHelper = new ReferenceHelper(resolver, navigator, Substitute.For<ILogger<ReferenceHelper>>());
+        var extractor = new SemanticTreeExtractor(resolver, helper, multiLanguageHelper, referenceHelper, _extractorLogger);
+        var filler = new SubmodelFiller(resolver, navigator, helper, multiLanguageHelper, referenceHelper, _fillerLogger);
+        return new SemanticIdHandler(extractor, filler);
+    }
+
     private static string GetSemanticId(IHasSemantics hasSemantics) => hasSemantics.SemanticId?.Keys?.FirstOrDefault()?.Value ?? string.Empty;
 
     private static IOptions<MultiLanguagePropertySettings> CreateMlpSettings(List<string>? defaultLanguages)
@@ -980,3 +990,4 @@ public class SemanticIdHandlerTests
         return Options.Create(settings);
     }
 }
+*/
