@@ -73,7 +73,16 @@ public static class Base64UrlExtensions
         try
         {
             var bytes = Encoding.UTF8.GetBytes(plainText);
-            return WebEncoders.Base64UrlEncode(bytes);
+            var encoded = WebEncoders.Base64UrlEncode(bytes);
+
+            if (encoded.Length <= MaxIdentifierLength)
+            {
+                return encoded;
+            }
+
+            logger?.LogError("Decoded identifier exceeds maximum length of {MaxLength} characters: actual length {ActualLength}",
+                             MaxIdentifierLength, encoded.Length);
+            throw new InternalDataProcessingException();
         }
         catch (Exception ex)
         {

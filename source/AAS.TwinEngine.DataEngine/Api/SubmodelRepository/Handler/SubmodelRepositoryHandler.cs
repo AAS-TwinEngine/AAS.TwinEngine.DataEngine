@@ -8,13 +8,13 @@ using AasCore.Aas3_0;
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 
 public class SubmodelRepositoryHandler(
- ILogger<SubmodelRepositoryHandler> logger,
+    ILogger<SubmodelRepositoryHandler> logger,
     ISubmodelRepositoryService submodelRepositoryService) : ISubmodelRepositoryHandler
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
         => GetResourceByIdAsync(
             request?.SubmodelId,
-    "submodel",
+            "submodel",
             id => submodelRepositoryService.GetSubmodelAsync(id, cancellationToken)!
         );
 
@@ -25,14 +25,15 @@ public class SubmodelRepositoryHandler(
 
         return GetResourceByIdAsync(
             request?.SubmodelId,
- "submodel element",
+            "submodel element",
             id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, cancellationToken)!
             );
     }
 
-    private async Task<T> GetResourceByIdAsync<T>(string? encodedId,
-                                                  string resourceName,
-                                                  Func<string, Task<T?>> serviceFetchFunc)
+    private async Task<T> GetResourceByIdAsync<T>(
+        string? encodedId,
+        string resourceName,
+        Func<string, Task<T?>> serviceFetchFunc)
     {
         var decodedId = encodedId?.DecodeBase64Url(logger);
         logger.LogInformation("Start executing get request for {ResourceName}. ID: {DecodedId}", resourceName, decodedId);

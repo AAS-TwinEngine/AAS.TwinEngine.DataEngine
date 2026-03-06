@@ -19,7 +19,7 @@ public class ShellDescriptorHandler(
         return GetShellDescriptorResourceAsync(
             null,
             "shell descriptors",
-            _ => shellDescriptorService.GetAllShellDescriptorsAsync(request?.Limit, request?.Cursor, cancellationToken),
+            _ => shellDescriptorService.GetAllShellDescriptorsAsync(request.Limit, request.Cursor, cancellationToken),
             descriptors => descriptors.ToDto()
         );
     }

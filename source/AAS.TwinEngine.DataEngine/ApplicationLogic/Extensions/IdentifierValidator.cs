@@ -4,9 +4,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
-/// <summary>
-/// Validates identifiers to prevent injection attacks through ID-based URLs.
-/// </summary>
 public static partial class IdentifierValidator
 {
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(100);
@@ -14,9 +11,6 @@ public static partial class IdentifierValidator
     private static readonly Regex XssPattern = new(@"<[^>]*on\w+\s*=|<\s*script|<\s*/\s*script", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
     private static readonly Regex SqlInjectionPattern = new(@"(\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE)?|INSERT( +INTO)?|MERGE|SELECT|UPDATE|UNION( +ALL)?)\b)|('|(--)|;|\/\*|\*\/|xp_)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
     private static readonly Regex PathTraversalPattern = new(@"(?:(?:\.\.)|(?:%2e%2e))(?:[/\\]|%2f|%5c)", RegexOptions.IgnoreCase | RegexOptions.Compiled, RegexTimeout);
-
-    // IdShort validation: allows alphanumeric, dot, underscore, hyphen, and square brackets (for array indexing)
-    // Pattern: ^[a-zA-Z0-9._\-\[\]%]+$
     private static readonly Regex IdShortPattern = IdShortRegex();
 
     private static readonly string[] DangerousProtocols =
@@ -43,13 +37,6 @@ public static partial class IdentifierValidator
         "%00"
     ];
 
-    /// <summary>
-    /// Validates that an identifier does not contain malicious URL patterns or injection attempts.
-    /// </summary>
-    /// <param name="identifier">The identifier to validate</param>
-    /// <param name="parameterName">The name of the parameter being validated (for exception messages)</param>
-    /// <param name="logger">Optional logger for validation failures</param>
-    /// <exception cref="InvalidUserInputException">Thrown when the identifier contains malicious patterns</exception>
     public static void ValidateIdentifier(this string identifier, string parameterName, ILogger? logger = null)
     {
         if (identifier.IsValidIdentifier(logger))
@@ -61,14 +48,6 @@ public static partial class IdentifierValidator
         throw new InvalidUserInputException();
     }
 
-    /// <summary>
-    /// Validates that an idShortPath does not contain malicious patterns.
-    /// IdShortPath format: element.submodelElement[0].property (allows dots, alphanumeric, brackets, underscore, hyphen)
-    /// </summary>
-    /// <param name="idShortPath">The idShortPath to validate</param>
-    /// <param name="parameterName">The name of the parameter being validated (for exception messages)</param>
-    /// <param name="logger">Optional logger for validation failures</param>
-    /// <exception cref="InvalidUserInputException">Thrown when the idShortPath contains malicious patterns</exception>
     public static void ValidateIdShortPath(this string idShortPath, string parameterName, ILogger? logger = null)
     {
         if (idShortPath.IsValidIdShortPath(logger))
@@ -80,12 +59,6 @@ public static partial class IdentifierValidator
         throw new InvalidUserInputException();
     }
 
-    /// <summary>
-    /// Checks if an identifier contains potentially malicious URL patterns.
-    /// </summary>
-    /// <param name="identifier">The identifier to check</param>
-    /// <param name="logger">Optional logger for validation warnings</param>
-    /// <returns>True if the identifier appears safe, false otherwise</returns>
     public static bool IsValidIdentifier(this string identifier, ILogger? logger = null)
     {
         if (string.IsNullOrWhiteSpace(identifier))
@@ -126,14 +99,6 @@ public static partial class IdentifierValidator
         return false;
     }
 
-    /// <summary>
-    /// Checks if an idShortPath contains potentially malicious patterns.
-    /// IdShortPath format: element.subElement[0].property
-    /// Allows: alphanumeric, dot (.), underscore (_), hyphen (-), square brackets ([]), and URL-encoded brackets (%5B, %5D)
-    /// </summary>
-    /// <param name="idShortPath">The idShortPath to check</param>
-    /// <param name="logger">Optional logger for validation warnings</param>
-    /// <returns>True if the idShortPath appears safe, false otherwise</returns>
     public static bool IsValidIdShortPath(this string idShortPath, ILogger? logger = null)
     {
         if (string.IsNullOrWhiteSpace(idShortPath))

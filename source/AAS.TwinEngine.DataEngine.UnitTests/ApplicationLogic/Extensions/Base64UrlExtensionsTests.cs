@@ -73,8 +73,8 @@ public class Base64UrlExtensionsTests
     }
 
     [Theory]
-    [InlineData("amF2YXNjcmlwdDphbGVydCgneHNzJyk")]
-    [InlineData("PHNjcmlwdD5hbGVydCgneHNzJyk8L3NjcmlwdD4")]
+    [InlineData("amF2YXNjcmlwdDphbGVydCgnuHNzJyk")]
+    [InlineData("PHNjcmlwdD5hbGVydCgnuHNzJyk8L3NjcmlwdD4")]
     [InlineData("JyBPUiAnMSc9JzE")]
     public void DecodeBase64Url_WhenDecodedContainsMaliciousPattern_ThrowsInvalidUserInputException(string encoded)
     {
@@ -88,7 +88,8 @@ public class Base64UrlExtensionsTests
     public void DecodeBase64Url_WhenDecodedExceedsMaxLength_ThrowsInvalidUserInputException()
     {
         var longString = new string('a', 2049);
-        var encoded = longString.EncodeBase64Url(_logger);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(longString);
+        var encoded = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(bytes);
 
         var exception = Assert.Throws<InvalidUserInputException>(() =>
         encoded.DecodeBase64Url(_logger));
@@ -99,13 +100,14 @@ public class Base64UrlExtensionsTests
     [Fact]
     public void DecodeBase64Url_WhenDecodedAtMaxLength_Succeeds()
     {
-        var longString = "https://example.com/" + new string('a', 2020);
-        var encoded = longString.EncodeBase64Url(_logger);
+        var longString = new string('a', 2048);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(longString);
+        var encoded = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(bytes);
 
         var result = encoded.DecodeBase64Url(_logger);
 
         Assert.Equal(longString, result);
-        Assert.True(result.Length <= 2048);
+        Assert.Equal(2048, result.Length);
     }
 
     [Theory]
@@ -296,5 +298,28 @@ public class Base64UrlExtensionsTests
         encoded.DecodeBase64Url(_logger));
 
         Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Fact]
+    public void EncodeBase64Url_WhenEncodedLengthExceedsMaxLength_ThrowsInternalDataProcessingException()
+    {
+        var longString = new string('a', 2000);
+
+        var exception = Assert.Throws<InternalDataProcessingException>(() =>
+        longString.EncodeBase64Url(_logger));
+
+        Assert.Equal("Internal Server Error.", exception.Message);
+    }
+
+    [Fact]
+    public void EncodeBase64Url_WhenEncodedLengthAtMaxLength_ReturnsEncodedString()
+    {
+        var stringAtLimit = new string('a', 1536);
+
+        var result = stringAtLimit.EncodeBase64Url(_logger);
+
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+        Assert.True(result.Length <= 2048);
     }
 }
