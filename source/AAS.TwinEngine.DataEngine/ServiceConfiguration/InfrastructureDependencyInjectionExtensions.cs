@@ -9,6 +9,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Con
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;

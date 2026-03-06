@@ -9,15 +9,30 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Conf
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 
-public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<HeaderForwardingOptions> options) : IRequestHeaderMapper
+public class RequestHeaderMapper : IRequestHeaderMapper
 {
-    private Regex _headerNameRegex = null!;
-    private Regex _headerValueRegex = null!;
-    private List<Regex> _blockedPatterns = [];
-    private volatile bool _initialized;
-    private readonly object _lock = new();
+    private readonly ILogger<RequestHeaderMapper> _logger;
+    private readonly IOptions<HeaderForwardingOptions> _options;
+    private readonly Regex _headerNameRegex;
+    private readonly Regex _headerValueRegex;
+    private readonly List<Regex> _blockedPatterns;
+
+    public RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<HeaderForwardingOptions> options)
+    {
+        _logger = logger;
+        _options = options;
+
+        var sanitization = options.Value.HeaderSanitization;
+
+        _headerNameRegex = new Regex(sanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
+        _headerValueRegex = new Regex(sanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
+        _blockedPatterns = sanitization.BlockedPatterns
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => new Regex(p, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000)))
+            .ToList();
+    }
 
     public void ValidateIncomingHeaders(HttpContext? httpContext)
     {
@@ -25,8 +40,6 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
         {
             return;
         }
-
-        EnsureInitialized();
 
         foreach (var header in httpContext.Request.Headers)
         {
@@ -44,7 +57,7 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
                 continue;
             }
 
-            logger.LogWarning("Incoming header failed sanitization.");
+            _logger.LogWarning("Incoming header failed sanitization.");
             throw new BadRequestException("Incoming header failed sanitization.");
         }
     }
@@ -58,8 +71,6 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
         {
             return;
         }
-
-        EnsureInitialized();
 
         var mappings = ResolveMappingsForClient(clientName);
         if (mappings == null || mappings.Count == 0)
@@ -111,7 +122,7 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
         {
             if (required)
             {
-                logger.LogWarning("Required header {HeaderName} is missing for client {ClientName}.", sourceName, clientName);
+                _logger.LogWarning("Required header {HeaderName} is missing for client {ClientName}.", sourceName, clientName);
 
                 throw new BadRequestException();
             }
@@ -130,7 +141,7 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
             return true;
         }
 
-        logger.LogWarning("Target header name {HeaderName} is invalid and will not be forwarded.", targetName);
+        _logger.LogWarning("Target header name {HeaderName} is invalid and will not be forwarded.", targetName);
 
         return required ? throw new BadRequestException() : false;
     }
@@ -142,7 +153,7 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
             return true;
         }
 
-        logger.LogWarning("Header {HeaderName} for client {ClientName} failed sanitization and will not be forwarded.", sourceName, clientName);
+        _logger.LogWarning("Header {HeaderName} for client {ClientName} failed sanitization and will not be forwarded.", sourceName, clientName);
 
         return required ? throw new BadRequestException() : false;
     }
@@ -162,7 +173,7 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
         }
         catch (Exception ex) when (ex is FormatException or InvalidOperationException)
         {
-            logger.LogWarning(ex, "Failed to apply header mapping from {Source} to {Target} for client {ClientName}.", sourceName, targetName, clientName);
+            _logger.LogWarning(ex, "Failed to apply header mapping from {Source} to {Target} for client {ClientName}.", sourceName, targetName, clientName);
 
             if (required)
             {
@@ -189,7 +200,7 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
 
     private List<HeaderMappingRule>? ResolveMappingsForClient(string clientName)
     {
-        var mappings = options.Value.HeaderMappings;
+        var mappings = _options.Value.HeaderMappings;
 
         if (string.Equals(clientName, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, StringComparison.OrdinalIgnoreCase))
         {
@@ -215,43 +226,10 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
         return null;
     }
 
-    private void EnsureInitialized()
-    {
-        if (_initialized)
-        {
-            return;
-        }
-
-        lock (_lock)
-        {
-            if (_initialized)
-            {
-                return;
-            }
-
-            var sanitization = options.Value.HeaderSanitization;
-
-            _headerNameRegex = new Regex(sanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
-            _headerValueRegex = new Regex(sanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
-
-            _blockedPatterns = [];
-            foreach (var pattern in sanitization.BlockedPatterns)
-            {
-                if (string.IsNullOrWhiteSpace(pattern))
-                {
-                    continue;
-                }
-
-                _blockedPatterns.Add(new Regex(pattern, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000)));
-            }
-
-            _initialized = true;
-        }
-    }
 
     private bool IsHeaderNameValid(string headerName)
     {
-        var sanitization = options.Value.HeaderSanitization;
+        var sanitization = _options.Value.HeaderSanitization;
 
         if (headerName.Length > sanitization.MaxHeaderNameSize)
         {
@@ -263,7 +241,7 @@ public class RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<H
 
     private bool IsHeaderValueValid(string value)
     {
-        var sanitization = options.Value.HeaderSanitization;
+        var sanitization = _options.Value.HeaderSanitization;
 
         if (value.Length > sanitization.MaxHeaderSize)
         {

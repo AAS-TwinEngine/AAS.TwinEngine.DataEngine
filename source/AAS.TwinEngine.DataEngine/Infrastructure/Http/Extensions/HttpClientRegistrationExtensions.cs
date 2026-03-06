@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Policies;
 

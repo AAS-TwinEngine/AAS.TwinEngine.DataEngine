@@ -2,6 +2,7 @@
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization.Middleware;
 
 public class HeaderForwardingHandlerTests
 {
@@ -38,9 +39,9 @@ public class HeaderForwardingHandlerTests
             }
         };
 
-        var mappingService = new RequestHeaderMapper(new NullLogger<RequestHeaderMapper>(), Options.Create(options));
+        var headerMapper = new RequestHeaderMapper(new NullLogger<RequestHeaderMapper>(), Options.Create(options));
 
-        return new HeaderForwardingHandler(accessor, mappingService, clientName)
+        return new HeaderForwardingHandler(accessor, headerMapper, clientName)
         {
             InnerHandler = new TestHandler()
         };

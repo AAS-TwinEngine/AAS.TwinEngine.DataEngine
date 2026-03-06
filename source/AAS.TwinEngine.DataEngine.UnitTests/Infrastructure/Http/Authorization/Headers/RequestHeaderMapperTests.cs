@@ -1,14 +1,14 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization.Headers;
 
 public class RequestHeaderMapperTests
 {

@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

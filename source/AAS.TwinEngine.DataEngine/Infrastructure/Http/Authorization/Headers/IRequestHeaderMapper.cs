@@ -1,4 +1,4 @@
-﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 
 public interface IRequestHeaderMapper
 {

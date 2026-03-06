@@ -1,5 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration;
