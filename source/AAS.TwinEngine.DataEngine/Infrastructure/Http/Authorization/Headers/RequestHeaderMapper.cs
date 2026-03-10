@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
@@ -58,7 +59,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             }
 
             _logger.LogWarning("Incoming header failed sanitization.");
-            throw new BadRequestException("Incoming header failed sanitization.");
+            throw new InvalidRequestHeaderException();
         }
     }
 
@@ -124,7 +125,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             {
                 _logger.LogWarning("Required header {HeaderName} is missing for client {ClientName}.", sourceName, clientName);
 
-                throw new BadRequestException();
+                throw new InvalidRequestHeaderException();
             }
 
             return false;
@@ -143,7 +144,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
         _logger.LogWarning("Target header name {HeaderName} is invalid and will not be forwarded.", targetName);
 
-        return required ? throw new BadRequestException() : false;
+        return required ? throw new InvalidRequestHeaderException() : false;
     }
 
     private bool ValidateHeaderValue(string value, string sourceName, string clientName, bool required)
@@ -155,7 +156,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
         _logger.LogWarning("Header {HeaderName} for client {ClientName} failed sanitization and will not be forwarded.", sourceName, clientName);
 
-        return required ? throw new BadRequestException() : false;
+        return required ? throw new InvalidRequestHeaderException() : false;
     }
 
     private void ApplyHeader(HttpRequestMessage outgoingRequest, string targetName, string value, string sourceName, string clientName, bool required)
@@ -177,7 +178,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
             if (required)
             {
-                throw new BadRequestException();
+                throw new InvalidRequestHeaderException();
             }
         }
     }
@@ -192,7 +193,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
         if (required)
         {
-            throw new BadRequestException();
+            throw new InvalidRequestHeaderException();
         }
     }
 
