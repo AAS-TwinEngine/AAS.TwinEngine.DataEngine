@@ -55,7 +55,7 @@ public class ShellDescriptorHandler(
         }
         else
         {
-            logger.LogInformation("Start executing get request for {ResourceName} for AAS Identifier: {AasIdentifier}", resourceName, decodedId);
+            logger.LogInformation("Start executing get request for {ResourceName} for AAS Identifier: {AasIdentifier}", resourceName, LogSanitizer.Sanitize(decodedId));
         }
     }
 

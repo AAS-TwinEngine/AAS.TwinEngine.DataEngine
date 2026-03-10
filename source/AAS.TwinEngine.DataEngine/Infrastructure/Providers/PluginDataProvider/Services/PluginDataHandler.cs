@@ -86,7 +86,7 @@ public class PluginDataHandler(
                 var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorsMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
                 if (shellDescriptorData == null)
                 {
-                    logger.LogError("Failed to deserialize All ShellDescriptorData. Response content: {Content}", responseContent);
+                    logger.LogError("Failed to deserialize All ShellDescriptorData. Response content: {Content}", LogSanitizer.Sanitize(responseContent));
                     throw new ResponseParsingException();
                 }
 

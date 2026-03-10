@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.Common;
 
 using Json.Schema;
 
@@ -63,13 +64,15 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
 
     private void LogAndThrowException(string logMessage, Exception? ex = null)
     {
+        var sanitizedMessage = LogSanitizer.Sanitize(logMessage);
+
         if (ex != null)
         {
-            logger.LogError(ex, logMessage);
+            logger.LogError(ex, "{LogMessage}", sanitizedMessage);
         }
         else
         {
-            logger.LogError(logMessage);
+            logger.LogError("{LogMessage}", sanitizedMessage);
         }
 
         throw new NotFoundException(ExceptionMessages.ResourceNotValid);

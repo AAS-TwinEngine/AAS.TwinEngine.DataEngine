@@ -31,7 +31,7 @@ public class SubmodelRepositoryHandler(
         Func<string, Task<T?>> serviceFetchFunc)
     {
         var decodedId = encodedId?.DecodeBase64Url(logger);
-        logger.LogInformation("Start executing get request for {ResourceName}. ID: {DecodedId}", resourceName, decodedId);
+        logger.LogInformation("Start executing get request for {ResourceName}. ID: {DecodedId}", resourceName, LogSanitizer.Sanitize(decodedId));
 
         var result = await serviceFetchFunc(decodedId!).ConfigureAwait(false);
         ValidateResourceExists(result, resourceName, decodedId!);
@@ -48,11 +48,11 @@ public class SubmodelRepositoryHandler(
 
         if (resourceName == "submodel")
         {
-            logger.LogWarning("{ResourceName} not found for ID: {DecodedId}", resourceName, decodedId);
+            logger.LogWarning("{ResourceName} not found for ID: {DecodedId}", resourceName, LogSanitizer.Sanitize(decodedId));
             throw new SubmodelElementNotFoundException(decodedId);
         }
 
-        logger.LogWarning("{ResourceName} not found for ID: {DecodedId}", resourceName, decodedId);
+        logger.LogWarning("{ResourceName} not found for ID: {DecodedId}", resourceName, LogSanitizer.Sanitize(decodedId));
         throw new SubmodelNotFoundException(decodedId);
     }
 }

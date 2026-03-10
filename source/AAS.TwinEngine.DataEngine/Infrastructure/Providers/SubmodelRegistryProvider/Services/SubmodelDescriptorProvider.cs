@@ -53,12 +53,12 @@ public class SubmodelDescriptorProvider : ISubmodelDescriptorProvider
                 return descriptor;
             }
 
-            _logger.LogError("Failed to deserialize the submodel descriptor. Submodel ID: {SubmodelId}", id);
+            _logger.LogError("Failed to deserialize the submodel descriptor. Submodel ID: {SubmodelId}", LogSanitizer.Sanitize(id));
             throw new ResponseParsingException();
         }
         catch (JsonException)
         {
-            _logger.LogError("Failed to deserialize SubmodelDescriptor from response. Submodel ID: {SubmodelId}, Response: {ResponseContent}", id, responseContent);
+            _logger.LogError("Failed to deserialize SubmodelDescriptor from response. Submodel ID: {SubmodelId}, Response: {ResponseContent}", LogSanitizer.Sanitize(id), LogSanitizer.Sanitize(responseContent));
             throw new ResponseParsingException();
         }
     }
@@ -75,7 +75,7 @@ public class SubmodelDescriptorProvider : ISubmodelDescriptorProvider
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-        _logger.LogError("Received HTTP response from {Url} with status code: {StatusCode}. Response message: {ResponseMessage}", url, response.StatusCode, responseContent);
+        _logger.LogError("Received HTTP response from {Url} with status code: {StatusCode}. Response message: {ResponseMessage}", url, response.StatusCode, LogSanitizer.Sanitize(responseContent));
 
         switch (response.StatusCode)
         {

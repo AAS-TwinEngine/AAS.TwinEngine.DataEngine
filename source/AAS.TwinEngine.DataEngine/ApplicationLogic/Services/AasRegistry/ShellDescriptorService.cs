@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -140,7 +141,7 @@ public class ShellDescriptorService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Unhandled error while processing descriptor with ID '{Id}'", metadata.Id);
+                logger.LogError(ex, "Unhandled error while processing descriptor with ID '{Id}'", LogSanitizer.Sanitize(metadata.Id));
                 continue;
             }
         }
@@ -168,7 +169,7 @@ public class ShellDescriptorService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Unexpected error while deleting descriptor with ID '{Id}'", descriptorId);
+                logger.LogError(ex, "Unexpected error while deleting descriptor with ID '{Id}'", LogSanitizer.Sanitize(descriptorId));
                 continue;
             }
         }

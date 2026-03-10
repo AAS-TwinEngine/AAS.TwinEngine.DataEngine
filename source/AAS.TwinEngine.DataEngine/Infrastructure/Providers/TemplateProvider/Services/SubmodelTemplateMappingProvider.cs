@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 
@@ -26,7 +27,7 @@ public class SubmodelTemplateMappingProvider(ILogger<SubmodelTemplateMappingProv
             return templateId;
         }
 
-        logger.LogError("No matching template found for submodel: {SubmodelId}", submodelId);
+        logger.LogError("No matching template found for submodel: {SubmodelId}", LogSanitizer.Sanitize(submodelId));
         throw new ResourceNotFoundException();
     }
 }

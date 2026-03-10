@@ -3,6 +3,7 @@
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
+using AAS.TwinEngine.Plugin.TestPlugin.Common;
 using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.SubmodelProviders.Helper;
 
@@ -90,11 +91,11 @@ public class SubmodelProvider : ISubmodelProvider
 
     public SemanticTreeNode EnrichWithData(SemanticTreeNode semanticTreeNode, string submodelId)
     {
-        _logger.LogInformation("Starting semantic tree enrichment for submodelId {SubmodelId}", submodelId);
+        _logger.LogInformation("Starting semantic tree enrichment for submodelId {SubmodelId}", LogSanitizer.Sanitize(submodelId));
 
         if (!_nodeInfoDictionaries.TryGetValue(submodelId, out var nodeInfoDictionary))
         {
-            _logger.LogError("Submodel identifier {SubmodelId} not found", submodelId);
+            _logger.LogError("Submodel identifier {SubmodelId} not found", LogSanitizer.Sanitize(submodelId));
             throw new NotFoundException();
         }
 

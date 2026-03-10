@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
@@ -51,7 +52,7 @@ public class MultiPluginDataHandler(IOptions<Semantics> semantics, ILogger<Multi
         if (missingSemanticIds.Count > 0)
         {
             var missingList = string.Join(", ", missingSemanticIds);
-            logger.LogError("Semantic ID validation failed. The following required SemanticIds are not supported by any plugin manifest: {MissingSemanticIds}", missingList);
+            logger.LogError("Semantic ID validation failed. The following required SemanticIds are not supported by any plugin manifest: {MissingSemanticIds}", LogSanitizer.Sanitize(missingList));
             throw new MultiPluginConflictException();
         }
     }

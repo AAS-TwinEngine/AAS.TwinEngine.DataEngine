@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 
@@ -29,7 +30,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
             return templateId;
         }
 
-        _logger.LogError("No matching template found for shell: {aasIdentifier}", aasIdentifier);
+        _logger.LogError("No matching template found for shell: {aasIdentifier}", LogSanitizer.Sanitize(aasIdentifier));
         throw new ResourceNotFoundException();
     }
 

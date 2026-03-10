@@ -31,7 +31,9 @@ public class SerializationHandler(
         var decodedSubmodelIds = ValidateAndDecodeIdentifiers(encodedSubmodelIds!, "SubmodelIdentifier");
         var conceptDescriptions = includeConceptDescriptions ?? false;
 
-        logger.LogInformation("Start serializing AASX package for AAS IDs: {AasIds} and Submodel IDs: {SubmodelIds}", decodedAasIds, decodedSubmodelIds);
+        logger.LogInformation("Start serializing AASX package for AAS IDs: {AasIds} and Submodel IDs: {SubmodelIds}",
+            string.Join(", ", decodedAasIds.Select(LogSanitizer.Sanitize)),
+            string.Join(", ", decodedSubmodelIds.Select(LogSanitizer.Sanitize)));
 
         var stream = await serializationService
                            .GetAasxFileStreamAsync(decodedAasIds, decodedSubmodelIds, conceptDescriptions, cancellationToken)
@@ -61,7 +63,7 @@ public class SerializationHandler(
     {
         if (result == null)
         {
-            logger.LogWarning("{ResourceName} not found for key: {Key}", resourceName, key);
+            logger.LogWarning("{ResourceName} not found for key: {Key}", resourceName, LogSanitizer.Sanitize(key));
             throw new ResourceNotFoundException();
         }
     }

@@ -109,7 +109,7 @@ public class PluginDataProvider(
         }
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogError("Failed response from {Url}. Status: {StatusCode}. Body: {ResponseContent}", url, response.StatusCode, responseContent);
+        logger.LogError("Failed response from {Url}. Status: {StatusCode}. Body: {ResponseContent}", url, response.StatusCode, LogSanitizer.Sanitize(responseContent));
 
         switch (response.StatusCode)
         {

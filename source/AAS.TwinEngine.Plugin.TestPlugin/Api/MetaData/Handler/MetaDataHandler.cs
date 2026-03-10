@@ -4,6 +4,7 @@ using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.Common;
 using AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
@@ -25,7 +26,7 @@ public class MetaDataHandler(
 
     public async Task<ShellDescriptorDto> GetShellDescriptor(GetShellDescriptorRequest request, CancellationToken cancellationToken)
     {
-        logger.LogDebug($"Start executing get request for shell-descriptor metadata for {request.aasIdentifier}");
+        logger.LogDebug("Start executing get request for shell-descriptor metadata for {AasIdentifier}", LogSanitizer.Sanitize(request.aasIdentifier));
 
         var shellDescriptorMetaData = await metaDataService.GetShellDescriptorAsync(request.aasIdentifier, cancellationToken);
 
@@ -35,7 +36,7 @@ public class MetaDataHandler(
             return response;
         }
 
-        logger.LogWarning($"Shell-descriptor metadata not found for {request.aasIdentifier}.");
+        logger.LogWarning("Shell-descriptor metadata not found for {AasIdentifier}.", LogSanitizer.Sanitize(request.aasIdentifier));
         throw new NotFoundException(ExceptionMessages.ShellDescriptorDataNotFound);
     }
 
@@ -51,7 +52,7 @@ public class MetaDataHandler(
             return response;
         }
 
-        logger.LogWarning($"Asset metadata not found for {request.shellIdentifier}.");
+        logger.LogWarning("Asset metadata not found for {ShellIdentifier}.", LogSanitizer.Sanitize(request.shellIdentifier));
         throw new NotFoundException(ExceptionMessages.AssetNotFound);
     }
 }

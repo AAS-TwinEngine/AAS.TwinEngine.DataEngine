@@ -2,6 +2,7 @@
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
@@ -92,19 +93,21 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
 
     private void LogAndThrowException(string logMessage, Exception? ex = null)
     {
+        var sanitizedMessage = LogSanitizer.Sanitize(logMessage);
+
         if (ex != null)
         {
-            logger.LogError(ex, logMessage);
+            logger.LogError(ex, "{LogMessage}", sanitizedMessage);
         }
         else
         {
-            logger.LogError(logMessage);
+            logger.LogError("{LogMessage}", sanitizedMessage);
         }
 
         throw new InternalDataProcessingException();
     }
 
-    private bool TrySerializeSchema(JsonSchema schema, out string schemaText, out string? error)
+    private static bool TrySerializeSchema(JsonSchema schema, out string schemaText, out string? error)
     {
         error = null;
         schemaText = string.Empty;
@@ -288,7 +291,7 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
         }
 
         var propertyValue = jsonObject[oldPropertyName];
-        jsonObject.Remove(oldPropertyName);
+        _ = jsonObject.Remove(oldPropertyName);
         jsonObject[newPropertyName] = propertyValue!;
     }
 }

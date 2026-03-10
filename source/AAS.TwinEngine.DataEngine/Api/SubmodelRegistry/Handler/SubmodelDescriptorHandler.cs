@@ -24,7 +24,7 @@ public class SubmodelDescriptorHandler(
             return submodelDescriptorsDto;
         }
 
-        logger.LogWarning("Submodel Descriptor content not found. Submodel ID: {SubmodelId}", decodedId);
+        logger.LogWarning("Submodel Descriptor content not found. Submodel ID: {SubmodelId}", LogSanitizer.Sanitize(decodedId));
         throw new SubmodelDescriptorNotFoundException(decodedId);
     }
 }

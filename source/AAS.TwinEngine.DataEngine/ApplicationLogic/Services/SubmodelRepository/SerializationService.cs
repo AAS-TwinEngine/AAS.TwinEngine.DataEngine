@@ -2,6 +2,7 @@
 using System.Xml;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 
@@ -183,11 +184,11 @@ public class SerializationService(
                                                         "text/xml",
                                                         xmlMemoryStream);
 
-            aasxPackage.MakeSpec(specificationPart);
+            _ = aasxPackage.MakeSpec(specificationPart);
             aasxPackage.Flush();
         }
 
-        logger.LogInformation("AASX package created at {Path}", packageFilePath);
+        logger.LogInformation("AASX package created at {Path}", LogSanitizer.Sanitize(packageFilePath));
         return new FileStream(packageFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
@@ -73,7 +74,7 @@ public class PluginManifestProvider(ILogger<PluginManifestProvider> logger,
             logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
             return responseContent;
         }
-        logger.LogError("Failed response from {Url}. Status: {StatusCode}. Body: {ResponseContent}", url, response.StatusCode, responseContent);
+        logger.LogError("Failed response from {Url}. Status: {StatusCode}. Body: {ResponseContent}", url, response.StatusCode, LogSanitizer.Sanitize(responseContent));
 
         switch (response.StatusCode)
         {
