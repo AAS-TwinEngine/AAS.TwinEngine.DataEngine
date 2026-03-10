@@ -17,7 +17,7 @@ public class SubmodelHandler(
     {
         logger.LogDebug("Start executing get request for product data");
 
-        logger.LogInformation("Processing request for submodel ID: {submodelId}", LogSanitizer.Sanitize(request.submodelId));
+        logger.LogInformation("Processing request for submodel ID: {SubmodelId}", LogSanitizer.Sanitize(request.submodelId));
 
         var semanticIds = jsonSchemaParser.ParseJsonSchema(request.dataQuery);
 
