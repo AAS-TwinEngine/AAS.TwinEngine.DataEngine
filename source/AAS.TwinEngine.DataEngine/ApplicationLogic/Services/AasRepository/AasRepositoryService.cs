@@ -6,6 +6,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 
 using AasCore.Aas3_0;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 public class AasRepositoryService(
@@ -40,6 +42,10 @@ public class AasRepositoryService(
         catch (ResourceNotFoundException ex)
         {
             throw new AssetInformationNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
         }
         catch (ResponseParsingException ex)
         {

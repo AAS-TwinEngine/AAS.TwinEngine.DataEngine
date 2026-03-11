@@ -9,6 +9,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Conf
 
 using Microsoft.AspNetCore.WebUtilities;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 public class PluginDataProvider(
@@ -120,7 +122,7 @@ public class PluginDataProvider(
             case System.Net.HttpStatusCode.Unauthorized:
             case System.Net.HttpStatusCode.Forbidden:
                 logger.LogError("Unauthorized access. Endpoint: {Url}", url);
-                throw new ServiceAuthorizationException();
+                throw new UnauthorizedAccessException();
 
             default:
                 logger.LogError("Invalid response format. Endpoint: {Url}", url);
@@ -214,7 +216,7 @@ public class PluginDataProvider(
         => statusCode switch
         {
             System.Net.HttpStatusCode.NotFound => new ResourceNotFoundException(),
-            System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden => new ServiceAuthorizationException(),
+            System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden => new UnauthorizedAccessException(),
             _ => new ResponseParsingException()
         };
 

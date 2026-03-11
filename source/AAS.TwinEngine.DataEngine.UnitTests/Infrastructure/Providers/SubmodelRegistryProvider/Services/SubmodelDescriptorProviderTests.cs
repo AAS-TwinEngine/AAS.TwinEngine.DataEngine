@@ -12,6 +12,8 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 
 public class SubmodelDescriptorProviderTests
@@ -136,7 +138,7 @@ public class SubmodelDescriptorProviderTests
         _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
                       .Returns(httpClient);
 
-        await Assert.ThrowsAsync<ServiceAuthorizationException>(() =>
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
     }
 
@@ -155,7 +157,7 @@ public class SubmodelDescriptorProviderTests
         _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
                       .Returns(httpClient);
 
-        await Assert.ThrowsAsync<ServiceAuthorizationException>(() =>
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
     }
 

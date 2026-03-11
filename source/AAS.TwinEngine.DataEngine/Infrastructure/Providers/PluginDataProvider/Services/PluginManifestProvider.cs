@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Conf
 
 using Microsoft.Extensions.Options;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 public class PluginManifestProvider(ILogger<PluginManifestProvider> logger,
@@ -84,7 +86,7 @@ public class PluginManifestProvider(ILogger<PluginManifestProvider> logger,
             case System.Net.HttpStatusCode.Unauthorized:
             case System.Net.HttpStatusCode.Forbidden:
                 logger.LogError("Unauthorized access. Endpoint: {Url}", url);
-                throw new ServiceAuthorizationException();
+                throw new UnauthorizedAccessException();
 
             default:
                 logger.LogError("Invalid response format. Endpoint: {Url}", url);

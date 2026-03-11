@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
@@ -20,7 +21,7 @@ public class RequestHeaderMapperTests
     }
 
     [Fact]
-    public void ApplyMappings_RequiredHeaderMissing_ThrowsBadRequest()
+    public void ApplyMappings_RequiredHeaderMissing_ThrowsInvalidRequestHeaderException()
     {
         var options = new HeaderForwardingOptions
         {
@@ -38,7 +39,7 @@ public class RequestHeaderMapperTests
         var context = new DefaultHttpContext();
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://example.com");
 
-        Assert.Throws<BadRequestException>(() => service.ApplyMappings(context, requestMessage, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName));
+        Assert.Throws<InvalidRequestHeaderException>(() => service.ApplyMappings(context, requestMessage, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName));
     }
 
     [Fact]
@@ -176,7 +177,7 @@ public class RequestHeaderMapperTests
         var context = new DefaultHttpContext();
         context.Request.Headers["X-Test"] = "ok<script";
 
-        Assert.Throws<BadRequestException>(() => service.ValidateIncomingHeaders(context));
+        Assert.Throws<InvalidRequestHeaderException>(() => service.ValidateIncomingHeaders(context));
     }
 
     [Fact]
