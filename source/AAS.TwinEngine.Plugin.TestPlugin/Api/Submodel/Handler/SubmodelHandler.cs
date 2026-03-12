@@ -3,7 +3,6 @@
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
-using AAS.TwinEngine.Plugin.TestPlugin.Common;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 
@@ -17,7 +16,7 @@ public class SubmodelHandler(
     {
         logger.LogDebug("Start executing get request for product data");
 
-        logger.LogInformation("Processing request for submodel ID: {SubmodelId}", LogSanitizer.Sanitize(request.submodelId));
+        logger.LogInformation("Processing request for submodel ID: {submodelId}", request.submodelId);
 
         var semanticIds = jsonSchemaParser.ParseJsonSchema(request.dataQuery);
 

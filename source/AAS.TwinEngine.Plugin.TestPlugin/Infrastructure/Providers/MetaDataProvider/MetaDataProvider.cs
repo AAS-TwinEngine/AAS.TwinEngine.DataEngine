@@ -3,7 +3,6 @@
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
-using AAS.TwinEngine.Plugin.TestPlugin.Common;
 using AAS.TwinEngine.Plugin.TestPlugin.Common.Extensions;
 using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.Entity;
@@ -83,18 +82,18 @@ public class MetaDataProvider : IMetaDataProvider
             return Task.FromResult(entity.MapToDomainModel());
         }
 
-        _logger.LogWarning("Shell-descriptors not found for ID: {AasIdentifier}", LogSanitizer.Sanitize(aasIdentifier));
+        _logger.LogWarning("Shell-descriptors not found for ID: {AasIdentifier}", aasIdentifier);
         throw new NotFoundException(ExceptionMessages.ShellDescriptorDataNotFound);
     }
 
-    public Task<AssetData> GetAssetAsync(string assetIdentifier, CancellationToken cancellationToken)
+    public Task<AssetData> GetAssetAsync(string shellIdentifier, CancellationToken cancellationToken)
     {
-        if (_assetLookup.TryGetValue(assetIdentifier, out var assetInformation))
+        if (_assetLookup.TryGetValue(shellIdentifier, out var assetInformation))
         {
             return Task.FromResult(assetInformation);
         }
 
-        _logger.LogWarning("Asset not found for ID: {ShellIdentifier}", LogSanitizer.Sanitize(assetIdentifier));
+        _logger.LogWarning("Asset not found for ID: {ShellIdentifier}", shellIdentifier);
         throw new NotFoundException(ExceptionMessages.AssetNotFound);
     }
 }
