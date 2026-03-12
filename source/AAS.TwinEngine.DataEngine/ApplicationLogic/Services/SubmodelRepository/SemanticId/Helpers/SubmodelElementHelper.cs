@@ -13,7 +13,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository
 
 public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger, IOptions<MultiLanguagePropertySettings> mlpSettings) : ISubmodelElementHelper
 {
-    private readonly HashSet<string>? _defaultLanguagesSet = mlpSettings.Value.DefaultLanguages != null && mlpSettings.Value.DefaultLanguages.Count > 0
+    private readonly HashSet<string>? _defaultLanguagesSet = mlpSettings.Value.DefaultLanguages is { Count: > 0 }
                                                                 ? new HashSet<string>(mlpSettings.Value.DefaultLanguages, StringComparer.OrdinalIgnoreCase)
                                                                 : null;
 

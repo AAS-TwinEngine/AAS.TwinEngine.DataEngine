@@ -2,7 +2,7 @@
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
-public class SemanticTreeNavigator
+public static class SemanticTreeNavigator
 {
     public static IEnumerable<SemanticTreeNode> FindBranchNodesBySemanticId(SemanticTreeNode tree, string semanticId)
     {
@@ -34,7 +34,7 @@ public class SemanticTreeNavigator
         }
     }
 
-    public static bool AreAllNodesOfSameType(List<SemanticTreeNode> nodes, out Type? nodeType)
+    public static bool AreAllNodesOfSameType(IList<SemanticTreeNode> nodes, out Type? nodeType)
     {
         if (nodes.Count == 0)
         {

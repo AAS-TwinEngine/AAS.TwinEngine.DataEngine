@@ -71,7 +71,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
 
         const string HttpClientNamePlugin2 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin2";
-        _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
 
         var submodelId = "Q29udGFjdEluZm9ybWF0aW9u";
         var mockSubmodel = TestData.CreateSubmodel();
@@ -131,7 +131,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
         const string IdShortPath = "ContactName";
         var mockSubmodel = TestData.CreateSubmodel();
-        TestData.CreatePluginResponseForSubmodelElement();
+        _ = TestData.CreatePluginResponseForSubmodelElement();
 
         using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {

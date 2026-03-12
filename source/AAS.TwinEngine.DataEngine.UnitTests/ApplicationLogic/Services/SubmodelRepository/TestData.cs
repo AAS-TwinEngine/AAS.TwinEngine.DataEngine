@@ -300,7 +300,7 @@ internal static class TestData
           idShort: "EntityNode",
           entityType: EntityType.SelfManagedEntity,
           globalAssetId: "",
-          specificAssetIds: specificAssetIds,
+          specificAssetIds: _specificAssetIds,
           semanticId: new Reference(
             ReferenceTypes.ExternalReference,
             [
@@ -1300,8 +1300,8 @@ internal static class TestData
         ]
     );
 
-    public static List<ISpecificAssetId> specificAssetIds = new List<ISpecificAssetId>
-{
+    public static List<ISpecificAssetId> _specificAssetIds =
+[
     new SpecificAssetId(
         name: "Manufacturer",
         value: "ExampleCorp",
@@ -1339,7 +1339,7 @@ internal static class TestData
             ]
         )
     }
-};
+];
 
     public static Submodel CreateFilledSubmodel() => new(
       id: "http://example.com/idta/digital-nameplate",

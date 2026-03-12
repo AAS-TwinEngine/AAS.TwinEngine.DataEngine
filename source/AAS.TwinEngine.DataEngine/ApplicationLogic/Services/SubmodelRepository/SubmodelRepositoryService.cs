@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Diagnostics;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 
@@ -40,13 +42,30 @@ public class SubmodelRepositoryService(
 
     private async Task<ISubmodel> BuildSubmodelWithValuesAsync(ISubmodel template, string submodelId, CancellationToken cancellationToken)
     {
+        var stopwatch1 = new Stopwatch();
+        var stopwatch2 = new Stopwatch();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        stopwatch1.Start();
         var semanticIds = semanticIdHandler.Extract(template);
+        stopwatch1.Stop();
 
         var pluginManifests = pluginManifestConflictHandler.Manifests;
 
         var values = await pluginDataHandler.TryGetValuesAsync(pluginManifests, semanticIds, submodelId, cancellationToken).ConfigureAwait(false);
 
-        return semanticIdHandler.FillOutTemplate(template, values);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        stopwatch2.Start();
+        var result = semanticIdHandler.FillOutTemplate(template, values);
+        stopwatch2.Stop();
+
+        var time = stopwatch1.ElapsedMilliseconds + stopwatch2.ElapsedMilliseconds;
+        result.Kind = ModellingKind.Instance;
+        return result;
     }
 
     private static async Task<T> ExecuteWithExceptionHandlingAsync<T>(Func<Task<T>> action)
