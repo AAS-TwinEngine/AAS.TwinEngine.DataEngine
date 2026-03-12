@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
@@ -42,13 +41,12 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             return;
         }
 
-        foreach (var header in httpContext.Request.Headers)
+        foreach (var (headerName, values) in httpContext.Request.Headers)
         {
-            var headerName = header.Key;
-            var values = header.Value;
             if (values.Count == 0 || StringValues.IsNullOrEmpty(values))
             {
-                continue;
+                _logger.LogWarning("Incoming header '{HeaderName}' failed sanitization.", headerName);
+                throw new InvalidRequestHeaderException($"Invalid request header: {headerName}");
             }
 
             var combinedValue = string.Join(",", (IEnumerable<string>)values!);
@@ -58,9 +56,69 @@ public class RequestHeaderMapper : IRequestHeaderMapper
                 continue;
             }
 
-            _logger.LogWarning("Incoming header failed sanitization.");
-            throw new InvalidRequestHeaderException();
+            _logger.LogWarning("Incoming header '{HeaderName}' failed sanitization.", headerName);
+            throw new InvalidRequestHeaderException($"Invalid request header: {headerName}");
         }
+
+        ValidateRequiredMappingHeaders(httpContext);
+    }
+
+    private void ValidateRequiredMappingHeaders(HttpContext httpContext)
+    {
+        var allRules = GetAllMappingRules();
+
+        foreach (var rule in allRules)
+        {
+            if (!IsRuleValid(rule) || !rule.Required)
+            {
+                continue;
+            }
+            
+            var sourceName = rule.Source!;
+            var targetName = rule.Target!;
+
+            var hasHeader = httpContext.Request.Headers.TryGetValue(sourceName, out var values)
+                && values.Count > 0
+                && !StringValues.IsNullOrEmpty(values);
+
+            if (!hasHeader)
+            {
+                _logger.LogWarning("Required header '{HeaderName}' is missing.", sourceName);
+
+                throw new InvalidRequestHeaderException($"Required header {sourceName} is missing.");
+            }
+
+            if (!IsHeaderNameValid(targetName))
+            {
+                _logger.LogWarning("Target header name '{HeaderName}' is invalid.", targetName);
+                throw new InvalidRequestHeaderException($"Target header name {targetName} is invalid");
+            }
+
+            var combinedValue = string.Join(",", [.. values]);
+            if (IsHeaderValueValid(combinedValue))
+            {
+                continue;
+            }
+
+            _logger.LogWarning("Header '{HeaderName}' failed sanitization.", sourceName);
+            throw new InvalidRequestHeaderException($"Invalid request header: {sourceName}");
+        }
+    }
+
+    private List<HeaderMappingRule> GetAllMappingRules()
+    {
+        var mappings = _options.Value.HeaderMappings;
+        var allRules = new List<HeaderMappingRule>();
+
+        allRules.AddRange(mappings.TemplateRepository);
+        allRules.AddRange(mappings.TemplateRegistry);
+
+        foreach (var pluginMappings in mappings.Plugins.Values)
+        {
+            allRules.AddRange(pluginMappings);
+        }
+
+        return allRules;
     }
 
     public void ApplyMappings(HttpContext? httpContext, HttpRequestMessage outgoingRequest, string clientName)
@@ -81,119 +139,33 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
         foreach (var rule in mappings)
         {
-            ProcessRule(rule, httpContext, outgoingRequest, clientName);
-        }
-    }
-
-    private void ProcessRule(HeaderMappingRule rule, HttpContext httpContext, HttpRequestMessage outgoingRequest, string clientName)
-    {
-        if (!IsRuleValid(rule))
-        {
-            return;
-        }
-
-        var sourceName = rule.Source!;
-        var targetName = rule.Target!;
-
-        if (!TryGetHeaderValue(httpContext, sourceName, rule.Required, clientName, out var combinedValue))
-        {
-            return;
-        }
-
-        if (!ValidateTargetHeader(targetName, rule.Required))
-        {
-            return;
-        }
-
-        if (!ValidateHeaderValue(combinedValue, sourceName, clientName, rule.Required))
-        {
-            return;
-        }
-
-        ApplyHeader(outgoingRequest, targetName, combinedValue, sourceName, clientName, rule.Required);
-    }
-
-    private bool TryGetHeaderValue(HttpContext httpContext, string sourceName, bool required, string clientName, out string combinedValue)
-    {
-        combinedValue = string.Empty;
-
-        var hasHeader = httpContext.Request.Headers.TryGetValue(sourceName, out var values) && values.Count > 0 && !StringValues.IsNullOrEmpty(values);
-
-        if (!hasHeader)
-        {
-            if (required)
+            if (!IsRuleValid(rule))
             {
-                _logger.LogWarning("Required header {HeaderName} is missing for client {ClientName}.", sourceName, clientName);
-
-                throw new InvalidRequestHeaderException();
+                continue;
             }
 
-            return false;
-        }
+            var sourceName = rule.Source;
+            var targetName = rule.Target;
 
-        combinedValue = string.Join(",", [.. values]);
-        return true;
-    }
+            if (!httpContext.Request.Headers.TryGetValue(sourceName, out var values) || values.Count == 0 || StringValues.IsNullOrEmpty(values))
+            {
+                continue;
+            }
 
-    private bool ValidateTargetHeader(string targetName, bool required)
-    {
-        if (IsHeaderNameValid(targetName))
-        {
-            return true;
-        }
+            var combinedValue = string.Join(",", [.. values]);
 
-        _logger.LogWarning("Target header name {HeaderName} is invalid and will not be forwarded.", targetName);
-
-        return required ? throw new InvalidRequestHeaderException() : false;
-    }
-
-    private bool ValidateHeaderValue(string value, string sourceName, string clientName, bool required)
-    {
-        if (IsHeaderValueValid(value))
-        {
-            return true;
-        }
-
-        _logger.LogWarning("Header {HeaderName} for client {ClientName} failed sanitization and will not be forwarded.", sourceName, clientName);
-
-        return required ? throw new InvalidRequestHeaderException() : false;
-    }
-
-    private void ApplyHeader(HttpRequestMessage outgoingRequest, string targetName, string value, string sourceName, string clientName, bool required)
-    {
-        try
-        {
             if (string.Equals(targetName, "Authorization", StringComparison.OrdinalIgnoreCase))
             {
-                ApplyAuthorizationHeader(outgoingRequest, value, required);
-                return;
+                if (AuthenticationHeaderValue.TryParse(combinedValue, out var authHeader))
+                {
+                    outgoingRequest.Headers.Authorization = authHeader;
+                }
             }
-
-            _ = outgoingRequest.Headers.Remove(targetName);
-            _ = outgoingRequest.Headers.TryAddWithoutValidation(targetName, value);
-        }
-        catch (Exception ex) when (ex is FormatException or InvalidOperationException)
-        {
-            _logger.LogWarning(ex, "Failed to apply header mapping from {Source} to {Target} for client {ClientName}.", sourceName, targetName, clientName);
-
-            if (required)
+            else
             {
-                throw new InvalidRequestHeaderException();
+                _ = outgoingRequest.Headers.Remove(targetName);
+                _ = outgoingRequest.Headers.TryAddWithoutValidation(targetName, combinedValue);
             }
-        }
-    }
-
-    private static void ApplyAuthorizationHeader(HttpRequestMessage outgoingRequest, string value, bool required)
-    {
-        if (AuthenticationHeaderValue.TryParse(value, out var authHeader))
-        {
-            outgoingRequest.Headers.Authorization = authHeader;
-            return;
-        }
-
-        if (required)
-        {
-            throw new InvalidRequestHeaderException();
         }
     }
 
@@ -214,30 +186,21 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             return mappings.TemplateRegistry;
         }
 
-        if (clientName.StartsWith(PluginConfig.HttpClientNamePrefix, StringComparison.OrdinalIgnoreCase))
+        if (!clientName.StartsWith(PluginConfig.HttpClientNamePrefix, StringComparison.OrdinalIgnoreCase))
         {
-            var pluginName = clientName[PluginConfig.HttpClientNamePrefix.Length..];
-
-            if (mappings.Plugins.TryGetValue(pluginName, out var pluginMappings))
-            {
-                return pluginMappings;
-            }
+            return null;
         }
 
-        return null;
-    }
+        var pluginName = clientName[PluginConfig.HttpClientNamePrefix.Length..];
 
+        return mappings.Plugins.TryGetValue(pluginName, out var pluginMappings) ? pluginMappings : null;
+    }
 
     private bool IsHeaderNameValid(string headerName)
     {
         var sanitization = _options.Value.HeaderSanitization;
 
-        if (headerName.Length > sanitization.MaxHeaderNameSize)
-        {
-            return false;
-        }
-
-        return _headerNameRegex.IsMatch(headerName);
+        return headerName.Length <= sanitization.MaxHeaderNameSize && _headerNameRegex.IsMatch(headerName);
     }
 
     private bool IsHeaderValueValid(string value)
@@ -254,11 +217,6 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             return false;
         }
 
-        if (_blockedPatterns.Any(b => b.IsMatch(value)))
-        {
-            return false;
-        }
-
-        return true;
+        return !_blockedPatterns.Any(b => b.IsMatch(value));
     }
 }

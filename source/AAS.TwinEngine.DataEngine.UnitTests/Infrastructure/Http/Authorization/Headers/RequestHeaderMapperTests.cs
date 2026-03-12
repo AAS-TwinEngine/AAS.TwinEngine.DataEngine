@@ -21,7 +21,7 @@ public class RequestHeaderMapperTests
     }
 
     [Fact]
-    public void ApplyMappings_RequiredHeaderMissing_ThrowsInvalidRequestHeaderException()
+    public void ValidateIncomingHeaders_RequiredHeaderMissing_ThrowsInvalidRequestHeaderException()
     {
         var options = new HeaderForwardingOptions
         {
@@ -37,9 +37,8 @@ public class RequestHeaderMapperTests
 
         var service = CreateService(options);
         var context = new DefaultHttpContext();
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://example.com");
 
-        Assert.Throws<InvalidRequestHeaderException>(() => service.ApplyMappings(context, requestMessage, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName));
+        Assert.Throws<InvalidRequestHeaderException>(() => service.ValidateIncomingHeaders(context));
     }
 
     [Fact]
@@ -127,14 +126,11 @@ public class RequestHeaderMapperTests
     }
 
     [Fact]
-    public void ApplyMappings_InvalidCharactersInHeaderValue_BlocksHeader()
+    public void ApplyMappings_MissingOptionalHeader_SkipsHeader()
     {
         var options = new HeaderForwardingOptions
         {
-            HeaderSanitization = new HeaderSanitizationOptions
-            {
-                BlockedPatterns = ["<script"]
-            },
+            HeaderSanitization = new HeaderSanitizationOptions(),
             HeaderMappings = new HeaderMappings
             {
                 TemplateRepository =
@@ -146,7 +142,6 @@ public class RequestHeaderMapperTests
 
         var service = CreateService(options);
         var context = new DefaultHttpContext();
-        context.Request.Headers["X-Test"] = "ok<script";
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://example.com");
 
