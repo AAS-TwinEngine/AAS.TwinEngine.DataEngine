@@ -1,9 +1,9 @@
 ﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 
 using Polly;
-using Polly.Retry;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Policies;
 
@@ -18,7 +18,7 @@ public static class ResilienceHandlerExtensions
             var optionsMonitor = context.ServiceProvider.GetRequiredService<IOptionsMonitor<HttpRetryPolicyOptions>>();
             var options = optionsMonitor.Get(clientName);
 
-            _ = builder.AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+            _ = builder.AddRetry(new HttpRetryStrategyOptions
             {
                 BackoffType = DelayBackoffType.Exponential,
                 MaxRetryAttempts = options.MaxRetryAttempts,
