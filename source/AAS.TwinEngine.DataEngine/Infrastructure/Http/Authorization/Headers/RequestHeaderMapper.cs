@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -41,6 +42,13 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             return;
         }
 
+        ValidateHeaderFormats(httpContext);
+
+        ValidateRequiredMappingHeaders(httpContext);
+    }
+
+    private void ValidateHeaderFormats(HttpContext httpContext)
+    {
         foreach (var (headerName, values) in httpContext.Request.Headers)
         {
             if (values.Count == 0 || StringValues.IsNullOrEmpty(values))
@@ -59,8 +67,6 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             _logger.LogWarning("Incoming header '{HeaderName}' failed sanitization.", headerName);
             throw new InvalidRequestHeaderException($"Invalid request header: {headerName}");
         }
-
-        ValidateRequiredMappingHeaders(httpContext);
     }
 
     private void ValidateRequiredMappingHeaders(HttpContext httpContext)

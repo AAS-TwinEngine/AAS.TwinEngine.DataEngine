@@ -28,17 +28,63 @@ public class ResilienceHandlerExtensionsTests
     }
 
     [Fact]
-    public async Task AddStandardResilienceHandler_RetriesTimeoutException()
+    public async Task AddStandardResilienceHandler_RetriesHttp5xxErrors()
     {
         var services = CreateServiceCollection(maxRetries: 2, delaySeconds: 1);
-        var handler = new ExceptionThrowingHttpMessageHandler(new TimeoutException("Request timeout"));
+        var handler = new StatusCodeReturningHttpMessageHandler(HttpStatusCode.InternalServerError);
         ConfigureHandler(services, handler);
 
         var client = CreateHttpClient(services);
 
-        await Assert.ThrowsAsync<TimeoutException>(() => client.GetAsync("/test"));
+        var response = await client.GetAsync("/test");
 
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Equal(3, handler.CallCount);
+    }
+
+    [Fact]
+    public async Task AddStandardResilienceHandler_RetriesHttp408RequestTimeout()
+    {
+        var services = CreateServiceCollection(maxRetries: 2, delaySeconds: 1);
+        var handler = new StatusCodeReturningHttpMessageHandler(HttpStatusCode.RequestTimeout);
+        ConfigureHandler(services, handler);
+
+        var client = CreateHttpClient(services);
+
+        var response = await client.GetAsync("/test");
+
+        Assert.Equal(HttpStatusCode.RequestTimeout, response.StatusCode);
+        Assert.Equal(3, handler.CallCount);
+    }
+
+    [Fact]
+    public async Task AddStandardResilienceHandler_DoesNotRetryHttp4xxClientErrors()
+    {
+        var services = CreateServiceCollection(maxRetries: 2, delaySeconds: 1);
+        var handler = new StatusCodeReturningHttpMessageHandler(HttpStatusCode.NotFound);
+        ConfigureHandler(services, handler);
+
+        var client = CreateHttpClient(services);
+
+        var response = await client.GetAsync("/test");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(1, handler.CallCount);
+    }
+
+    [Fact]
+    public async Task AddStandardResilienceHandler_DoesNotRetryHttp401Unauthorized()
+    {
+        var services = CreateServiceCollection(maxRetries: 2, delaySeconds: 1);
+        var handler = new StatusCodeReturningHttpMessageHandler(HttpStatusCode.Unauthorized);
+        ConfigureHandler(services, handler);
+
+        var client = CreateHttpClient(services);
+
+        var response = await client.GetAsync("/test");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(1, handler.CallCount);
     }
 
     [Fact]
@@ -123,6 +169,23 @@ public class ResilienceHandlerExtensionsTests
         {
             CallCount++;
             throw _exception;
+        }
+    }
+
+    private sealed class StatusCodeReturningHttpMessageHandler : HttpMessageHandler
+    {
+        private readonly HttpStatusCode _statusCode;
+        public int CallCount { get; private set; }
+
+        public StatusCodeReturningHttpMessageHandler(HttpStatusCode statusCode)
+        {
+            _statusCode = statusCode;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            return Task.FromResult(new HttpResponseMessage(_statusCode));
         }
     }
 }
