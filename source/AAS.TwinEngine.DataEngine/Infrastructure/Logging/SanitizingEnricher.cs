@@ -34,78 +34,84 @@ public class SanitizingEnricher : ILogEventEnricher
 
     private static LogEventPropertyValue SanitizeValue(LogEventPropertyValue value)
     {
-        switch (value)
+        return value switch
         {
-            case ScalarValue { Value: string s }:
-                {
-                    var sanitized = LogSanitizer.Sanitize(s);
-                    return sanitized == s ? value : new ScalarValue(sanitized);
-                }
-            case SequenceValue seq:
-                {
-                    var elements = seq.Elements;
-                    var sanitizedElements = new List<LogEventPropertyValue>(elements.Count);
-                    var anyChanged = false;
+            ScalarValue { Value: string s } scalar => SanitizeScalarString(scalar, s),
+            SequenceValue seq => SanitizeSequence(seq),
+            StructureValue str => SanitizeStructure(str),
+            DictionaryValue dict => SanitizeDictionary(dict),
+            _ => value
+        };
+    }
 
-                    foreach (var element in elements)
-                    {
-                        var sanitizedElement = SanitizeValue(element);
-                        if (!ReferenceEquals(element, sanitizedElement))
-                        {
-                            anyChanged = true;
-                        }
+    private static LogEventPropertyValue SanitizeScalarString(ScalarValue scalar, string value)
+    {
+        var sanitized = LogSanitizer.Sanitize(value);
+        return sanitized == value ? scalar : new ScalarValue(sanitized);
+    }
 
-                        sanitizedElements.Add(sanitizedElement);
-                    }
+    private static LogEventPropertyValue SanitizeSequence(SequenceValue sequence)
+    {
+        var sanitizedElements = new List<LogEventPropertyValue>(sequence.Elements.Count);
+        var anyChanged = false;
 
-                    return anyChanged ? new SequenceValue(sanitizedElements) : value;
-                }
-            case StructureValue str:
-                {
-                    var properties = str.Properties;
-                    var sanitizedProperties = new List<LogEventProperty>(properties.Count);
-                    var anyChanged = false;
+        foreach (var element in sequence.Elements)
+        {
+            var sanitizedElement = SanitizeValue(element);
 
-                    foreach (var prop in properties)
-                    {
-                        var sanitizedValue = SanitizeValue(prop.Value);
-                        if (ReferenceEquals(prop.Value, sanitizedValue))
-                        {
-                            sanitizedProperties.Add(prop);
-                        }
-                        else
-                        {
-                            anyChanged = true;
-                            sanitizedProperties.Add(new LogEventProperty(prop.Name, sanitizedValue));
-                        }
-                    }
+            if (!ReferenceEquals(element, sanitizedElement))
+            {
+                anyChanged = true;
+            }
 
-                    return anyChanged ? new StructureValue(sanitizedProperties, str.TypeTag) : value;
-                }
-            case DictionaryValue dict:
-                {
-                    var elements = dict.Elements;
-                    var sanitizedElements = new List<KeyValuePair<ScalarValue, LogEventPropertyValue>>(elements.Count);
-                    var anyChanged = false;
-
-                    foreach (var kvp in elements)
-                    {
-                        var sanitizedKey = SanitizeScalar(kvp.Key);
-                        var sanitizedValue = SanitizeValue(kvp.Value);
-
-                        if (!ReferenceEquals(kvp.Key, sanitizedKey) || !ReferenceEquals(kvp.Value, sanitizedValue))
-                        {
-                            anyChanged = true;
-                        }
-
-                        sanitizedElements.Add(new KeyValuePair<ScalarValue, LogEventPropertyValue>(sanitizedKey, sanitizedValue));
-                    }
-
-                    return anyChanged ? new DictionaryValue(sanitizedElements) : value;
-                }
-            default:
-                return value;
+            sanitizedElements.Add(sanitizedElement);
         }
+
+        return anyChanged ? new SequenceValue(sanitizedElements) : sequence;
+    }
+
+    private static LogEventPropertyValue SanitizeStructure(StructureValue structure)
+    {
+        var sanitizedProperties = new List<LogEventProperty>(structure.Properties.Count);
+        var anyChanged = false;
+
+        foreach (var prop in structure.Properties)
+        {
+            var sanitizedValue = SanitizeValue(prop.Value);
+
+            if (ReferenceEquals(prop.Value, sanitizedValue))
+            {
+                sanitizedProperties.Add(prop);
+            }
+            else
+            {
+                anyChanged = true;
+                sanitizedProperties.Add(new LogEventProperty(prop.Name, sanitizedValue));
+            }
+        }
+
+        return anyChanged ? new StructureValue(sanitizedProperties, structure.TypeTag) : structure;
+    }
+
+    private static LogEventPropertyValue SanitizeDictionary(DictionaryValue dictionary)
+    {
+        var sanitizedElements = new List<KeyValuePair<ScalarValue, LogEventPropertyValue>>(dictionary.Elements.Count);
+        var anyChanged = false;
+
+        foreach (var kvp in dictionary.Elements)
+        {
+            var sanitizedKey = SanitizeScalar(kvp.Key);
+            var sanitizedValue = SanitizeValue(kvp.Value);
+
+            if (!ReferenceEquals(kvp.Key, sanitizedKey) || !ReferenceEquals(kvp.Value, sanitizedValue))
+            {
+                anyChanged = true;
+            }
+
+            sanitizedElements.Add(new KeyValuePair<ScalarValue, LogEventPropertyValue>(sanitizedKey, sanitizedValue));
+        }
+
+        return anyChanged ? new DictionaryValue(sanitizedElements) : dictionary;
     }
 
     private static ScalarValue SanitizeScalar(ScalarValue scalar)
