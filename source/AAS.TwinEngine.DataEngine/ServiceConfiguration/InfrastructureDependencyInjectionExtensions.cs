@@ -42,7 +42,6 @@ public static class InfrastructureDependencyInjectionExtensions
         var aasEnvironment = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
         var plugins = configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
 
-
         _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!);
         _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasRegistryHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasRegistryBaseUrl!);
         _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.SubmodelRegistryHttpClientName, HttpRetryPolicyOptions.SubmodelDescriptorProvider, aasEnvironment?.SubModelRegistryBaseUrl!);
