@@ -141,7 +141,7 @@ public class ShellDescriptorService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Unhandled error while processing descriptor with ID '{Id}'", LogSanitizer.Sanitize(metadata.Id));
+                logger.LogError(ex, "Unhandled error while processing descriptor with ID '{Id}'", metadata.Id);
                 continue;
             }
         }
@@ -169,7 +169,7 @@ public class ShellDescriptorService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Unexpected error while deleting descriptor with ID '{Id}'", LogSanitizer.Sanitize(descriptorId));
+                logger.LogError(ex, "Unexpected error while deleting descriptor with ID '{Id}'", descriptorId);
                 continue;
             }
         }

@@ -51,7 +51,7 @@ public class PluginManifestConflictHandler(
 
             if (!semanticIds.Any())
             {
-                logger.LogWarning("Plugin {PluginName} contains no supported semantic ids", LogSanitizer.Sanitize(manifest.PluginName));
+                logger.LogWarning("Plugin {PluginName} contains no supported semantic ids", manifest.PluginName);
                 continue;
             }
 
@@ -78,11 +78,11 @@ public class PluginManifestConflictHandler(
 
             case MultiPluginConflictOptions.MultiPluginConflictOption.SkipConflictingIds:
                 RemoveSemanticIdFromAllManifests(semanticId);
-                logger.LogInformation("SkipConflictingIds: semantic id '{SemanticId}' removed from all manifests", LogSanitizer.Sanitize(semanticId));
+                logger.LogInformation("SkipConflictingIds: semantic id '{SemanticId}' removed from all manifests", semanticId);
                 break;
 
             case MultiPluginConflictOptions.MultiPluginConflictOption.ThrowError:
-                logger.LogError("Duplicate semantic id {SemanticId} found. Aborting as configured.", LogSanitizer.Sanitize(semanticId));
+                logger.LogError("Duplicate semantic id {SemanticId} found. Aborting as configured.", semanticId);
                 throw new InternalDataProcessingException();
         }
     }
@@ -97,7 +97,7 @@ public class PluginManifestConflictHandler(
 
         firstManifestsWithSemanticId.SupportedSemanticIds.Add(semanticIdToRemove);
 
-        logger.LogInformation("TakeFirst: semantic id {SemanticId} - kept in '{PluginName}' and removed from all other plugins.", LogSanitizer.Sanitize(semanticIdToRemove), LogSanitizer.Sanitize(firstManifestsWithSemanticId.PluginName));
+        logger.LogInformation("TakeFirst: semantic id {SemanticId} - kept in '{PluginName}' and removed from all other plugins.", semanticIdToRemove, firstManifestsWithSemanticId.PluginName);
     }
 
     private void RemoveSemanticIdFromAllManifests(string semanticIdToRemove)

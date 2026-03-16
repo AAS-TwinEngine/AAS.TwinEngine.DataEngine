@@ -188,7 +188,7 @@ public class SerializationService(
             aasxPackage.Flush();
         }
 
-        logger.LogInformation("AASX package created at {Path}", LogSanitizer.Sanitize(packageFilePath));
+        logger.LogInformation("AASX package created at {Path}", packageFilePath);
         return new FileStream(packageFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
     }
 

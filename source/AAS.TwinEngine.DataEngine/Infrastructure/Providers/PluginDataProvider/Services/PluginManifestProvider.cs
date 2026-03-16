@@ -74,7 +74,7 @@ public class PluginManifestProvider(ILogger<PluginManifestProvider> logger,
             logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
             return responseContent;
         }
-        logger.LogError("Failed response from {Url}. Status: {StatusCode}. Body: {ResponseContent}", url, response.StatusCode, LogSanitizer.Sanitize(responseContent));
+        logger.LogError("Failed response from {Url}. Status: {StatusCode}. Body: {ResponseContent}", url, response.StatusCode, responseContent);
 
         switch (response.StatusCode)
         {

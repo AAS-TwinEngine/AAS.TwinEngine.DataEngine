@@ -27,7 +27,7 @@ public class SubmodelTemplateMappingProvider(ILogger<SubmodelTemplateMappingProv
             return templateId;
         }
 
-        logger.LogError("No matching template found for submodel: {SubmodelId}", LogSanitizer.Sanitize(submodelId));
+        logger.LogError("No matching template found for submodel: {SubmodelId}", submodelId);
         throw new ResourceNotFoundException();
     }
 }

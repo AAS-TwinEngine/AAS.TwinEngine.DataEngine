@@ -38,7 +38,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to parse or deserialize submodel template JSON. Submodel ID: {SubmodelId}", LogSanitizer.Sanitize(templateId));
+            logger.LogError(ex, "Failed to parse or deserialize submodel template JSON. Submodel ID: {SubmodelId}", templateId);
             throw new ResponseParsingException();
         }
     }
@@ -100,12 +100,12 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
                 return shell;
             }
 
-            logger.LogError("Failed to deserialize the shell. AasIdentifier: {AasIdentifier}", LogSanitizer.Sanitize(templateId));
+            logger.LogError("Failed to deserialize the shell. AasIdentifier: {AasIdentifier}", templateId);
             throw new ResponseParsingException();
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to parse or deserialize shell JSON. AasIdentifier: {AasIdentifier}", LogSanitizer.Sanitize(templateId));
+            logger.LogError(ex, "Failed to parse or deserialize shell JSON. AasIdentifier: {AasIdentifier}", templateId);
             throw new ResponseParsingException();
         }
     }
@@ -124,7 +124,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
             var assetInformation = Jsonization.Deserialize.AssetInformationFrom(jsonNode!);
             if (assetInformation == null)
             {
-                logger.LogError("Failed to deserialize the asset-information. AasIdentifier: {AasIdentifier}", LogSanitizer.Sanitize(templateId));
+                logger.LogError("Failed to deserialize the asset-information. AasIdentifier: {AasIdentifier}", templateId);
                 throw new ResponseParsingException();
             }
 
@@ -132,7 +132,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to parse or deserialize asset-information JSON. AasIdentifier: {AasIdentifier}", LogSanitizer.Sanitize(templateId));
+            logger.LogError(ex, "Failed to parse or deserialize asset-information JSON. AasIdentifier: {AasIdentifier}", templateId);
             throw new ResponseParsingException();
         }
     }
@@ -168,7 +168,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
             if (references.Count == 0)
             {
-                logger.LogError("No valid submodel-refs could be deserialized. AasIdentifier: {AasIdentifier}", LogSanitizer.Sanitize(templateId));
+                logger.LogError("No valid submodel-refs could be deserialized. AasIdentifier: {AasIdentifier}", templateId);
                 throw new ResponseParsingException();
             }
 
@@ -176,7 +176,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to parse or deserialize submodel-refs JSON. AasIdentifier: {AasIdentifier}", LogSanitizer.Sanitize(templateId));
+            logger.LogError(ex, "Failed to parse or deserialize submodel-refs JSON. AasIdentifier: {AasIdentifier}", templateId);
             throw new ResponseParsingException();
         }
     }
@@ -199,7 +199,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
             // Intentionally catching all exceptions without rethrowing.
             // Failures in fetching concept descriptions should not break the serialization process.
             // We log the error for observability and return null to allow the caller to continue gracefully.
-            logger.LogError(ex, "Failed to fetch or deserialize concept description. CdIdentifier: {CdIdentifier}", LogSanitizer.Sanitize(cdIdentifier));
+            logger.LogError(ex, "Failed to fetch or deserialize concept description. CdIdentifier: {CdIdentifier}", cdIdentifier);
             return null;
         }
     }
@@ -221,7 +221,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogError("Received HTTP GET response with status code: {StatusCode}. Response message: {ResponseMessage}", response.StatusCode, LogSanitizer.Sanitize(responseContent));
+        logger.LogError("Received HTTP GET response with status code: {StatusCode}. Response message: {ResponseMessage}", response.StatusCode, responseContent);
 
         switch (response.StatusCode)
         {

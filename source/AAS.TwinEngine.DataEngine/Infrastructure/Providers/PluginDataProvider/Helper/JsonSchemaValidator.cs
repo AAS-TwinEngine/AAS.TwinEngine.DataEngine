@@ -93,15 +93,13 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
 
     private void LogAndThrowException(string logMessage, Exception? ex = null)
     {
-        var sanitizedMessage = LogSanitizer.Sanitize(logMessage);
-
         if (ex != null)
         {
-            logger.LogError(ex, "{LogMessage}", sanitizedMessage);
+            logger.LogError(ex, "{LogMessage}", logMessage);
         }
         else
         {
-            logger.LogError("{LogMessage}", sanitizedMessage);
+            logger.LogError("{LogMessage}", logMessage);
         }
 
         throw new InternalDataProcessingException();

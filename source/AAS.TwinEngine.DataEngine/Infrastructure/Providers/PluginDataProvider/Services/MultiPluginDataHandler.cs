@@ -52,7 +52,7 @@ public class MultiPluginDataHandler(IOptions<Semantics> semantics, ILogger<Multi
         if (missingSemanticIds.Count > 0)
         {
             var missingList = string.Join(", ", missingSemanticIds);
-            logger.LogError("Semantic ID validation failed. The following required SemanticIds are not supported by any plugin manifest: {MissingSemanticIds}", LogSanitizer.Sanitize(missingList));
+            logger.LogError("Semantic ID validation failed. The following required SemanticIds are not supported by any plugin manifest: {MissingSemanticIds}", missingList);
             throw new MultiPluginConflictException();
         }
     }

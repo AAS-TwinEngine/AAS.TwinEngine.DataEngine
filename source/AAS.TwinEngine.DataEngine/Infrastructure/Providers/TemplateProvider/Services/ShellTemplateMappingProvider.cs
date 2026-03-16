@@ -30,7 +30,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
             return templateId;
         }
 
-        _logger.LogError("No matching template found for shell: {AasIdentifier}", LogSanitizer.Sanitize(aasIdentifier));
+        _logger.LogError("No matching template found for shell: {AasIdentifier}", aasIdentifier);
         throw new ResourceNotFoundException();
     }
 

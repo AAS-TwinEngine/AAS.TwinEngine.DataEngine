@@ -87,7 +87,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
         }
 
         var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogError("GET failed: {StatusCode}, {Error}", response.StatusCode, LogSanitizer.Sanitize(error));
+        logger.LogError("GET failed: {StatusCode}, {Error}", response.StatusCode, error);
         switch (response.StatusCode)
         {
             case System.Net.HttpStatusCode.NotFound:
@@ -137,7 +137,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
         }
 
         var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogError("Failed action. Status: {StatusCode}, Response: {Error}", response.StatusCode, LogSanitizer.Sanitize(error));
+        logger.LogError("Failed action. Status: {StatusCode}, Response: {Error}", response.StatusCode, error);
 
         throw response.StatusCode switch
         {

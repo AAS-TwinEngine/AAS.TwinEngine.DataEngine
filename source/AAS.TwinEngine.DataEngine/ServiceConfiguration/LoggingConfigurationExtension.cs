@@ -7,6 +7,8 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
+using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
+
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -26,9 +28,10 @@ internal static class LoggingConfigurationExtension
 
         _ = builder.Host.UseSerilog((context, loggerConfig) =>
         {
-            loggerConfig
+            _ = loggerConfig
                 .ReadFrom.Configuration(context.Configuration)
                 .Enrich.FromLogContext()
+                .Enrich.With<SanitizingEnricher>()
                 .MinimumLevel.ControlledBy(logLevelSwitch);
         }, writeToProviders: true);
 

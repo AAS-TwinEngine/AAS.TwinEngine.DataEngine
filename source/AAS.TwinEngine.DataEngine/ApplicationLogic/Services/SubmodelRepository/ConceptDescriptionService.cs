@@ -10,7 +10,7 @@ public class ConceptDescriptionService(ITemplateProvider templateProvider,
 {
     public Task<IConceptDescription?> GetConceptDescriptionById(string cdIdentifier, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Fetching concept description by ID: {CdIdentifier}", LogSanitizer.Sanitize(cdIdentifier));
+        logger.LogInformation("Fetching concept description by ID: {CdIdentifier}", cdIdentifier);
         var response = templateProvider.GetConceptDescriptionByIdAsync(cdIdentifier, cancellationToken);
         return response;
     }
