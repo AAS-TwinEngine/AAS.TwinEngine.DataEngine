@@ -38,77 +38,72 @@ public class SanitizingEnricher : ILogEventEnricher
         switch (value)
         {
             case ScalarValue { Value: string s }:
-            {
-                var sanitized = LogSanitizer.Sanitize(s);
-                // If sanitization did not change the string, reuse the original value instance.
-                return sanitized == s ? value : new ScalarValue(sanitized);
-            }
+                {
+                    var sanitized = LogSanitizer.Sanitize(s);
+                    return sanitized == s ? value : new ScalarValue(sanitized);
+                }
             case SequenceValue seq:
-            {
-                var elements = seq.Elements;
-                var sanitizedElements = new List<LogEventPropertyValue>(elements.Count);
-                var anyChanged = false;
-
-                foreach (var element in elements)
                 {
-                    var sanitizedElement = SanitizeValue(element);
-                    if (!ReferenceEquals(element, sanitizedElement))
+                    var elements = seq.Elements;
+                    var sanitizedElements = new List<LogEventPropertyValue>(elements.Count);
+                    var anyChanged = false;
+
+                    foreach (var element in elements)
                     {
-                        anyChanged = true;
+                        var sanitizedElement = SanitizeValue(element);
+                        if (!ReferenceEquals(element, sanitizedElement))
+                        {
+                            anyChanged = true;
+                        }
+
+                        sanitizedElements.Add(sanitizedElement);
                     }
 
-                    sanitizedElements.Add(sanitizedElement);
+                    return anyChanged ? new SequenceValue(sanitizedElements) : value;
                 }
-
-                // If none of the elements changed, reuse the original sequence instance.
-                return anyChanged ? new SequenceValue(sanitizedElements) : value;
-            }
             case StructureValue str:
-            {
-                var properties = str.Properties;
-                var sanitizedProperties = new List<LogEventProperty>(properties.Count);
-                var anyChanged = false;
-
-                foreach (var prop in properties)
                 {
-                    var sanitizedValue = SanitizeValue(prop.Value);
-                    if (ReferenceEquals(prop.Value, sanitizedValue))
-                    {
-                        // Reuse the original property if its value didn't change.
-                        sanitizedProperties.Add(prop);
-                    }
-                    else
-                    {
-                        anyChanged = true;
-                        sanitizedProperties.Add(new LogEventProperty(prop.Name, sanitizedValue));
-                    }
-                }
+                    var properties = str.Properties;
+                    var sanitizedProperties = new List<LogEventProperty>(properties.Count);
+                    var anyChanged = false;
 
-                // If no property values changed, reuse the original structure instance.
-                return anyChanged ? new StructureValue(sanitizedProperties, str.TypeTag) : value;
-            }
+                    foreach (var prop in properties)
+                    {
+                        var sanitizedValue = SanitizeValue(prop.Value);
+                        if (ReferenceEquals(prop.Value, sanitizedValue))
+                        {
+                            sanitizedProperties.Add(prop);
+                        }
+                        else
+                        {
+                            anyChanged = true;
+                            sanitizedProperties.Add(new LogEventProperty(prop.Name, sanitizedValue));
+                        }
+                    }
+
+                    return anyChanged ? new StructureValue(sanitizedProperties, str.TypeTag) : value;
+                }
             case DictionaryValue dict:
-            {
-                var elements = dict.Elements;
-                var sanitizedElements = new List<KeyValuePair<ScalarValue, LogEventPropertyValue>>(elements.Count);
-                var anyChanged = false;
-
-                foreach (var kvp in elements)
                 {
-                    var sanitizedKey = SanitizeScalar(kvp.Key);
-                    var sanitizedValue = SanitizeValue(kvp.Value);
+                    var elements = dict.Elements;
+                    var sanitizedElements = new List<KeyValuePair<ScalarValue, LogEventPropertyValue>>(elements.Count);
+                    var anyChanged = false;
 
-                    if (!ReferenceEquals(kvp.Key, sanitizedKey) || !ReferenceEquals(kvp.Value, sanitizedValue))
+                    foreach (var kvp in elements)
                     {
-                        anyChanged = true;
+                        var sanitizedKey = SanitizeScalar(kvp.Key);
+                        var sanitizedValue = SanitizeValue(kvp.Value);
+
+                        if (!ReferenceEquals(kvp.Key, sanitizedKey) || !ReferenceEquals(kvp.Value, sanitizedValue))
+                        {
+                            anyChanged = true;
+                        }
+
+                        sanitizedElements.Add(new KeyValuePair<ScalarValue, LogEventPropertyValue>(sanitizedKey, sanitizedValue));
                     }
 
-                    sanitizedElements.Add(new KeyValuePair<ScalarValue, LogEventPropertyValue>(sanitizedKey, sanitizedValue));
+                    return anyChanged ? new DictionaryValue(sanitizedElements) : value;
                 }
-
-                // If no keys or values changed, reuse the original dictionary instance.
-                return anyChanged ? new DictionaryValue(sanitizedElements) : value;
-            }
             default:
                 return value;
         }
@@ -119,7 +114,6 @@ public class SanitizingEnricher : ILogEventEnricher
         if (scalar.Value is string s)
         {
             var sanitized = LogSanitizer.Sanitize(s);
-            // If sanitization did not change the string, reuse the original scalar instance.
             return sanitized == s ? scalar : new ScalarValue(sanitized);
         }
 
