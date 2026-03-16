@@ -8,7 +8,6 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 /// <summary>
 /// A Serilog enricher that automatically sanitizes all string property values
 /// in log events to prevent log poisoning attacks.
-/// This removes the need to manually call <see cref="LogSanitizer.Sanitize"/> at every log call site.
 /// </summary>
 public class SanitizingEnricher : ILogEventEnricher
 {
