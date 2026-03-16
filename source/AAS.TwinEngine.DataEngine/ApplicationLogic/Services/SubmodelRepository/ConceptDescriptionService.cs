@@ -1,5 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 
 using AasCore.Aas3_0;
 

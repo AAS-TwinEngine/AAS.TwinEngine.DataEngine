@@ -55,7 +55,7 @@ public class AasRepositoryHandler(
         Func<TModel, TDto> mapFunc)
     {
         var decodedId = encodedId?.DecodeBase64Url(logger);
-        logger.LogInformation("Start executing get request for {ResourceName}. Aas Identifier: {DecodedId}", resourceName, LogSanitizer.Sanitize(decodedId));
+        logger.LogInformation("Start executing get request for {ResourceName}. Aas Identifier: {DecodedId}", resourceName, decodedId);
 
         var result = await fetchFunc(decodedId!).ConfigureAwait(false);
         ValidateResourceExists(result, resourceName, decodedId!);
@@ -67,7 +67,7 @@ public class AasRepositoryHandler(
     {
         if (result is null)
         {
-            logger.LogWarning("{ResourceName} not found for Aas Identifier: {DecodedId}", resourceName, LogSanitizer.Sanitize(decodedId));
+            logger.LogWarning("{ResourceName} not found for Aas Identifier: {DecodedId}", resourceName, decodedId);
             throw new TemplateNotFoundException();
         }
     }

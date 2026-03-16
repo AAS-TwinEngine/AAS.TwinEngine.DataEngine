@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
-using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
 using Serilog;
 using Serilog.Core;

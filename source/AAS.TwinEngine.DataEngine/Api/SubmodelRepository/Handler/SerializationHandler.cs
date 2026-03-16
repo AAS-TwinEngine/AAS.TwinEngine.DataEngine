@@ -63,7 +63,7 @@ public class SerializationHandler(
     {
         if (result == null)
         {
-            logger.LogWarning("{ResourceName} not found for key: {Key}", resourceName, LogSanitizer.Sanitize(key));
+            logger.LogWarning("{ResourceName} not found for key: {Key}", resourceName, key);
             throw new ResourceNotFoundException();
         }
     }
