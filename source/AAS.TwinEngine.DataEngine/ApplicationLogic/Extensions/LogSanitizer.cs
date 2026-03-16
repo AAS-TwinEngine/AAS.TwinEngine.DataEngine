@@ -23,7 +23,8 @@ public static class LogSanitizer
             return string.Empty;
         }
 
-        var capacity = Math.Min(input.Length * 2, maxLength * 2);
+        var safeLength = Math.Min(input.Length, maxLength);
+        var capacity = safeLength > int.MaxValue / 2 ? int.MaxValue : safeLength * 2;
         var sb = new System.Text.StringBuilder(capacity);
 
         foreach (var c in input)
