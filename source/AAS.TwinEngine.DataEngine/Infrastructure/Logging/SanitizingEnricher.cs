@@ -1,6 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-
-using Serilog.Core;
+﻿using Serilog.Core;
 using Serilog.Events;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Logging;
@@ -46,7 +44,7 @@ public class SanitizingEnricher : ILogEventEnricher
 
     private static LogEventPropertyValue SanitizeScalarString(ScalarValue scalar, string value)
     {
-        var sanitized = LogSanitizer.Sanitize(value);
+        var sanitized = LogSanitizerExtension.Sanitize(value);
         return sanitized == value ? scalar : new ScalarValue(sanitized);
     }
 
@@ -118,7 +116,7 @@ public class SanitizingEnricher : ILogEventEnricher
     {
         if (scalar.Value is string s)
         {
-            var sanitized = LogSanitizer.Sanitize(s);
+            var sanitized = LogSanitizerExtension.Sanitize(s);
             return sanitized == s ? scalar : new ScalarValue(sanitized);
         }
 

@@ -1,13 +1,13 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Extensions;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Logging;
 
-public class LogSanitizerTests
+public class LogSanitizerExtensionTests
 {
     [Fact]
     public void Sanitize_NullInput_ReturnsEmpty()
     {
-        var result = LogSanitizer.Sanitize(null);
+        var result = LogSanitizerExtension.Sanitize(null);
 
         Assert.Equal(string.Empty, result);
     }
@@ -15,7 +15,7 @@ public class LogSanitizerTests
     [Fact]
     public void Sanitize_EmptyString_ReturnsEmpty()
     {
-        var result = LogSanitizer.Sanitize(string.Empty);
+        var result = LogSanitizerExtension.Sanitize(string.Empty);
 
         Assert.Equal(string.Empty, result);
     }
@@ -25,7 +25,7 @@ public class LogSanitizerTests
     {
         const string input = "normal-header-value";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal(input, result);
     }
@@ -35,7 +35,7 @@ public class LogSanitizerTests
     {
         const string input = "line1\nline2\rline3\r\nline4";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal("line1\\nline2\\rline3\\r\\nline4", result);
     }
@@ -45,7 +45,7 @@ public class LogSanitizerTests
     {
         const string input = "col1\tcol2";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal("col1\\tcol2", result);
     }
@@ -55,7 +55,7 @@ public class LogSanitizerTests
     {
         const string input = "before\0after";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal("before\\0after", result);
     }
@@ -65,7 +65,7 @@ public class LogSanitizerTests
     {
         const string input = "normal\x1B[31mRED_TEXT\x1B[0m";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal("normal\\x1B[31mRED_TEXT\\x1B[0m", result);
     }
@@ -75,7 +75,7 @@ public class LogSanitizerTests
     {
         const string input = "before\b\fafter";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal("before\\b\\fafter", result);
     }
@@ -85,7 +85,7 @@ public class LogSanitizerTests
     {
         const string input = "test\x01\x02\x03";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal("test\\x01\\x02\\x03", result);
     }
@@ -95,7 +95,7 @@ public class LogSanitizerTests
     {
         const string input = "valid\n[2025-01-01 00:00:00] CRITICAL: Forged log entry";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.DoesNotContain("\n", result);
         Assert.Contains("\\n", result);
@@ -106,7 +106,7 @@ public class LogSanitizerTests
     {
         const string input = "valid\r\n[ERROR] Fake error injected by attacker";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.DoesNotContain("\r", result);
         Assert.DoesNotContain("\n", result);
@@ -117,7 +117,7 @@ public class LogSanitizerTests
     {
         var input = new string('A', 600);
 
-        var result = LogSanitizer.Sanitize(input, 100);
+        var result = LogSanitizerExtension.Sanitize(input, 100);
 
         Assert.Contains("...[truncated]", result);
         Assert.True(result.Length <= 100 + "...[truncated]".Length);
@@ -128,7 +128,7 @@ public class LogSanitizerTests
     {
         var input = new string('A', 100);
 
-        var result = LogSanitizer.Sanitize(input, 100);
+        var result = LogSanitizerExtension.Sanitize(input, 100);
 
         Assert.Equal(input, result);
         Assert.DoesNotContain("...[truncated]", result);
@@ -139,7 +139,7 @@ public class LogSanitizerTests
     {
         var input = new string('X', 501);
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Contains("...[truncated]", result);
     }
@@ -149,7 +149,7 @@ public class LogSanitizerTests
     {
         const string input = "Authorization: Bearer token123\r\nX-Injected: malicious";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal("Authorization: Bearer token123\\r\\nX-Injected: malicious", result);
     }
@@ -159,7 +159,7 @@ public class LogSanitizerTests
     {
         const string input = "Ünïcödé-Hëadêr-Välüe";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal(input, result);
     }
@@ -169,7 +169,7 @@ public class LogSanitizerTests
     {
         const string input = "key=value&foo=bar@example.com#section";
 
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal(input, result);
     }
@@ -184,7 +184,7 @@ public class LogSanitizerTests
     [InlineData("\x1B", "\\x1B")]
     public void Sanitize_SingleControlCharacter_IsCorrectlyEscaped(string input, string expected)
     {
-        var result = LogSanitizer.Sanitize(input);
+        var result = LogSanitizerExtension.Sanitize(input);
 
         Assert.Equal(expected, result);
     }
