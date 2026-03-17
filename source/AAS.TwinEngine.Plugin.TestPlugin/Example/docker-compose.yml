@@ -52,6 +52,21 @@ services:
       - TemplateMappingRules__AasIdExtractionRules__0__separator=/
       - PluginConfig__Plugins__0__PluginName=Plugin
       - PluginConfig__Plugins__0__PluginUrl=http://twinengine-plugin:8080
+      - HeaderForwarding__HeaderMappings__TemplateRepository__0__Source=Authorization
+      - HeaderForwarding__HeaderMappings__TemplateRepository__0__Target=Authorization
+      - HeaderForwarding__HeaderMappings__TemplateRepository__0__Required=false
+      - HeaderForwarding__HeaderMappings__TemplateRepository__1__Source=X-User-Roles
+      - HeaderForwarding__HeaderMappings__TemplateRepository__1__Target=X-Template-Access-Roles
+      - HeaderForwarding__HeaderMappings__TemplateRepository__1__Required=false
+      - HeaderForwarding__HeaderMappings__TemplateRegistry__0__Source=Authorization
+      - HeaderForwarding__HeaderMappings__TemplateRegistry__0__Target=Authorization
+      - HeaderForwarding__HeaderMappings__TemplateRegistry__0__Required=false
+      - HeaderForwarding__HeaderMappings__Plugins__Plugin1__0__Source=Authorization
+      - HeaderForwarding__HeaderMappings__Plugins__Plugin1__0__Target=X-Auth-Token
+      - HeaderForwarding__HeaderMappings__Plugins__Plugin1__0__Required=false
+      - HeaderForwarding__HeaderMappings__Plugins__Plugin1__1__Source=X-Organization-Id
+      - HeaderForwarding__HeaderMappings__Plugins__Plugin1__1__Target=X-Tenant-Context
+      - HeaderForwarding__HeaderMappings__Plugins__Plugin1__1__Required=false
     networks:
       - dataengine-network
 
