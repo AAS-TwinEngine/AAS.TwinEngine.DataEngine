@@ -9,6 +9,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 
 using Microsoft.Extensions.Options;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 
 public class SubmodelDescriptorService : ISubmodelDescriptorService
@@ -59,6 +61,10 @@ public class SubmodelDescriptorService : ISubmodelDescriptorService
         catch (ResourceNotFoundException)
         {
             throw new SubmodelDescriptorNotFoundException(id);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
         }
         catch (ResponseParsingException ex)
         {

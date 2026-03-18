@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using OpenTelemetry.Logs;
@@ -26,9 +27,10 @@ internal static class LoggingConfigurationExtension
 
         _ = builder.Host.UseSerilog((context, loggerConfig) =>
         {
-            loggerConfig
+            _ = loggerConfig
                 .ReadFrom.Configuration(context.Configuration)
                 .Enrich.FromLogContext()
+                .Enrich.With<SanitizingEnricher>()
                 .MinimumLevel.ControlledBy(logLevelSwitch);
         }, writeToProviders: true);
 

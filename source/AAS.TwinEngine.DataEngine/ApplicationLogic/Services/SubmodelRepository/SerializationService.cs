@@ -183,7 +183,7 @@ public class SerializationService(
                                                         "text/xml",
                                                         xmlMemoryStream);
 
-            aasxPackage.MakeSpec(specificationPart);
+            _ = aasxPackage.MakeSpec(specificationPart);
             aasxPackage.Flush();
         }
 

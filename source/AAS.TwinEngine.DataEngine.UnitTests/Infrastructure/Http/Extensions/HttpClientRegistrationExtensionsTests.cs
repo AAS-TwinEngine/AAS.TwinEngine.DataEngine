@@ -1,7 +1,9 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
@@ -27,6 +29,11 @@ public class HttpClientRegistrationExtensionsTests
         var services = new ServiceCollection();
         services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"HttpRetryPolicyOptions:{HttpRetryPolicyOptions.TemplateProvider}"));
         services.AddLogging();
+        services.AddHttpContextAccessor();
+
+        var headerMapper = Substitute.For<IRequestHeaderMapper>();
+        _ = services.AddScoped(_ => headerMapper);
+
         services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
@@ -52,6 +59,11 @@ public class HttpClientRegistrationExtensionsTests
         var services = new ServiceCollection();
         services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.PluginDataProvider, configuration.GetSection($"HttpRetryPolicyOptions:{HttpRetryPolicyOptions.PluginDataProvider}"));
         services.AddLogging();
+        services.AddHttpContextAccessor();
+
+        var headerMapper = Substitute.For<IRequestHeaderMapper>();
+        _ = services.AddScoped(_ => headerMapper);
+
         services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.PluginDataProvider, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
@@ -78,6 +90,11 @@ public class HttpClientRegistrationExtensionsTests
         services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"HttpRetryPolicyOptions:{HttpRetryPolicyOptions.TemplateProvider}"));
         var loggerMock = Substitute.For<ILogger>();
         services.AddSingleton(loggerMock);
+        services.AddHttpContextAccessor();
+
+        var headerMapper = Substitute.For<IRequestHeaderMapper>();
+        _ = services.AddScoped(_ => headerMapper);
+
         services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, new Uri("https://example.com"));
         using var handler = new FaultyHttpMessageHandler();
         services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
@@ -88,6 +105,53 @@ public class HttpClientRegistrationExtensionsTests
         await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(new Uri("http://test.com")));
 
         Assert.Equal(4, handler.CallCount);
+    }
+
+    [Fact]
+    public async Task AddHttpClientWithResilience_WithForwarding_AddsHeaderForwardingHandler()
+    {
+        var configValues = new Dictionary<string, string>
+            {
+                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:MaxRetryAttempts", "1" },
+                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:DelayInSeconds", "1" }
+            };
+
+        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(configValues!).Build();
+
+        var services = new ServiceCollection();
+        services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}"));
+        services.AddLogging();
+        services.AddHttpContextAccessor();
+
+        var mappingService = Substitute.For<IRequestHeaderMapper>();
+        _ = services.AddScoped(_ => mappingService);
+
+        services.AddHttpClientWithResilience(
+            configuration,
+            AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
+            HttpRetryPolicyOptions.TemplateProvider,
+            new Uri("https://example.com"));
+
+        using var handler = new FaultyHttpMessageHandler();
+        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
+            options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+
+        var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+        var client = factory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+
+        _ = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync("/test")).ConfigureAwait(false);
+
+        mappingService
+            .Received()
+            .ApplyMappings(httpContextAccessor.HttpContext, Arg.Any<HttpRequestMessage>(), AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
     }
 
     private sealed class FaultyHttpMessageHandler : HttpMessageHandler

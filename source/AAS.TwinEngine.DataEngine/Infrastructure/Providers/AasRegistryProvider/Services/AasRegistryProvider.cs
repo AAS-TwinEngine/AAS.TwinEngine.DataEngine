@@ -11,6 +11,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 
 using Microsoft.Extensions.Options;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 
 public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateClient clientFactory, IOptions<AasEnvironmentConfig> aasEnvironment) : IAasRegistryProvider
@@ -97,7 +99,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
             case System.Net.HttpStatusCode.Unauthorized:
             case System.Net.HttpStatusCode.Forbidden:
                 logger.LogError("Unauthorized access. Endpoint: {Url}", url);
-                throw new ServiceAuthorizationException();
+                throw new UnauthorizedAccessException();
 
             case System.Net.HttpStatusCode.RequestTimeout:
                 logger.LogError("Request timed out. Endpoint: {Url}", url);
@@ -143,7 +145,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
         {
             System.Net.HttpStatusCode.NotFound => new ResourceNotFoundException(),
             System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden =>
-                new ServiceAuthorizationException(),
+                new UnauthorizedAccessException(),
             System.Net.HttpStatusCode.BadRequest => new ValidationFailedException(),
             _ => new RequestTimeoutException()
         };

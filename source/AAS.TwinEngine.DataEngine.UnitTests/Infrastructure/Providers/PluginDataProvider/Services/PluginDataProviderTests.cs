@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 using PluginDataProviderRepo = AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -173,7 +174,7 @@ public class PluginDataProviderTests
             new(PluginConfig.MetaData, "")
         };
 
-        await Assert.ThrowsAsync<ServiceAuthorizationException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -338,7 +339,7 @@ public class PluginDataProviderTests
         using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
         _httpClientFactory.CreateClient(pluginRequest.HttpClientName).Returns(httpClient);
 
-        await Assert.ThrowsAsync<ServiceAuthorizationException>(() =>
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _sut.GetDataForSemanticIdsAsync(pluginRequests, "asdf", CancellationToken.None));
     }
 
