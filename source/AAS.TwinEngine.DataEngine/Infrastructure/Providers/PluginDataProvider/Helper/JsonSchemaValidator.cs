@@ -94,17 +94,17 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
     {
         if (ex != null)
         {
-            logger.LogError(ex, logMessage);
+            logger.LogError(ex, "{LogMessage}", logMessage);
         }
         else
         {
-            logger.LogError(logMessage);
+            logger.LogError("{LogMessage}", logMessage);
         }
 
         throw new InternalDataProcessingException();
     }
 
-    private bool TrySerializeSchema(JsonSchema schema, out string schemaText, out string? error)
+    private static bool TrySerializeSchema(JsonSchema schema, out string schemaText, out string? error)
     {
         error = null;
         schemaText = string.Empty;
@@ -288,7 +288,7 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
         }
 
         var propertyValue = jsonObject[oldPropertyName];
-        jsonObject.Remove(oldPropertyName);
+        _ = jsonObject.Remove(oldPropertyName);
         jsonObject[newPropertyName] = propertyValue!;
     }
 }
