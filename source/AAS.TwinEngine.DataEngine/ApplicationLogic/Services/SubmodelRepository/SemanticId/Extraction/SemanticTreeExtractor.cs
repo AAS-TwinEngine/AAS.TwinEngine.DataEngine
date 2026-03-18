@@ -56,7 +56,7 @@ public class SemanticTreeExtractor(
         throw new InternalDataProcessingException();
     }
 
-    internal SemanticTreeNode? ExtractElement(ISubmodelElement element)
+    public SemanticTreeNode? ExtractElement(ISubmodelElement element)
     {
         ArgumentNullException.ThrowIfNull(element);
 

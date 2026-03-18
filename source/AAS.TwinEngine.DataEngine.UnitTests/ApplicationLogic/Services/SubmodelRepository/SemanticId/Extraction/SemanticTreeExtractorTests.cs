@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Extraction;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
@@ -19,30 +19,25 @@ public class SemanticTreeExtractorTests
     private readonly SemanticTreeExtractor _sut;
     private readonly ISemanticIdResolver _resolver;
     private readonly ISubmodelElementHelper _elementHelper;
-    private readonly ILogger<SemanticTreeExtractor> _logger;
     private readonly List<ISubmodelElementTypeHandler> _handlers;
 
     public SemanticTreeExtractorTests()
     {
         _resolver = Substitute.For<ISemanticIdResolver>();
         _elementHelper = Substitute.For<ISubmodelElementHelper>();
-        _logger = Substitute.For<ILogger<SemanticTreeExtractor>>();
         _handlers = [];
-        _sut = new SemanticTreeExtractor(_resolver, _elementHelper, _handlers, _logger);
+        _sut = new SemanticTreeExtractor(_resolver, _elementHelper, _handlers);
     }
 
     [Fact]
-    public void Extract_NullSubmodel_ThrowsArgumentNullException()
-    {
-        Throws<ArgumentNullException>(() => _sut.Extract(null!));
-    }
+    public void Extract_NullSubmodel_ThrowsArgumentNullException() => Throws<ArgumentNullException>(() => _sut.Extract(null!));
 
     [Fact]
     public void Extract_SubmodelWithNoElements_ReturnsRootNodeWithNoChildren()
     {
         var submodel = Substitute.For<ISubmodel>();
         submodel.IdShort.Returns("TestSubmodel");
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement>());
+        submodel.SubmodelElements.Returns([]);
         _resolver.ResolveSemanticId(submodel, "TestSubmodel").Returns("http://test/root");
 
         var result = _sut.Extract(submodel) as SemanticBranchNode;
@@ -58,7 +53,7 @@ public class SemanticTreeExtractorTests
         var property = new Property(idShort: "Prop", valueType: DataTypeDefXsd.String);
         var submodel = Substitute.For<ISubmodel>();
         submodel.IdShort.Returns("Test");
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement> { property });
+        submodel.SubmodelElements.Returns([property]);
         _resolver.ResolveSemanticId(submodel, "Test").Returns("http://test/root");
 
         var handler = Substitute.For<ISubmodelElementTypeHandler>();
@@ -81,7 +76,7 @@ public class SemanticTreeExtractorTests
         element.IdShort.Returns("UnknownElement");
         var submodel = Substitute.For<ISubmodel>();
         submodel.IdShort.Returns("Test");
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement> { element });
+        submodel.SubmodelElements.Returns([element]);
         _resolver.ResolveSemanticId(submodel, "Test").Returns("http://test/root");
         _resolver.ResolveElementSemanticId(element, "UnknownElement").Returns("http://test/unknown");
         _resolver.GetValueType(element).Returns(DataType.Unknown);
@@ -97,10 +92,7 @@ public class SemanticTreeExtractorTests
     }
 
     [Fact]
-    public void Extract_ByIdShortPath_NullSubmodel_ThrowsArgumentNullException()
-    {
-        Throws<ArgumentNullException>(() => _sut.Extract(null!, "path"));
-    }
+    public void Extract_ByIdShortPath_NullSubmodel_ThrowsArgumentNullException() => Throws<ArgumentNullException>(() => _sut.Extract(null!, "path"));
 
     [Fact]
     public void Extract_ByIdShortPath_NullPath_ThrowsArgumentNullException()
@@ -114,7 +106,7 @@ public class SemanticTreeExtractorTests
     {
         var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.String, value: "test");
         var submodel = Substitute.For<ISubmodel>();
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement> { property });
+        submodel.SubmodelElements.Returns([property]);
         _elementHelper.GetElementByIdShort(Arg.Any<IEnumerable<ISubmodelElement>>(), "MyProp").Returns(property);
 
         var result = _sut.Extract(submodel, "MyProp");
@@ -128,7 +120,7 @@ public class SemanticTreeExtractorTests
         var childProp = new Property(idShort: "ChildProp", valueType: DataTypeDefXsd.String);
         var collection = new SubmodelElementCollection(idShort: "Parent", value: [childProp]);
         var submodel = Substitute.For<ISubmodel>();
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement> { collection });
+        submodel.SubmodelElements.Returns([collection]);
         _elementHelper.GetElementByIdShort(Arg.Any<IEnumerable<ISubmodelElement>>(), "Parent").Returns(collection);
         _elementHelper.GetChildElements(collection).Returns(collection.Value);
         _elementHelper.GetElementByIdShort(collection.Value, "ChildProp").Returns(childProp);
@@ -142,7 +134,7 @@ public class SemanticTreeExtractorTests
     public void Extract_ByIdShortPath_ElementNotFound_ThrowsException()
     {
         var submodel = Substitute.For<ISubmodel>();
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement>());
+        submodel.SubmodelElements.Returns([]);
         _elementHelper.GetElementByIdShort(Arg.Any<IEnumerable<ISubmodelElement>>(), "NonExistent").Returns((ISubmodelElement?)null);
 
         Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, "NonExistent"));
@@ -153,7 +145,7 @@ public class SemanticTreeExtractorTests
     {
         var property = new Property(idShort: "Prop", valueType: DataTypeDefXsd.String);
         var submodel = Substitute.For<ISubmodel>();
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement> { property });
+        submodel.SubmodelElements.Returns([property]);
         _elementHelper.GetElementByIdShort(Arg.Any<IEnumerable<ISubmodelElement>>(), "Prop").Returns(property);
         _elementHelper.GetChildElements(property).Returns((IList<ISubmodelElement>?)null);
 
@@ -161,10 +153,7 @@ public class SemanticTreeExtractorTests
     }
 
     [Fact]
-    public void ExtractElement_NullElement_ThrowsArgumentNullException()
-    {
-        Throws<ArgumentNullException>(() => _sut.ExtractElement(null!));
-    }
+    public void ExtractElement_NullElement_ThrowsArgumentNullException() => Throws<ArgumentNullException>(() => _sut.ExtractElement(null!));
 
     [Fact]
     public void ExtractElement_HandlerReturnsNull_CreatesFallbackLeaf()

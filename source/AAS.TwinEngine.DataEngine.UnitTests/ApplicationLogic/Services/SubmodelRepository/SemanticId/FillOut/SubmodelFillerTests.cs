@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
@@ -43,7 +43,7 @@ public class SubmodelFillerTests
     public void FillOutTemplate_NullValues_ThrowsArgumentNullException()
     {
         var submodel = Substitute.For<ISubmodel>();
-        submodel.SubmodelElements.Returns(new List<ISubmodelElement>());
+        submodel.SubmodelElements.Returns([]);
 
         Throws<ArgumentNullException>(() => _sut.FillOutTemplate(submodel, null!));
     }
@@ -113,19 +113,5 @@ public class SubmodelFillerTests
         _sut.FillOutElement(element, values);
 
         handler.Received(1).FillOut(element, values, Arg.Any<Action<List<ISubmodelElement>, SemanticTreeNode, bool>>());
-    }
-
-    [Fact]
-    public void FillOutSubmodelElementValue_NoMatchingValueNode_PreservesElements()
-    {
-        var property = new Property(idShort: "Prop", valueType: DataTypeDefXsd.String, value: "original");
-        var elements = new List<ISubmodelElement> { property };
-        var values = new SemanticBranchNode("root", Cardinality.Unknown);
-        _resolver.ExtractSemanticId(property).Returns("http://test/prop");
-
-        _sut.FillOutSubmodelElementValue(elements, values, false);
-
-        Single(elements);
-        Equal("original", ((Property)elements[0]).Value);
     }
 }

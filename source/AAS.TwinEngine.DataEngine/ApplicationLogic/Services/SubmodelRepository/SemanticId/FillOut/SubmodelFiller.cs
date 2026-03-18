@@ -76,7 +76,7 @@ public class SubmodelFiller(
         submodelTemplate.SubmodelElements?.Add(element);
     }
 
-    internal ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values)
+    public ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values)
     {
         ArgumentNullException.ThrowIfNull(element);
         ArgumentNullException.ThrowIfNull(values);

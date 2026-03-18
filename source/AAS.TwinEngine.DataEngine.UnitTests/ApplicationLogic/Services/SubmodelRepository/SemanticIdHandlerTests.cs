@@ -25,14 +25,12 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Submodel
 public class SemanticIdHandlerTests
 {
     private readonly SemanticIdHandler _sut;
-    private readonly ILogger<SemanticTreeExtractor> _extractorLogger;
     private readonly ILogger<SubmodelFiller> _fillerLogger;
     private readonly IOptions<MultiLanguagePropertySettings> _mlpSettings;
     private readonly IOptions<Semantics> _semantics;
 
     public SemanticIdHandlerTests()
     {
-        _extractorLogger = Substitute.For<ILogger<SemanticTreeExtractor>>();
         _fillerLogger = Substitute.For<ILogger<SubmodelFiller>>();
         _mlpSettings = Substitute.For<IOptions<MultiLanguagePropertySettings>>();
         _ = _mlpSettings.Value.Returns(new MultiLanguagePropertySettings { DefaultLanguages = null });
@@ -872,7 +870,7 @@ public class SemanticIdHandlerTests
             new RelationshipElementHandler(resolver, referenceHelper),
         };
 
-        var extractor = new SemanticTreeExtractor(resolver, helper, handlers, _extractorLogger);
+        var extractor = new SemanticTreeExtractor(resolver, helper, handlers);
         var filler = new SubmodelFiller(resolver, helper, handlers, _fillerLogger);
         return new SemanticIdHandler(extractor, filler);
     }

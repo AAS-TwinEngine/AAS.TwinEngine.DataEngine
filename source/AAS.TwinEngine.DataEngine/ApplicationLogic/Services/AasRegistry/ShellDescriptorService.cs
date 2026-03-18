@@ -47,7 +47,7 @@ public class ShellDescriptorService(
         {
             throw new InvalidUserInputException(ex);
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             throw new ServiceUnAuthorizedException();
         }
