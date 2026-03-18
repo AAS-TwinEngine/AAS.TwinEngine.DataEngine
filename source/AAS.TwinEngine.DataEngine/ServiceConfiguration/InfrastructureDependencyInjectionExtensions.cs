@@ -59,7 +59,7 @@ public static class InfrastructureDependencyInjectionExtensions
         foreach (var plugin in plugins.Plugins)
         {
             _ = services.AddHttpClientWithResilience(configuration, PluginConfig.HttpClientNamePrefix + plugin.PluginName, HttpRetryPolicyOptions.PluginDataProvider, plugin?.PluginUrl);
-            _ = services.AddHttpClientWithoutResilience(PluginConfig.HealthCheckHttpClientNamePrefix + plugin.PluginName, plugin?.PluginUrl!);
+            _ = services.AddHttpClientWithoutResilience(PluginConfig.HealthCheckHttpClientNamePrefix + plugin.PluginName, plugin.PluginUrl!);
         }
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();

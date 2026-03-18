@@ -273,7 +273,7 @@ public class TemplateRepositoryHealthCheckTests
 
         _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        clientFactory.Received().CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName);
+        clientFactory.Received(2).CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName);
         clientFactory.DidNotReceive().CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
     }
 

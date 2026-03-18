@@ -57,22 +57,22 @@ public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
                 return true;
             }
 
-            logger.LogWarning("Health check failed for {EndpointKey}. Status: {StatusCode}", endpointKey, response.StatusCode);
+            logger.LogWarning("Template Registry Health check failed for {EndpointKey}. Status: {StatusCode}", endpointKey, response.StatusCode);
             return false;
         }
         catch (HttpRequestException ex)
         {
-            logger.LogWarning(ex, "Health check failed for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Registry Health check failed for {EndpointKey}", endpointKey);
             return false;
         }
         catch (TaskCanceledException ex)
         {
-            logger.LogWarning(ex, "Health check timed out for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Registry Health check timed out for {EndpointKey}", endpointKey);
             return false;
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Health check failed for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Registry Health check failed for {EndpointKey}", endpointKey);
             return false;
         }
     }
