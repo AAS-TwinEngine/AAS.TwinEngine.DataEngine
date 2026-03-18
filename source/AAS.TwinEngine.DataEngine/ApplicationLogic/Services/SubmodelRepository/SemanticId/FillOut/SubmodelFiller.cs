@@ -99,39 +99,26 @@ public class SubmodelFiller(
         {
             var semanticTreeNodes = GetSemanticNodes(element, values);
 
-            if (semanticTreeNodes == null || semanticTreeNodes.Count == 0)
+            if (ShouldSkipElement(semanticTreeNodes, element, elements))
             {
                 continue;
             }
 
-            if (HasMixedNodeTypes(semanticTreeNodes, element, elements))
+            if (ShouldCloneElements(semanticTreeNodes, element))
             {
+                ReplaceWithClones(elements, element, semanticTreeNodes, updateIdShort);
                 continue;
             }
 
-            if (semanticTreeNodes.Count > 1 && element is not Property && element is not ReferenceElement)
-            {
-                _ = elements.Remove(element);
-                for (var i = 0; i < semanticTreeNodes.Count; i++)
-                {
-                    var cloned = elementHelper.CloneElement(element);
-                    if (updateIdShort)
-                    {
-                        cloned.IdShort = $"{cloned.IdShort}{i}";
-                    }
-
-                    _ = FillOutElement(cloned, semanticTreeNodes[i]);
-                    elements.Add(cloned);
-                }
-            }
-            else
-            {
-                _ = FillOutElement(element, semanticTreeNodes[0]);
-            }
+            _ = FillOutElement(element, semanticTreeNodes[0]);
         }
     }
 
-    private List<SemanticTreeNode>? GetSemanticNodes( ISubmodelElement element, SemanticTreeNode values)
+    private bool ShouldSkipElement(List<SemanticTreeNode>? nodes, ISubmodelElement element, List<ISubmodelElement> elements) => nodes == null || nodes.Count == 0 || HasMixedNodeTypes(nodes, element, elements);
+
+    private static bool ShouldCloneElements(List<SemanticTreeNode> nodes, ISubmodelElement element) => nodes.Count > 1 && element is not Property && element is not ReferenceElement;
+
+    private List<SemanticTreeNode>? GetSemanticNodes(ISubmodelElement element, SemanticTreeNode values)
     {
         var valueNode = SemanticTreeNavigator.FindNodeBySemanticId(values, semanticIdResolver.ExtractSemanticId(element));
 
@@ -149,5 +136,23 @@ public class SubmodelFiller(
 
         _ = elements.Remove(element);
         return true;
+    }
+
+    private void ReplaceWithClones(List<ISubmodelElement> elements, ISubmodelElement element, List<SemanticTreeNode> nodes, bool updateIdShort)
+    {
+        _ = elements.Remove(element);
+
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            var cloned = elementHelper.CloneElement(element);
+
+            if (updateIdShort)
+            {
+                cloned.IdShort = $"{cloned.IdShort}{i}";
+            }
+
+            _ = FillOutElement(cloned, nodes[i]);
+            elements.Add(cloned);
+        }
     }
 }
