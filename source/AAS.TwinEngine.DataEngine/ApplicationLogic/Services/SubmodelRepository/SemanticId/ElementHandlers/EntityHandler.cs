@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
@@ -63,7 +63,7 @@ public class EntityHandler(
             FillOutSelfManagedEntity(entity, values);
         }
 
-        if (entity?.Statements == null || entity.Statements.Count == 0)
+        if (entity.Statements == null || entity.Statements.Count == 0)
         {
             return;
         }

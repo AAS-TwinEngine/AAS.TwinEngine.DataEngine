@@ -97,20 +97,15 @@ public class SubmodelFiller(
         var originalElements = elements.ToList();
         foreach (var element in originalElements)
         {
-            var valueNode = SemanticTreeNavigator.FindNodeBySemanticId(values, semanticIdResolver.ExtractSemanticId(element));
-            var semanticTreeNodes = valueNode?.ToList();
+            var semanticTreeNodes = GetSemanticNodes(element, values);
 
             if (semanticTreeNodes == null || semanticTreeNodes.Count == 0)
             {
                 continue;
             }
 
-            if (!SemanticTreeNavigator.AreAllNodesOfSameType(semanticTreeNodes, out _))
+            if (HasMixedNodeTypes(semanticTreeNodes, element, elements))
             {
-                logger.LogWarning("Mixed node types found for element '{IdShort}' with SemanticId '{SemanticId}'. Expected all nodes to be either SemanticBranchNode or SemanticLeafNode. Removing element.",
-                                  element.IdShort,
-                                  semanticIdResolver.ExtractSemanticId(element));
-                _ = elements.Remove(element);
                 continue;
             }
 
@@ -134,5 +129,25 @@ public class SubmodelFiller(
                 _ = FillOutElement(element, semanticTreeNodes[0]);
             }
         }
+    }
+
+    private List<SemanticTreeNode>? GetSemanticNodes( ISubmodelElement element, SemanticTreeNode values)
+    {
+        var valueNode = SemanticTreeNavigator.FindNodeBySemanticId(values, semanticIdResolver.ExtractSemanticId(element));
+
+        return valueNode?.ToList();
+    }
+
+    private bool HasMixedNodeTypes(List<SemanticTreeNode> nodes, ISubmodelElement element, List<ISubmodelElement> elements)
+    {
+        if (SemanticTreeNavigator.AreAllNodesOfSameType(nodes, out _))
+        {
+            return false;
+        }
+
+        logger.LogWarning("Mixed node types found for element '{IdShort}' with SemanticId '{SemanticId}'. Removing element.", element.IdShort, semanticIdResolver.ExtractSemanticId(element));
+
+        _ = elements.Remove(element);
+        return true;
     }
 }
