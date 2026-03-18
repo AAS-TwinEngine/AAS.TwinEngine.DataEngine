@@ -17,35 +17,6 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Monitoring;
 public class PluginAvailabilityHealthCheckTests
 {
     [Fact]
-    public async Task CheckHealthAsync_Returns_Unhealthy_When_PluginManifest_Is_Unhealthy()
-    {
-        var clientFactory = Substitute.For<ICreateClient>();
-
-        var pluginConfig = Options.Create(new PluginConfig
-        {
-            Plugins =
-            [
-                new Plugin
-                {
-                    PluginName = "TestPlugin",
-                    PluginUrl = new Uri("http://localhost")
-                }
-            ]
-        });
-
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(false);
-
-        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
-
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
-
-        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
-        Assert.Equal(HealthStatus.Unhealthy, result.Status);
-    }
-
-    [Fact]
     public async Task CheckHealthAsync_Returns_Unhealthy_When_No_Plugins_Configured()
     {
         var clientFactory = Substitute.For<ICreateClient>();
@@ -55,12 +26,9 @@ public class PluginAvailabilityHealthCheckTests
             Plugins = []
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
@@ -77,12 +45,9 @@ public class PluginAvailabilityHealthCheckTests
             Plugins = null!
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
@@ -116,12 +81,9 @@ public class PluginAvailabilityHealthCheckTests
             ]
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
@@ -154,12 +116,9 @@ public class PluginAvailabilityHealthCheckTests
             ]
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
@@ -190,12 +149,9 @@ public class PluginAvailabilityHealthCheckTests
             ]
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
@@ -226,12 +182,9 @@ public class PluginAvailabilityHealthCheckTests
             ]
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
@@ -262,12 +215,9 @@ public class PluginAvailabilityHealthCheckTests
             ]
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
@@ -275,44 +225,17 @@ public class PluginAvailabilityHealthCheckTests
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Does_Not_Check_Plugins_When_PluginManifest_Is_Unhealthy()
+    public async Task CheckHealthAsync_Checks_All_Plugins_In_Parallel_Even_When_One_Is_Unhealthy()
     {
         var clientFactory = Substitute.For<ICreateClient>();
-
-        var pluginConfig = Options.Create(new PluginConfig
-        {
-            Plugins =
-            [
-                new Plugin
-                {
-                    PluginName = "TestPlugin",
-                    PluginUrl = new Uri("http://localhost")
-                }
-            ]
-        });
-
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(false);
-
-        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
-
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
-
-        _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
-        clientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
-    }
-
-    [Fact]
-    public async Task CheckHealthAsync_Stops_After_First_Unhealthy_Plugin()
-    {
-        var clientFactory = Substitute.For<ICreateClient>();
-
-        var unhealthyClient = CreateHttpClient(HttpStatusCode.InternalServerError);
 
         clientFactory
-            .CreateClient(Arg.Is<string>(name => name == $"{PluginConfig.HttpClientNamePrefix}Plugin1"))
-            .Returns(unhealthyClient);
+            .CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin1")
+            .Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
+
+        clientFactory
+            .CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin2")
+            .Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var pluginConfig = Options.Create(new PluginConfig
         {
@@ -323,17 +246,44 @@ public class PluginAvailabilityHealthCheckTests
             ]
         });
 
-        var pluginManifestHealthStatus = Substitute.For<IPluginManifestHealthStatus>();
-        pluginManifestHealthStatus.IsHealthy.Returns(true);
-
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
 
-        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, pluginManifestHealthStatus, logger);
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
 
         _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        clientFactory.Received(1).CreateClient($"{PluginConfig.HttpClientNamePrefix}Plugin1");
-        clientFactory.DidNotReceive().CreateClient($"{PluginConfig.HttpClientNamePrefix}Plugin2");
+        clientFactory.Received(1).CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin1");
+        clientFactory.Received(1).CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin2");
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_Uses_HealthCheck_Client_Names_Without_Retry_Policy()
+    {
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(callInfo =>
+            {
+                return CreateHttpClient(HttpStatusCode.OK);
+            });
+
+        var pluginConfig = Options.Create(new PluginConfig
+        {
+            Plugins =
+            [
+                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        clientFactory.Received(1).CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin1");
+        clientFactory.DidNotReceive().CreateClient($"{PluginConfig.HttpClientNamePrefix}Plugin1");
     }
 
     private static HttpClient CreateHttpClient(HttpStatusCode statusCode)

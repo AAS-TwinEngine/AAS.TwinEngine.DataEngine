@@ -13,23 +13,24 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasHealthy = await CheckEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, _aasRepositoryPath, "aas-repository", cancellationToken).ConfigureAwait(false);
+        var aasTask = CheckEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _aasRepositoryPath, "aas-repository", cancellationToken);
+        var submodelTask = CheckEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _subModelRepositoryPath, "submodel-repository", cancellationToken);
 
-        if (!aasHealthy)
+        var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
+
+        if (!results[0])
         {
             logger.LogWarning("AAS Repository health status is unhealthy");
-            return HealthCheckResult.Unhealthy();
         }
 
-        var submodelHealthy = await CheckEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, _subModelRepositoryPath, "submodel-repository", cancellationToken).ConfigureAwait(false);
-
-        if (submodelHealthy)
+        if (!results[1])
         {
-            return HealthCheckResult.Healthy();
+            logger.LogWarning("Submodel Repository health status is unhealthy");
         }
 
-        logger.LogWarning("Submodel Repository health status is unhealthy");
-        return HealthCheckResult.Unhealthy();
+        return results[0] && results[1]
+            ? HealthCheckResult.Healthy()
+            : HealthCheckResult.Unhealthy();
     }
 
     private async Task<bool> CheckEndpointAsync(string clientName, string path, string endpointKey, CancellationToken cancellationToken)

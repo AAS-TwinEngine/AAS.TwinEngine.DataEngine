@@ -8,19 +8,12 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
 public sealed class PluginAvailabilityHealthCheck(ICreateClient clientFactory,
                                                   IOptions<PluginConfig> pluginConfig,
-                                                  IPluginManifestHealthStatus pluginManifestHealthStatus,
                                                   ILogger<PluginAvailabilityHealthCheck> logger) : IHealthCheck
 {
     private const string HealthEndpoint = "healthz";
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        if (!pluginManifestHealthStatus.IsHealthy)
-        {
-            logger.LogWarning("Plugin manifest health status is unhealthy");
-            return HealthCheckResult.Unhealthy();
-        }
-
         if (pluginConfig?.Value?.Plugins == null || pluginConfig.Value.Plugins.Count == 0)
         {
             logger.LogError("Plugins not configured or empty");
@@ -36,24 +29,16 @@ public sealed class PluginAvailabilityHealthCheck(ICreateClient clientFactory,
 
     private async Task<bool> CheckAllPluginsAsync(IList<Plugin> plugins, CancellationToken cancellationToken)
     {
-        foreach (var plugin in plugins)
-        {
-            var isAvailable = await CheckSinglePluginAsync(plugin, cancellationToken).ConfigureAwait(false);
-
-            if (!isAvailable)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        var tasks = plugins.Select(plugin => CheckSinglePluginAsync(plugin, cancellationToken)).ToList();
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results.All(healthy => healthy);
     }
 
     private async Task<bool> CheckSinglePluginAsync(Plugin plugin, CancellationToken cancellationToken)
     {
         try
         {
-            var httpClient = clientFactory.CreateClient($"{PluginConfig.HttpClientNamePrefix}{plugin.PluginName}");
+            var httpClient = clientFactory.CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}{plugin.PluginName}");
 
             using var response = await httpClient
                 .GetAsync(new Uri(HealthEndpoint, UriKind.Relative), cancellationToken)
