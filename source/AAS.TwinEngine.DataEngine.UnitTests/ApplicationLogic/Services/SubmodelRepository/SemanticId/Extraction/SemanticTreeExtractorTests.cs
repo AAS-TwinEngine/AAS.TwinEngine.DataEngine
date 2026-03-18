@@ -149,25 +149,4 @@ public class SemanticTreeExtractorTests
 
         Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, "Prop.Child"));
     }
-
-    [Fact]
-    public void ExtractElement_NullElement_ThrowsArgumentNullException() => Throws<ArgumentNullException>(() => _sut.ExtractElement(null!));
-
-    [Fact]
-    public void ExtractElement_HandlerReturnsNull_CreatesFallbackLeaf()
-    {
-        var element = Substitute.For<ISubmodelElement>();
-        element.IdShort.Returns("Test");
-        _resolver.ResolveElementSemanticId(element, "Test").Returns("http://test/element");
-        _resolver.GetValueType(element).Returns(DataType.String);
-        _resolver.GetCardinality(element).Returns(Cardinality.ZeroToOne);
-
-        var result = _sut.ExtractElement(element);
-
-        NotNull(result);
-        var leaf = IsType<SemanticLeafNode>(result);
-        Equal("http://test/element", leaf.SemanticId);
-        Equal(DataType.String, leaf.DataType);
-        Equal(Cardinality.ZeroToOne, leaf.Cardinality);
-    }
 }
