@@ -12,6 +12,8 @@ using AasCore.Aas3_0;
 
 using Microsoft.Extensions.Options;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
 public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient clientFactory, IOptions<AasEnvironmentConfig> aasEnvironment) : ITemplateProvider
@@ -232,7 +234,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
             case System.Net.HttpStatusCode.Unauthorized:
             case System.Net.HttpStatusCode.Forbidden:
                 logger.LogError("Unauthorized access. Endpoint: {Url}", url);
-                throw new ServiceAuthorizationException();
+                throw new UnauthorizedAccessException();
 
             case System.Net.HttpStatusCode.RequestTimeout:
                 logger.LogError("Request timed out. Endpoint: {Url}", url);

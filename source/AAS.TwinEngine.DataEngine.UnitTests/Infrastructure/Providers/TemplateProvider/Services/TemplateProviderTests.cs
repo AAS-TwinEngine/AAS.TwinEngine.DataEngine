@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 
 using Template = AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services.TemplateProvider;
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Services;
 
@@ -405,7 +406,7 @@ public class TemplateProviderTests
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
 
-        await Assert.ThrowsAsync<ServiceAuthorizationException>(() =>
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None));
     }
 
@@ -465,7 +466,7 @@ public class TemplateProviderTests
     [InlineData(typeof(RequestTimeoutException))]
     [InlineData(typeof(ValidationFailedException))]
     [InlineData(typeof(ResourceNotFoundException))]
-    [InlineData(typeof(ServiceAuthorizationException))]
+    [InlineData(typeof(UnauthorizedAccessException))]
     public async Task GetConceptDescriptionByIdAsync_ReturnsNull_OnHandledExceptions(Type exceptionType)
     {
         const string CdIdentifier = "test-id";
