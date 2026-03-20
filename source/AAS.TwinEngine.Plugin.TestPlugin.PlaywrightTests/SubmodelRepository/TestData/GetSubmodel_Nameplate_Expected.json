@@ -7,6 +7,7 @@
     }
   ],
   "administration": {
+  "administration": {
     "version": "3",
     "revision": "0"
   },
@@ -1327,21 +1328,6 @@
               "type": "SMT/Cardinality",
               "valueType": "xs:string",
               "value": "ZeroToMany"
-            },
-            {
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://mm-software.com/twinengine/qualifier"
-                  }
-                ]
-              },
-              "kind": "TemplateQualifier",
-              "type": "InternalSemanticId",
-              "valueType": "xs:string",
-              "value": "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP"
             }
           ],
           "value": [
