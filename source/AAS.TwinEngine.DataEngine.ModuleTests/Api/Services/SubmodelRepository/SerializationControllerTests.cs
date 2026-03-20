@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -6,6 +7,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
@@ -137,5 +139,100 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SerializeAasx_InvalidBase64InAasIds_Returns400BadRequest()
+    {
+        var invalidAasId = "invalid!!base64";
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
+
+        var url = $"/serialization?aasIds={invalidAasId}&submodelIds={validSubmodelId}&includeConceptDescriptions=false";
+
+        var response = await _client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SerializeAasx_MaliciousPatternInDecodedAasId_Returns400BadRequest()
+    {
+        var maliciousEncoded = EncodeBase64Url("javascript:alert('xss')");
+        var validEncoded = EncodeBase64Url("https://example.com/submodels/test");
+
+        var url = $"/serialization?aasIds={maliciousEncoded}&submodelIds={validEncoded}&includeConceptDescriptions=false";
+
+        var response = await _client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SerializeAasx_InvalidBase64InSubmodelIds_Returns400BadRequest()
+    {
+        var validEncoded = EncodeBase64Url("https://example.com/aas/test");
+        var invalidSubmodelId = "not!!valid!!base64";
+
+        var url = $"/serialization?aasIds={validEncoded}&submodelIds={invalidSubmodelId}&includeConceptDescriptions=false";
+
+        var response = await _client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SerializeAasx_MaliciousPatternInDecodedSubmodelId_Returns400BadRequest()
+    {
+        var validEncoded = EncodeBase64Url("https://example.com/aas/test");
+        var maliciousEncoded = EncodeBase64Url("<script>alert('xss')</script>");
+
+        var url = $"/serialization?aasIds={validEncoded}&submodelIds={maliciousEncoded}&includeConceptDescriptions=false";
+
+        var response = await _client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("' OR '1'='1")]
+    [InlineData("../../../etc/passwd")]
+    [InlineData("1 UNION SELECT *")]
+    public async Task SerializeAasx_SqlInjectionOrPathTraversalInAasId_Returns400BadRequest(string maliciousContent)
+    {
+        var maliciousEncoded = EncodeBase64Url(maliciousContent);
+        var validEncoded = EncodeBase64Url("https://example.com/submodels/test");
+
+        var url = $"/serialization?aasIds={maliciousEncoded}&submodelIds={validEncoded}&includeConceptDescriptions=false";
+
+        var response = await _client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SerializeAasx_ValidIdentifiers_DoesNotReturn400()
+    {
+        var validAasId = EncodeBase64Url("https://example.com/aas/test123");
+        var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test456");
+
+        var url = $"/serialization?aasIds={validAasId}&submodelIds={validSubmodelId}&includeConceptDescriptions=false";
+
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Throws(new SubmodelNotFoundException());
+
+        var response = await _client.GetAsync(url);
+
+        Assert.NotEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static string EncodeBase64Url(string plainText)
+    {
+        if (string.IsNullOrWhiteSpace(plainText))
+        {
+            return string.Empty;
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(plainText);
+        return WebEncoders.Base64UrlEncode(bytes);
     }
 }
