@@ -98,15 +98,140 @@ public class SubmodelRepositoryHandlerTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
-    public async Task HandleSubmodelElement_InvalidSubmodelIdentifier_ThrowsInternalDataProcessingException(string submodelIdentifier)
+    public async Task HandleSubmodelElement_InvalidSubmodelIdentifier_ThrowsInvalidUserInputException(string submodelIdentifier)
     {
         var encodedId = submodelIdentifier.EncodeBase64Url();
         const string IdShortPath = "Segments.LinkedSegment";
         var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
                                                                                 _sut.GetSubmodelElement(request, CancellationToken.None));
+        Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("../../../etc/passwd")]
+    [InlineData("..\\..\\..\\windows\\system32")]
+    [InlineData("element/../otherElement")]
+    [InlineData("%2e%2e/config")]
+    public async Task HandleSubmodelElement_PathTraversalInIdShortPath_ThrowsInvalidUserInputException(string maliciousIdShortPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, maliciousIdShortPath);
+
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+                                                                                _sut.GetSubmodelElement(request, CancellationToken.None));
+
+        Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("<script>alert('xss')</script>")]
+    [InlineData("<img onerror=alert('xss')>")]
+    [InlineData("<svg/onload=alert('xss')>")]
+    [InlineData("element<script>alert(1)</script>")]
+    public async Task HandleSubmodelElement_XSSInIdShortPath_ThrowsInvalidUserInputException(string maliciousIdShortPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, maliciousIdShortPath);
+
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+                                                                                _sut.GetSubmodelElement(request, CancellationToken.None));
+
+        Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("' OR '1'='1")]
+    [InlineData("element'; DROP TABLE--")]
+    [InlineData("1 UNION SELECT * FROM users")]
+    [InlineData("element; DELETE FROM table")]
+    public async Task HandleSubmodelElement_SqlInjectionInIdShortPath_ThrowsInvalidUserInputException(string maliciousIdShortPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, maliciousIdShortPath);
+
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+                                                                                _sut.GetSubmodelElement(request, CancellationToken.None));
+
+        Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("javascript:alert('xss')")]
+    [InlineData("data:text/html,<script>")]
+    [InlineData("vbscript:msgbox('xss')")]
+    [InlineData("file:///etc/passwd")]
+    public async Task HandleSubmodelElement_DangerousProtocolInIdShortPath_ThrowsInvalidUserInputException(string maliciousIdShortPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, maliciousIdShortPath);
+
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+                                                                                _sut.GetSubmodelElement(request, CancellationToken.None));
+
+        Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("element with spaces")]
+    [InlineData("element/slash")]
+    [InlineData("element\\backslash")]
+    [InlineData("element|pipe")]
+    [InlineData("element;semicolon")]
+    [InlineData("element&ampersand")]
+    public async Task HandleSubmodelElement_InvalidCharactersInIdShortPath_ThrowsInvalidUserInputException(string invalidIdShortPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, invalidIdShortPath);
+
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+                                                                                _sut.GetSubmodelElement(request, CancellationToken.None));
+
+        Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("ContactInformation1")]
+    [InlineData("ManufacturerName")]
+    [InlineData("element.subelement")]
+    [InlineData("element.subelement.property")]
+    [InlineData("list[0]")]
+    [InlineData("element[3].property")]
+    [InlineData("collection.item_name")]
+    [InlineData("element-with-hyphen")]
+    [InlineData("element_with_underscore")]
+    public async Task HandleSubmodelElement_ValidIdShortPath_DoesNotThrow(string validIdShortPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, validIdShortPath);
+        var submodelElement = Substitute.For<ISubmodelElement>();
+        _submodelRepository.GetSubmodelElementAsync(SubmodelId, validIdShortPath, Arg.Any<CancellationToken>()).Returns(submodelElement);
+
+        var result = await _sut.GetSubmodelElement(request, CancellationToken.None);
+
+        Assert.Equal(submodelElement, result);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task HandleSubmodelElement_NullOrEmptyIdShortPath_ThrowsInvalidUserInputException(string? invalidIdShortPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, invalidIdShortPath!);
+
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+                                                                                _sut.GetSubmodelElement(request, CancellationToken.None));
+
         Assert.Equal("Invalid User Input.", exception.Message);
     }
 }

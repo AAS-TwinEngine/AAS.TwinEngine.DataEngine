@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -13,6 +14,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Conf
 using AasCore.Aas3_0;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
@@ -257,6 +259,79 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
         var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=-1");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #region Identifier Validation Tests
+
+    [Theory]
+    [InlineData("not-valid-base64!!!")]
+    [InlineData("invalid!!base64")]
+    public async Task GetShellById_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    {
+        var response = await _client.GetAsync($"/shells/{invalidBase64}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("<img onerror=alert('xss')>")]
+    [InlineData("'; DROP TABLE shells--")]
+    public async Task GetShellById_MaliciousPattern_Returns400BadRequest(string maliciousContent)
+    {
+        var encoded = EncodeBase64Url(maliciousContent);
+
+        var response = await _client.GetAsync($"/shells/{encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("vbscript:msgbox('xss')")]
+    [InlineData("file:///etc/passwd")]
+    public async Task GetAssetInformation_MaliciousPattern_Returns400BadRequest(string maliciousContent)
+    {
+        var encoded = EncodeBase64Url(maliciousContent);
+
+        var response = await _client.GetAsync($"/shells/{encoded}/asset-information");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("invalid!!")]
+    public async Task GetSubmodelRefs_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    {
+        var response = await _client.GetAsync($"/shells/{invalidBase64}/submodel-refs");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("https://example.com/shells/shell123")]
+    [InlineData("urn:uuid:test-123")]
+    public async Task GetShellById_ValidIdentifier_DoesNotReturn400(string validId)
+    {
+        var encoded = EncodeBase64Url(validId);
+        _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Throws(new ResourceNotFoundException());
+
+        var response = await _client.GetAsync($"/shells/{encoded}");
+
+        Assert.NotEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #endregion
+
+    private static string EncodeBase64Url(string plainText)
+    {
+        if (string.IsNullOrWhiteSpace(plainText))
+        {
+            return string.Empty;
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(plainText);
+        return WebEncoders.Base64UrlEncode(bytes);
     }
 }
 

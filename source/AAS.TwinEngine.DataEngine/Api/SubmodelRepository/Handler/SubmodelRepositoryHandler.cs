@@ -19,11 +19,16 @@ public class SubmodelRepositoryHandler(
         );
 
     public Task<ISubmodelElement> GetSubmodelElement(GetSubmodelElementRequest request, CancellationToken cancellationToken)
-        => GetResourceByIdAsync(
+    {
+        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+
+        return GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel element",
-            id => submodelRepositoryService.GetSubmodelElementAsync(id, request!.IdShortPath, cancellationToken)!
-        );
+            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, cancellationToken)!
+            );
+    }
 
     private async Task<T> GetResourceByIdAsync<T>(
         string? encodedId,
