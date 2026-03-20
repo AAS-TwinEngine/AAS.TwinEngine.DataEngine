@@ -37,13 +37,11 @@ public static class HttpClientRegistrationExtensions
     public static IServiceCollection AddHttpClientWithoutResilience(
         this IServiceCollection services,
         string clientName,
-        Uri baseUrl,
-        TimeSpan? timeout = null)
+        Uri baseUrl)
     {
         _ = services.AddHttpClient(clientName, client =>
         {
             client.BaseAddress = baseUrl;
-            client.Timeout = timeout ?? TimeSpan.FromSeconds(5);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
 
