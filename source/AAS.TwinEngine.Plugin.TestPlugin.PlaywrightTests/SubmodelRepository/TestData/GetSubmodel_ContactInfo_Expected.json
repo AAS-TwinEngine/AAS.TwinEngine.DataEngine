@@ -78,14 +78,29 @@
               }
             ]
           },
-          "qualifiers":
+          "qualifiers": [
             {
               "kind": "ConceptQualifier",
               "type": "Multiplicity",
               "valueType": "xs:string",
               "value": "ZeroToOne"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/twinengine/qualifier"
+                  }
+                ]
+              },
+              "kind": "TemplateQualifier",
+              "type": "InternalSemanticId",
+              "valueType": "xs:string",
+              "value": "https://mm-software.com/AddressOfAdditionalLink"
             }
-          ,
+          ],
           "valueType": "xs:string",
           "value": "https://www.mm-software.com/mobile-arbeitsmaschinen/",
           "modelType": "Property"
