@@ -10,6 +10,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
 using Microsoft.Extensions.Options;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 
 public class SubmodelDescriptorProvider : ISubmodelDescriptorProvider
@@ -86,7 +88,7 @@ public class SubmodelDescriptorProvider : ISubmodelDescriptorProvider
             case HttpStatusCode.Unauthorized:
             case HttpStatusCode.Forbidden:
                 _logger.LogError("Unauthorized access. Endpoint: {Url}", url);
-                throw new ServiceAuthorizationException();
+                throw new UnauthorizedAccessException();
 
             case HttpStatusCode.RequestTimeout:
                 _logger.LogError("Request timed out. Endpoint: {Url}", url);

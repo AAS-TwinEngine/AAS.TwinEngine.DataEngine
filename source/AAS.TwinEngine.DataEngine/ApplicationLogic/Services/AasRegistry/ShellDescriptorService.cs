@@ -5,6 +5,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 
+using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 
 public class ShellDescriptorService(
@@ -45,6 +47,10 @@ public class ShellDescriptorService(
         {
             throw new InvalidUserInputException(ex);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException();
+        }
     }
 
     public async Task<ShellDescriptor?> GetShellDescriptorByIdAsync(string id, CancellationToken cancellationToken)
@@ -66,6 +72,10 @@ public class ShellDescriptorService(
         catch (ResourceNotFoundException ex)
         {
             throw new ShellDescriptorNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
         }
         catch (PluginMetaDataInvalidRequestException ex)
         {
@@ -160,6 +170,7 @@ public class ShellDescriptorService(
             logger.LogInformation("No missing shell descriptors found to delete.");
             return;
         }
+
         foreach (var descriptorId in missingShellDescriptorsIds)
         {
             try
