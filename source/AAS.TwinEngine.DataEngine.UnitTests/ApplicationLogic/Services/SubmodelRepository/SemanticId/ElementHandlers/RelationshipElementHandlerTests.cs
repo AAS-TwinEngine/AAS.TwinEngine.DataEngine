@@ -64,7 +64,7 @@ public class RelationshipElementHandlerTests
         var firstRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "sub")]);
         var secondRef = new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "ext")]);
         var rel = new RelationshipElement(first: firstRef, second: secondRef, idShort: "Test");
-        _resolver.GetSemanticId(rel).Returns("http://test/rel");
+        _resolver.ExtractSemanticId(rel).Returns("http://test/rel");
         _resolver.GetCardinality(rel).Returns(Cardinality.One);
 
         var firstNode = new SemanticBranchNode("http://test/rel_first", Cardinality.One);
@@ -88,7 +88,7 @@ public class RelationshipElementHandlerTests
         var firstRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "sub1")]);
         var secondRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "sub2")]);
         var rel = new RelationshipElement(first: firstRef, second: secondRef, idShort: "Test");
-        _resolver.GetSemanticId(rel).Returns("http://test/rel");
+        _resolver.ExtractSemanticId(rel).Returns("http://test/rel");
         _resolver.GetCardinality(rel).Returns(Cardinality.One);
 
         var firstNode = new SemanticBranchNode("http://test/rel_first", Cardinality.One);

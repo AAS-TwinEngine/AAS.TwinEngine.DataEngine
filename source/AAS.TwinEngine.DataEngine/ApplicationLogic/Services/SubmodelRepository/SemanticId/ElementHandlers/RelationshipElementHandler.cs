@@ -21,7 +21,7 @@ public class RelationshipElementHandler(
             return null;
         }
 
-        var semanticId = semanticIdResolver.GetSemanticId(relationshipElement);
+        var semanticId = semanticIdResolver.ExtractSemanticId(relationshipElement);
         var cardinality = semanticIdResolver.GetCardinality(relationshipElement);
         var relationshipElementNode = new SemanticBranchNode(semanticId, cardinality);
 

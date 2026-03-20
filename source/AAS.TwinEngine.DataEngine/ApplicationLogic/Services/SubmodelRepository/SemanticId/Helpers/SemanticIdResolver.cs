@@ -20,11 +20,11 @@ public partial class SemanticIdResolver(IOptions<Semantics> semantics) : ISemant
     public const string EntityGlobalAssetIdPostFix = "_globalAssetId";
     public const string RelationshipElementFirstPostFixSeparator = "_first";
     public const string RelationshipElementSecondPostFixSeparator = "_second";
-
-    private readonly string _internalSemanticId = semantics.Value.InternalSemanticId;
     private readonly string _submodelElementIndexContextPrefix = semantics.Value.SubmodelElementIndexContextPrefix;
 
     public string MlpPostFixSeparator { get; } = semantics.Value.MultiLanguageSemanticPostfixSeparator;
+
+    public string InternalSemanticIdType { get; } = semantics.Value.InternalSemanticId;
 
     private static readonly HashSet<DataTypeDefXsd> StringTypes =
     [
@@ -56,7 +56,7 @@ public partial class SemanticIdResolver(IOptions<Semantics> semantics) : ISemant
             return GetSemanticId(element);
         }
 
-        var qualifier = element.Qualifiers.FirstOrDefault(q => q.Type == _internalSemanticId);
+        var qualifier = element.Qualifiers.FirstOrDefault(q => q.Type == InternalSemanticIdType);
         return qualifier != null ? qualifier.Value! : GetSemanticId(element);
     }
 

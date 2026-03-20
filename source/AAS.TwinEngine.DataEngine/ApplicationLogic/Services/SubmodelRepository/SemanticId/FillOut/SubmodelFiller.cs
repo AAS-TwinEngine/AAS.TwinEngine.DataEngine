@@ -44,13 +44,48 @@ public class SubmodelFiller(
             }
         }
 
+        RemoveInternalSemanticIdQualifiers(submodelTemplate.SubmodelElements);
+
         return submodelTemplate;
     }
 
-    private void HandleMultipleMatchingNodes(
-        List<SemanticTreeNode> matchingNodes,
-        ISubmodelElement baseElement,
-        ISubmodel submodelTemplate)
+    private void RemoveInternalSemanticIdQualifiers(IEnumerable<ISubmodelElement>? elements)
+    {
+        if (elements == null)
+        {
+            return;
+        }
+
+        foreach (var element in elements)
+        {
+            if (element.Qualifiers != null)
+            {
+                var internalQualifiers = element.Qualifiers
+                    .Where(q => q.Type == semanticIdResolver.InternalSemanticIdType)
+                    .ToList();
+
+                foreach (var qualifier in internalQualifiers)
+                {
+                    _ = element.Qualifiers.Remove(qualifier);
+                }
+            }
+
+            switch (element)
+            {
+                case SubmodelElementCollection collection:
+                    RemoveInternalSemanticIdQualifiers(collection.Value);
+                    break;
+                case SubmodelElementList list:
+                    RemoveInternalSemanticIdQualifiers(list.Value);
+                    break;
+                case Entity entity:
+                    RemoveInternalSemanticIdQualifiers(entity.Statements);
+                    break;
+            }
+        }
+    }
+
+    private void HandleMultipleMatchingNodes(List<SemanticTreeNode> matchingNodes, ISubmodelElement baseElement, ISubmodel submodelTemplate)
     {
         for (var i = 0; i < matchingNodes.Count; i++)
         {
@@ -67,10 +102,7 @@ public class SubmodelFiller(
         }
     }
 
-    private void HandleSingleMatchingNode(
-        SemanticTreeNode node,
-        ISubmodelElement element,
-        ISubmodel submodelTemplate)
+    private void HandleSingleMatchingNode(SemanticTreeNode node, ISubmodelElement element, ISubmodel submodelTemplate)
     {
         _ = FillOutElement(element, node);
         submodelTemplate.SubmodelElements?.Add(element);

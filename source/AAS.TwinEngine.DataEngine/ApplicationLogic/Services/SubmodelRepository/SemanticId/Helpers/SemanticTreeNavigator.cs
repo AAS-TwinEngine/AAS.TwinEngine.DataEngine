@@ -8,9 +8,7 @@ public static class SemanticTreeNavigator
     {
         var node = tree as SemanticBranchNode;
 
-        return node?.Children!
-                   .Where(child => child.SemanticId.Equals(semanticId, StringComparison.Ordinal))
-               ?? [];
+        return node?.Children!.Where(child => child.SemanticId.Equals(semanticId, StringComparison.Ordinal)) ?? [];
     }
 
     public static IEnumerable<SemanticTreeNode> FindNodeBySemanticId(SemanticTreeNode tree, string semanticId)

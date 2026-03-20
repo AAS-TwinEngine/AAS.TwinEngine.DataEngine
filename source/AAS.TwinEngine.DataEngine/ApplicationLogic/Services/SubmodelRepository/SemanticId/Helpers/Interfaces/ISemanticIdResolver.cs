@@ -8,6 +8,8 @@ public interface ISemanticIdResolver
 {
     string MlpPostFixSeparator { get; }
 
+    string InternalSemanticIdType { get; }
+
     string GetSemanticId(IHasSemantics hasSemantics);
 
     string ExtractSemanticId(ISubmodelElement element);

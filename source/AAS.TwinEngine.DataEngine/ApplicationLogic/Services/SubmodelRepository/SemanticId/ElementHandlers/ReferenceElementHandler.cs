@@ -33,10 +33,10 @@ public class ReferenceElementHandler(
 
         if (referenceElement?.Value?.Type != ReferenceTypes.ModelReference)
         {
-            logger.LogInformation("ReferenceElement does not contain a ModelReference for SemanticId '{SemanticId}'. Skipping population.", semanticIdResolver.GetSemanticId(referenceElement!));
+            logger.LogInformation("ReferenceElement does not contain a ModelReference for SemanticId '{SemanticId}'. Skipping population.", semanticIdResolver.ExtractSemanticId(referenceElement!));
             return;
         }
 
-        referenceHelper.PopulateReferenceKeys(referenceElement.Value, values, semanticIdResolver.GetSemanticId(referenceElement));
+        referenceHelper.PopulateReferenceKeys(referenceElement.Value, values, semanticIdResolver.ExtractSemanticId(referenceElement));
     }
 }
