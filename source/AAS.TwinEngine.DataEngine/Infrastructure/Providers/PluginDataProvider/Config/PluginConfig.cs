@@ -6,6 +6,8 @@ public class PluginConfig
 
     public const string HttpClientNamePrefix = "plugin-data-provider";
 
+    public const string HealthCheckHttpClientNamePrefix = "plugin-healthcheck";
+
     public const string MetaData = "metadata";
 
     public required List<Plugin> Plugins { get; set; }

@@ -15,23 +15,24 @@ public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasHealthy = await CheckEndpointAsync(AasEnvironmentConfig.AasRegistryHttpClientName, _aasRegistryPath, "aas-registry", cancellationToken).ConfigureAwait(false);
+        var aasTask = CheckEndpointAsync(AasEnvironmentConfig.AasRegistryHealthCheckHttpClientName, _aasRegistryPath, "aas-registry", cancellationToken);
+        var submodelTask = CheckEndpointAsync(AasEnvironmentConfig.SubmodelRegistryHealthCheckHttpClientName, _subModelRegistryPath, "submodel-registry", cancellationToken);
 
-        if (!aasHealthy)
+        var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
+
+        if (!results[0])
         {
             logger.LogWarning("AAS Registry health status is unhealthy");
-            return HealthCheckResult.Unhealthy();
         }
 
-        var submodelHealthy = await CheckEndpointAsync(AasEnvironmentConfig.SubmodelRegistryHttpClientName, _subModelRegistryPath, "submodel-registry", cancellationToken).ConfigureAwait(false);
-
-        if (submodelHealthy)
+        if (!results[1])
         {
-            return HealthCheckResult.Healthy();
+            logger.LogWarning("Submodel Registry health status is unhealthy");
         }
 
-        logger.LogWarning("Submodel Registry health status is unhealthy");
-        return HealthCheckResult.Unhealthy();
+        return results[0] && results[1]
+            ? HealthCheckResult.Healthy()
+            : HealthCheckResult.Unhealthy();
     }
 
     private async Task<bool> CheckEndpointAsync(string clientName, string path, string endpointKey, CancellationToken cancellationToken)
@@ -56,22 +57,22 @@ public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
                 return true;
             }
 
-            logger.LogWarning("Health check failed for {EndpointKey}. Status: {StatusCode}", endpointKey, response.StatusCode);
+            logger.LogWarning("Template Registry Health check failed for {EndpointKey}. Status: {StatusCode}", endpointKey, response.StatusCode);
             return false;
         }
         catch (HttpRequestException ex)
         {
-            logger.LogWarning(ex, "Health check failed for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Registry Health check failed for {EndpointKey}", endpointKey);
             return false;
         }
         catch (TaskCanceledException ex)
         {
-            logger.LogWarning(ex, "Health check timed out for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Registry Health check timed out for {EndpointKey}", endpointKey);
             return false;
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Health check failed for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Registry Health check failed for {EndpointKey}", endpointKey);
             return false;
         }
     }
