@@ -1312,7 +1312,7 @@
               }
             ]
           },
-          "qualifiers": [
+          "qualifiers":
             {
               "semanticId": {
                 "type": "ExternalReference",
@@ -1328,22 +1328,6 @@
               "valueType": "xs:string",
               "value": "ZeroToMany"
             },
-            {
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://mm-software.com/twinengine/qualifier"
-                  }
-                ]
-              },
-              "kind": "TemplateQualifier",
-              "type": "InternalSemanticId",
-              "valueType": "xs:string",
-              "value": "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP"
-            }
-          ],
           "value": [
             {
               "language": "en",
