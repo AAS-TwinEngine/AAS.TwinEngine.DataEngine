@@ -26,6 +26,8 @@ public partial class SemanticIdResolver(IOptions<Semantics> semantics) : ISemant
 
     public string MlpPostFixSeparator { get; } = semantics.Value.MultiLanguageSemanticPostfixSeparator;
 
+    public string InternalSemanticIdType { get; } = semantics.Value.InternalSemanticId;
+
     private static readonly HashSet<DataTypeDefXsd> StringTypes =
     [
         DataTypeDefXsd.String, DataTypeDefXsd.AnyUri, DataTypeDefXsd.Byte, DataTypeDefXsd.Date,
@@ -56,7 +58,7 @@ public partial class SemanticIdResolver(IOptions<Semantics> semantics) : ISemant
             return GetSemanticId(element);
         }
 
-        var qualifier = element.Qualifiers.FirstOrDefault(q => q.Type == _internalSemanticId);
+        var qualifier = element.Qualifiers.FirstOrDefault(q => q.Type == InternalSemanticIdType);
         return qualifier != null ? qualifier.Value! : GetSemanticId(element);
     }
 

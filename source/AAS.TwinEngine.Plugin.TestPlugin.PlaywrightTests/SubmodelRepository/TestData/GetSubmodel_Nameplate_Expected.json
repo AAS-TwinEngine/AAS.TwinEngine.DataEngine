@@ -1327,21 +1327,6 @@
               "type": "SMT/Cardinality",
               "valueType": "xs:string",
               "value": "ZeroToMany"
-            },
-            {
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://mm-software.com/twinengine/qualifier"
-                  }
-                ]
-              },
-              "kind": "TemplateQualifier",
-              "type": "InternalSemanticId",
-              "valueType": "xs:string",
-              "value": "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP"
             }
           ],
           "value": [
@@ -1392,21 +1377,6 @@
               "type": "SMT/Cardinality",
               "valueType": "xs:string",
               "value": "ZeroToMany"
-            },
-            {
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://mm-software.com/twinengine/qualifier"
-                  }
-                ]
-              },
-              "kind": "ConceptQualifier",
-              "type": "InternalSemanticId",
-              "valueType": "xs:string",
-              "value": "https://mm-software.com/AssetSpecificProperties/ArbitraryFile"
             }
           ],
           "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
@@ -1590,21 +1560,6 @@
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "ZeroToMany"
-                    },
-                    {
-                      "semanticId": {
-                        "type": "ExternalReference",
-                        "keys": [
-                          {
-                            "type": "GlobalReference",
-                            "value": "https://mm-software.com/twinengine/qualifier"
-                          }
-                        ]
-                      },
-                      "kind": "ConceptQualifier",
-                      "type": "InternalSemanticId",
-                      "valueType": "xs:string",
-                      "value": "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile"
                     }
                   ],
                   "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
@@ -1651,21 +1606,6 @@
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "ZeroToMany"
-                    },
-                    {
-                      "semanticId": {
-                        "type": "ExternalReference",
-                        "keys": [
-                          {
-                            "type": "GlobalReference",
-                            "value": "https://mm-software.com/twinengine/qualifier"
-                          }
-                        ]
-                      },
-                      "kind": "TemplateQualifier",
-                      "type": "InternalSemanticId",
-                      "valueType": "xs:string",
-                      "value": "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP"
                     }
                   ],
                   "value": [

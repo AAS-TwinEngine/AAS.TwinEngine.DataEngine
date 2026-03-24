@@ -90,7 +90,7 @@ public class ReferenceElementHandlerTests
         var modelRef = new Reference(ReferenceTypes.ModelReference,
             [new Key(KeyTypes.Submodel, "")]);
         var refElement = new ReferenceElement(idShort: "Test", value: modelRef);
-        _resolver.GetSemanticId(refElement).Returns("http://test/ref");
+        _resolver.ExtractSemanticId(refElement).Returns("http://test/ref");
 
         var values = new SemanticBranchNode("http://test/ref", Cardinality.One);
 
@@ -103,7 +103,7 @@ public class ReferenceElementHandlerTests
     public void FillOut_WithNullValue_LogsInfoAndSkips()
     {
         var refElement = new ReferenceElement(idShort: "Test", value: null);
-        _resolver.GetSemanticId(refElement).Returns("http://test/ref");
+        _resolver.ExtractSemanticId(refElement).Returns("http://test/ref");
 
         var values = new SemanticBranchNode("http://test/ref", Cardinality.One);
 
@@ -119,7 +119,7 @@ public class ReferenceElementHandlerTests
         var externalRef = new Reference(ReferenceTypes.ExternalReference,
             [new Key(KeyTypes.GlobalReference, "http://external")]);
         var refElement = new ReferenceElement(idShort: "Test", value: externalRef);
-        _resolver.GetSemanticId(refElement).Returns("http://test/ref");
+        _resolver.ExtractSemanticId(refElement).Returns("http://test/ref");
 
         var values = new SemanticBranchNode("http://test/ref", Cardinality.One);
 
