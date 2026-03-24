@@ -56,7 +56,6 @@ public static class Program
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
-        app.UseSwaggerUI(c => c.SwaggerEndpoint($"/swagger/{ApiVersion:F1}/swagger.json", ApiTitle));
         app.MapControllers();
 
         await app.RunAsync();

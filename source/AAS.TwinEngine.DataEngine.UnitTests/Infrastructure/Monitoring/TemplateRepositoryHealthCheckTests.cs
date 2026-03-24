@@ -29,16 +29,10 @@ public class TemplateRepositoryHealthCheckTests
 
         var clientFactory = Substitute.For<ICreateClient>();
 
-        var handler = new SequenceHttpMessageHandler(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            new HttpResponseMessage(HttpStatusCode.OK));
-
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost")
-        };
-
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(
+                _ => CreateHttpClient(HttpStatusCode.OK),
+                _ => CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -62,16 +56,10 @@ public class TemplateRepositoryHealthCheckTests
 
         var clientFactory = Substitute.For<ICreateClient>();
 
-        var handler = new SequenceHttpMessageHandler(
-            new HttpResponseMessage(HttpStatusCode.InternalServerError),
-            new HttpResponseMessage(HttpStatusCode.OK));
-
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost")
-        };
-
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(
+                _ => CreateHttpClient(HttpStatusCode.InternalServerError),
+                _ => CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -95,16 +83,10 @@ public class TemplateRepositoryHealthCheckTests
 
         var clientFactory = Substitute.For<ICreateClient>();
 
-        var handler = new SequenceHttpMessageHandler(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            new HttpResponseMessage(HttpStatusCode.InternalServerError));
-
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost")
-        };
-
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(
+                _ => CreateHttpClient(HttpStatusCode.OK),
+                _ => CreateHttpClient(HttpStatusCode.InternalServerError));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -127,6 +109,8 @@ public class TemplateRepositoryHealthCheckTests
         var options = Options.Create(environmentConfig);
 
         var clientFactory = Substitute.For<ICreateClient>();
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(_ => CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -149,7 +133,8 @@ public class TemplateRepositoryHealthCheckTests
         var options = Options.Create(environmentConfig);
 
         var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(_ => CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -172,7 +157,10 @@ public class TemplateRepositoryHealthCheckTests
         var options = Options.Create(environmentConfig);
 
         var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(CreateThrowingHttpClient(new HttpRequestException("network")));
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(
+                _ => CreateThrowingHttpClient(new HttpRequestException("network")),
+                _ => CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -195,8 +183,10 @@ public class TemplateRepositoryHealthCheckTests
         var options = Options.Create(environmentConfig);
 
         var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName)
-                     .Returns(CreateThrowingHttpClient(new InvalidOperationException("unexpected")));
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+                     .Returns(
+                         _ => CreateThrowingHttpClient(new InvalidOperationException("unexpected")),
+                         _ => CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -219,17 +209,10 @@ public class TemplateRepositoryHealthCheckTests
         var options = Options.Create(environmentConfig);
 
         var clientFactory = Substitute.For<ICreateClient>();
-
-        var handler = new SequenceHttpMessageHandler(
-            new HttpResponseMessage(HttpStatusCode.OK));
-
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName)
-                     .Returns(
-                        new HttpClient(handler)
-                        {
-                            BaseAddress = new Uri("http://localhost")
-                        },
-                        CreateThrowingHttpClient(new TaskCanceledException("timeout")));
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(
+                _ => CreateHttpClient(HttpStatusCode.OK),
+                _ => CreateThrowingHttpClient(new TaskCanceledException("timeout")));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -241,7 +224,7 @@ public class TemplateRepositoryHealthCheckTests
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Does_Not_Check_Submodel_When_Repository_Is_Unhealthy()
+    public async Task CheckHealthAsync_Checks_Both_Endpoints_In_Parallel_Even_When_First_Is_Unhealthy()
     {
         var environmentConfig = new AasEnvironmentConfig
         {
@@ -253,15 +236,10 @@ public class TemplateRepositoryHealthCheckTests
 
         var clientFactory = Substitute.For<ICreateClient>();
 
-        var handler = new SequenceHttpMessageHandler(
-            new HttpResponseMessage(HttpStatusCode.InternalServerError));
-
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost")
-        };
-
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(
+                _ => CreateHttpClient(HttpStatusCode.InternalServerError),
+                _ => CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
 
@@ -269,7 +247,34 @@ public class TemplateRepositoryHealthCheckTests
 
         _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        clientFactory.Received(1).CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+        clientFactory.Received(2).CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_Uses_HealthCheck_Client_Name_Without_Retry_Policy()
+    {
+        var environmentConfig = new AasEnvironmentConfig
+        {
+            AasRepositoryPath = "/aas-repo",
+            SubModelRepositoryPath = "/submodel-repo"
+        };
+
+        var options = Options.Create(environmentConfig);
+
+        var clientFactory = Substitute.For<ICreateClient>();
+        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
+            .Returns(
+                _ => CreateHttpClient(HttpStatusCode.OK),
+                _ => CreateHttpClient(HttpStatusCode.OK));
+
+        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+
+        var sut = new TemplateRepositoryHealthCheck(clientFactory, options, logger);
+
+        _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        clientFactory.Received(2).CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName);
+        clientFactory.DidNotReceive().CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
     }
 
     private static HttpClient CreateHttpClient(HttpStatusCode statusCode)
@@ -298,25 +303,5 @@ public class TemplateRepositoryHealthCheckTests
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             => handler(request, cancellationToken);
-    }
-
-    private sealed class SequenceHttpMessageHandler : HttpMessageHandler
-    {
-        private readonly Queue<HttpResponseMessage> _responses;
-
-        public SequenceHttpMessageHandler(params HttpResponseMessage[] responses)
-        {
-            _responses = new Queue<HttpResponseMessage>(responses);
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            if (_responses.Count == 0)
-            {
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-            }
-
-            return Task.FromResult(_responses.Dequeue());
-        }
     }
 }

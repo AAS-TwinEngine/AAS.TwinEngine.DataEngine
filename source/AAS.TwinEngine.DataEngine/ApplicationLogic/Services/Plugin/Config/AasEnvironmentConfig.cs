@@ -10,6 +10,12 @@ public class AasEnvironmentConfig
 
     public const string SubmodelRegistryHttpClientName = "submodel-registry";
 
+    public const string AasEnvironmentRepoHealthCheckHttpClientName = "template-repository-healthcheck";
+
+    public const string AasRegistryHealthCheckHttpClientName = "aas-registry-healthcheck";
+
+    public const string SubmodelRegistryHealthCheckHttpClientName = "submodel-registry-healthcheck";
+
     public Uri DataEngineRepositoryBaseUrl { get; set; } = null!;
 
     public Uri? AasEnvironmentRepositoryBaseUrl { get; set; } = null!;

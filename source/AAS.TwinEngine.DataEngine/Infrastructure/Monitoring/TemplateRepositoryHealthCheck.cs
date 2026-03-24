@@ -13,30 +13,31 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasHealthy = await CheckEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, _aasRepositoryPath, "aas-repository", cancellationToken).ConfigureAwait(false);
+        var aasTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _aasRepositoryPath, "aas-repository", cancellationToken);
+        var submodelTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _subModelRepositoryPath, "submodel-repository", cancellationToken);
 
-        if (!aasHealthy)
+        var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
+
+        if (!results[0])
         {
             logger.LogWarning("AAS Repository health status is unhealthy");
-            return HealthCheckResult.Unhealthy();
         }
 
-        var submodelHealthy = await CheckEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, _subModelRepositoryPath, "submodel-repository", cancellationToken).ConfigureAwait(false);
-
-        if (submodelHealthy)
+        if (!results[1])
         {
-            return HealthCheckResult.Healthy();
+            logger.LogWarning("Submodel Repository health status is unhealthy");
         }
 
-        logger.LogWarning("Submodel Repository health status is unhealthy");
-        return HealthCheckResult.Unhealthy();
+        return results[0] && results[1]
+            ? HealthCheckResult.Healthy()
+            : HealthCheckResult.Unhealthy();
     }
 
-    private async Task<bool> CheckEndpointAsync(string clientName, string path, string endpointKey, CancellationToken cancellationToken)
+    private async Task<bool> CheckHealthEndpointAsync(string clientName, string path, string endpointKey, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            logger.LogWarning("Endpoint {EndpointKey} path is not configured", endpointKey);
+            logger.LogWarning("Endpoint {EndpointKey} path is not configured.", endpointKey);
             return false;
         }
 
@@ -53,22 +54,22 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
                 return true;
             }
 
-            logger.LogWarning("Health check failed for {EndpointKey}. Status: {StatusCode}", endpointKey, response.StatusCode);
+            logger.LogWarning("Template Repository Health check failed for {EndpointKey}. Status: {StatusCode}", endpointKey, response.StatusCode);
             return false;
         }
         catch (HttpRequestException ex)
         {
-            logger.LogWarning(ex, "Health check failed for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Repository Health check failed for {EndpointKey}", endpointKey);
             return false;
         }
         catch (TaskCanceledException ex)
         {
-            logger.LogWarning(ex, "Health check timed out for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Repository Health check timed out for {EndpointKey}", endpointKey);
             return false;
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Health check failed for {EndpointKey}", endpointKey);
+            logger.LogWarning(ex, "Template Repository Health check failed for {EndpointKey}", endpointKey);
             return false;
         }
     }
