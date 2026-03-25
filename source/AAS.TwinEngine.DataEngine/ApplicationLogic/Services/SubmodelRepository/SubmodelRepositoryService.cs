@@ -48,9 +48,7 @@ public class SubmodelRepositoryService(
 
         var values = await pluginDataHandler.TryGetValuesAsync(pluginManifests, semanticIds, submodelId, cancellationToken).ConfigureAwait(false);
 
-        var result = semanticIdHandler.FillOutTemplate(template, values);
-
-        return result;
+        return semanticIdHandler.FillOutTemplate(template, values);
     }
 
     private static async Task<T> ExecuteWithExceptionHandlingAsync<T>(Func<Task<T>> action)

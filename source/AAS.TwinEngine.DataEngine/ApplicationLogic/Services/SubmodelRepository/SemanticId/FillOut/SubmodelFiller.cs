@@ -131,6 +131,11 @@ public class SubmodelFiller(
         {
             var semanticTreeNodes = GetSemanticNodes(element, values);
 
+            if (ShouldSkipElement(semanticTreeNodes))
+            {
+                continue;
+            }
+
             if (ShouldCloneElements(semanticTreeNodes, element))
             {
                 ReplaceWithClones(elements, element, semanticTreeNodes, updateIdShort);
@@ -141,6 +146,8 @@ public class SubmodelFiller(
         }
     }
 
+    private static bool ShouldSkipElement(List<SemanticTreeNode>? nodes) => nodes == null || nodes.Count == 0;
+
     private static bool ShouldCloneElements(List<SemanticTreeNode> nodes, ISubmodelElement element) => nodes.Count > 1 && element is not Property && element is not ReferenceElement;
 
     private List<SemanticTreeNode>? GetSemanticNodes(ISubmodelElement element, SemanticTreeNode values)
@@ -148,12 +155,11 @@ public class SubmodelFiller(
         var semanticId = semanticIdResolver.ExtractSemanticId(element);
 
         return IsBranchElement(element)
-            ? SemanticTreeNavigator.FindNodeBySemanticId<SemanticBranchNode>(values, semanticId).Cast<SemanticTreeNode>().ToList()
-            : SemanticTreeNavigator.FindNodeBySemanticId<SemanticLeafNode>(values, semanticId).Cast<SemanticTreeNode>().ToList();
+            ? [.. SemanticTreeNavigator.FindNodeBySemanticId<SemanticBranchNode>(values, semanticId).Cast<SemanticTreeNode>()]
+            : [.. SemanticTreeNavigator.FindNodeBySemanticId<SemanticLeafNode>(values, semanticId).Cast<SemanticTreeNode>()];
     }
 
-    private static bool IsBranchElement(ISubmodelElement element) =>
-        element is not (Property or AasCore.Aas3_0.File or Blob);
+    private static bool IsBranchElement(ISubmodelElement element) => element is not (Property or AasCore.Aas3_0.File or Blob);
 
     private void ReplaceWithClones(List<ISubmodelElement> elements, ISubmodelElement element, List<SemanticTreeNode> nodes, bool updateIdShort)
     {

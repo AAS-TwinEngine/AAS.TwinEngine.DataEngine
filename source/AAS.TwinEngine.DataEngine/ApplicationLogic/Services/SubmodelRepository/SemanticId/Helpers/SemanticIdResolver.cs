@@ -21,7 +21,6 @@ public partial class SemanticIdResolver(IOptions<Semantics> semantics) : ISemant
     public const string RelationshipElementFirstPostFixSeparator = "_first";
     public const string RelationshipElementSecondPostFixSeparator = "_second";
 
-    private readonly string _internalSemanticId = semantics.Value.InternalSemanticId;
     private readonly string _submodelElementIndexContextPrefix = semantics.Value.SubmodelElementIndexContextPrefix;
 
     public string MlpPostFixSeparator { get; } = semantics.Value.MultiLanguageSemanticPostfixSeparator;
