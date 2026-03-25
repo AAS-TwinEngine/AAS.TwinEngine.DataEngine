@@ -32,22 +32,6 @@ public static class SemanticTreeNavigator
         }
     }
 
-    public static bool AreAllNodesOfSameType(IList<SemanticTreeNode> nodes, out Type? nodeType)
-    {
-        if (nodes.Count == 0)
-        {
-            nodeType = null;
-            return true;
-        }
-
-        var firstNodeType = nodes[0].GetType();
-        nodeType = firstNodeType;
-
-        if (firstNodeType != typeof(SemanticBranchNode) && firstNodeType != typeof(SemanticLeafNode))
-        {
-            return false;
-        }
-
-        return nodes.All(node => node.GetType() == firstNodeType);
-    }
+    public static IEnumerable<T> FindNodeBySemanticId<T>(SemanticTreeNode tree, string semanticId) where T : SemanticTreeNode
+        => FindNodeBySemanticId(tree, semanticId).OfType<T>();
 }

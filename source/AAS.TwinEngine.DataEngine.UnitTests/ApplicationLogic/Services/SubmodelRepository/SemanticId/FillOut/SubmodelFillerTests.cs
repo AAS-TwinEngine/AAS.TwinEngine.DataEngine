@@ -447,4 +447,115 @@ public class SubmodelFillerTests
         Equal("One", relationship.Qualifiers[0].Value);
         DoesNotContain(relationship.Qualifiers, q => q.Type == "InternalSemanticId");
     }
+
+    [Fact]
+    public void FillOutTemplate_WhenPropertySemanticIdHasBothBranchAndLeaf_UsesLeafNode()
+    {
+        const string collectionSemanticId = "urn:test:collection";
+        const string propertySemanticId = "urn:test:property";
+
+        var property = new Property(idShort: "Language", valueType: DataTypeDefXsd.String, value: string.Empty);
+        var collection = new SubmodelElementCollection(idShort: "DocVersion", value: [property]);
+
+        var submodel = Substitute.For<ISubmodel>();
+        var elements = new List<ISubmodelElement> { collection };
+        submodel.SubmodelElements.Returns(elements);
+
+        _resolver.ExtractSemanticId(collection).Returns(collectionSemanticId);
+        _resolver.ExtractSemanticId(property).Returns(propertySemanticId);
+
+        var collectionHandler = Substitute.For<ISubmodelElementTypeHandler>();
+        collectionHandler.CanHandle(Arg.Any<ISubmodelElement>()).Returns(call => call.Arg<ISubmodelElement>() is SubmodelElementCollection);
+        collectionHandler
+            .When(h => h.FillOut(Arg.Any<ISubmodelElement>(), Arg.Any<SemanticTreeNode>(), Arg.Any<Action<List<ISubmodelElement>, SemanticTreeNode, bool>>()))
+            .Do(call =>
+            {
+                var element = (SubmodelElementCollection)call.ArgAt<ISubmodelElement>(0);
+                var node = call.ArgAt<SemanticTreeNode>(1);
+                var fillChildren = call.ArgAt<Action<List<ISubmodelElement>, SemanticTreeNode, bool>>(2);
+                fillChildren(element.Value!, node, false);
+            });
+
+        var propertyHandler = Substitute.For<ISubmodelElementTypeHandler>();
+        propertyHandler.CanHandle(Arg.Any<ISubmodelElement>()).Returns(call => call.Arg<ISubmodelElement>() is Property);
+        propertyHandler
+            .When(h => h.FillOut(Arg.Any<ISubmodelElement>(), Arg.Any<SemanticTreeNode>(), Arg.Any<Action<List<ISubmodelElement>, SemanticTreeNode, bool>>()))
+            .Do(call =>
+            {
+                var element = (Property)call.ArgAt<ISubmodelElement>(0);
+                var valueNode = call.ArgAt<SemanticTreeNode>(1);
+                element.Value = (valueNode as SemanticLeafNode)?.Value;
+            });
+
+        _handlers.Add(collectionHandler);
+        _handlers.Add(propertyHandler);
+
+        var root = new SemanticBranchNode("root", Cardinality.Unknown);
+        var collectionNode = new SemanticBranchNode(collectionSemanticId, Cardinality.One);
+        collectionNode.AddChild(new SemanticBranchNode(propertySemanticId, Cardinality.One));
+        collectionNode.AddChild(new SemanticLeafNode(propertySemanticId, "en", DataType.String, Cardinality.One));
+        root.AddChild(collectionNode);
+
+        _ = _sut.FillOutTemplate(submodel, root);
+
+        Equal("en", property.Value);
+    }
+
+    [Fact]
+    public void FillOutTemplate_WhenCollectionSemanticIdHasBothBranchAndLeaf_UsesBranchNode()
+    {
+        const string parentSemanticId = "urn:test:parent";
+        const string childCollectionSemanticId = "urn:test:child-collection";
+        const string childPropertySemanticId = "urn:test:child-property";
+
+        var childProperty = new Property(idShort: "Language", valueType: DataTypeDefXsd.String, value: string.Empty);
+        var childCollection = new SubmodelElementCollection(idShort: "Languages", value: [childProperty]);
+        var parentCollection = new SubmodelElementCollection(idShort: "DocumentVersion", value: [childCollection]);
+
+        var submodel = Substitute.For<ISubmodel>();
+        var elements = new List<ISubmodelElement> { parentCollection };
+        submodel.SubmodelElements.Returns(elements);
+
+        _resolver.ExtractSemanticId(parentCollection).Returns(parentSemanticId);
+        _resolver.ExtractSemanticId(childCollection).Returns(childCollectionSemanticId);
+        _resolver.ExtractSemanticId(childProperty).Returns(childPropertySemanticId);
+
+        var collectionHandler = Substitute.For<ISubmodelElementTypeHandler>();
+        collectionHandler.CanHandle(Arg.Any<ISubmodelElement>()).Returns(call => call.Arg<ISubmodelElement>() is SubmodelElementCollection);
+        collectionHandler
+            .When(h => h.FillOut(Arg.Any<ISubmodelElement>(), Arg.Any<SemanticTreeNode>(), Arg.Any<Action<List<ISubmodelElement>, SemanticTreeNode, bool>>()))
+            .Do(call =>
+            {
+                var element = (SubmodelElementCollection)call.ArgAt<ISubmodelElement>(0);
+                var node = call.ArgAt<SemanticTreeNode>(1);
+                var fillChildren = call.ArgAt<Action<List<ISubmodelElement>, SemanticTreeNode, bool>>(2);
+                fillChildren(element.Value!, node, true);
+            });
+
+        var propertyHandler = Substitute.For<ISubmodelElementTypeHandler>();
+        propertyHandler.CanHandle(Arg.Any<ISubmodelElement>()).Returns(call => call.Arg<ISubmodelElement>() is Property);
+        propertyHandler
+            .When(h => h.FillOut(Arg.Any<ISubmodelElement>(), Arg.Any<SemanticTreeNode>(), Arg.Any<Action<List<ISubmodelElement>, SemanticTreeNode, bool>>()))
+            .Do(call =>
+            {
+                var element = (Property)call.ArgAt<ISubmodelElement>(0);
+                var valueNode = call.ArgAt<SemanticTreeNode>(1);
+                element.Value = (valueNode as SemanticLeafNode)?.Value;
+            });
+
+        _handlers.Add(collectionHandler);
+        _handlers.Add(propertyHandler);
+
+        var root = new SemanticBranchNode("root", Cardinality.Unknown);
+        var parentNode = new SemanticBranchNode(parentSemanticId, Cardinality.One);
+        var childCollectionNode = new SemanticBranchNode(childCollectionSemanticId, Cardinality.One);
+        childCollectionNode.AddChild(new SemanticLeafNode(childPropertySemanticId, "de", DataType.String, Cardinality.One));
+        parentNode.AddChild(childCollectionNode);
+        parentNode.AddChild(new SemanticLeafNode(childCollectionSemanticId, "ignore-me", DataType.String, Cardinality.One));
+        root.AddChild(parentNode);
+
+        _ = _sut.FillOutTemplate(submodel, root);
+
+        Equal("de", childProperty.Value);
+    }
 }
