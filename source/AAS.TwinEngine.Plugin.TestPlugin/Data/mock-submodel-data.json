@@ -419,8 +419,25 @@
           "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-002"
         },
         "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
-        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {},
-        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {},
+        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Submodel": "https://mm-software.com/submodel/000-003/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Property": "ArcheType"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Submodel": "https://mm-software.com/submodel/000-003/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementList": "Markings",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementCollection": "0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Property": "DesignationOfCertificateOrApproval"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Submodel": "https://mm-software.com/submodel/000-003/ContactInformation",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_SubmodelElementCollection": "ContactInformation0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Property": "NameOfContact"
+          }
+        },
         "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-003"
       },
       "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0": {
@@ -742,7 +759,7 @@
       ]
     }
   },
-   "https://mm-software.com/submodel/000-002/CustomSubmodel": {
+  "https://mm-software.com/submodel/000-002/CustomSubmodel": {
     "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
       "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
         "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
@@ -756,8 +773,25 @@
           "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-001"
         },
         "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
-        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {},
-        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {},
+        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Submodel": "https://mm-software.com/submodel/000-002/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Property": "ArcheType"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Submodel": "https://mm-software.com/submodel/000-002/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementList": "Markings",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementCollection": "0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Property": "DesignationOfCertificateOrApproval"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Submodel": "https://mm-software.com/submodel/000-001/ContactInformation",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_SubmodelElementCollection": "ContactInformation0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Property": "NameOfContact"
+          }
+        },
         "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-003"
       },
       "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0": {
@@ -1248,7 +1282,7 @@
       ]
     }
   },
-   "https://mm-software.com/submodel/000-003/CustomSubmodel": {
+  "https://mm-software.com/submodel/000-003/CustomSubmodel": {
     "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
       "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
         "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
@@ -1262,8 +1296,25 @@
           "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-001"
         },
         "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
-        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {},
-        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {},
+        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Submodel": "https://mm-software.com/submodel/000-001/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Property": "ArcheType"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Submodel": "https://mm-software.com/submodel/000-001/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementList": "Markings",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementCollection": "0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Property": "DesignationOfCertificateOrApproval"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Submodel": "https://mm-software.com/submodel/000-003/ContactInformation",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_SubmodelElementCollection": "ContactInformation0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Property": "NameOfContact"
+          }
+        },
         "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-002"
       },
       "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0": {
