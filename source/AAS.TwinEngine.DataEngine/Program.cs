@@ -27,11 +27,6 @@ public class Program
             options.EnableForHttps = true;
             options.Providers.Add<BrotliCompressionProvider>();
             options.Providers.Add<GzipCompressionProvider>();
-            options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-            [
-                "application/problem+json",
-                "application/problem+xml"
-            ]);
         });
         _ = builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
         _ = builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
