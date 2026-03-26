@@ -12,16 +12,13 @@ public static class RegisterPluginHttpClients
         IConfiguration configuration,
         IReadOnlyCollection<PluginManifest> manifests)
     {
-        IReadOnlyCollection<string> acceptEncodings = ["br", "gzip"];
-
         foreach (var manifest in manifests)
         {
             _ = services.AddHttpClientWithResilience(
                 configuration,
                 $"{PluginConfig.HttpClientNamePrefix}{manifest.PluginName}",
                 HttpRetryPolicyOptions.PluginDataProvider,
-                manifest.PluginUrl!,
-                acceptEncodings
+                manifest.PluginUrl!
             );
         }
     }

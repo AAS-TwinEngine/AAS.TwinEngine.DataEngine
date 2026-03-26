@@ -10,13 +10,14 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 
 public static class HttpClientRegistrationExtensions
 {
+    private static readonly IReadOnlyCollection<string> AcceptEncodings = ["br", "gzip"];
+
     public static IServiceCollection AddHttpClientWithResilience(
         this IServiceCollection services,
         IConfiguration configuration,
         string clientName,
         string retryPolicySectionKey,
-        Uri baseUrl,
-        IReadOnlyCollection<string>? acceptEncodings = null)
+        Uri baseUrl)
     {
         _ = services.Configure<HttpRetryPolicyOptions>(configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{retryPolicySectionKey}"));
 
@@ -25,17 +26,14 @@ public static class HttpClientRegistrationExtensions
             client.BaseAddress = baseUrl;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            if (acceptEncodings is not null)
+            foreach (var encoding in AcceptEncodings.Where(value => !string.IsNullOrWhiteSpace(value)))
             {
-                foreach (var encoding in acceptEncodings.Where(value => !string.IsNullOrWhiteSpace(value)))
-                {
-                    client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue(encoding));
-                }
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue(encoding));
             }
         })
         .AddStandardResilienceHandler(retryPolicySectionKey);
 
-        if (acceptEncodings is not null && acceptEncodings.Count > 0)
+        if (AcceptEncodings.Count > 0)
         {
             _ = httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
