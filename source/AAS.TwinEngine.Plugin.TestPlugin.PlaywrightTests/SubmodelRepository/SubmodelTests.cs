@@ -8,26 +8,6 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests.SubmodelRepository;
 public class SubmodelTests : ApiTestBase
 {
     [Fact]
-    public async Task GetSubmodel_Nameplate_ShouldReturnSuccess_ContentAsExpected()
-    {
-        // Arrange
-        var url = $"/submodels/{SubmodelIdentifierNameplate}/";
-
-        // Act
-        var response = await ApiContext.GetAsync(url);
-
-        // Assert
-        AssertSuccessResponse(response);
-        var content = await response.TextAsync();
-        Assert.False(string.IsNullOrEmpty(content));
-        
-        var json = JsonDocument.Parse(content);
-        Assert.NotNull(json);
-
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodel_Nameplate_Expected.json"));
-    }
-
-    [Fact]
     public async Task GetSubmodel_ContactInfo_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
@@ -40,7 +20,7 @@ public class SubmodelTests : ApiTestBase
         AssertSuccessResponse(response);
         var content = await response.TextAsync();
         Assert.False(string.IsNullOrEmpty(content));
-        
+
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
@@ -48,10 +28,10 @@ public class SubmodelTests : ApiTestBase
     }
 
     [Fact]
-    public async Task GetSubmodel_Reliability_ShouldReturnSuccess_ContentAsExpected()
+    public async Task GetSubmodel_HandoverDocumentation_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
-        var url = $"/submodels/{SubmodelIdentifierReliability}/";
+        var url = $"/submodels/{SubmodelIdentifierHandoverDocumentation}/";
 
         // Act
         var response = await ApiContext.GetAsync(url);
@@ -60,10 +40,30 @@ public class SubmodelTests : ApiTestBase
         AssertSuccessResponse(response);
         var content = await response.TextAsync();
         Assert.False(string.IsNullOrEmpty(content));
-        
+
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodel_Reliability_Expected.json"));
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodel_HandoverDocumentation_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetSubmodel_CustomSubmodel_ShouldReturnSuccess_ContentAsExpected()
+    {
+        // Arrange
+        var url = $"/submodels/{SubmodelIdentifierCustomSubmodel}/";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodel_CustomSubmodel_Expected.json"));
     }
 }

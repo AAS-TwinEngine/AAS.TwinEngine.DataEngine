@@ -119,92 +119,374 @@
       ]
     }
   },
-  "https://mm-software.com/submodel/000-001/Nameplate": {
-    "https://admin-shell.io/idta/nameplate/3/0/Nameplate": {
-      "0112/2///61987#ABN590#002": "https://mm-software.com/Model-000/Serial-Nr-001",
-      "0112/2///61987#ABA565#009": {
-        "0112/2///61987#ABA565#009_de": "M&M"
+  "https://mm-software.com/submodel/000-001/HandoverDocumentation": {
+    "0173-1#01-AHF578#003": {
+      "0173-1#02-ABI500#003": {
+        "0173-1#02-ABI500#003/0173-1#01-AHF579#003": [
+          {
+            "0173-1#02-ABI501#003": {
+              "0173-1#02-ABI501#003/0173-1#01-AHF580#003": [
+                {
+                  "0173-1#02-ABH994#003": "a3f1c2b4-9d81-4e5a-b6f2-01ac9e11d001",
+                  "0173-1#02-AAO099#004": "DOC2025A001",
+                  "0173-1#02-ABH995#003": "true"
+                },
+                {
+                  "0173-1#02-ABH994#003": "b7e92d10-3c45-4a8f-9f21-02bc9e11d002",
+                  "0173-1#02-AAO099#004": "CERTX94B21",
+                  "0173-1#02-ABH995#003": "false"
+                }
+              ]
+            },
+            "0173-1#02-ABI502#003": {
+              "0173-1#02-ABI502#003/0173-1#01-AHF581#003": [
+                {
+                  "0173-1#02-ABH996#003": "CLS-001",
+                  "0173-1#02-ABH997#003": "IEC-61360",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Electrical Components",
+                    "0173-1#02-ABJ219#002_de": "Elektrische Bauteile"
+                  }
+                },
+                {
+                  "0173-1#02-ABH996#003": "CLS-002",
+                  "0173-1#02-ABH997#003": "ISO-13584",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Hydraulic Pumps",
+                    "0173-1#02-ABJ219#002_de": "Hydraulikpumpen"
+                  }
+                }
+              ]
+            },
+            "0173-1#02-ABI503#003": {
+              "0173-1#02-ABI503#003/0173-1#01-AHF582#003": [
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "en"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "1",
+                  "0173-1#02-ABI000#003": "2023-01-01",
+                  "0173-1#02-ABI001#003": "Released",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M Germany",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "User Guide – DSLR Camera Model X100",
+                    "0173-1#02-ABG940#003_de": "Benutzerhandbuch – DSLR-Kamera Modell X100"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Complete Instructions for Professional Photography",
+                    "0173-1#02-ABH998#003_de": "Vollständige Anleitung für professionelle Fotografie"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Detailed instructions for operating the X100 DSLR camera, including setup and troubleshooting.",
+                    "0173-1#02-AAN466#004_de": "Detaillierte Anweisungen zur Bedienung der DSLR-Kamera X100, einschließlich Einrichtung und Fehlerbehebung"
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "DSLR, Camera, Photography, User Guide, Setup",
+                    "0173-1#02-ABH999#003_de": "DSLR, Kamera, Fotografie, Benutzerhandbuch, Einrichtung"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                },
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "de"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "1.1",
+                  "0173-1#02-ABI000#003": "2024-05-05",
+                  "0173-1#02-ABI001#003": "InReview",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M India",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Technical Specification – Mirrorless Camera Z-Series",
+                    "0173-1#02-ABG940#003_de": "Technische Spezifikation – Systemkamera der Z-Serie"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Detailed Specs for Advanced Imaging",
+                    "0173-1#02-ABH998#003_de": "Detaillierte Spezifikationen für fortschrittliche Bildgebung"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Comprehensive technical details of the Z-Series mirrorless camera, covering sensor and performance.",
+                    "0173-1#02-AAN466#004_de": "Umfassende technische Details der spiegellosen Kamera Z-Serie, einschließlich Sensor und Leistung."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Mirrorless, Camera, Specs, Imaging, Performance",
+                    "0173-1#02-ABH999#003_de": "Spiegellos, Kamera, Spezifikationen, Bildgebung, Leistung"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                }
+              ]
+            },
+            "https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities": [
+              {}
+            ]
+          },
+          {
+            "0173-1#02-ABI501#003": {
+              "0173-1#02-ABI501#003/0173-1#01-AHF580#003": [
+                {
+                  "0173-1#02-ABH994#003": "c81a4f22-6d91-43bb-a812-03cd9e11d003",
+                  "0173-1#02-AAO099#004": "MANUAL8F2Q7",
+                  "0173-1#02-ABH995#003": "true"
+                }
+              ]
+            },
+            "0173-1#02-ABI502#003": {
+              "0173-1#02-ABI502#003/0173-1#01-AHF581#003": [
+                {
+                  "0173-1#02-ABH996#003": "CLS-003",
+                  "0173-1#02-ABH997#003": "ECLASS-13.0",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Industrial Sensors",
+                    "0173-1#02-ABJ219#002_de": "Industrielle Sensoren"
+                  }
+                }
+              ]
+            },
+            "0173-1#02-ABI503#003": {
+              "0173-1#02-ABI503#003/0173-1#01-AHF582#003": [
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "en"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "2.1",
+                  "0173-1#02-ABI000#003": "2026-01-01",
+                  "0173-1#02-ABI001#003": "Released",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M China",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Maintenance Manual – Professional Camera Lens 50mm",
+                    "0173-1#02-ABG940#003_de": "Wartungshandbuch – Professionelles Kameraobjektiv 50 mm"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Care and Cleaning Procedures",
+                    "0173-1#02-ABH998#003_de": "Pflege und Reinigungsverfahren"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Guidelines for cleaning and maintaining the 50mm professional lens for optimal performance.",
+                    "0173-1#02-AAN466#004_de": "Richtlinien zur Reinigung und Wartung des professionellen 50-mm-Objektivs für optimale Leistung."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Lens, Maintenance, Cleaning, Professional, Care",
+                    "0173-1#02-ABH999#003_de": "Objektiv, Wartung, Reinigung, Professionell, Pflege"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                }
+              ]
+            },
+            "https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities": [
+              {}
+            ]
+          },
+          {
+            "0173-1#02-ABI501#003": {
+              "0173-1#02-ABI501#003/0173-1#01-AHF580#003": [
+                {
+                  "0173-1#02-ABH994#003": "a3f1c2b4-9d81-4e5a-b6f2-01ac9e11d002",
+                  "0173-1#02-AAO099#004": "DOC2025A002",
+                  "0173-1#02-ABH995#003": "true"
+                }
+              ]
+            },
+            "0173-1#02-ABI502#003": {
+              "0173-1#02-ABI502#003/0173-1#01-AHF581#003": [
+                {
+                  "0173-1#02-ABH996#003": "CLS-004",
+                  "0173-1#02-ABH997#003": "UNSPSC",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Fasteners",
+                    "0173-1#02-ABJ219#002_de": "Befestigungselemente"
+                  }
+                }
+              ]
+            },
+            "0173-1#02-ABI503#003": {
+              "0173-1#02-ABI503#003/0173-1#01-AHF582#003": [
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "de"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "2.3",
+                  "0173-1#02-ABI000#003": "2025-10-10",
+                  "0173-1#02-ABI001#003": "InReview",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M Germany",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Installation Guide – Wide-Angle Lens Kit",
+                    "0173-1#02-ABG940#003_de": "Installationsanleitung – Weitwinkel-Objektiv-Kit"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Step-by-Step Setup Instructions",
+                    "0173-1#02-ABH998#003_de": "Schritt-für-Schritt-Installationsanleitung"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Step-by-step instructions for installing and configuring the wide-angle lens kit.",
+                    "0173-1#02-AAN466#004_de": "Schritt-für-Schritt-Anleitung zur Installation und Konfiguration des Weitwinkel-Objektivsets."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Wide-Angle, Lens, Installation, Setup, Kit",
+                    "0173-1#02-ABH999#003_de": "Weitwinkel, Objektiv, Installation, Einrichtung, Set"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                }
+              ]
+            },
+            "https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities": [
+              {}
+            ]
+          }
+        ]
       },
-      "0112/2///61987#ABP464#002": {
-        "0112/2///61987#ABP464#002_en": "M&MType ABC"
+      "https://admin-shell.io/vdi/2770/1/0/EntitiesForDocumentation": [
+        {}
+      ]
+    }
+  },
+  "https://mm-software.com/submodel/000-001/CustomSubmodel": {
+    "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
+      "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
+        "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0": {
+            "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-003"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/BulkCount/1/0": "52467",
+          "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-002"
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
+        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Submodel": "https://mm-software.com/submodel/000-003/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Property": "ArcheType"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Submodel": "https://mm-software.com/submodel/000-003/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementList": "Markings",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementCollection": "0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Property": "DesignationOfCertificateOrApproval"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Submodel": "https://mm-software.com/submodel/000-003/ContactInformation",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_SubmodelElementCollection": "ContactInformation0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Property": "NameOfContact"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-003"
       },
-      "0112/2///61987#ABA581#007": "MM11-ABC22-001",
-      "0112/2///61987#ABB757#007": "2025-01-01",
-      "0112/2///61987#ABA567#009": {
-        "0112/2///61987#ABA567#009_en": "\u0022ABC-123\u0022"
+      "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0": {
+        "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0_Submodel": "https://mm-software.com/submodel/000-002/ContactInformation"
       },
-      "0112/2///61987#ABA950#008": "FMABC1234",
-      "0112/2///61987#ABA951#009": "12345678",
-      "0112/2///61987#ABP000#002": "2022",
+      "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/heading1/1/0": "SW5mb3JtYXRpb24gc2V0IGZvciBTdWJtb2RlbCDigJxOYW1lcGxhdGXigJ0=",
+      "https://admin-shell.io/SMT/General/Arbitrary": {
+        "https://admin-shell.io/SMT/General/Arbitrary_min": "24",
+        "https://admin-shell.io/SMT/General/Arbitrary_max": "962"
+      },
+      "https://admin-shell.io/idta/HierarchicalStructures/ArcheType/1/0": "000-001 ArcheType",
       "0112/2///61360_7#AAS006#001": [
         {
-          "0112/2///61360_7#AAS009#001": [
+          "0112/2///61360_7#AAS009#001#0": [
             {
               "0112/2///61987#ABA231#009": "0173-1#07-DAA603#004",
               "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128",
+              "0173-1#02-ABJ219#002": {},
+              "https://admin-shell.io/SMT/General/Arbitrary/string": {
+                "https://admin-shell.io/SMT/General/Arbitrary/string_min": "2",
+                "https://admin-shell.io/SMT/General/Arbitrary/string_max": "10"
+              },
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
               "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
               "0112/2///61987#ABB146#007": "0044"
-            },
-            {
-              "0112/2///61987#ABA231#009": "0173-1#07-DAA603#004-2",
-              "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128-2",
-              "0112/2///61987#ABO097#001": "2025-01-01",
-              "0112/2///61987#ABH830#002": "2025-01-01",
-              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
-              "0112/2///61987#ABB146#007": "00100"
             }
           ]
         }
       ],
-      "0112/2///61987#ABP462#001": "DE",
-      "0112/2///61987#ABP463#001": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/bd4a1fca199e8a7c38fb20d3290f2a374b3d2ab8/example/logo/MM_Logo.svg",
-      "0173-1#02-ABI218#003/0173-1#01-AGZ672#004": [
-        {
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP": {
-            "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP_en": "M&MTestsample"
-          },
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
-          "0173-1#02-ABI219#003/0173-1#01-AHD205#004": [
-            {
-              "0173-1#01-AHD205#004": [
-                {
-                  "0173-1#02-AAO856#002": "",
-                  "https://admin-shell.io/SMT/General/ArbitraryProp": "",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP": {
-                    "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "https://mm-software.com/submodel/000-001/Reliability": {
-    "https://admin-shell.io/idta/iec62683/1/0/Reliability": {
-      "0112/2///62683#ACE006#001": "4",
       "0112/2///62683#ACG071#001": [
         {
-          "0112/2///61987#ABA969#007": "DC",
-          "0112/2///61987#ABA588#004": "14.8",
-          "0112/2///61987#ABD461#004": "3.8",
-          "0112/2///61987#ABD462#004": "6.7",
-          "https://admin-shell.io/idta/FunctionalSafety/RatedOperationalCurrent/1/0": "78.9",
-          "0112/2///62683#ACE053#001": "TestType001",
-          "0112/2///62683#ACE070#001": "true",
-          "0112/2///62683#ACE055#001": "150",
-          "0112/2///62683#ACE054#001": "45"
-        }
-      ],
-      "0112/2///62683#ACG080#001": [
-        {
-          "0112/2///62683#ACE061#001": "2",
-          "0112/2///62683#ACE062#001": "7",
-          "https://admin-shell.io/idta/Reliability/B10/1/0": "1"
+          "https://admin-shell.io/zvei/nameplate/2/0/Nameplate/CompanyLogo": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/logo/MM_Logo.svg",
+          "https://admin-shell.io/SMT/General/Arbitrary/date": {
+            "https://admin-shell.io/SMT/General/Arbitrary/date_min": "2010-02-02",
+            "https://admin-shell.io/SMT/General/Arbitrary/date_max": "2030-02-06"
+          },
+          "0112/2///61987#ABA588#004": "56.5",
+          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU\u002BPikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
+          "0173-1#02-ABK273#002": {
+            "0173-1#02-ABK273#002_en": "Name of product class in the used classification system",
+            "0173-1#02-ABK273#002_de": "Name der Produktklasse im verwendeten Klassifizierungssystem"
+          },
+          "0112/2///61987#ABD461#004": "12.5",
+          "0173-1#02-ABL358#002": {
+            "0173-1#02-ABL358#002_Submodel": "https://mm-software.com/submodel/000-003/HandoverDocumentation",
+            "0173-1#02-ABL358#002_SubmodelElementList": "Documents",
+            "0173-1#02-ABL358#002_SubmodelElementCollection": "0"
+          }
         }
       ]
     }
@@ -320,84 +602,245 @@
       ]
     }
   },
-  "https://mm-software.com/submodel/000-002/Nameplate": {
-    "https://admin-shell.io/idta/nameplate/3/0/Nameplate": {
-      "0112/2///61987#ABA567#009": {
-        "0112/2///61987#ABA567#009_en": "\u0022ABC-123\u0022"
-      },
-      "0112/2///61987#ABN590#002": "https://mm-software.com/Model-000/Serial-Nr-002",
-      "0112/2///61987#ABA565#009": {
-        "0112/2///61987#ABA565#009_de": "M&M"
-      },
-      "0112/2///61987#ABP464#002": {
-        "0112/2///61987#ABP464#002_en": "M&MType ABC002"
-      },
-      "0112/2///61987#ABA581#007": "MM11-ABC22-002",
-      "0112/2///61987#ABB757#007": "2024-01-01",
-      "0112/2///61987#ABA950#008": "FMABC1234",
-      "0112/2///61987#ABA951#009": "12345678",
-      "0112/2///61987#ABP000#002": "2022",
-      "0112/2///61360_7#AAS006#001": [
-        {
-          "0112/2///61360_7#AAS009#001": [
-            {
-              "0112/2///61987#ABA231#009": "0173-1#07-DAA603#004",
-              "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128",
-              "0112/2///61987#ABO097#001": "2022-01-01",
-              "0112/2///61987#ABH830#002": "2022-01-01",
-              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
-              "0112/2///61987#ABB146#007": "0044"
-            }
-          ]
-        }
-      ],
-      "0112/2///61987#ABP462#001": "DE",
-      "0112/2///61987#ABP463#001": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/bd4a1fca199e8a7c38fb20d3290f2a374b3d2ab8/example/logo/MM_Logo.svg",
-      "0173-1#02-ABI218#003/0173-1#01-AGZ672#004": [
-        {
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP": {
-            "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP_en": "M&MTestsample"
-          },
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
-          "0173-1#02-ABI219#003/0173-1#01-AHD205#004": [
-            {
-              "0173-1#01-AHD205#004": [
+  "https://mm-software.com/submodel/000-002/HandoverDocumentation": {
+    "0173-1#01-AHF578#003": {
+      "0173-1#02-ABI500#003": {
+        "0173-1#02-ABI500#003/0173-1#01-AHF579#003": [
+          {
+            "0173-1#02-ABI501#003": {
+              "0173-1#02-ABI501#003/0173-1#01-AHF580#003": [
                 {
-                  "0173-1#02-AAO856#002": "",
-                  "https://admin-shell.io/SMT/General/ArbitraryProp": "",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP": {
-                    "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
+                  "0173-1#02-ABH994#003": "b7e92d10-3c45-4a8f-9f21-02bc9e11d003",
+                  "0173-1#02-AAO099#004": "CERTX94B22",
+                  "0173-1#02-ABH995#003": "true"
+                }
+              ]
+            },
+            "0173-1#02-ABI502#003": {
+              "0173-1#02-ABI502#003/0173-1#01-AHF581#003": [
+                {
+                  "0173-1#02-ABH996#003": "CLS-005",
+                  "0173-1#02-ABH997#003": "ISO-81346",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Bearings",
+                    "0173-1#02-ABJ219#002_de": "Lager"
                   }
                 }
               ]
-            }
-          ]
-        }
+            },
+            "0173-1#02-ABI503#003": {
+              "0173-1#02-ABI503#003/0173-1#01-AHF582#003": [
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "de"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "0.9",
+                  "0173-1#02-ABI000#003": "2024-01-01",
+                  "0173-1#02-ABI001#003": "Released",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M India",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Product Data Sheet – Telephoto Lens 200mm",
+                    "0173-1#02-ABG940#003_de": "Produktdatenblatt – Teleobjektiv 200 mm"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Technical Data and Performance Metrics",
+                    "0173-1#02-ABH998#003_de": "Technische Daten und Leistungskennzahlen"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Technical data and compatibility details for the 200mm telephoto lens.",
+                    "0173-1#02-AAN466#004_de": "Technische Daten und Kompatibilitätsdetails für das 200-mm-Teleobjektiv."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Telephoto, Lens, Data Sheet, Specifications, Optics",
+                    "0173-1#02-ABH999#003_de": "Teleobjektiv, Objektiv, Datenblatt, Spezifikationen, Optik"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                }
+              ]
+            },
+            "https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities": [
+              {}
+            ]
+          },
+          {
+            "0173-1#02-ABI501#003": {
+              "0173-1#02-ABI501#003/0173-1#01-AHF580#003": [
+                {
+                  "0173-1#02-ABH994#003": "c81a4f22-6d91-43bb-a812-03cd9e11d004",
+                  "0173-1#02-AAO099#004": "MANUAL8F2Q8",
+                  "0173-1#02-ABH995#003": "true"
+                }
+              ]
+            },
+            "0173-1#02-ABI502#003": {
+              "0173-1#02-ABI502#003/0173-1#01-AHF581#003": [
+                {
+                  "0173-1#02-ABH996#003": "CLS-006",
+                  "0173-1#02-ABH997#003": "IEC-61131",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "PLC Controllers",
+                    "0173-1#02-ABJ219#002_de": "PLC-Steuerungen"
+                  }
+                }
+              ]
+            },
+            "0173-1#02-ABI503#003": {
+              "0173-1#02-ABI503#003/0173-1#01-AHF582#003": [
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "en"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "1.2",
+                  "0173-1#02-ABI000#003": "2024-03-03",
+                  "0173-1#02-ABI001#003": "InReview",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M China",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Safety Instructions – Digital Camera Accessories",
+                    "0173-1#02-ABG940#003_de": "Sicherheitsanweisungen – Zubehör für Digitalkameras"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Guidelines for Safe Usage",
+                    "0173-1#02-ABH998#003_de": "Richtlinien für sichere Verwendung"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Safety guidelines for handling batteries, chargers, and other camera accessories.",
+                    "0173-1#02-AAN466#004_de": "Sicherheitsrichtlinien für den Umgang mit Batterien, Ladegeräten und anderem Kamera-Zubehör."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Safety, Camera, Accessories, Guidelines, Handling",
+                    "0173-1#02-ABH999#003_de": "Sicherheit, Kamera, Zubehör, Richtlinien, Handhabung"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                }
+              ]
+            },
+            "https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities": [
+              {}
+            ]
+          }
+        ]
+      },
+      "https://admin-shell.io/vdi/2770/1/0/EntitiesForDocumentation": [
+        {}
       ]
     }
   },
-  "https://mm-software.com/submodel/000-002/Reliability": {
-    "https://admin-shell.io/idta/iec62683/1/0/Reliability": {
-      "0112/2///62683#ACE006#001": "4",
-      "0112/2///62683#ACG071#001": [
+  "https://mm-software.com/submodel/000-002/CustomSubmodel": {
+    "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
+      "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
+        "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0": {
+            "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-002"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/BulkCount/1/0": "52467",
+          "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-001"
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
+        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Submodel": "https://mm-software.com/submodel/000-002/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Property": "ArcheType"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Submodel": "https://mm-software.com/submodel/000-002/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementList": "Markings",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementCollection": "0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Property": "DesignationOfCertificateOrApproval"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Submodel": "https://mm-software.com/submodel/000-001/ContactInformation",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_SubmodelElementCollection": "ContactInformation0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Property": "NameOfContact"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-003"
+      },
+      "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0": {
+        "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0_Submodel": "https://mm-software.com/submodel/000-002/ContactInformation"
+      },
+      "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/heading1/1/0": "SW5mb3JtYXRpb24gc2V0IGZvciBTdWJtb2RlbCDigJxOYW1lcGxhdGXigJ0=",
+      "https://admin-shell.io/SMT/General/Arbitrary": {
+        "https://admin-shell.io/SMT/General/Arbitrary_min": "24",
+        "https://admin-shell.io/SMT/General/Arbitrary_max": "54"
+      },
+      "https://admin-shell.io/idta/HierarchicalStructures/ArcheType/1/0": "000-002 ArcheType",
+      "0112/2///61360_7#AAS006#001": [
         {
-          "0112/2///61987#ABA969#007": "DC",
-          "0112/2///61987#ABA588#004": "14.8",
-          "0112/2///61987#ABD461#004": "3.8",
-          "0112/2///61987#ABD462#004": "6.7",
-          "https://admin-shell.io/idta/FunctionalSafety/RatedOperationalCurrent/1/0": "78.9",
-          "0112/2///62683#ACE053#001": "TestType002",
-          "0112/2///62683#ACE070#001": "true",
-          "0112/2///62683#ACE055#001": "150",
-          "0112/2///62683#ACE054#001": "45"
+          "0112/2///61360_7#AAS009#001#0": [
+            {
+              "0112/2///61987#ABA231#009": "0173-1#07-DAA603#004",
+              "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128",
+              "0173-1#02-ABJ219#002": {},
+              "https://admin-shell.io/SMT/General/Arbitrary/string": {
+                "https://admin-shell.io/SMT/General/Arbitrary/string_min": "20",
+                "https://admin-shell.io/SMT/General/Arbitrary/string_max": "100"
+              },
+              "0112/2///61987#ABO097#001": "2022-01-01",
+              "0112/2///61987#ABH830#002": "2022-01-01",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
+              "0112/2///61987#ABB146#007": "0047"
+            }
+          ]
         }
       ],
-      "0112/2///62683#ACG080#001": [
+      "0112/2///62683#ACG071#001": [
         {
-          "0112/2///62683#ACE061#001": "2",
-          "0112/2///62683#ACE062#001": "7",
-          "https://admin-shell.io/idta/Reliability/B10/1/0": "1"
+          "https://admin-shell.io/zvei/nameplate/2/0/Nameplate/CompanyLogo": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/logo/MM_Logo.svg",
+          "https://admin-shell.io/SMT/General/Arbitrary/date": {
+            "https://admin-shell.io/SMT/General/Arbitrary/date_min": "2040-02-02",
+            "https://admin-shell.io/SMT/General/Arbitrary/date_max": "2050-02-06"
+          },
+          "0112/2///61987#ABA588#004": "56.54",
+          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU\u002BPikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
+          "0173-1#02-ABK273#002": {
+            "0173-1#02-ABK273#002_en": "Name of product class in the used classification system",
+            "0173-1#02-ABK273#002_de": "Name der Produktklasse im verwendeten Klassifizierungssystem"
+          },
+          "0112/2///61987#ABD461#004": "1.5",
+          "0173-1#02-ABL358#002": {
+            "0173-1#02-ABL358#002_Submodel": "https://mm-software.com/submodel/000-002/HandoverDocumentation",
+            "0173-1#02-ABL358#002_SubmodelElementList": "Documents",
+            "0173-1#02-ABL358#002_SubmodelElementCollection": "0"
+          }
         }
       ]
     }
@@ -570,26 +1013,330 @@
       ]
     }
   },
-  "https://mm-software.com/submodel/000-003/Nameplate": {
-    "https://admin-shell.io/idta/nameplate/3/0/Nameplate": {
-      "0112/2///61987#ABA567#009": {
-        "0112/2///61987#ABA567#009_en": "\u0022ABC-123\u0022"
+  "https://mm-software.com/submodel/000-003/HandoverDocumentation": {
+    "0173-1#01-AHF578#003": {
+      "0173-1#02-ABI500#003": {
+        "0173-1#02-ABI500#003/0173-1#01-AHF579#003": [
+          {
+            "0173-1#02-ABI501#003": {
+              "0173-1#02-ABI501#003/0173-1#01-AHF580#003": [
+                {
+                  "0173-1#02-ABH994#003": "c81a4f22-6d91-43bb-a812-03cd9e11d004",
+                  "0173-1#02-AAO099#004": "MANUAL8F2Q8",
+                  "0173-1#02-ABH995#003": "true"
+                }
+              ]
+            },
+            "0173-1#02-ABI502#003": {
+              "0173-1#02-ABI502#003/0173-1#01-AHF581#003": [
+                {
+                  "0173-1#02-ABH996#003": "CLS-006",
+                  "0173-1#02-ABH997#003": "IEC-61131",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "PLC Controllers",
+                    "0173-1#02-ABJ219#002_de": "PLC-Steuerungen"
+                  }
+                }
+              ]
+            },
+            "0173-1#02-ABI503#003": {
+              "0173-1#02-ABI503#003/0173-1#01-AHF582#003": [
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "en"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "1.2",
+                  "0173-1#02-ABI000#003": "2024-03-03",
+                  "0173-1#02-ABI001#003": "InReview",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M China",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Safety Instructions – Digital Camera Accessories",
+                    "0173-1#02-ABG940#003_de": "Sicherheitsanweisungen – Zubehör für Digitalkameras"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Guidelines for Safe Usage",
+                    "0173-1#02-ABH998#003_de": "Richtlinien für sichere Verwendung"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Safety guidelines for handling batteries, chargers, and other camera accessories.",
+                    "0173-1#02-AAN466#004_de": "Sicherheitsrichtlinien für den Umgang mit Batterien, Ladegeräten und anderem Kamera-Zubehör."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Safety, Camera, Accessories, Guidelines, Handling",
+                    "0173-1#02-ABH999#003_de": "Sicherheit, Kamera, Zubehör, Richtlinien, Handhabung"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                }
+              ]
+            },
+            "https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities": [
+              {}
+            ]
+          },
+          {
+            "0173-1#02-ABI501#003": {
+              "0173-1#02-ABI501#003/0173-1#01-AHF580#003": [
+                {
+                  "0173-1#02-ABH994#003": "c81a4f22-6d91-43bb-a812-03cd9e11d005",
+                  "0173-1#02-AAO099#004": "MANUAL8F2Q9",
+                  "0173-1#02-ABH995#003": "false"
+                },
+                {
+                  "0173-1#02-ABH994#003": "a3f1c2b4-9d81-4e5a-b6f2-01ac9e11d003",
+                  "0173-1#02-AAO099#004": "DOC2025A003",
+                  "0173-1#02-ABH995#003": "true"
+                },
+                {
+                  "0173-1#02-ABH994#003": "b7e92d10-3c45-4a8f-9f21-02bc9e11d004",
+                  "0173-1#02-AAO099#004": "CERTX94B23",
+                  "0173-1#02-ABH995#003": "false"
+                }
+              ]
+            },
+            "0173-1#02-ABI502#003": {
+              "0173-1#02-ABI502#003/0173-1#01-AHF581#003": [
+                {
+                  "0173-1#02-ABH996#003": "CLS-009",
+                  "0173-1#02-ABH997#003": "ISO-13584",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Cooling Systems",
+                    "0173-1#02-ABJ219#002_de": "Kühlsysteme"
+                  }
+                },
+                {
+                  "0173-1#02-ABH996#003": "CLS-007",
+                  "0173-1#02-ABH997#003": "ECLASS-13.0",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Safety Equipment",
+                    "0173-1#02-ABJ219#002_de": "Sicherheitsausrüstung"
+                  }
+                },
+                {
+                  "0173-1#02-ABH996#003": "CLS-008",
+                  "0173-1#02-ABH997#003": "GS1",
+                  "0173-1#02-ABJ219#002": {
+                    "0173-1#02-ABJ219#002_en": "Packaging Materials",
+                    "0173-1#02-ABJ219#002_de": "Verpackungsmaterialien"
+                  }
+                }
+              ]
+            },
+            "0173-1#02-ABI503#003": {
+              "0173-1#02-ABI503#003/0173-1#01-AHF582#003": [
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "en"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "1",
+                  "0173-1#02-ABI000#003": "2022-02-02",
+                  "0173-1#02-ABI001#003": "Released",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M Germany",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Packaging Standards – Perfume Bottles and Caps",
+                    "0173-1#02-ABG940#003_de": "Verpackungsstandards – Parfümflaschen und Verschlüsse"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Design and Material Compliance Guidelines",
+                    "0173-1#02-ABH998#003_de": "Richtlinien für Design und Materialkonformität"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Design and material compliance guidelines for perfume packaging.",
+                    "0173-1#02-AAN466#004_de": "Richtlinien für Design und Materialkonformität bei Parfumverpackungen."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Perfume, Fragrance, Luxury, Catalog, Collection",
+                    "0173-1#02-ABH999#003_de": "Parfum, Duft, Luxus, Katalog, Kollektion"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                },
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "de"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "1.4",
+                  "0173-1#02-ABI000#003": "2023-01-01",
+                  "0173-1#02-ABI001#003": "Released",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M Germany",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Perfume Catalog – Luxury Fragrance Collection 2025",
+                    "0173-1#02-ABG940#003_de": "Parfümkatalog – Luxusduftkollektion 2025"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Explore Elegant Scents for Every Occasion",
+                    "0173-1#02-ABH998#003_de": "Entdecken Sie elegante Düfte für jeden Anlass"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "A curated catalog showcasing premium perfumes with scent profiles and packaging details.",
+                    "0173-1#02-AAN466#004_de": "Ein kuratierter Katalog mit Premium-Parfums, Duftprofilen und Verpackungsdetails."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Perfume, Fragrance, Luxury, Catalog, Collection",
+                    "0173-1#02-ABH999#003_de": "Parfum, Duft, Luxus, Katalog, Kollektion"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                },
+                {
+                  "0173-1#02-AAN468#008": [
+                    {
+                      "0173-1#02-AAN468#008": "hi"
+                    }
+                  ],
+                  "0173-1#02-ABK288#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK289#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK290#002": [
+                    {}
+                  ],
+                  "0173-1#02-ABK126#002": [
+                    {
+                      "0173-1#02-ABK126#002": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                    }
+                  ],
+                  "0173-1#02-AAP003#005": "2",
+                  "0173-1#02-ABI000#003": "2024-03-03",
+                  "0173-1#02-ABI001#003": "InReview",
+                  "https://api.eclass-cdp.com/0173-1-02-ABI002-003": "M&M",
+                  "0173-1#02-ABI004#003": "M&M India",
+                  "0173-1#02-ABG940#003": {
+                    "0173-1#02-ABG940#003_en": "Quality Assurance Report – Eau de Parfum Series A",
+                    "0173-1#02-ABG940#003_de": "Qualitätssicherungsbericht – Eau de Parfum Serie A"
+                  },
+                  "0173-1#02-ABH998#003": {
+                    "0173-1#02-ABH998#003_en": "Verified Standards and Testing Results",
+                    "0173-1#02-ABH998#003_de": "Geprüfte Standards und Testergebnisse"
+                  },
+                  "0173-1#02-AAN466#004": {
+                    "0173-1#02-AAN466#004_en": "Report detailing quality checks and compliance standards for Series A perfumes.",
+                    "0173-1#02-AAN466#004_de": "Bericht mit Qualitätsprüfungen und Konformitätsstandards für Parfums der Serie A."
+                  },
+                  "0173-1#02-ABH999#003": {
+                    "0173-1#02-ABH999#003_en": "Packaging, Perfume, Bottles, Caps, Compliance",
+                    "0173-1#02-ABH999#003_de": "Verpackung, Parfum, Flaschen, Verschlüsse, Konformität"
+                  },
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                }
+              ]
+            },
+            "https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities": [
+              {}
+            ]
+          }
+        ]
       },
-      "0112/2///61987#ABN590#002": "https://mm-software.com/Model-000/Serial-Nr-003",
-      "0112/2///61987#ABA565#009": {
-        "0112/2///61987#ABA565#009_de": "M&M"
+      "https://admin-shell.io/vdi/2770/1/0/EntitiesForDocumentation": [
+        {}
+      ]
+    }
+  },
+  "https://mm-software.com/submodel/000-003/CustomSubmodel": {
+    "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
+      "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
+        "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0": {
+            "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-001"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {},
+          "https://admin-shell.io/idta/HierarchicalStructures/BulkCount/1/0": "52467",
+          "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-001"
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/SameAs/1/0": {},
+        "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Submodel": "https://mm-software.com/submodel/000-001/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/IsPartOf/1/0_second_Property": "ArcheType"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0": {
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Submodel": "https://mm-software.com/submodel/000-001/CustomSubmodel",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementList": "Markings",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_SubmodelElementCollection": "0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_first_Property": "DesignationOfCertificateOrApproval"
+          },
+          "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second": {
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Submodel": "https://mm-software.com/submodel/000-003/ContactInformation",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_SubmodelElementCollection": "ContactInformation0",
+            "https://admin-shell.io/idta/HierarchicalStructures/HasPart/1/0_second_Property": "NameOfContact"
+          }
+        },
+        "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0_globalAssetId": "https://mm-software.com/ids/assets/000-002"
       },
-      "0112/2///61987#ABP464#002": {
-        "0112/2///61987#ABP464#002_en": "M&MType ABC003"
+      "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0": {
+        "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/target-model/1/0_Submodel": "https://mm-software.com/submodel/000-001/Nameplate"
       },
-      "0112/2///61987#ABA581#007": "MM11-ABC22-003",
-      "0112/2///61987#ABB757#007": "2025-01-01",
+      "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/heading1/1/0": "SW5mb3JtYXRpb24gc2V0IGZvciBTdWJtb2RlbCDigJxOYW1lcGxhdGXigJ0=",
+      "https://admin-shell.io/SMT/General/Arbitrary": {
+        "https://admin-shell.io/SMT/General/Arbitrary_min": "4",
+        "https://admin-shell.io/SMT/General/Arbitrary_max": "62"
+      },
+      "https://admin-shell.io/idta/HierarchicalStructures/ArcheType/1/0": "000-001 ArcheType",
       "0112/2///61360_7#AAS006#001": [
         {
-          "0112/2///61360_7#AAS009#001": [
+          "0112/2///61360_7#AAS009#001#0": [
             {
               "0112/2///61987#ABA231#009": "0173-1#07-DAA603#004",
               "0112/2///61987#ABH783#003": "KEMA99IECEX1105/128",
+              "0173-1#02-ABJ219#002": {},
+              "https://admin-shell.io/SMT/General/Arbitrary/string": {
+                "https://admin-shell.io/SMT/General/Arbitrary/string_min": "122",
+                "https://admin-shell.io/SMT/General/Arbitrary/string_max": "910"
+              },
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
               "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
@@ -598,57 +1345,25 @@
           ]
         }
       ],
-      "0112/2///61987#ABA950#008": "FMABC1234",
-      "0112/2///61987#ABA951#009": "12345678",
-      "0112/2///61987#ABP000#002": "2022",
-      "0112/2///61987#ABB757#007": "2022-01-01",
-      "0112/2///61987#ABP462#001": "DE",
-      "0112/2///61987#ABP463#001": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/bd4a1fca199e8a7c38fb20d3290f2a374b3d2ab8/example/logo/MM_Logo.svg",
-      "0173-1#02-ABI218#003/0173-1#01-AGZ672#004": [
-        {
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP": {
-            "https://mm-software.com/AssetSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
-          },
-          "https://mm-software.com/AssetSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
-          "0173-1#02-ABI219#003/0173-1#01-AHD205#004": [
-            {
-              "0173-1#01-AHD205#004": [
-                {
-                  "0173-1#02-AAO856#002": "",
-                  "https://admin-shell.io/SMT/General/ArbitraryProp": "",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryFile": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
-                  "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP": {
-                    "https://mm-software.com/GuidelineSpecificProperties/ArbitraryMLP_en": "\u0022sample\u0022"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "https://mm-software.com/submodel/000-003/Reliability": {
-    "https://admin-shell.io/idta/iec62683/1/0/Reliability": {
-      "0112/2///62683#ACE006#001": "4",
       "0112/2///62683#ACG071#001": [
         {
-          "0112/2///61987#ABA969#007": "DC",
-          "0112/2///61987#ABA588#004": "14.8",
-          "0112/2///61987#ABD461#004": "3.8",
-          "0112/2///61987#ABD462#004": "6.7",
-          "https://admin-shell.io/idta/FunctionalSafety/RatedOperationalCurrent/1/0": "78.9",
-          "0112/2///62683#ACE053#001": "TestType003",
-          "0112/2///62683#ACE070#001": "true",
-          "0112/2///62683#ACE055#001": "150",
-          "0112/2///62683#ACE054#001": "45"
-        }
-      ],
-      "0112/2///62683#ACG080#001": [
-        {
-          "0112/2///62683#ACE061#001": "2",
-          "0112/2///62683#ACE062#001": "7",
-          "https://admin-shell.io/idta/Reliability/B10/1/0": "1"
+          "https://admin-shell.io/zvei/nameplate/2/0/Nameplate/CompanyLogo": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/logo/MM_Logo.svg",
+          "https://admin-shell.io/SMT/General/Arbitrary/date": {
+            "https://admin-shell.io/SMT/General/Arbitrary/date_min": "2012-02-02",
+            "https://admin-shell.io/SMT/General/Arbitrary/date_max": "2032-02-06"
+          },
+          "0112/2///61987#ABA588#004": "5.5",
+          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU\u002BPikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
+          "0173-1#02-ABK273#002": {
+            "0173-1#02-ABK273#002_en": "Name of product class in the used classification system",
+            "0173-1#02-ABK273#002_de": "Name der Produktklasse im verwendeten Klassifizierungssystem"
+          },
+          "0112/2///61987#ABD461#004": "2.5",
+          "0173-1#02-ABL358#002": {
+            "0173-1#02-ABL358#002_Submodel": "https://mm-software.com/submodel/000-001/Nameplate",
+            "0173-1#02-ABL358#002_SubmodelElementList": "Markings",
+            "0173-1#02-ABL358#002_SubmodelElementCollection": "0"
+          }
         }
       ]
     }

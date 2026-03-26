@@ -28,10 +28,10 @@ public class SubmodelElementTests : ApiTestBase
     }
 
     [Fact]
-    public async Task GetSubmodelElement_Nameplate_Markings_ShouldReturnSuccess_ContentAsExpected()
+    public async Task GetSubmodelElement_HandoverDocumentation_Documents0_DocumentVersions0_Language0_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
-        var url = $"/submodels/{SubmodelIdentifierNameplate}/submodel-elements/Markings";
+        var url = $"/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements/Documents%255B0%255D.DocumentVersions%255B0%255D.Language%255B0%255D";
 
         // Act
         var response = await ApiContext.GetAsync(url);
@@ -44,14 +44,14 @@ public class SubmodelElementTests : ApiTestBase
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodelElement_Nameplate_Markings_Expected.json"));
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodelElement_HandoverDocumentation_Documents0_DocumentVersions0_Language0.json"));
     }
 
     [Fact]
-    public async Task GetSubmodelElement_Nameplate_ManufacturerName_ShouldReturnSuccess_ContentAsExpected()
+    public async Task GetSubmodelElement_CustomSubmodel_OperatingConditionsOfReliabilityCharacteristics_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
-        var url = $"/submodels/{SubmodelIdentifierNameplate}/submodel-elements/ManufacturerName";
+        var url = $"/submodels/{SubmodelIdentifierCustomSubmodel}/submodel-elements/OperatingConditionsOfReliabilityCharacteristics";
 
         // Act
         var response = await ApiContext.GetAsync(url);
@@ -64,26 +64,6 @@ public class SubmodelElementTests : ApiTestBase
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodelElement_Nameplate_ManufacturerName_Expected.json"));
-    }
-
-    [Fact]
-    public async Task GetSubmodelElement_Reliability_ReliabilityCharacteristics_MTTF_ShouldReturnSuccess_ContentAsExpected()
-    {
-        // Arrange
-        var url = $"/submodels/{SubmodelIdentifierReliability}/submodel-elements/ReliabilityCharacteristics.MTTF";
-
-        // Act
-        var response = await ApiContext.GetAsync(url);
-
-        // Assert
-        AssertSuccessResponse(response);
-        var content = await response.TextAsync();
-        Assert.False(string.IsNullOrEmpty(content));
-
-        var json = JsonDocument.Parse(content);
-        Assert.NotNull(json);
-
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodelElement_Reliability_ReliabilityCharacteristics_MTTF.json"));
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodelElement_CustomSubmodel_OperatingConditionsOfReliabilityCharacteristics.json"));
     }
 }

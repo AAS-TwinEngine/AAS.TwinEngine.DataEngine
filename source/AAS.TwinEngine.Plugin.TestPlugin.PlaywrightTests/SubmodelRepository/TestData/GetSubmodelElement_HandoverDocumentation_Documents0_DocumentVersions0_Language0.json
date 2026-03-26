@@ -1,0 +1,66 @@
+{
+  "idShort": " language",
+  "displayName": [
+    {
+      "language": "en",
+      "text": "en (English)"
+    },
+    {
+      "language": "de",
+      "text": "en (Englisch)"
+    }
+  ],
+  "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0173-1#02-AAN468#008"
+      }
+    ]
+  },
+  "qualifiers": [
+    {
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+          }
+        ]
+      },
+      "kind": "ConceptQualifier",
+      "type": "SMT/Cardinality",
+      "valueType": "xs:string",
+      "value": "OneToMany"
+    },
+    {
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+          }
+        ]
+      },
+      "kind": "ConceptQualifier",
+      "type": "ExampleValue",
+      "valueType": "xs:string",
+      "value": "en"
+    }
+  ],
+  "valueType": "xs:string",
+  "value": "en",
+  "valueId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0173-1#07-AAS045#003"
+      }
+    ]
+  },
+  "modelType": "Property"
+}
