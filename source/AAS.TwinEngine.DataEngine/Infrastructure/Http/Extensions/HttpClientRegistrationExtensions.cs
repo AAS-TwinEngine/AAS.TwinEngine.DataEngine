@@ -12,23 +12,6 @@ public static class HttpClientRegistrationExtensions
 {
     private static readonly IReadOnlyCollection<string> AcceptEncodings = ["br", "gzip"];
 
-    private static readonly DecompressionMethods AcceptEncodingDecompressionMethods = BuildDecompressionMethods(AcceptEncodings);
-
-    private static DecompressionMethods BuildDecompressionMethods(IReadOnlyCollection<string> encodings)
-    {
-        var methods = DecompressionMethods.None;
-        foreach (var encoding in encodings)
-        {
-            methods |= encoding.ToLowerInvariant() switch
-            {
-                "gzip" => DecompressionMethods.GZip,
-                "br" => DecompressionMethods.Brotli,
-                _ => DecompressionMethods.None
-            };
-        }
-        return methods;
-    }
-
     public static IServiceCollection AddHttpClientWithResilience(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -42,21 +25,11 @@ public static class HttpClientRegistrationExtensions
         {
             client.BaseAddress = baseUrl;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            foreach (var encoding in AcceptEncodings.Where(value => !string.IsNullOrWhiteSpace(value)))
-            {
-                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue(encoding));
-            }
+            ConfigureCompression(client);
         })
         .AddStandardResilienceHandler(retryPolicySectionKey);
 
-        if (AcceptEncodingDecompressionMethods != DecompressionMethods.None)
-        {
-            _ = httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                AutomaticDecompression = AcceptEncodingDecompressionMethods
-            });
-        }
+        httpClientBuilder.ConfigurePrimaryHttpMessageHandler(CreateHandler);
 
         _ = httpClientBuilder.AddHttpMessageHandler(sp =>
                 new HeaderForwardingHandler(
@@ -78,17 +51,37 @@ public static class HttpClientRegistrationExtensions
             client.BaseAddress = baseUrl;
             client.Timeout = timeout ?? TimeSpan.FromSeconds(5);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            foreach (var encoding in AcceptEncodings.Where(value => !string.IsNullOrWhiteSpace(value)))
-            {
-                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue(encoding));
-            }
+            ConfigureCompression(client);
         })
-        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            AutomaticDecompression = AcceptEncodingDecompressionMethods
-        });
+        .ConfigurePrimaryHttpMessageHandler(CreateHandler);
 
         return services;
+    }
+
+    private static void ConfigureCompression(HttpClient client)
+    {
+        foreach (var encoding in AcceptEncodings.Where(e => !string.IsNullOrWhiteSpace(e)))
+        {
+            client.DefaultRequestHeaders.AcceptEncoding.Add(
+            new StringWithQualityHeaderValue(encoding));
+        }
+    }
+
+    private static HttpMessageHandler CreateHandler()
+    {
+        return new HttpClientHandler
+        {
+            AutomaticDecompression = GetDecompressionMethods()
+        };
+    }
+
+    private static DecompressionMethods GetDecompressionMethods()
+    {
+        return AcceptEncodings.Aggregate(DecompressionMethods.None, (current, encoding) => current | encoding switch
+        {
+            "gzip" => DecompressionMethods.GZip,
+            "br" => DecompressionMethods.Brotli,
+            _ => DecompressionMethods.None
+        });
     }
 }
