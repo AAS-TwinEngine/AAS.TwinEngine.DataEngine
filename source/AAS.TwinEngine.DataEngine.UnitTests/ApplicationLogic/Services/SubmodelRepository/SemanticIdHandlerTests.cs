@@ -502,7 +502,7 @@ public class SemanticIdHandlerTests
         Equal("ComplexData1", submodelWithValues.SubmodelElements[1].IdShort);
         var complexData0 = GetSubmodelElementCollection(submodelWithValues, 0);
         var complexData1 = GetSubmodelElementCollection(submodelWithValues, 1);
-        Equal(3, complexData1.Value!.Count);
+        Equal(5, complexData1.Value!.Count);
         AssertMultiLanguageProperty(complexData0, "Test Example Manufacturer", "Test Beispiel Hersteller");
         AssertMultiLanguageProperty(complexData1, "Test1 Example Manufacturer", "Test1 Beispiel Hersteller");
         AssertModelType(complexData0, 1, "22.47");
@@ -510,6 +510,8 @@ public class SemanticIdHandlerTests
         AssertContactList(complexData0, 2, "Test John Doe", "Test Example Model");
         AssertContactInfo(complexData0, 3, "Test John Doe");
         AssertContactInfo(complexData1, 2, "Test1 John Doe");
+        AssertContactList(complexData1, 3, "Test1 John Doe", "Test1 Example Model");
+        AssertContactList(complexData1, 4, "Test2 John Doe", "Test2 Example Model");
     }
 
     [Fact]

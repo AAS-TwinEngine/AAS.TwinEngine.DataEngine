@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using static Xunit.Assert;
@@ -100,55 +100,20 @@ public class SemanticTreeNavigatorTests
     }
 
     [Fact]
-    public void AreAllNodesOfSameType_EmptyList_ReturnsTrueWithNullType()
+    public void FindNodeBySemanticId_Generic_WhenSameSemanticIdOnBothBranchAndLeaf_ReturnsOnlyRequestedType()
     {
-        var result = SemanticTreeNavigator.AreAllNodesOfSameType([], out var nodeType);
+        var root = new SemanticBranchNode("root", Cardinality.Unknown);
+        var branch = new SemanticBranchNode("shared", Cardinality.One);
+        var leaf = new SemanticLeafNode("shared", "val", DataType.String, Cardinality.One);
+        root.AddChild(branch);
+        root.AddChild(leaf);
 
-        True(result);
-        Null(nodeType);
-    }
+        var branchResults = SemanticTreeNavigator.FindNodeBySemanticId<SemanticBranchNode>(root, "shared").ToList();
+        var leafResults = SemanticTreeNavigator.FindNodeBySemanticId<SemanticLeafNode>(root, "shared").ToList();
 
-    [Fact]
-    public void AreAllNodesOfSameType_AllBranchNodes_ReturnsTrue()
-    {
-        var nodes = new List<SemanticTreeNode>
-        {
-            new SemanticBranchNode("a", Cardinality.One),
-            new SemanticBranchNode("b", Cardinality.ZeroToOne),
-        };
-
-        var result = SemanticTreeNavigator.AreAllNodesOfSameType(nodes, out var nodeType);
-
-        True(result);
-        Equal(typeof(SemanticBranchNode), nodeType);
-    }
-
-    [Fact]
-    public void AreAllNodesOfSameType_AllLeafNodes_ReturnsTrue()
-    {
-        var nodes = new List<SemanticTreeNode>
-        {
-            new SemanticLeafNode("a", "v1", DataType.String, Cardinality.One),
-            new SemanticLeafNode("b", "v2", DataType.Integer, Cardinality.ZeroToOne),
-        };
-
-        var result = SemanticTreeNavigator.AreAllNodesOfSameType(nodes, out var nodeType);
-
-        True(result);
-        Equal(typeof(SemanticLeafNode), nodeType);
-    }
-
-    [Fact]
-    public void AreAllNodesOfSameType_MixedNodes_ReturnsFalse()
-    {
-        var nodes = new List<SemanticTreeNode>
-        {
-            new SemanticBranchNode("a", Cardinality.One),
-            new SemanticLeafNode("b", "v2", DataType.String, Cardinality.One),
-        };
-
-        var result = SemanticTreeNavigator.AreAllNodesOfSameType(nodes, out _);
-
-        False(result);
+        Single(branchResults);
+        Same(branch, branchResults[0]);
+        Single(leafResults);
+        Same(leaf, leafResults[0]);
     }
 }
