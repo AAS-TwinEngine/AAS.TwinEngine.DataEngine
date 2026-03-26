@@ -474,7 +474,7 @@
             "keys": [
               {
                 "type": "Submodel",
-                "value": "https://mm-software.com/submodel/000-002/CustomSubmodel"
+                "value": "https://mm-software.com/submodel/000-003/CustomSubmodel"
               },
               {
                 "type": "Property",
@@ -529,7 +529,7 @@
             "keys": [
               {
                 "type": "Submodel",
-                "value": "https://mm-software.com/submodel/000-002/CustomSubmodel"
+                "value": "https://mm-software.com/submodel/000-003/CustomSubmodel"
               },
               {
                 "type": "SubmodelElementList",
@@ -550,7 +550,7 @@
             "keys": [
               {
                 "type": "Submodel",
-                "value": "https://mm-software.com/submodel/000-001/ContactInformation"
+                "value": "https://mm-software.com/submodel/000-003/ContactInformation"
               },
               {
                 "type": "SubmodelElementCollection",
