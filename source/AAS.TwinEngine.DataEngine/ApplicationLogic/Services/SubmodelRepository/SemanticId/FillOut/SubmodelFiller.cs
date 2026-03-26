@@ -124,14 +124,14 @@ public class SubmodelFiller(
         return element;
     }
 
-    internal void FillOutSubmodelElementValue(List<ISubmodelElement> elements, SemanticTreeNode values, bool updateIdShort)
+    private void FillOutSubmodelElementValue(List<ISubmodelElement> elements, SemanticTreeNode values, bool updateIdShort)
     {
         var originalElements = elements.ToList();
         foreach (var element in originalElements)
         {
             var semanticTreeNodes = GetSemanticNodes(element, values);
 
-            if (ShouldSkipElement(semanticTreeNodes))
+            if (semanticTreeNodes == null || semanticTreeNodes.Count == 0)
             {
                 continue;
             }
@@ -145,8 +145,6 @@ public class SubmodelFiller(
             _ = FillOutElement(element, semanticTreeNodes[0]);
         }
     }
-
-    private static bool ShouldSkipElement(List<SemanticTreeNode>? nodes) => nodes == null || nodes.Count == 0;
 
     private static bool ShouldCloneElements(List<SemanticTreeNode> nodes, ISubmodelElement element) => nodes.Count > 1 && element is not Property && element is not ReferenceElement;
 
