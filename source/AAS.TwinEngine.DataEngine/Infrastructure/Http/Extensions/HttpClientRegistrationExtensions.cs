@@ -12,6 +12,23 @@ public static class HttpClientRegistrationExtensions
 {
     private static readonly IReadOnlyCollection<string> AcceptEncodings = ["br", "gzip"];
 
+    private static readonly DecompressionMethods AcceptEncodingDecompressionMethods = BuildDecompressionMethods(AcceptEncodings);
+
+    private static DecompressionMethods BuildDecompressionMethods(IReadOnlyCollection<string> encodings)
+    {
+        var methods = DecompressionMethods.None;
+        foreach (var encoding in encodings)
+        {
+            methods |= encoding.ToLowerInvariant() switch
+            {
+                "gzip" => DecompressionMethods.GZip,
+                "br" => DecompressionMethods.Brotli,
+                _ => DecompressionMethods.None
+            };
+        }
+        return methods;
+    }
+
     public static IServiceCollection AddHttpClientWithResilience(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -33,11 +50,11 @@ public static class HttpClientRegistrationExtensions
         })
         .AddStandardResilienceHandler(retryPolicySectionKey);
 
-        if (AcceptEncodings.Count > 0)
+        if (AcceptEncodingDecompressionMethods != DecompressionMethods.None)
         {
             _ = httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Brotli
+                AutomaticDecompression = AcceptEncodingDecompressionMethods
             });
         }
 
@@ -61,6 +78,15 @@ public static class HttpClientRegistrationExtensions
             client.BaseAddress = baseUrl;
             client.Timeout = timeout ?? TimeSpan.FromSeconds(5);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            foreach (var encoding in AcceptEncodings.Where(value => !string.IsNullOrWhiteSpace(value)))
+            {
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue(encoding));
+            }
+        })
+        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            AutomaticDecompression = AcceptEncodingDecompressionMethods
         });
 
         return services;
