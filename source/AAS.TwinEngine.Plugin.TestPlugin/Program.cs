@@ -4,6 +4,10 @@ using AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
 
 using Asp.Versioning;
 
+using Microsoft.AspNetCore.ResponseCompression;
+
+using System.IO.Compression;
+
 namespace AAS.TwinEngine.Plugin.TestPlugin;
 
 public static class Program
@@ -14,6 +18,14 @@ public static class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        _ = builder.Services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+        });
+        _ = builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+        _ = builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
 
         builder.ConfigureLogging(builder.Configuration);
 
@@ -54,6 +66,8 @@ public static class Program
 
         app.UseExceptionHandler();
         app.UseHttpsRedirection();
+        _ = app.UseResponseCompression();
+
         app.UseAuthorization();
         app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
         app.MapControllers();

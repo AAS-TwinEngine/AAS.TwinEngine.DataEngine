@@ -6,7 +6,11 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration;
 
 using Asp.Versioning;
 
+using Microsoft.AspNetCore.ResponseCompression;
+
 using Serilog;
+
+using System.IO.Compression;
 
 namespace AAS.TwinEngine.DataEngine;
 
@@ -18,6 +22,15 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        _ = builder.Services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+        });
+        _ = builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+        _ = builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+
         _ = builder.Host.UseSerilog();
         builder.ConfigureLogging(builder.Configuration);
         builder.ConfigureCorsServices();
@@ -71,6 +84,8 @@ public class Program
         _ = app.UseExceptionHandler();
         _ = app.UseMiddleware<HeaderSanitizationMiddleware>();
         _ = app.UseHttpsRedirection();
+        _ = app.UseResponseCompression();
+
         _ = app.UseAuthorization();
         app.UseCorsServices();
         _ = app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
