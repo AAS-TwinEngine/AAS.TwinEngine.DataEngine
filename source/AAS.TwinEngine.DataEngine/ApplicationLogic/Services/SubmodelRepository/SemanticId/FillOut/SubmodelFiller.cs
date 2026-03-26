@@ -124,14 +124,14 @@ public class SubmodelFiller(
         return element;
     }
 
-    internal void FillOutSubmodelElementValue(List<ISubmodelElement> elements, SemanticTreeNode values, bool updateIdShort)
+    private void FillOutSubmodelElementValue(List<ISubmodelElement> elements, SemanticTreeNode values, bool updateIdShort)
     {
         var originalElements = elements.ToList();
         foreach (var element in originalElements)
         {
             var semanticTreeNodes = GetSemanticNodes(element, values);
 
-            if (ShouldSkipElement(semanticTreeNodes, element, elements))
+            if (semanticTreeNodes == null || semanticTreeNodes.Count == 0)
             {
                 continue;
             }
@@ -146,29 +146,18 @@ public class SubmodelFiller(
         }
     }
 
-    private bool ShouldSkipElement(List<SemanticTreeNode>? nodes, ISubmodelElement element, List<ISubmodelElement> elements) => nodes == null || nodes.Count == 0 || HasMixedNodeTypes(nodes, element, elements);
-
     private static bool ShouldCloneElements(List<SemanticTreeNode> nodes, ISubmodelElement element) => nodes.Count > 1 && element is not Property && element is not ReferenceElement;
 
     private List<SemanticTreeNode>? GetSemanticNodes(ISubmodelElement element, SemanticTreeNode values)
     {
-        var valueNode = SemanticTreeNavigator.FindNodeBySemanticId(values, semanticIdResolver.ExtractSemanticId(element));
+        var semanticId = semanticIdResolver.ExtractSemanticId(element);
 
-        return valueNode?.ToList();
+        return IsBranchElement(element)
+            ? [.. SemanticTreeNavigator.FindNodeBySemanticId<SemanticBranchNode>(values, semanticId).Cast<SemanticTreeNode>()]
+            : [.. SemanticTreeNavigator.FindNodeBySemanticId<SemanticLeafNode>(values, semanticId).Cast<SemanticTreeNode>()];
     }
 
-    private bool HasMixedNodeTypes(List<SemanticTreeNode> nodes, ISubmodelElement element, List<ISubmodelElement> elements)
-    {
-        if (SemanticTreeNavigator.AreAllNodesOfSameType(nodes, out _))
-        {
-            return false;
-        }
-
-        logger.LogWarning("Mixed node types found for element '{IdShort}' with SemanticId '{SemanticId}'. Removing element.", element.IdShort, semanticIdResolver.ExtractSemanticId(element));
-
-        _ = elements.Remove(element);
-        return true;
-    }
+    private static bool IsBranchElement(ISubmodelElement element) => element is not (Property or AasCore.Aas3_0.File or Blob);
 
     private void ReplaceWithClones(List<ISubmodelElement> elements, ISubmodelElement element, List<SemanticTreeNode> nodes, bool updateIdShort)
     {

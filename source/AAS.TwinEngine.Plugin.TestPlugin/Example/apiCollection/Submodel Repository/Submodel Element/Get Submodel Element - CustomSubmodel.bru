@@ -1,5 +1,5 @@
 meta {
-  name: Get Submodel Element - Reliability
+  name: Get Submodel Element - CustomSubmodel
   type: http
   seq: 3
 }
@@ -11,10 +11,11 @@ get {
 }
 
 params:path {
-  submodelIdentifier: {{submodelIdentifierReliability}}
-  idShortPath: ReliabilityCharacteristics.MTTF
+  submodelIdentifier: {{submodelIdentifierCustomSubmodel}}
+  idShortPath: OperatingConditionsOfReliabilityCharacteristics
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
