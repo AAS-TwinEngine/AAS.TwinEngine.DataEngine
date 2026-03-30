@@ -22,11 +22,9 @@ public class ShellDescriptorDto
     public AdministrativeInformation? Administration { get; set; }
 
     [JsonPropertyName("assetKind")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public AssetKind? AssetKind { get; set; }
 
     [JsonPropertyName("assetType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public AssetKind? AssetType { get; set; }
 
     [JsonPropertyName("endpoints")]

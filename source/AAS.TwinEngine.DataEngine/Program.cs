@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+﻿using System.Text.Json.Serialization;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
@@ -31,7 +33,11 @@ public class Program
         builder.Services.ConfigureApplication(builder.Configuration);
         _ = builder.Services.AddAuthorization();
 
-        _ = builder.Services.AddControllers();
+        _ = builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         _ = builder.Services.AddEndpointsApiExplorer();
         _ = builder.Services.AddOpenApiDocument(settings =>
