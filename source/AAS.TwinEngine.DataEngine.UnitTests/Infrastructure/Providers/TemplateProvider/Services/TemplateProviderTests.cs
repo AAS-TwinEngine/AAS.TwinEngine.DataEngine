@@ -6,6 +6,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
+using AasCore.Aas3_0;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -44,6 +46,7 @@ public class TemplateProviderTests
 
         Assert.Equal("TestId", result.Id);
         Assert.Equal("Test", result.IdShort);
+        Assert.Equal(ModellingKind.Instance, result.Kind);
     }
 
     [Fact]

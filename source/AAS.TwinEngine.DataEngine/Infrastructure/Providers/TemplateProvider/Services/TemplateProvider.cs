@@ -36,7 +36,9 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         try
         {
             var jsonNode = JsonNode.Parse(content);
-            return Jsonization.Deserialize.SubmodelFrom(jsonNode!);
+            var submodel = Jsonization.Deserialize.SubmodelFrom(jsonNode!);
+            UpdateSubmodelTemplateKind(submodel);
+            return submodel;
         }
         catch (JsonException ex)
         {
@@ -245,4 +247,6 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
                 throw new ValidationFailedException();
         }
     }
+
+    private static void UpdateSubmodelTemplateKind(ISubmodel submodel) => submodel.Kind = ModellingKind.Instance;
 }
