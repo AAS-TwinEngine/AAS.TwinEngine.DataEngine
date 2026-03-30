@@ -1,12 +1,8 @@
-﻿using System.IO.Compression;
-
-using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Monitoring;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Monitoring;
 using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
 using AAS.TwinEngine.Plugin.TestPlugin.ServiceConfiguration;
 
 using Asp.Versioning;
-
-using Microsoft.AspNetCore.ResponseCompression;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin;
 
@@ -18,20 +14,13 @@ public static class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        _ = builder.Services.AddResponseCompression(options =>
-        {
-            options.EnableForHttps = true;
-            options.Providers.Add<BrotliCompressionProvider>();
-            options.Providers.Add<GzipCompressionProvider>();
-        });
-        _ = builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
-        _ = builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
 
         builder.ConfigureLogging(builder.Configuration);
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
+        builder.Services.ConfigureResponseCompression();
         builder.Services.AddAuthorization();
 
         builder.Services.AddHealthChecks().AddCheck<MockDataHealthCheck>("mock_data");
@@ -64,8 +53,8 @@ public static class Program
             initializer.Initialize(CancellationToken.None);
         }
 
-        app.UseResponseCompression();
         app.UseExceptionHandler();
+        app.UseResponseCompression();
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
