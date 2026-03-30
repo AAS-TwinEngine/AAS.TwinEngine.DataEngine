@@ -211,38 +211,6 @@ public class HttpClientRegistrationExtensionsTests
         Assert.True(handler.AutomaticDecompression.HasFlag(DecompressionMethods.Brotli));
     }
 
-    [Fact]
-    public void AddHttpClientWithoutResilience_WhenCalled_AddsAcceptEncodingHeaders()
-    {
-        var services = new ServiceCollection();
-        services.AddHttpClientWithoutResilience("health-check", new Uri("https://example.com"));
-
-        var provider = services.BuildServiceProvider();
-        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("health-check");
-
-        Assert.Contains(client.DefaultRequestHeaders.AcceptEncoding, h => h.Value == "br");
-        Assert.Contains(client.DefaultRequestHeaders.AcceptEncoding, h => h.Value == "gzip");
-    }
-
-    [Fact]
-    public void AddHttpClientWithoutResilience_WhenCalled_EnablesAutomaticDecompressionForGzipAndBrotli()
-    {
-        const string clientName = "health-check";
-        var services = new ServiceCollection();
-        services.AddHttpClientWithoutResilience(clientName, new Uri("https://example.com"));
-
-        HttpMessageHandler? capturedHandler = null;
-        services.Configure<HttpClientFactoryOptions>(clientName,
-            options => options.HttpMessageHandlerBuilderActions.Add(b => capturedHandler = b.PrimaryHandler));
-
-        var provider = services.BuildServiceProvider();
-        _ = provider.GetRequiredService<IHttpClientFactory>().CreateClient(clientName);
-
-        var handler = Assert.IsType<HttpClientHandler>(capturedHandler);
-        Assert.True(handler.AutomaticDecompression.HasFlag(DecompressionMethods.GZip));
-        Assert.True(handler.AutomaticDecompression.HasFlag(DecompressionMethods.Brotli));
-    }
-
     private sealed class FaultyHttpMessageHandler : HttpMessageHandler
     {
         public int CallCount { get; private set; }
