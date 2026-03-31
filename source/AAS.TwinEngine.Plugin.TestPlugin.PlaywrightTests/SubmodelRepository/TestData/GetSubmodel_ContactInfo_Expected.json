@@ -1,7 +1,7 @@
 {
   "idShort": "ContactInformations",
   "id": "https://mm-software.com/submodel/000-001/ContactInformation",
-  "kind": "Template",
+  "kind": "Instance",
   "semanticId": {
     "type": "ModelReference",
     "keys": [

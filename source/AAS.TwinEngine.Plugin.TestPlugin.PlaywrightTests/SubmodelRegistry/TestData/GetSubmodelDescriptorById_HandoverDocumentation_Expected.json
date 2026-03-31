@@ -17,13 +17,13 @@
   "idShort": "HandoverDocumentation",
   "id": "https://mm-software.com/submodel/000-001/HandoverDocumentation",
   "semanticId": {
-    "type": 0,
+    "type": "ExternalReference",
     "referredSemanticId": null,
     "keys": null
   },
   "supplementalSemanticId": [
     {
-      "type": 0,
+      "type": "ExternalReference",
       "referredSemanticId": null,
       "keys": null
     }

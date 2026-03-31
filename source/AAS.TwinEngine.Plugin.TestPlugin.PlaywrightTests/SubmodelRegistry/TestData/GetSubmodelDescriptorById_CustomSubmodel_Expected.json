@@ -11,7 +11,7 @@
   "idShort": "CustomSubmodel",
   "id": "https://mm-software.com/submodel/000-001/CustomSubmodel",
   "semanticId": {
-    "type": 0,
+    "type": "ExternalReference",
     "referredSemanticId": null,
     "keys": null
   },

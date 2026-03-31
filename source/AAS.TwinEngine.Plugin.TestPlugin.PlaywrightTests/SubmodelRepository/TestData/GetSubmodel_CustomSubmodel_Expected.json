@@ -7,7 +7,7 @@
     }
   ],
   "id": "https://mm-software.com/submodel/000-001/CustomSubmodel",
-  "kind": "Template",
+  "kind": "Instance",
   "semanticId": {
     "type": "ExternalReference",
     "keys": [

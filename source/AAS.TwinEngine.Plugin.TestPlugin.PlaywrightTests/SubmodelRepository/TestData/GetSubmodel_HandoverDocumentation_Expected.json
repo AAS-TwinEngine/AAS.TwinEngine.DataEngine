@@ -12,7 +12,7 @@
     "templateId": "https://admin-shell.io/idta-02004-2-0"
   },
   "id": "https://mm-software.com/submodel/000-001/HandoverDocumentation",
-  "kind": "Template",
+  "kind": "Instance",
   "semanticId": {
     "type": "ModelReference",
     "keys": [
