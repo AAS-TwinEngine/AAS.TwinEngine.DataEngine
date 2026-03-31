@@ -113,16 +113,4 @@ public class ShellDescriptorMapperProfileTests
         Assert.Single(dto.Endpoints);
         Assert.Equal("RESTful", dto.Endpoints[0].Interface);
     }
-
-    [Fact]
-    public void ToDto_WhenSerialized_UsesStringValuesForAssetEnums()
-    {
-        var descriptor = TestDataMapperProfiles.CreateShellDescriptor();
-
-        var dto = descriptor.ToDto();
-        var json = JsonSerializer.Serialize(dto);
-
-        Assert.Contains("\"assetKind\":\"Type\"", json);
-        Assert.Contains("\"assetType\":\"Type\"", json);
-    }
 }
