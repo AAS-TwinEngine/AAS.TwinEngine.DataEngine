@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
@@ -22,8 +23,15 @@ public static class HttpClientRegistrationExtensions
         {
             client.BaseAddress = baseUrl;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
+            client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
         })
         .AddStandardResilienceHandler(retryPolicySectionKey);
+
+        httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Brotli
+        });
 
         _ = httpClientBuilder.AddHttpMessageHandler(sp =>
                 new HeaderForwardingHandler(

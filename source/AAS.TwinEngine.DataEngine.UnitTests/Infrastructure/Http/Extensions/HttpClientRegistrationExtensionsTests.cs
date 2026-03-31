@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+﻿using System.Net;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
@@ -152,6 +154,61 @@ public class HttpClientRegistrationExtensionsTests
         mappingService
             .Received()
             .ApplyMappings(httpContextAccessor.HttpContext, Arg.Any<HttpRequestMessage>(), AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+    }
+
+    [Fact]
+    public void AddHttpClientWithResilience_WhenCalled_AddsAcceptEncodingHeaders()
+    {
+        var configValues = new Dictionary<string, string>
+            {
+                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:MaxRetryAttempts", "3" },
+                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:DelayInSeconds", "1" }
+            };
+        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(configValues!).Build();
+
+        var services = new ServiceCollection();
+        services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}"));
+        services.AddLogging();
+        services.AddHttpContextAccessor();
+        _ = services.AddScoped(_ => Substitute.For<IRequestHeaderMapper>());
+
+        services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, new Uri("https://example.com"));
+
+        var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+
+        Assert.Contains(client.DefaultRequestHeaders.AcceptEncoding, h => h.Value == "br");
+        Assert.Contains(client.DefaultRequestHeaders.AcceptEncoding, h => h.Value == "gzip");
+    }
+
+    [Fact]
+    public void AddHttpClientWithResilience_WhenCalled_EnablesAutomaticDecompressionForGzipAndBrotli()
+    {
+        var configValues = new Dictionary<string, string>
+            {
+                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:MaxRetryAttempts", "3" },
+                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:DelayInSeconds", "1" }
+            };
+        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(configValues!).Build();
+
+        var services = new ServiceCollection();
+        services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}"));
+        services.AddLogging();
+        services.AddHttpContextAccessor();
+        _ = services.AddScoped(_ => Substitute.For<IRequestHeaderMapper>());
+
+        services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, new Uri("https://example.com"));
+
+        HttpMessageHandler? capturedHandler = null;
+        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
+            options => options.HttpMessageHandlerBuilderActions.Add(b => capturedHandler = b.PrimaryHandler));
+
+        var provider = services.BuildServiceProvider();
+        _ = provider.GetRequiredService<IHttpClientFactory>().CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+
+        var handler = Assert.IsType<HttpClientHandler>(capturedHandler);
+        Assert.True(handler.AutomaticDecompression.HasFlag(DecompressionMethods.GZip));
+        Assert.True(handler.AutomaticDecompression.HasFlag(DecompressionMethods.Brotli));
     }
 
     private sealed class FaultyHttpMessageHandler : HttpMessageHandler

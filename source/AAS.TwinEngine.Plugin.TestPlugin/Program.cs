@@ -20,6 +20,7 @@ public static class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
+        builder.Services.ConfigureResponseCompression();
         builder.Services.AddAuthorization();
 
         builder.Services.AddHealthChecks().AddCheck<MockDataHealthCheck>("mock_data");
@@ -53,6 +54,7 @@ public static class Program
         }
 
         app.UseExceptionHandler();
+        app.UseResponseCompression();
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
