@@ -134,25 +134,6 @@ services:
     networks:
       - dataengine-network
 
-  shell-template-creator:
-    image: curlimages/curl:latest
-    container_name: shell-template-creator
-    depends_on:
-      template-repository:
-        condition: service_healthy
-    entrypoint: >
-      sh -c '
-        echo "Waiting for template-repository to be ready...";
-        sleep 10;
-        curl -X POST http://template-repository:8081/shells \
-          -H "accept: application/json" \
-          -H "Content-Type: application/json" \
-          -d "{\"id\": \"https://mm-software.com/aas/aasTemplate\", \"assetInformation\": {\"assetKind\": \"Instance\"}, \"submodels\": [{\"type\": \"ModelReference\", \"keys\": [{\"type\": \"Submodel\", \"value\": \"CustomSubmodel\"}]},  {\"type\": \"ModelReference\", \"keys\": [{\"type\": \"Submodel\", \"value\": \"ContactInformation\"}]}, {\"type\": \"ModelReference\", \"keys\": [{\"type\": \"Submodel\", \"value\": \"HandoverDocumentation\"}]}], \"modelType\": \"AssetAdministrationShell\"}";
-        echo "Shell creation request sent.";
-      '
-    networks:
-      - dataengine-network
-
   aas-web-ui:
     image: eclipsebasyx/aas-gui:SNAPSHOT
     container_name: aas-ui

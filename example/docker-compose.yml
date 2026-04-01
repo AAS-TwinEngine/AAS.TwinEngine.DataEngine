@@ -121,7 +121,7 @@ services:
       - twinengine-network
 
   aas-template-registry:
-    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT
+    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT   
     container_name: aas-template-registry
     restart: always
     depends_on:
@@ -138,25 +138,6 @@ services:
       - mongo
     environment:
       - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
-    networks:
-      - twinengine-network
-
-  shell-template-creator:
-    image: curlimages/curl:8.18.0
-    container_name: shell-template-creator
-    depends_on:
-      template-repository:
-        condition: service_healthy
-    entrypoint: >
-      sh -c '
-        echo "Waiting for template-repository to be ready...";
-        sleep 10;
-        curl -X POST http://template-repository:8081/shells \
-          -H "accept: application/json" \
-          -H "Content-Type: application/json" \
-          -d "{\"id\":\"https://mm-software.com/aas/aasTemplate\",\"assetInformation\":{\"assetKind\":\"Instance\"},\"submodels\":[{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"Nameplate\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"ContactInformation\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"TechnicalData\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"CarbonFootprint\"}]},{\"type\":\"ModelReference\",\"keys\":[{\"type\":\"Submodel\",\"value\":\"HandoverDocumentation\"}]}],\"modelType\":\"AssetAdministrationShell\"}";
-          echo "Shell creation request sent.";
-        '
     networks:
       - twinengine-network
 
@@ -223,3 +204,4 @@ services:
     restart: always
     networks:
       - twinengine-network
+ 
