@@ -121,7 +121,7 @@ services:
       - twinengine-network
 
   aas-template-registry:
-    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT 
+    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT
     container_name: aas-template-registry
     restart: always
     depends_on:
