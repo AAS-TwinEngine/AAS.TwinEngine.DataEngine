@@ -11,8 +11,6 @@ using NSubstitute;
 
 using static Xunit.Assert;
 
-using File = AasCore.Aas3_0.File;
-
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
 public class SubmodelElementHelperTests

@@ -21,8 +21,8 @@ public class ShellTemplateMappingProviderTests
         var settings = new TemplateManagementConfig
         {
             TemplateMappingRules = new TemplateMappingRules
-        {
-            ShellTemplateMappings =
+            {
+                ShellTemplateMappings =
             [
                 new ShellTemplateMappings
                 {
@@ -35,7 +35,7 @@ public class ShellTemplateMappingProviderTests
                     TemplateId = "template2"
                 }
             ],
-            AasIdExtractionRules =
+                AasIdExtractionRules =
             [
                 new AasIdExtractionRules
                 {

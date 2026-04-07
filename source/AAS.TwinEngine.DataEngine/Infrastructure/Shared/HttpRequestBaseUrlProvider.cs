@@ -1,7 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Shared;
