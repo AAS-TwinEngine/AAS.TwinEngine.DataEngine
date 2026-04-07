@@ -4,6 +4,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,14 +20,20 @@ public class HeaderForwardingHandlerTests
     {
         var accessor = new HttpContextAccessor { HttpContext = httpContext };
 
-        var options = new HeaderForwardingOptions
+        var generalConfig = Options.Create(new GeneralConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
-            {
-                Plugins =
+            HeaderSanitization = new HeaderSanitizationOptions()
+        });
+
+        var pluginsConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new PluginInstance
                 {
-                    ["TestPlugin"] =
+                    Name = "TestPlugin",
+                    BaseUrl = new Uri("http://example.com"),
+                    HeaderMappings =
                     [
                         new HeaderMappingRule
                         {
@@ -36,10 +43,16 @@ public class HeaderForwardingHandlerTests
                         }
                     ]
                 }
-            }
-        };
+            ]
+        });
 
-        var headerMapper = new RequestHeaderMapper(new NullLogger<RequestHeaderMapper>(), Options.Create(options));
+        var templateManagementConfig = Options.Create(new TemplateManagementConfig());
+
+        var headerMapper = new RequestHeaderMapper(
+            new NullLogger<RequestHeaderMapper>(),
+            generalConfig,
+            pluginsConfig,
+            templateManagementConfig);
 
         return new HeaderForwardingHandler(accessor, headerMapper, clientName)
         {

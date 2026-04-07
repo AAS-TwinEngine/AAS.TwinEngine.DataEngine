@@ -10,25 +10,23 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
 using AasCore.Aas3_0;
 
-using Microsoft.Extensions.Options;
-
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
-public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient clientFactory, IOptions<AasEnvironmentConfig> aasEnvironment) : ITemplateProvider
+public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient clientFactory) : ITemplateProvider
 {
-    private readonly string _subModelRepositoryPath = aasEnvironment.Value.SubModelRepositoryPath;
-    private readonly string _aasRegistryPath = aasEnvironment.Value.AasRegistryPath;
-    private readonly string _aasRepositoryPath = aasEnvironment.Value.AasRepositoryPath;
-    private readonly string _submodelRefPath = aasEnvironment.Value.SubmodelRefPath;
-    private readonly string _conceptDescriptionPath = aasEnvironment.Value.ConceptDescriptionPath;
+    private const string SubModelRepositoryPath = AasEnvironmentConfig.SubModelRepositoryPath;
+    private const string AasRegistryPath = AasEnvironmentConfig.AasRegistryPath;
+    private const string AasRepositoryPath = AasEnvironmentConfig.AasRepositoryPath;
+    private const string SubmodelRefPath = AasEnvironmentConfig.SubmodelRefPath;
+    private const string ConceptDescriptionPath = AasEnvironmentConfig.ConceptDescriptionPath;
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
 
-        var url = $"{_subModelRepositoryPath}/{encodedTemplateId}";
+        var url = $"{SubModelRepositoryPath}/{encodedTemplateId}";
 
         var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -47,7 +45,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<ShellDescriptor> GetShellDescriptorsTemplateAsync(CancellationToken cancellationToken)
     {
-        var url = $"{_aasRegistryPath}";
+        var url = $"{AasRegistryPath}";
 
         var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasRegistryHttpClientName, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -88,7 +86,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
-        var url = $"{_aasRepositoryPath}/{encodedTemplateId}";
+        var url = $"{AasRepositoryPath}/{encodedTemplateId}";
 
         var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -115,7 +113,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     public async Task<IAssetInformation> GetAssetInformationTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
-        var url = $"{_aasRepositoryPath}/{encodedTemplateId}/asset-information";
+        var url = $"{AasRepositoryPath}/{encodedTemplateId}/asset-information";
 
         var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -142,7 +140,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     public async Task<List<IReference>> GetSubmodelRefByIdAsync(string templateId, CancellationToken cancellationToken)
     {
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
-        var url = $"{_aasRepositoryPath}/{encodedTemplateId}/{_submodelRefPath}";
+        var url = $"{AasRepositoryPath}/{encodedTemplateId}/{SubmodelRefPath}";
 
         var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -187,7 +185,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     {
         var encodedCdId = cdIdentifier.EncodeBase64Url(logger);
 
-        var url = $"{_conceptDescriptionPath}/{encodedCdId}";
+        var url = $"{ConceptDescriptionPath}/{encodedCdId}";
 
         try
         {

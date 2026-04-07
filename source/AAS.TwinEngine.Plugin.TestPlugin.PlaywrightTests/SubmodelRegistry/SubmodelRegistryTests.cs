@@ -20,7 +20,7 @@ public class SubmodelRegistryTests : ApiTestBase
         AssertSuccessResponse(response);
         var content = await response.TextAsync();
         Assert.False(string.IsNullOrEmpty(content));
-        
+
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
@@ -40,7 +40,7 @@ public class SubmodelRegistryTests : ApiTestBase
         AssertSuccessResponse(response);
         var content = await response.TextAsync();
         Assert.False(string.IsNullOrEmpty(content));
-        
+
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
@@ -60,7 +60,7 @@ public class SubmodelRegistryTests : ApiTestBase
         AssertSuccessResponse(response);
         var content = await response.TextAsync();
         Assert.False(string.IsNullOrEmpty(content));
-        
+
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 

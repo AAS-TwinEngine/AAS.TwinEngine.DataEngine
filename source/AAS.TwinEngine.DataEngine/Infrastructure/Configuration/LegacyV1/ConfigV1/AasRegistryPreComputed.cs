@@ -1,4 +1,4 @@
-﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Config;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 public class AasRegistryPreComputed
 {

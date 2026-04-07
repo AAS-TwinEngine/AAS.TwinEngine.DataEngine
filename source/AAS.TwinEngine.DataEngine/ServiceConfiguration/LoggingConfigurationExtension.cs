@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -19,7 +18,7 @@ internal static class LoggingConfigurationExtension
 {
     public static void ConfigureLogging(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        var otelSettings = configuration.GetSection(OpenTelemetrySettings.Section).Get<OpenTelemetrySettings>() ?? new OpenTelemetrySettings();
+        var otelSettings = configuration.GetSection($"{Config.GeneralConfig.Section}:{Config.OpenTelemetrySettings.Section}").Get<Config.OpenTelemetrySettings>() ?? new Config.OpenTelemetrySettings();
 
         var logLevelSwitch = new LoggingLevelSwitch(LogEventLevel.Information);
 

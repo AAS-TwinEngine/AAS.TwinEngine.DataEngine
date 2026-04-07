@@ -24,7 +24,7 @@ public class HeaderSanitizationOptions
     [Required]
     public AllowedCharactersOptions AllowedCharacters { get; set; } = new();
 
-    public IList<string> BlockedPatterns { get; set; } = ["\\r|\\n", "\\x00", "<script"];
+    public IList<string> BlockedPatterns { get; } = ["\\r|\\n", "\\x00", "<script"];
 }
 
 public class AllowedCharactersOptions
@@ -38,11 +38,11 @@ public class AllowedCharactersOptions
 
 public class HeaderMappings
 {
-    public List<HeaderMappingRule> TemplateRepository { get; set; } = [];
+    public IList<HeaderMappingRule> TemplateRepository { get; } = [];
 
-    public List<HeaderMappingRule> TemplateRegistry { get; set; } = [];
+    public IList<HeaderMappingRule> TemplateRegistry { get; } = [];
 
-    public Dictionary<string, List<HeaderMappingRule>> Plugins { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, IList<HeaderMappingRule>> Plugins { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public class HeaderMappingRule

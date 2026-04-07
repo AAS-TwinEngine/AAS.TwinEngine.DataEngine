@@ -4,6 +4,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -13,29 +14,35 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization.
 
 public class RequestHeaderMapperTests
 {
-    private static RequestHeaderMapper CreateService(HeaderForwardingOptions options)
+    private static RequestHeaderMapper CreateService(
+        GeneralConfig generalConfig,
+        PluginsConfig? pluginsConfig = null,
+        TemplateManagementConfig? templateManagementConfig = null)
     {
         var logger = new NullLogger<RequestHeaderMapper>();
-        var opts = Options.Create(options);
-        return new RequestHeaderMapper(logger, opts);
+        return new RequestHeaderMapper(
+            logger,
+            Options.Create(generalConfig),
+            Options.Create(pluginsConfig ?? new PluginsConfig()),
+            Options.Create(templateManagementConfig ?? new TemplateManagementConfig()));
     }
 
     [Fact]
     public void ValidateIncomingHeaders_RequiredHeaderMissing_ThrowsInvalidRequestHeaderException()
     {
-        var options = new HeaderForwardingOptions
+        var generalConfig = new GeneralConfig { HeaderSanitization = new HeaderSanitizationOptions() };
+        var templateManagementConfig = new TemplateManagementConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
+            AasTemplateRepository = new ServiceEndpoint
             {
-                TemplateRepository =
+                HeaderMappings =
                 [
                     new HeaderMappingRule { Source = "Authorization", Target = "Authorization", Required = true }
                 ]
             }
         };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig, templateManagementConfig: templateManagementConfig);
         var context = new DefaultHttpContext();
 
         Assert.Throws<InvalidRequestHeaderException>(() => service.ValidateIncomingHeaders(context));
@@ -44,19 +51,19 @@ public class RequestHeaderMapperTests
     [Fact]
     public void ApplyMappings_OptionalHeaderMissing_DoesNotThrow()
     {
-        var options = new HeaderForwardingOptions
+        var generalConfig = new GeneralConfig { HeaderSanitization = new HeaderSanitizationOptions() };
+        var templateManagementConfig = new TemplateManagementConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
+            AasTemplateRepository = new ServiceEndpoint
             {
-                TemplateRepository =
+                HeaderMappings =
                 [
                     new HeaderMappingRule { Source = "X-Optional", Target = "X-Optional", Required = false }
                 ]
             }
         };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig, templateManagementConfig: templateManagementConfig);
         var context = new DefaultHttpContext();
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://example.com");
 
@@ -68,19 +75,19 @@ public class RequestHeaderMapperTests
     [Fact]
     public void ApplyMappings_MapsAuthorizationHeader()
     {
-        var options = new HeaderForwardingOptions
+        var generalConfig = new GeneralConfig { HeaderSanitization = new HeaderSanitizationOptions() };
+        var templateManagementConfig = new TemplateManagementConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
+            AasTemplateRepository = new ServiceEndpoint
             {
-                TemplateRepository =
+                HeaderMappings =
                 [
                     new HeaderMappingRule { Source = "Authorization", Target = "Authorization", Required = true }
                 ]
             }
         };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig, templateManagementConfig: templateManagementConfig);
         var context = new DefaultHttpContext();
         context.Request.Headers.Authorization = "Bearer token";
 
@@ -98,22 +105,24 @@ public class RequestHeaderMapperTests
         const string PluginName = "MyPlugin";
         var clientName = PluginConfig.HttpClientNamePrefix + PluginName;
 
-        var options = new HeaderForwardingOptions
+        var generalConfig = new GeneralConfig { HeaderSanitization = new HeaderSanitizationOptions() };
+        var pluginsConfig = new PluginsConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
-            {
-                Plugins =
+            Instances =
+            [
+                new PluginInstance
                 {
-                    [PluginName] =
+                    Name = PluginName,
+                    BaseUrl = new Uri("http://example.com"),
+                    HeaderMappings =
                     [
                         new HeaderMappingRule { Source = "X-Source", Target = "X-Target", Required = true }
                     ]
                 }
-            }
+            ]
         };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig, pluginsConfig);
         var context = new DefaultHttpContext();
         context.Request.Headers["X-Source"] = "value";
 
@@ -128,19 +137,19 @@ public class RequestHeaderMapperTests
     [Fact]
     public void ApplyMappings_MissingOptionalHeader_SkipsHeader()
     {
-        var options = new HeaderForwardingOptions
+        var generalConfig = new GeneralConfig { HeaderSanitization = new HeaderSanitizationOptions() };
+        var templateManagementConfig = new TemplateManagementConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
+            AasTemplateRepository = new ServiceEndpoint
             {
-                TemplateRepository =
+                HeaderMappings =
                 [
                     new HeaderMappingRule { Source = "X-Test", Target = "X-Test", Required = false }
                 ]
             }
         };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig, templateManagementConfig: templateManagementConfig);
         var context = new DefaultHttpContext();
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://example.com");
@@ -153,22 +162,23 @@ public class RequestHeaderMapperTests
     [Fact]
     public void ValidateIncomingHeaders_InvalidMappedHeader_ThrowsBadRequest()
     {
-        var options = new HeaderForwardingOptions
+        var generalConfig = new GeneralConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions
+            // Default BlockedPatterns already includes "<script"
+            HeaderSanitization = new HeaderSanitizationOptions()
+        };
+        var templateManagementConfig = new TemplateManagementConfig
+        {
+            AasTemplateRepository = new ServiceEndpoint
             {
-                BlockedPatterns = ["<script"]
-            },
-            HeaderMappings = new HeaderMappings
-            {
-                TemplateRepository =
+                HeaderMappings =
                 [
                     new HeaderMappingRule { Source = "X-Test", Target = "X-Test", Required = false }
                 ]
             }
         };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig, templateManagementConfig: templateManagementConfig);
         var context = new DefaultHttpContext();
         context.Request.Headers["X-Test"] = "ok<script";
 
@@ -178,13 +188,9 @@ public class RequestHeaderMapperTests
     [Fact]
     public void ValidateIncomingHeaders_AllHeadersValid_DoesNotThrow()
     {
-        var options = new HeaderForwardingOptions
-        {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings()
-        };
+        var generalConfig = new GeneralConfig { HeaderSanitization = new HeaderSanitizationOptions() };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig);
         var context = new DefaultHttpContext();
         context.Request.Headers["X-Valid"] = "simple-value";
         context.Request.Headers.Authorization = "Bearer token";
@@ -195,19 +201,19 @@ public class RequestHeaderMapperTests
     [Fact]
     public void ApplyMappings_TemplateRegistryClient_UsesTemplateRegistryMappings()
     {
-        var options = new HeaderForwardingOptions
+        var generalConfig = new GeneralConfig { HeaderSanitization = new HeaderSanitizationOptions() };
+        var templateManagementConfig = new TemplateManagementConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
+            AasTemplateRegistry = new ServiceEndpoint
             {
-                TemplateRegistry =
+                HeaderMappings =
                 [
                     new HeaderMappingRule { Source = "X-Source", Target = "X-Registry", Required = true }
                 ]
             }
         };
 
-        var service = CreateService(options);
+        var service = CreateService(generalConfig, templateManagementConfig: templateManagementConfig);
         var context = new DefaultHttpContext();
         context.Request.Headers["X-Source"] = "value";
 

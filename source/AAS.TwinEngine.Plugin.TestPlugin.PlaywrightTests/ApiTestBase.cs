@@ -75,7 +75,6 @@ public abstract class ApiTestBase : IAsyncLifetime
         var expectedDoc = JsonDocument.Parse(expectedJson);
         Assert.NotNull(expectedDoc);
 
-
         // Compare JSON content (normalize formatting for comparison)
         var expectedNormalized = JsonSerializer.Serialize(expectedDoc, JsonSerializerOptions);
         var actualNormalized = JsonSerializer.Serialize(actualDoc, JsonSerializerOptions);

@@ -1,22 +1,23 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 
 using AasCore.Aas3_0;
 
 using Microsoft.Extensions.Options;
+
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 public class AasRepositoryTemplateService(
     ITemplateProvider templateProvider,
     IShellTemplateMappingProvider shellTemplateMappingProvider,
-    IOptions<AasEnvironmentConfig> aasEnvironment) : IAasRepositoryTemplateService
+    IOptions<GeneralConfig> generalConfig) : IAasRepositoryTemplateService
 {
     private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new ArgumentNullException(nameof(templateProvider));
     private readonly IShellTemplateMappingProvider _shellTemplateMappingProvider = shellTemplateMappingProvider ?? throw new ArgumentNullException(nameof(shellTemplateMappingProvider));
-    private readonly Uri _customerDomainUrl = aasEnvironment.Value.CustomerDomainUrl ?? throw new ArgumentNullException(nameof(aasEnvironment.Value.CustomerDomainUrl));
+    private readonly Uri _customerDomainUrl = generalConfig.Value.CustomerDomainUrl ?? throw new ArgumentNullException(nameof(generalConfig), "CustomerDomainUrl is required.");
     private const string SubmodelUrlSegment = "submodel";
 
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string aasIdentifier, CancellationToken cancellationToken)

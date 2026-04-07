@@ -1,6 +1,6 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_0;
 
@@ -23,8 +23,11 @@ public class SubmodelElementHelperTests
     public SubmodelElementHelperTests()
     {
         _logger = Substitute.For<ILogger<SubmodelElementHelper>>();
-        var mlpSettings = Options.Create(new MultiLanguagePropertySettings { DefaultLanguages = null });
-        _sut = new SubmodelElementHelper(_logger, mlpSettings);
+        var pluginsConfig = Options.Create(new PluginsConfig
+        {
+            MultiLanguageProperty = new PluginMultiLanguagePropertyConfig { DefaultLanguages = null }
+        });
+        _sut = new SubmodelElementHelper(_logger, pluginsConfig);
     }
 
     [Fact]
@@ -257,8 +260,11 @@ public class SubmodelElementHelperTests
     [Fact]
     public void ResolveLanguages_WithDefaultLanguages_MergesWithDefaults()
     {
-        var mlpSettings = Options.Create(new MultiLanguagePropertySettings { DefaultLanguages = ["en", "fr"] });
-        var sut = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), mlpSettings);
+        var pluginsConfig = Options.Create(new PluginsConfig
+        {
+            MultiLanguageProperty = new PluginMultiLanguagePropertyConfig { DefaultLanguages = ["en", "fr"] }
+        });
+        var sut = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), pluginsConfig);
 
         var mlp = new MultiLanguageProperty(
             idShort: "TestMlp",
@@ -276,8 +282,11 @@ public class SubmodelElementHelperTests
     [Fact]
     public void ResolveLanguages_WithOnlyDefaultLanguages_ReturnsDefaults()
     {
-        var mlpSettings = Options.Create(new MultiLanguagePropertySettings { DefaultLanguages = ["en", "fr"] });
-        var sut = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), mlpSettings);
+        var pluginsConfig = Options.Create(new PluginsConfig
+        {
+            MultiLanguageProperty = new PluginMultiLanguagePropertyConfig { DefaultLanguages = ["en", "fr"] }
+        });
+        var sut = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), pluginsConfig);
 
         var mlp = new MultiLanguageProperty(idShort: "TestMlp", value: null);
 

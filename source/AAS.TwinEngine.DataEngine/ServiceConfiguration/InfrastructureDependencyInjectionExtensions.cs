@@ -4,16 +4,14 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
@@ -21,6 +19,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Serv
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
+using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
@@ -34,36 +34,58 @@ public static class InfrastructureDependencyInjectionExtensions
 
         _ = services.AddScoped<IRequestHeaderMapper, RequestHeaderMapper>();
 
+        _ = services.AddScoped<IBaseUrlProvider, HttpRequestBaseUrlProvider>();
+
         _ = services.AddScoped<PluginManifestInitializer>();
         _ = services.AddScoped<ITemplateProvider, TemplateProvider>();
         _ = services.AddScoped<ISubmodelTemplateMappingProvider, SubmodelTemplateMappingProvider>();
         _ = services.AddScoped<IShellTemplateMappingProvider, ShellTemplateMappingProvider>();
-        _ = services.Configure<TemplateMappingRules>(configuration.GetSection(TemplateMappingRules.Section));
-        _ = services.Configure<AasEnvironmentConfig>(configuration.GetSection(AasEnvironmentConfig.Section));
-        _ = services.Configure<AasxExportOptions>(configuration.GetSection(AasxExportOptions.Section));
-        _ = services.Configure<PluginConfig>(configuration.GetSection(PluginConfig.Section));
-        _ = services.Configure<Semantics>(configuration.GetSection(Semantics.Section));
-        var aasEnvironment = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
-        var plugins = configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
 
-        _ = services.AddOptions<MultiLanguagePropertySettings>()
-            .Bind(configuration.GetSection(MultiLanguagePropertySettings.Section))
+        // ── V1 → V2 legacy adapters (IConfigureOptions<T>), no-op when V2 config is present ──
+#pragma warning disable CS0618 // Obsolete — intentional V1 backward-compat registration
+        _ = services.AddLegacyV1ConfigurationAdapters();
+#pragma warning restore CS0618
+
+        // ── V2 POCO registrations (section-bind overwrites adapter defaults when V2 JSON exists) ──
+        _ = services.Configure<GeneralConfig>(configuration.GetSection(GeneralConfig.Section));
+
+        // MultiPluginConflictOptions: V1 config binds the old section value; V2 has no section → default ThrowError
+        _ = services.Configure<MultiPluginConflictOptions>(configuration.GetSection(MultiPluginConflictOptions.Section));
+        _ = services.Configure<TemplateManagementConfig>(configuration.GetSection(TemplateManagementConfig.Section));
+        _ = services.Configure<RegistrySettingsConfig>(configuration.GetSection(RegistrySettingsConfig.Section));
+
+        // PluginsConfig: single registration via AddOptions to avoid double-binding of list properties
+        _ = services.AddOptions<PluginsConfig>()
+            .Bind(configuration.GetSection(PluginsConfig.Section))
             .ValidateOnStart();
-        _ = services.AddSingleton<IValidateOptions<MultiLanguagePropertySettings>, MultiLanguagePropertySettingsValidator>();
-        _ = services.Configure<HeaderForwardingOptions>(configuration.GetSection(HeaderForwardingOptions.Section));
+        _ = services.AddSingleton<IValidateOptions<PluginsConfig>, PluginsConfigValidator>();
 
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!);
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasRegistryHttpClientName, HttpRetryPolicyOptions.TemplateProvider, aasEnvironment?.AasRegistryBaseUrl!);
-        _ = services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.SubmodelRegistryHttpClientName, HttpRetryPolicyOptions.SubmodelDescriptorProvider, aasEnvironment?.SubModelRegistryBaseUrl!);
+        // ── Resolve fully-populated config for HttpClient registration ──
+        // We need TemplateManagementConfig and PluginsConfig to register HttpClients at startup.
+        // IOptions<T> is populated by V1 legacy adapters (IConfigureOptions<T>) + V2 section-bind.
+        // Since we are still inside DI registration (container not built yet), we build a
+        // temporary provider to resolve the options so both V1 and V2 paths are applied.
+        using var tempProvider = services.BuildServiceProvider();
+        var templateManagement = tempProvider.GetRequiredService<IOptions<TemplateManagementConfig>>().Value;
+        var pluginsConfig = tempProvider.GetRequiredService<IOptions<PluginsConfig>>().Value;
 
-        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, aasEnvironment?.AasEnvironmentRepositoryBaseUrl!);
-        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasRegistryHealthCheckHttpClientName, aasEnvironment?.AasRegistryBaseUrl!);
-        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.SubmodelRegistryHealthCheckHttpClientName, aasEnvironment?.SubModelRegistryBaseUrl!);
+        // Template repository/registry HttpClients (base URLs from TemplateManagement)
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, templateManagement.ResiliencePolicies.Retry, templateManagement.AasTemplateRepository.BaseUrl!);
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.AasRegistryHttpClientName, templateManagement.ResiliencePolicies.Retry, templateManagement.AasTemplateRegistry.BaseUrl!);
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelRegistryHttpClientName, templateManagement.ResiliencePolicies.Retry, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
 
-        foreach (var plugin in plugins.Plugins)
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, templateManagement.AasTemplateRepository.BaseUrl!);
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasRegistryHealthCheckHttpClientName, templateManagement.AasTemplateRegistry.BaseUrl!);
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.SubmodelRegistryHealthCheckHttpClientName, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
+
+        // Plugin HttpClients (from PluginsConfig.Instances)
+        if (pluginsConfig.Instances.Count > 0)
         {
-            _ = services.AddHttpClientWithResilience(configuration, PluginConfig.HttpClientNamePrefix + plugin.PluginName, HttpRetryPolicyOptions.PluginDataProvider, plugin.PluginUrl);
-            _ = services.AddHttpClientWithoutResilience(PluginConfig.HealthCheckHttpClientNamePrefix + plugin.PluginName, plugin.PluginUrl!);
+            foreach (var plugin in pluginsConfig.Instances)
+            {
+                _ = services.AddHttpClientWithResilience(PluginConfig.HttpClientNamePrefix + plugin.Name, pluginsConfig.ResiliencePolicies.Retry, plugin.BaseUrl);
+                _ = services.AddHttpClientWithoutResilience(PluginConfig.HealthCheckHttpClientNamePrefix + plugin.Name, plugin.BaseUrl!);
+            }
         }
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();
@@ -74,12 +96,6 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();
         _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
         _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();
-        _ = services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.PluginDataProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.PluginDataProvider}"));
-        _ = services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}"));
-        _ = services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.SubmodelDescriptorProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.SubmodelDescriptorProvider}"));
-        _ = services.Configure<HttpRetryPolicyOptions>(configuration.GetSection(HttpRetryPolicyOptions.Section));
-        _ = services.Configure<AasRegistryPreComputed>(configuration.GetSection(AasRegistryPreComputed.Section));
-        _ = services.Configure<MultiPluginConflictOptions>(configuration.GetSection(MultiPluginConflictOptions.Section));
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
         _ = services.AddHostedService<ShellDescriptorSyncHosted>();
     }

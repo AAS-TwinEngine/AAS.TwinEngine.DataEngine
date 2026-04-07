@@ -138,7 +138,7 @@ internal static class TestData
                            {
                              "interface": "AAS-3.0",
                              "protocolInformation": {
-                               "href": "https://localhost:5059/shells/aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg",
+                               "href": "http://localhost/shells/aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg",
                                "endpointProtocol": "http",
                                "endpointProtocolVersion": null,
                                "subprotocol": null,
@@ -165,7 +165,7 @@ internal static class TestData
                            {
                              "interface": "AAS-3.0",
                              "protocolInformation": {
-                               "href": "https://localhost:5059/shells/aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzIyMDYtMTYzMS8xMDAwLTg1OQ",
+                               "href": "http://localhost/shells/aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzIyMDYtMTYzMS8xMDAwLTg1OQ",
                                "endpointProtocol": "http",
                                "endpointProtocolVersion": null,
                                "subprotocol": null,
@@ -197,7 +197,7 @@ internal static class TestData
                        {
                          "interface": "AAS-3.0",
                          "protocolInformation": {
-                           "href": "https://localhost:5059/shells/aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg",
+                           "href": "http://localhost/shells/aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg",
                            "endpointProtocol": "http",
                            "endpointProtocolVersion": null,
                            "subprotocol": null,

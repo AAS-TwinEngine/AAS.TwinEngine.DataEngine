@@ -1,5 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
 

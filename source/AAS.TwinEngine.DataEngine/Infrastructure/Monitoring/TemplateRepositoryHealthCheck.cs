@@ -2,19 +2,18 @@
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
-public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, IOptions<AasEnvironmentConfig> aasEnvironment, ILogger<TemplateRepositoryHealthCheck> logger) : IHealthCheck
+public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, ILogger<TemplateRepositoryHealthCheck> logger) : IHealthCheck
 {
-    private readonly string _aasRepositoryPath = aasEnvironment.Value.AasRepositoryPath;
-    private readonly string _subModelRepositoryPath = aasEnvironment.Value.SubModelRepositoryPath;
+    private const string AasRepositoryPath = AasEnvironmentConfig.AasRepositoryPath;
+    private const string SubModelRepositoryPath = AasEnvironmentConfig.SubModelRepositoryPath;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _aasRepositoryPath, "aas-repository", cancellationToken);
-        var submodelTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _subModelRepositoryPath, "submodel-repository", cancellationToken);
+        var aasTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, AasRepositoryPath, "aas-repository", cancellationToken);
+        var submodelTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, SubModelRepositoryPath, "submodel-repository", cancellationToken);
 
         var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
 

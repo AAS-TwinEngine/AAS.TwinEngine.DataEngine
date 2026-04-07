@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
@@ -20,7 +20,6 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Serv
 using Json.Schema;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -43,10 +42,10 @@ public class PluginDataHandlerTests
         _multiPluginDataHandler = Substitute.For<IMultiPluginDataHandler>();
         _logger = Substitute.For<ILogger<PluginDataHandler>>();
 
-        var aasOptions = Substitute.For<IOptions<AasEnvironmentConfig>>();
-        aasOptions.Value.Returns(new AasEnvironmentConfig { DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com") });
+        var baseUrlProvider = Substitute.For<IBaseUrlProvider>();
+        baseUrlProvider.GetBaseUrl().Returns(new Uri("https://www.mm-software.com/"));
 
-        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, aasOptions, _multiPluginDataHandler, _logger);
+        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, baseUrlProvider, _multiPluginDataHandler, _logger);
     }
 
     private readonly JsonSerializerOptions _jsonoptions = new()
@@ -60,13 +59,6 @@ public class PluginDataHandlerTests
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         }
     };
-
-    [Fact]
-    public void Controller_Throws_WhenBaseUrlMissing()
-    {
-        var opts = Options.Create(new AasEnvironmentConfig { DataEngineRepositoryBaseUrl = null! });
-        Assert.Throws<ArgumentNullException>(() => new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, opts, _multiPluginDataHandler, _logger));
-    }
 
     [Fact]
     public async Task TryGetValuesAsync_WithValidManifestAndResponse_ReturnsMergedSemanticTreeNode()

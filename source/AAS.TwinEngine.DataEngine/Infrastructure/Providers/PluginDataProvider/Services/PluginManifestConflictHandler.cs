@@ -8,11 +8,11 @@ using Microsoft.Extensions.Options;
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 public class PluginManifestConflictHandler(
-    ILogger<PluginManifestConflictHandler> logger,
-    IOptions<MultiPluginConflictOptions> options) : IPluginManifestConflictHandler
+    IOptions<MultiPluginConflictOptions> conflictOptions,
+    ILogger<PluginManifestConflictHandler> logger) : IPluginManifestConflictHandler
 {
     private readonly List<PluginManifest> _manifests = [];
-    private readonly MultiPluginConflictOptions.MultiPluginConflictOption _handlingMode = options.Value.HandlingMode;
+    private readonly MultiPluginConflictOptions.MultiPluginConflictOption _handlingMode = conflictOptions.Value.HandlingMode;
 
     public IReadOnlyList<PluginManifest> Manifests => _manifests.AsReadOnly();
 

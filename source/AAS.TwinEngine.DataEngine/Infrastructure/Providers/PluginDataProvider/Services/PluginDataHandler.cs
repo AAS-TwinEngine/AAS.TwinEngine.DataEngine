@@ -3,9 +3,9 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
@@ -15,19 +15,16 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 
 using Json.Schema;
 
-using Microsoft.Extensions.Options;
-
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 public class PluginDataHandler(
     IPluginRequestBuilder pluginRequestBuilder,
     IPluginDataProvider pluginDataProvider,
     IJsonSchemaValidator jsonSchemaValidator,
-    IOptions<AasEnvironmentConfig> aasEnvironment,
+    IBaseUrlProvider baseUrlProvider,
     IMultiPluginDataHandler multiPluginDataHandler,
     ILogger<PluginDataHandler> logger) : IPluginDataHandler
 {
-    private readonly Uri _dataEngineRepositoryBaseUrl = aasEnvironment.Value.DataEngineRepositoryBaseUrl ?? throw new ArgumentNullException(nameof(aasEnvironment), "DataEngineRepositoryBaseUrl is required.");
     private const string ShellsBasePath = "shells";
 
     public async Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken)
@@ -184,6 +181,6 @@ public class PluginDataHandler(
     private void SetHref(ShellDescriptorMetaData value)
     {
         var encodedId = value.Id!.EncodeBase64Url();
-        value.Href = $"{_dataEngineRepositoryBaseUrl}{ShellsBasePath}/{encodedId}";
+        value.Href = $"{baseUrlProvider.GetBaseUrl()}{ShellsBasePath}/{encodedId}";
     }
 }

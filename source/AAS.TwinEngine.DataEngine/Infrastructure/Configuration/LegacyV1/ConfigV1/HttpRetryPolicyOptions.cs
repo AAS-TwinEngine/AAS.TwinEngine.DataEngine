@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
+namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 public class HttpRetryPolicyOptions
 {

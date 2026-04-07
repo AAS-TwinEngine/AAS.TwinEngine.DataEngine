@@ -8,8 +8,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Con
 using AasCore.Aas3.Package;
 using AasCore.Aas3_0;
 
-using Microsoft.Extensions.Options;
-
 using Environment = AasCore.Aas3_0.Environment;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
@@ -18,11 +16,8 @@ public class SerializationService(
     ISubmodelRepositoryService submodelRepositoryService,
     IAasRepositoryService shellService,
     IConceptDescriptionService conceptDescriptionService,
-    IOptions<AasxExportOptions> options,
     ILogger<SerializationService> logger) : ISerializationService
 {
-    private readonly AasxExportOptions _exportOptions = options.Value;
-
     public async Task<Stream> GetAasxFileStreamAsync(IList<string> aasIds,
                                                      IList<string> submodelIds,
                                                      bool includeConceptDescriptions,
@@ -202,8 +197,8 @@ public class SerializationService(
         var validName = GetValidFolderName(idShort ?? string.Empty);
         var includeFolder = validName == idShort;
         return includeFolder
-                   ? $"/{_exportOptions.RootFolder}/{validName}/{validName}.xml"
-                   : $"/{_exportOptions.RootFolder}/{AasxExportOptions.DefaultXmlFileName}";
+                   ? $"/{AasxExportOptions.RootFolder}/{validName}/{validName}.xml"
+                   : $"/{AasxExportOptions.RootFolder}/{AasxExportOptions.DefaultXmlFileName}";
     }
 
     /// <summary>

@@ -3,6 +3,7 @@
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -21,9 +22,9 @@ public class PluginAvailabilityHealthCheckTests
     {
         var clientFactory = Substitute.For<ICreateClient>();
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins = []
+            Instances = []
         });
 
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
@@ -40,9 +41,9 @@ public class PluginAvailabilityHealthCheckTests
     {
         var clientFactory = Substitute.For<ICreateClient>();
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins = null!
+            Instances = null!
         });
 
         var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
@@ -72,12 +73,12 @@ public class PluginAvailabilityHealthCheckTests
                 };
             });
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins =
+            Instances =
             [
-                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") },
-                new Plugin { PluginName = "Plugin2", PluginUrl = new Uri("http://localhost") }
+                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
+                new PluginInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -108,11 +109,11 @@ public class PluginAvailabilityHealthCheckTests
                 };
             });
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins =
+            Instances =
             [
-                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") }
+                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -141,11 +142,11 @@ public class PluginAvailabilityHealthCheckTests
                 };
             });
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins =
+            Instances =
             [
-                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") }
+                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -174,11 +175,11 @@ public class PluginAvailabilityHealthCheckTests
                 };
             });
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins =
+            Instances =
             [
-                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") }
+                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -207,11 +208,11 @@ public class PluginAvailabilityHealthCheckTests
                 };
             });
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins =
+            Instances =
             [
-                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") }
+                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -237,12 +238,12 @@ public class PluginAvailabilityHealthCheckTests
             .CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin2")
             .Returns(CreateHttpClient(HttpStatusCode.OK));
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins =
+            Instances =
             [
-                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") },
-                new Plugin { PluginName = "Plugin2", PluginUrl = new Uri("http://localhost") }
+                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
+                new PluginInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -268,11 +269,11 @@ public class PluginAvailabilityHealthCheckTests
                 return CreateHttpClient(HttpStatusCode.OK);
             });
 
-        var pluginConfig = Options.Create(new PluginConfig
+        var pluginConfig = Options.Create(new PluginsConfig
         {
-            Plugins =
+            Instances =
             [
-                new Plugin { PluginName = "Plugin1", PluginUrl = new Uri("http://localhost") }
+                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 

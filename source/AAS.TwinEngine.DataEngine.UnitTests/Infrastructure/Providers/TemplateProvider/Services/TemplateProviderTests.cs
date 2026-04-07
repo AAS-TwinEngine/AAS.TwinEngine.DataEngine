@@ -7,7 +7,6 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -26,9 +25,7 @@ public class TemplateProviderTests
     {
         var logger = Substitute.For<ILogger<Template>>();
         _httpClientFactory = Substitute.For<ICreateClient>();
-        var subModelRegistryUrl = Substitute.For<IOptions<AasEnvironmentConfig>>();
-        subModelRegistryUrl.Value.Returns(new AasEnvironmentConfig { AasEnvironmentRepositoryBaseUrl = new Uri("https://www.mm-software.com/fakeurl"), AasRegistryBaseUrl = new Uri("https://www.mm-software.com/fakeurl") });
-        _sut = new Template(logger, _httpClientFactory, subModelRegistryUrl);
+        _sut = new Template(logger, _httpClientFactory);
     }
 
     [Fact]
@@ -118,17 +115,13 @@ public class TemplateProviderTests
     [Fact]
     public async Task GetShellDescriptorsTemplateAsync_ThrowsResourceNotFoundException_WhenResultArrayIsMissing()
     {
-        const string jsonResponse = "{}";
+        const string JsonResponse = "{}";
 
-        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(jsonResponse)
-        };
+        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        mockHttpResponse.Content = new StringContent(JsonResponse);
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
-        using var httpClient = new HttpClient(mockHttpMessageHandler)
-        {
-            BaseAddress = new Uri("https://www.mm-software.com/fakeurl")
-        };
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHttpClientName).Returns(httpClient);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
@@ -138,17 +131,13 @@ public class TemplateProviderTests
     [Fact]
     public async Task GetShellDescriptorsTemplateAsync_ReturnsDefaultShellDescriptor_WhenResultArrayIsEmpty()
     {
-        const string jsonResponse = "{ \"result\": [] }";
+        const string JsonResponse = "{ \"result\": [] }";
 
-        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(jsonResponse)
-        };
+        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        mockHttpResponse.Content = new StringContent(JsonResponse);
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
-        using var httpClient = new HttpClient(mockHttpMessageHandler)
-        {
-            BaseAddress = new Uri("https://www.mm-software.com/fakeurl")
-        };
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHttpClientName).Returns(httpClient);
 
         var result = await _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None);

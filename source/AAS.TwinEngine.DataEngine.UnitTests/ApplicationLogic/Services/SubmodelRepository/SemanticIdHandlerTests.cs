@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using MongoDB.Bson;
 
@@ -26,18 +27,24 @@ public class SemanticIdHandlerTests
 {
     private readonly SemanticIdHandler _sut;
     private readonly ILogger<SubmodelFiller> _fillerLogger;
-    private readonly IOptions<MultiLanguagePropertySettings> _mlpSettings;
-    private readonly IOptions<Semantics> _semantics;
+    private readonly IOptions<PluginsConfig> _pluginsConfig;
+    private readonly IOptions<TemplateManagementConfig> _templateManagementConfig;
 
     public SemanticIdHandlerTests()
     {
         _fillerLogger = Substitute.For<ILogger<SubmodelFiller>>();
-        _mlpSettings = Substitute.For<IOptions<MultiLanguagePropertySettings>>();
-        _ = _mlpSettings.Value.Returns(new MultiLanguagePropertySettings { DefaultLanguages = null });
-        _semantics = Substitute.For<IOptions<Semantics>>();
-        _ = _semantics.Value.Returns(new Semantics { MultiLanguageSemanticPostfixSeparator = "_", SubmodelElementIndexContextPrefix = "_aastwinengineindex_" });
+        _pluginsConfig = Options.Create(new PluginsConfig
+        {
+            MultiLanguageProperty = new PluginMultiLanguagePropertyConfig
+            {
+                SemanticPostfixSeparator = "_",
+                DefaultLanguages = null
+            },
+            SubmodelElementIndexContextPrefix = "_aastwinengineindex_"
+        });
+        _templateManagementConfig = Options.Create(new TemplateManagementConfig());
 
-        _sut = CreateSut(_semantics, _mlpSettings);
+        _sut = CreateSut(_pluginsConfig, _templateManagementConfig);
     }
 
     [Fact]
@@ -228,8 +235,8 @@ public class SemanticIdHandlerTests
     [Fact]
     public void Extract_EmptyMultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr()
     {
-        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = CreateSut(_semantics, mlpSettings);
+        var pluginsConfig = CreatePluginsConfigWithMlp(["de", "en", "fr"]);
+        var sut = CreateSut(pluginsConfig, _templateManagementConfig);
         var mlp = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
 
         var node = sut.Extract(mlp) as SemanticBranchNode;
@@ -246,8 +253,8 @@ public class SemanticIdHandlerTests
     [Fact]
     public void Extract_MultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr()
     {
-        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = CreateSut(_semantics, mlpSettings);
+        var pluginsConfig = CreatePluginsConfigWithMlp(["de", "en", "fr"]);
+        var sut = CreateSut(pluginsConfig, _templateManagementConfig);
         var mlp = TestData.CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate();
 
         var node = sut.Extract(mlp) as SemanticBranchNode;
@@ -727,8 +734,8 @@ public class SemanticIdHandlerTests
     [Fact]
     public void FillOutTemplate_EmptyMultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr_AddsAllLanguages()
     {
-        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = CreateSut(_semantics, mlpSettings);
+        var pluginsConfig = CreatePluginsConfigWithMlp(["de", "en", "fr"]);
+        var sut = CreateSut(pluginsConfig, _templateManagementConfig);
         var submodel = TestData.CreateSubmodelWithManufacturerNameWithOutElements();
         var semanticTree = TestData.CreateSubmodelWithManufacturerName();
 
@@ -746,8 +753,8 @@ public class SemanticIdHandlerTests
     [Fact]
     public void FillOutTemplate_MultiLanguageProperty_WithDefaultLanguagesAs_En_De_Fr_MergesWithTemplateLanguages()
     {
-        var mlpSettings = CreateMlpSettings(["de", "en", "fr"]);
-        var sut = CreateSut(_semantics, mlpSettings);
+        var pluginsConfig = CreatePluginsConfigWithMlp(["de", "en", "fr"]);
+        var sut = CreateSut(pluginsConfig, _templateManagementConfig);
         var submodel = TestData.CreateSubmodelWithManufacturerNameWithTwoLanguagesInTemplate();
         var semanticTree = TestData.CreateSubmodelWithManufacturerName();
 
@@ -850,10 +857,10 @@ public class SemanticIdHandlerTests
                            );
     }
 
-    private SemanticIdHandler CreateSut(IOptions<Semantics> semantics, IOptions<MultiLanguagePropertySettings> mlpSettings)
+    private SemanticIdHandler CreateSut(IOptions<PluginsConfig> pluginsConfig, IOptions<TemplateManagementConfig> templateManagementConfig)
     {
-        var resolver = new SemanticIdResolver(semantics);
-        var helper = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), mlpSettings);
+        var resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig);
+        var helper = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), pluginsConfig);
         var referenceHelper = new ReferenceHelper(resolver, Substitute.For<ILogger<ReferenceHelper>>());
 
         var handlers = new List<ISubmodelElementTypeHandler>
@@ -877,13 +884,17 @@ public class SemanticIdHandlerTests
 
     private static string GetSemanticId(IHasSemantics hasSemantics) => hasSemantics.SemanticId?.Keys?.FirstOrDefault()?.Value ?? string.Empty;
 
-    private static IOptions<MultiLanguagePropertySettings> CreateMlpSettings(List<string>? defaultLanguages)
+    private static IOptions<PluginsConfig> CreatePluginsConfigWithMlp(List<string>? defaultLanguages)
     {
-        var settings = new MultiLanguagePropertySettings
+        return Options.Create(new PluginsConfig
         {
-            DefaultLanguages = defaultLanguages
-        };
-        return Options.Create(settings);
+            MultiLanguageProperty = new PluginMultiLanguagePropertyConfig
+            {
+                SemanticPostfixSeparator = "_",
+                DefaultLanguages = defaultLanguages
+            },
+            SubmodelElementIndexContextPrefix = "_aastwinengineindex_"
+        });
     }
 }
 

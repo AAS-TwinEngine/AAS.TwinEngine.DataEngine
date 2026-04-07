@@ -2,7 +2,7 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_0;
 
@@ -17,7 +17,7 @@ public class AasRepositoryTemplateServiceTests
 {
     private readonly ITemplateProvider _templateProvider = Substitute.For<ITemplateProvider>();
     private readonly IShellTemplateMappingProvider _shellTemplateMappingProvider = Substitute.For<IShellTemplateMappingProvider>();
-    private readonly IOptions<AasEnvironmentConfig> _config = Substitute.For<IOptions<AasEnvironmentConfig>>();
+    private readonly IOptions<GeneralConfig> _config = Substitute.For<IOptions<GeneralConfig>>();
     private readonly Uri _mockCustomerDomainUrl = new("https://mm-software-test.com");
 
     private readonly AasRepositoryTemplateService _sut;
@@ -26,7 +26,7 @@ public class AasRepositoryTemplateServiceTests
 
     public AasRepositoryTemplateServiceTests()
     {
-        _config.Value.Returns(new AasEnvironmentConfig
+        _config.Value.Returns(new GeneralConfig
         {
             CustomerDomainUrl = _mockCustomerDomainUrl
         });

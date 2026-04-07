@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
+namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 public partial class MultiLanguagePropertySettingsValidator : IValidateOptions<MultiLanguagePropertySettings>
 {

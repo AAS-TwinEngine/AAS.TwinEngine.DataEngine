@@ -4,6 +4,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,18 +17,18 @@ public class PluginManifestProviderTests
 {
     private readonly ILogger<PluginManifestProvider> _logger = Substitute.For<ILogger<PluginManifestProvider>>();
     private readonly ICreateClient _clientFactory = Substitute.For<ICreateClient>();
-    private readonly IOptions<PluginConfig> _options;
+    private readonly IOptions<PluginsConfig> _options;
 
-    private readonly List<Plugin> _plugins =
+    private readonly List<PluginInstance> _plugins =
     [
-        new Plugin
+        new PluginInstance
         {
-            PluginName = "TestPlugin",
-            PluginUrl = new Uri("https://plugin.url")
-}
+            Name = "TestPlugin",
+            BaseUrl = new Uri("https://plugin.url")
+        }
     ];
 
-    public PluginManifestProviderTests() => _options = Options.Create(new PluginConfig { Plugins = _plugins });
+    public PluginManifestProviderTests() => _options = Options.Create(new PluginsConfig { Instances = _plugins });
 
     private PluginManifestProvider CreateSut(HttpClient httpClient)
     {
@@ -130,7 +131,7 @@ public class PluginManifestProviderTests
     public async Task GetAllPluginManifestsAsync_WhenPluginListIsEmpty_ReturnsEmptyList()
     {
         // Arrange
-        var emptyOptions = Options.Create(new PluginConfig { Plugins = [] });
+        var emptyOptions = Options.Create(new PluginsConfig { Instances = [] });
 
         var sut = new PluginManifestProvider(_logger, emptyOptions, _clientFactory);
 

@@ -1,10 +1,9 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -15,26 +14,19 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Extensions;
 
 public class HttpClientRegistrationExtensionsTests
 {
+    private static readonly RetryConfig DefaultRetryConfig = new() { MaxRetryAttempts = 3, DelayInSeconds = 1 };
+
     [Fact]
     public void HttpClientRegistrationExtensions_RegistersTemplateProviderClientWithCorrectConfiguration()
     {
-        var configValues = new Dictionary<string, string>
-            {
-                { "HttpRetryPolicyOptions:TemplateProvider:MaxRetryAttempts", "3" },
-                { "HttpRetryPolicyOptions:TemplateProvider:DelayInSeconds", "1" }
-            };
-
-        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(configValues!).Build();
-
         var services = new ServiceCollection();
-        services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"HttpRetryPolicyOptions:{HttpRetryPolicyOptions.TemplateProvider}"));
         services.AddLogging();
         services.AddHttpContextAccessor();
 
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, DefaultRetryConfig, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -48,23 +40,14 @@ public class HttpClientRegistrationExtensionsTests
     [Fact]
     public void HttpClientRegistrationExtensions_RegistersPluginDataProviderClientWithCorrectConfiguration()
     {
-        var configValues = new Dictionary<string, string>
-            {
-                { "HttpRetryPolicyOptions:PluginDataProvider:MaxRetryAttempts", "3" },
-                { "HttpRetryPolicyOptions:PluginDataProvider:DelayInSeconds", "1" },
-            };
-
-        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(configValues!).Build();
-
         var services = new ServiceCollection();
-        services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.PluginDataProvider, configuration.GetSection($"HttpRetryPolicyOptions:{HttpRetryPolicyOptions.PluginDataProvider}"));
         services.AddLogging();
         services.AddHttpContextAccessor();
 
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.PluginDataProvider, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, DefaultRetryConfig, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -78,16 +61,7 @@ public class HttpClientRegistrationExtensionsTests
     [Fact]
     public async Task SendRequest_AfterFourAttempts_ThrowsExceptionAndLogsThreeRetries()
     {
-        var configValues = new Dictionary<string, string>
-            {
-                { "HttpRetryPolicyOptions:TemplateProvider:MaxRetryAttempts", "3" },
-                { "HttpRetryPolicyOptions:TemplateProvider:DelayInSeconds", "1" },
-            };
-
-        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(configValues!).Build();
-
         var services = new ServiceCollection();
-        services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"HttpRetryPolicyOptions:{HttpRetryPolicyOptions.TemplateProvider}"));
         var loggerMock = Substitute.For<ILogger>();
         services.AddSingleton(loggerMock);
         services.AddHttpContextAccessor();
@@ -95,7 +69,7 @@ public class HttpClientRegistrationExtensionsTests
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(configuration, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, HttpRetryPolicyOptions.TemplateProvider, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, DefaultRetryConfig, new Uri("https://example.com"));
         using var handler = new FaultyHttpMessageHandler();
         services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
         var serviceProvider = services.BuildServiceProvider();
@@ -110,16 +84,7 @@ public class HttpClientRegistrationExtensionsTests
     [Fact]
     public async Task AddHttpClientWithResilience_WithForwarding_AddsHeaderForwardingHandler()
     {
-        var configValues = new Dictionary<string, string>
-            {
-                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:MaxRetryAttempts", "1" },
-                { $"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}:DelayInSeconds", "1" }
-            };
-
-        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(configValues!).Build();
-
         var services = new ServiceCollection();
-        services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}"));
         services.AddLogging();
         services.AddHttpContextAccessor();
 
@@ -127,9 +92,8 @@ public class HttpClientRegistrationExtensionsTests
         _ = services.AddScoped(_ => mappingService);
 
         services.AddHttpClientWithResilience(
-            configuration,
             AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
-            HttpRetryPolicyOptions.TemplateProvider,
+            DefaultRetryConfig,
             new Uri("https://example.com"));
 
         using var handler = new FaultyHttpMessageHandler();

@@ -9,8 +9,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,32 +19,37 @@ using NSubstitute.ExceptionExtensions;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRepository;
 
-public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public abstract class SubmodelRepositoryControllerTestsBase : IDisposable
 {
+    private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
-    public SubmodelRepositoryControllerTests(WebApplicationFactory<Program> factory)
+    protected SubmodelRepositoryControllerTestsBase(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
 
-        var factory1 = factory.WithWebHostBuilder(builder =>
+        _factory = new ConfigTestFactory(configDir, services =>
         {
-            _ = builder.ConfigureServices(services =>
-            {
-                _ = services.AddSingleton(_httpClientFactory);
-                _ = services.AddSingleton(_mockTemplateProvider);
-                _ = services.AddSingleton(mockPluginManifestProvider);
-                _ = services.AddSingleton(mockPluginManifestConflictHandler);
-            });
+            _ = services.AddSingleton(_httpClientFactory);
+            _ = services.AddSingleton(_mockTemplateProvider);
+            _ = services.AddSingleton(mockPluginManifestProvider);
+            _ = services.AddSingleton(mockPluginManifestConflictHandler);
         });
 
-        _client = factory1.CreateClient();
+        _client = _factory.CreateClient();
         _ = mockPluginManifestConflictHandler.Manifests.Returns(TestData.CreatePluginManifests());
+    }
+
+    public void Dispose()
+    {
+        _client.Dispose();
+        _factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -200,7 +205,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [InlineData(@"..\..\windows\system32")]
     [InlineData("element/../otherElement")]
     [InlineData("%2e%2e/config")]
-    public async Task GetSubmodelElement_PathTraversalInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    public async Task GetSubmodelElement_PathTraversalInIdShortPath_Returns400BadRequestAsync(string maliciousIdShortPath)
     {
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
 
@@ -214,7 +219,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [InlineData("<img onerror=alert('xss')>")]
     [InlineData("element<script>alert(1)</script>")]
     [InlineData("<svg/onload=alert('xss')>")]
-    public async Task GetSubmodelElement_XssInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    public async Task GetSubmodelElement_XssInIdShortPath_Returns400BadRequestAsync(string maliciousIdShortPath)
     {
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
 
@@ -228,7 +233,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [InlineData("element'; DROP TABLE--")]
     [InlineData("1 UNION SELECT *")]
     [InlineData("admin'--")]
-    public async Task GetSubmodelElement_SqlInjectionInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    public async Task GetSubmodelElement_SqlInjectionInIdShortPath_Returns400BadRequestAsync(string maliciousIdShortPath)
     {
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
 
@@ -242,7 +247,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [InlineData("data:text/html,<script>")]
     [InlineData("file:///etc/passwd")]
     [InlineData("vbscript:msgbox('xss')")]
-    public async Task GetSubmodelElement_DangerousProtocolInIdShortPath_Returns400BadRequest(string maliciousIdShortPath)
+    public async Task GetSubmodelElement_DangerousProtocolInIdShortPath_Returns400BadRequestAsync(string maliciousIdShortPath)
     {
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
 
@@ -257,7 +262,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [InlineData("element\\backslash")]
     [InlineData("element|pipe")]
     [InlineData("element;semicolon")]
-    public async Task GetSubmodelElement_InvalidCharactersInIdShortPath_Returns400BadRequest(string invalidIdShortPath)
+    public async Task GetSubmodelElement_InvalidCharactersInIdShortPath_Returns400BadRequestAsync(string invalidIdShortPath)
     {
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
 
@@ -273,7 +278,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [InlineData("list[0]")]
     [InlineData("element[3].property")]
     [InlineData("collection_item-name")]
-    public async Task GetSubmodelElement_ValidIdShortPath_DoesNotReturn400(string validIdShortPath)
+    public async Task GetSubmodelElement_ValidIdShortPath_DoesNotReturn400Async(string validIdShortPath)
     {
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
         _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -287,7 +292,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [Theory]
     [InlineData("not!!valid")]
     [InlineData("invalid base64")]
-    public async Task GetSubmodel_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    public async Task GetSubmodel_InvalidBase64_Returns400BadRequestAsync(string invalidBase64)
     {
         var response = await _client.GetAsync($"/submodels/{invalidBase64}");
 
@@ -298,7 +303,7 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
     [InlineData("<svg/onload=alert('xss')>")]
     [InlineData("1 UNION SELECT * FROM submodels")]
     [InlineData("javascript:alert(1)")]
-    public async Task GetSubmodel_MaliciousPattern_Returns400BadRequest(string maliciousContent)
+    public async Task GetSubmodel_MaliciousPattern_Returns400BadRequestAsync(string maliciousContent)
     {
         var encoded = EncodeBase64Url(maliciousContent);
 
@@ -320,6 +325,16 @@ public class SubmodelRepositoryControllerTests : IClassFixture<WebApplicationFac
 
     private static string CreateSubmodelElementPath(string submodelIdentifier, string idShortPath)
         => $"/submodels/{submodelIdentifier}/submodel-elements/{Uri.EscapeDataString(idShortPath)}";
+}
+
+public class SubmodelRepositoryControllerTests_V1Config : SubmodelRepositoryControllerTestsBase
+{
+    public SubmodelRepositoryControllerTests_V1Config() : base("v1-config") { }
+}
+
+public class SubmodelRepositoryControllerTests_V2Config : SubmodelRepositoryControllerTestsBase
+{
+    public SubmodelRepositoryControllerTests_V2Config() : base("v2-config") { }
 }
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler

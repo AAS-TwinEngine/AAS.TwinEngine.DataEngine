@@ -1,4 +1,4 @@
-﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 public class Semantics
 {

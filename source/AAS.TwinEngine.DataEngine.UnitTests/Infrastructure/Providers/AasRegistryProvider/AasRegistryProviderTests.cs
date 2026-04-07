@@ -9,7 +9,6 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -21,9 +20,7 @@ public class AasRegistryProviderTests
 {
     private readonly ILogger<AasRegistryProviderRepo.AasRegistryProvider> _logger = Substitute.For<ILogger<AasRegistryProviderRepo.AasRegistryProvider>>();
     private readonly ICreateClient _clientFactory = Substitute.For<ICreateClient>();
-    private readonly IOptions<AasEnvironmentConfig> _options = Substitute.For<IOptions<AasEnvironmentConfig>>();
     private readonly AasRegistryProviderRepo.AasRegistryProvider _sut;
-    private const string AasRegistryPath = "shell-descriptors";
 
     private const string JsonResponseForShells = """
                                         {
@@ -40,11 +37,8 @@ public class AasRegistryProviderTests
                                         }
                                         """;
 
-    public AasRegistryProviderTests()
-    {
-        _options.Value.Returns(new AasEnvironmentConfig { AasRegistryPath = AasRegistryPath });
-        _sut = new AasRegistryProviderRepo.AasRegistryProvider(_logger, _clientFactory, _options);
-    }
+    public AasRegistryProviderTests() =>
+        _sut = new AasRegistryProviderRepo.AasRegistryProvider(_logger, _clientFactory);
 
     [Fact]
     public async Task GetAllAsync_ReturnsShellDescriptors_WhenSuccessful()

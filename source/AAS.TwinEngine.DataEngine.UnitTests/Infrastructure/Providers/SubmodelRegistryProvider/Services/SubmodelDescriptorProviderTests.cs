@@ -8,7 +8,6 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvide
 using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -22,30 +21,7 @@ public class SubmodelDescriptorProviderTests
     private readonly ICreateClient _clientFactory = Substitute.For<ICreateClient>();
     private readonly SubmodelDescriptorProvider _sut;
 
-    public SubmodelDescriptorProviderTests()
-    {
-        var options = Options.Create(new AasEnvironmentConfig
-        {
-            SubModelRegistryPath = "submodel-registry",
-            SubModelRegistryBaseUrl = new Uri("https://mm-software/fakeUrl")
-        });
-
-        _sut = new SubmodelDescriptorProvider(_logger, _clientFactory, options);
-    }
-
-    [Fact]
-    public void Constructor_Throws_WhenBaseUrlMissing()
-    {
-        var invalidEnv = new AasEnvironmentConfig
-        {
-            SubModelRegistryPath = null!,
-        };
-        var options = Options.Create(invalidEnv);
-
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-                                                          new SubmodelDescriptorProvider(_logger, _clientFactory, options));
-        Assert.Contains("aasEnvironment", ex.Message, StringComparison.OrdinalIgnoreCase);
-    }
+    public SubmodelDescriptorProviderTests() => _sut = new SubmodelDescriptorProvider(_logger, _clientFactory);
 
     [Fact]
     public async Task GetDataForSubmodelDescriptorByIdAsync_ReturnsSubmodelDesciptor_WhenResponseIsSuccessful()
@@ -198,5 +174,4 @@ public class SubmodelDescriptorProviderTests
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
     }
-
 }

@@ -1,0 +1,40 @@
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
+
+namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+/// <summary>
+/// V2 config — binds to the "TemplateManagement" section.
+/// Contains template repositories, registries, mapping rules, and semantics.
+/// </summary>
+public class TemplateManagementConfig
+{
+    public const string Section = "TemplateManagement";
+
+    public ResiliencePoliciesConfig ResiliencePolicies { get; set; } = new();
+    public TemplateMappingRules TemplateMappingRules { get; set; } = new();
+    public TemplateSemanticsConfig Semantics { get; set; } = new();
+    public ServiceEndpoint AasTemplateRepository { get; set; } = new();
+    public ServiceEndpoint SubmodelTemplateRepository { get; set; } = new();
+    public ServiceEndpoint AasTemplateRegistry { get; set; } = new();
+    public ServiceEndpoint SubmodelTemplateRegistry { get; set; } = new();
+}
+
+/// <summary>
+/// Semantics configuration for template management (InternalSemanticId only).
+/// </summary>
+public class TemplateSemanticsConfig
+{
+    public string InternalSemanticId { get; set; } = "InternalSemanticId";
+}
+
+/// <summary>
+/// A named service endpoint with a base URL and co-located header mappings.
+/// Used for template repositories and registries in the V2 schema.
+/// </summary>
+public class ServiceEndpoint
+{
+    public string Name { get; set; } = string.Empty;
+    public Uri? BaseUrl { get; set; }
+    public IList<HeaderMappingRule> HeaderMappings { get; init; } = [];
+}

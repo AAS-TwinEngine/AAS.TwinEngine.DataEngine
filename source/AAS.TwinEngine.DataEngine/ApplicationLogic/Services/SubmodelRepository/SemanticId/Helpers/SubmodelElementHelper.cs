@@ -2,8 +2,8 @@
 using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_0;
 
@@ -11,10 +11,10 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
-public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger, IOptions<MultiLanguagePropertySettings> mlpSettings) : ISubmodelElementHelper
+public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger, IOptions<PluginsConfig> pluginsConfig) : ISubmodelElementHelper
 {
-    private readonly HashSet<string>? _defaultLanguagesSet = mlpSettings.Value.DefaultLanguages is { Count: > 0 }
-                                                                ? new HashSet<string>(mlpSettings.Value.DefaultLanguages, StringComparer.OrdinalIgnoreCase)
+    private readonly HashSet<string>? _defaultLanguagesSet = pluginsConfig.Value.MultiLanguageProperty.DefaultLanguages is { Count: > 0 }
+                                                                ? new HashSet<string>(pluginsConfig.Value.MultiLanguageProperty.DefaultLanguages, StringComparer.OrdinalIgnoreCase)
                                                                 : null;
 
     public ISubmodelElement CloneElement(ISubmodelElement element)

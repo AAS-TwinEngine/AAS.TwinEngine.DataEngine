@@ -1,7 +1,7 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Cronos;
 
@@ -30,7 +30,7 @@ public class ShellDescriptorSyncHostedTests
         scope.ServiceProvider.Returns(serviceProvider);
         _scopeFactory.CreateScope().Returns(scope);
 
-        var config = Options.Create(new AasRegistryPreComputed { ShellDescriptorCron = cron ?? ValidCron, IsPreComputed = true });
+        var config = Options.Create(new RegistrySettingsConfig { PreComputed = new PreComputedConfig { Schedule = cron ?? ValidCron, Enabled = true } });
 
         return new ShellDescriptorSyncHosted(_scopeFactory, config, _logger);
     }
@@ -67,7 +67,7 @@ public class ShellDescriptorSyncHostedTests
     public void Should_Throw_When_Cron_Is_Invalid(string cron, Type? expectedExceptionType)
     {
         // Arrange
-        var config = Options.Create(new AasRegistryPreComputed { ShellDescriptorCron = cron, IsPreComputed = true });
+        var config = Options.Create(new RegistrySettingsConfig { PreComputed = new PreComputedConfig { Schedule = cron, Enabled = true } });
 
         // Act & Assert
         if (expectedExceptionType == null)
@@ -87,10 +87,13 @@ public class ShellDescriptorSyncHostedTests
     public async Task RunOnceAsync_Should_Not_Invoke_SyncShellDescriptorsAsync_When_PreComputed_Is_False()
     {
         // Arrange
-        var config = Options.Create(new AasRegistryPreComputed
+        var config = Options.Create(new RegistrySettingsConfig
         {
-            ShellDescriptorCron = ValidCron,
-            IsPreComputed = false
+            PreComputed = new PreComputedConfig
+            {
+                Schedule = ValidCron,
+                Enabled = false
+            }
         });
 
         var service = new ShellDescriptorSyncHosted(_scopeFactory, config, _logger);

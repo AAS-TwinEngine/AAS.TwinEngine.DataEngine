@@ -2,8 +2,8 @@
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Policies;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 
@@ -11,19 +11,16 @@ public static class HttpClientRegistrationExtensions
 {
     public static IServiceCollection AddHttpClientWithResilience(
         this IServiceCollection services,
-        IConfiguration configuration,
         string clientName,
-        string retryPolicySectionKey,
+        RetryConfig retryConfig,
         Uri baseUrl)
     {
-        _ = services.Configure<HttpRetryPolicyOptions>(configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{retryPolicySectionKey}"));
-
         var httpClientBuilder = services.AddHttpClient(clientName, client =>
         {
             client.BaseAddress = baseUrl;
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         })
-        .AddStandardResilienceHandler(retryPolicySectionKey);
+        .AddStandardResilienceHandler(retryConfig);
 
         _ = httpClientBuilder.AddHttpMessageHandler(sp =>
                 new HeaderForwardingHandler(

@@ -1,6 +1,6 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_0;
 
@@ -18,25 +18,30 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Submodel
 public class SemanticIdResolverTests
 {
     private readonly SemanticIdResolver _sut;
-    private readonly IOptions<Semantics> _semantics;
+    private readonly IOptions<PluginsConfig> _pluginsConfig;
+    private readonly IOptions<TemplateManagementConfig> _templateManagementConfig;
 
     public SemanticIdResolverTests()
     {
-        _semantics = Options.Create(new Semantics
+        _pluginsConfig = Options.Create(new PluginsConfig
         {
-            MultiLanguageSemanticPostfixSeparator = "_",
-            SubmodelElementIndexContextPrefix = "_aastwinengineindex_",
-            InternalSemanticId = "InternalSemanticId"
+            MultiLanguageProperty = new PluginMultiLanguagePropertyConfig { SemanticPostfixSeparator = "_" },
+            SubmodelElementIndexContextPrefix = "_aastwinengineindex_"
         });
-        _sut = new SemanticIdResolver(_semantics);
+        _templateManagementConfig = Options.Create(new TemplateManagementConfig
+        {
+            Semantics = new TemplateSemanticsConfig { InternalSemanticId = "InternalSemanticId" }
+        });
+        _sut = new SemanticIdResolver(_pluginsConfig, _templateManagementConfig);
     }
 
     [Fact]
     public void Constructor_NullOptions_ThrowsException()
     {
-        var options = Options.Create<Semantics>(null!);
+        var options = Options.Create<PluginsConfig>(null!);
+        var tmConfig = Options.Create(new TemplateManagementConfig());
 
-        _ = Throws<NullReferenceException>(() => new SemanticIdResolver(options));
+        _ = Throws<NullReferenceException>(() => new SemanticIdResolver(options, tmConfig));
     }
 
     [Fact]
