@@ -26,8 +26,17 @@ internal static class LoggingConfigurationExtension
 
         _ = builder.Host.UseSerilog((context, loggerConfig) =>
         {
+            // V2 config nests Serilog under "General:Serilog"; V1 keeps it at root "Serilog".
+            // ReadFrom.Configuration looks for a child key named "Serilog" inside the section
+            // you pass, so we pass the parent section ("General" or root) — not the Serilog
+            // section itself.
+            var generalSerilogSection = context.Configuration.GetSection("General:Serilog");
+            var serilogParent = generalSerilogSection.Exists()
+                ? context.Configuration.GetSection("General")
+                : context.Configuration;
+
             _ = loggerConfig
-                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Configuration(serilogParent)
                 .Enrich.FromLogContext()
                 .Enrich.With<SanitizingEnricher>()
                 .MinimumLevel.ControlledBy(logLevelSwitch);

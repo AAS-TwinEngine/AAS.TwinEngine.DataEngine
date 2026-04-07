@@ -46,7 +46,7 @@ services:
       - Plugins__Instances__0__headerMappings__1__target=X-Tenant-Context
       - Plugins__Instances__0__headerMappings__1__required=false
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=Reliability
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=HandoverDocumentation
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=ContactInformation
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/CustomSubmodel/Template/0/1

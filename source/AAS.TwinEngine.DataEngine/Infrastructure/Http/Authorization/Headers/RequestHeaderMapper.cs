@@ -124,6 +124,8 @@ public class RequestHeaderMapper : IRequestHeaderMapper
         // Template repository/registry header mappings
         allRules.AddRange(_templateManagementConfig.AasTemplateRepository.HeaderMappings);
         allRules.AddRange(_templateManagementConfig.AasTemplateRegistry.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.SubmodelTemplateRegistry.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.SubmodelTemplateRepository.HeaderMappings);
 
         // Plugin header mappings
         foreach (var plugin in _pluginsConfig.Instances)
