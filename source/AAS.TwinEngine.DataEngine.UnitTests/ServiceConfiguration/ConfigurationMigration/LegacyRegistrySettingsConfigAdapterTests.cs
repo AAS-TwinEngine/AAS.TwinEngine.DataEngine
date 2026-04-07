@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Configuration;
@@ -79,47 +79,6 @@ public class LegacyRegistrySettingsConfigAdapterTests
         adapter.Configure(options);
 
         // Adapter is no-op for V2 — options remain at defaults
-        Assert.False(options.PreComputed.Enabled);
-    }
-
-    [Fact]
-    public void Configure_WithV2Config_TypoVariant_MapsCorrectly()
-    {
-        // V2 JSON has typo "ResgistrySettings" instead of "RegistrySettings"
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["General:AllowedHosts"] = "*",
-            ["ResgistrySettings:PreComputed:Enabled"] = "true",
-            ["ResgistrySettings:PreComputed:Schedule"] = "0 */7 * * * *"
-        });
-
-        var adapter = new LegacyRegistrySettingsConfigAdapter(config);
-        var options = new RegistrySettingsConfig();
-
-        adapter.Configure(options);
-
-        Assert.True(options.PreComputed.Enabled);
-        Assert.Equal("0 */7 * * * *", options.PreComputed.Schedule);
-    }
-
-    [Fact]
-    public void Configure_WithV2Config_CorrectSpelling_DoesNotUseTypoVariant()
-    {
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["General:AllowedHosts"] = "*",
-            ["RegistrySettings:PreComputed:Enabled"] = "false",
-            ["RegistrySettings:PreComputed:Schedule"] = "correct-schedule",
-            ["ResgistrySettings:PreComputed:Enabled"] = "true",
-            ["ResgistrySettings:PreComputed:Schedule"] = "typo-schedule"
-        });
-
-        var adapter = new LegacyRegistrySettingsConfigAdapter(config);
-        var options = new RegistrySettingsConfig();
-
-        adapter.Configure(options);
-
-        // Correct spelling exists → typo handling should not trigger
         Assert.False(options.PreComputed.Enabled);
     }
 

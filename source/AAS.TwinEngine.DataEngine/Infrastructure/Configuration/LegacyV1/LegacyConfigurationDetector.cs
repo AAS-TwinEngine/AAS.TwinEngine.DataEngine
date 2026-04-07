@@ -20,14 +20,4 @@ public static class LegacyConfigurationDetector
 
         return !isV2;
     }
-
-    /// <summary>
-    /// The V2 JSON may contain a typo: "ResgistrySettings" instead of "RegistrySettings".
-    /// If only the typo variant exists, we still treat it as V2 but need to handle the rename.
-    /// </summary>
-    public static bool HasRegistrySettingsTypo(IConfiguration configuration)
-    {
-        return !configuration.GetSection(RegistrySettingsConfig.Section).Exists()
-            && configuration.GetSection(RegistrySettingsConfig.SectionTypoVariant).Exists();
-    }
 }

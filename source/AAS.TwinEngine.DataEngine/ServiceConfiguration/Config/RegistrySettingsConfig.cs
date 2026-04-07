@@ -2,16 +2,10 @@
 
 /// <summary>
 /// V2 config — binds to the "RegistrySettings" section.
-/// Note: The V2 JSON has a typo "ResgistrySettings" — both spellings are handled by the normalizer.
 /// </summary>
 public class RegistrySettingsConfig
 {
     public const string Section = "RegistrySettings";
-
-    /// <summary>
-    /// Also check for typo variant in new JSON: "ResgistrySettings".
-    /// </summary>
-    public const string SectionTypoVariant = "ResgistrySettings";
 
     public PreComputedConfig PreComputed { get; set; } = new();
 }

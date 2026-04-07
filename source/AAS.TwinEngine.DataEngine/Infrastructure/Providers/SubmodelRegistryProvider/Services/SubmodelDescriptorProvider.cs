@@ -43,9 +43,9 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
             logger.LogError("Failed to deserialize the submodel descriptor. Submodel ID: {SubmodelId}", id);
             throw new ResponseParsingException();
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            logger.LogError("Failed to deserialize SubmodelDescriptor from response. Submodel ID: {SubmodelId}, Response: {ResponseContent}", id, responseContent);
+            logger.LogError(ex, "Failed to deserialize SubmodelDescriptor from response. Submodel ID: {SubmodelId}, Response: {ResponseContent}", id, responseContent);
             throw new ResponseParsingException();
         }
     }

@@ -132,25 +132,6 @@ public class ConfigurationBackwardCompatibilityE2ETests
     }
 
     [Fact]
-    public void V2Config_ThroughDIPipeline_RegistrySettingsTypoVariant_Works()
-    {
-        // Simulates the actual V2 JSON which has the "ResgistrySettings" typo
-        var config = BuildConfig(MergeConfigs(
-            GetV2CoreConfig(),
-            new Dictionary<string, string?>
-            {
-                ["ResgistrySettings:PreComputed:Enabled"] = "true",
-                ["ResgistrySettings:PreComputed:Schedule"] = "0 */3 * * * *"
-            }));
-
-        var provider = BuildServiceProvider(config);
-        var registry = provider.GetRequiredService<IOptions<RegistrySettingsConfig>>().Value;
-
-        Assert.True(registry.PreComputed.Enabled);
-        Assert.Equal("0 */3 * * * *", registry.PreComputed.Schedule);
-    }
-
-    [Fact]
     public void V2Config_ThroughDIPipeline_RegistrySettingsCorrectSpelling_Works()
     {
         var config = BuildConfig(MergeConfigs(

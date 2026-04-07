@@ -171,23 +171,6 @@ public class V2DirectBindingTests
         Assert.Equal("0 */5 * * * *", registrySettings.PreComputed.Schedule);
     }
 
-    [Fact]
-    public void RegistrySettingsConfig_TypoVariant_DoesNotBindToCorrectSection()
-    {
-        // The typo variant "ResgistrySettings" should NOT bind to the "RegistrySettings" section
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["ResgistrySettings:PreComputed:Enabled"] = "true",
-            ["ResgistrySettings:PreComputed:Schedule"] = "0 */5 * * * *"
-        });
-
-        var registrySettings = new RegistrySettingsConfig();
-        config.GetSection(RegistrySettingsConfig.Section).Bind(registrySettings);
-
-        // Default values since "RegistrySettings" section doesn't exist
-        Assert.False(registrySettings.PreComputed.Enabled);
-    }
-
     private static IConfiguration BuildV2Config()
     {
         return BuildConfig(new Dictionary<string, string?>

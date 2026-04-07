@@ -16,16 +16,6 @@ public sealed class LegacyRegistrySettingsConfigAdapter(IConfiguration configura
     {
         if (!LegacyConfigurationDetector.IsV1Configuration(_configuration))
         {
-            // Even for V2, handle the typo variant "ResgistrySettings"
-            if (LegacyConfigurationDetector.HasRegistrySettingsTypo(_configuration))
-            {
-                var typoSection = _configuration.GetSection(RegistrySettingsConfig.SectionTypoVariant).Get<RegistrySettingsConfig>();
-                if (typoSection != null)
-                {
-                    options.PreComputed = typoSection.PreComputed;
-                }
-            }
-
             return;
         }
 

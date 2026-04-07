@@ -24,7 +24,7 @@ public class HeaderSanitizationOptions
     [Required]
     public AllowedCharactersOptions AllowedCharacters { get; set; } = new();
 
-    public IList<string> BlockedPatterns { get; } = ["\\r|\\n", "\\x00", "<script"];
+    public IList<string> BlockedPatterns { get; set; } = ["\\r|\\n", "\\x00", "<script"];
 }
 
 public class AllowedCharactersOptions

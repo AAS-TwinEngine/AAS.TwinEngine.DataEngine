@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 using Microsoft.Extensions.Configuration;
 
@@ -57,62 +57,13 @@ public class LegacyConfigurationDetectorTests
     [Fact]
     public void IsV1Configuration_EmptyConfig_ReturnsTrue()
     {
-        var config = BuildConfig(new Dictionary<string, string?>());
+        var config = BuildConfig([]);
 
         Assert.True(LegacyConfigurationDetector.IsV1Configuration(config));
     }
 
     [Fact]
-    public void IsV1Configuration_NullConfig_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => LegacyConfigurationDetector.IsV1Configuration(null!));
-    }
-
-    [Fact]
-    public void HasRegistrySettingsTypo_WithCorrectSpelling_ReturnsFalse()
-    {
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["RegistrySettings:PreComputed:Enabled"] = "true"
-        });
-
-        Assert.False(LegacyConfigurationDetector.HasRegistrySettingsTypo(config));
-    }
-
-    [Fact]
-    public void HasRegistrySettingsTypo_WithTypoSpelling_ReturnsTrue()
-    {
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["ResgistrySettings:PreComputed:Enabled"] = "true"
-        });
-
-        Assert.True(LegacyConfigurationDetector.HasRegistrySettingsTypo(config));
-    }
-
-    [Fact]
-    public void HasRegistrySettingsTypo_WithBothSpellings_ReturnsFalse()
-    {
-        // When correct spelling exists, typo should not be flagged
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["RegistrySettings:PreComputed:Enabled"] = "true",
-            ["ResgistrySettings:PreComputed:Enabled"] = "false"
-        });
-
-        Assert.False(LegacyConfigurationDetector.HasRegistrySettingsTypo(config));
-    }
-
-    [Fact]
-    public void HasRegistrySettingsTypo_WithNeitherSpelling_ReturnsFalse()
-    {
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["SomeOtherSection:Key"] = "value"
-        });
-
-        Assert.False(LegacyConfigurationDetector.HasRegistrySettingsTypo(config));
-    }
+    public void IsV1Configuration_NullConfig_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => LegacyConfigurationDetector.IsV1Configuration(null!));
 
     private static IConfiguration BuildConfig(Dictionary<string, string?> values)
     {

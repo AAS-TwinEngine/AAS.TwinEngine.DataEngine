@@ -53,9 +53,9 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=CustomSubmodel
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__1__Pattern=Regex
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__1__Index=6
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__1__Separator=/
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=Regex
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=6
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Separator=/
       - TemplateManagement__AasTemplateRepository__Name=AasTemplateRepository
       - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository:8081
       - TemplateManagement__AasTemplateRepository__headerMappings__0__source=Authorization

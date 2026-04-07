@@ -32,6 +32,6 @@ public class HttpRequestBaseUrlProvider(
             ?? throw new InvalidOperationException("No HTTP request context available — cannot derive base URL.");
 
         var baseUrl = $"{request.Scheme}://{request.Host}";
-        return new Uri(baseUrl.TrimEnd('/') + "/");
+        return new Uri(baseUrl, UriKind.Absolute);
     }
 }
