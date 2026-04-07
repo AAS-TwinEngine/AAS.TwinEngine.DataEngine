@@ -142,7 +142,7 @@ public class SemanticTreeNavigatorTests
     public void AreAllNodesOfSameType_MixedNodes_ReturnsFalse()
     {
         var nodes = new List<SemanticTreeNode>
-        {
+    {
             new SemanticBranchNode("a", Cardinality.One),
             new SemanticLeafNode("b", "v2", DataType.String, Cardinality.One),
         };
@@ -150,5 +150,22 @@ public class SemanticTreeNavigatorTests
         var result = SemanticTreeNavigator.AreAllNodesOfSameType(nodes, out _);
 
         False(result);
+    }
+
+    public void FindNodeBySemanticId_Generic_WhenSameSemanticIdOnBothBranchAndLeaf_ReturnsOnlyRequestedType()
+    {
+        var root = new SemanticBranchNode("root", Cardinality.Unknown);
+        var branch = new SemanticBranchNode("shared", Cardinality.One);
+        var leaf = new SemanticLeafNode("shared", "val", DataType.String, Cardinality.One);
+        root.AddChild(branch);
+        root.AddChild(leaf);
+
+        var branchResults = SemanticTreeNavigator.FindNodeBySemanticId<SemanticBranchNode>(root, "shared").ToList();
+        var leafResults = SemanticTreeNavigator.FindNodeBySemanticId<SemanticLeafNode>(root, "shared").ToList();
+
+        Single(branchResults);
+        Same(branch, branchResults[0]);
+        Single(leafResults);
+        Same(leaf, leafResults[0]);
     }
 }

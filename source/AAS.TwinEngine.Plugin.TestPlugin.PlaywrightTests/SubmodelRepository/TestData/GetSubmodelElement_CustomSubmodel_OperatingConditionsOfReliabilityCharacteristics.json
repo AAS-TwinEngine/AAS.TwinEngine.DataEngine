@@ -1,0 +1,326 @@
+{
+  "idShort": "OperatingConditionsOfReliabilityCharacteristics",
+  "description": [
+    {
+      "language": "en",
+      "text": "operating conditions of reliability characteristics"
+    },
+    {
+      "language": "fr",
+      "text": "conditions de fonctionnement des caractéristiques de fiabilité et de sécurité fonctionnelle"
+    }
+  ],
+  "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0112/2///62683#ACG071#001"
+      }
+    ]
+  },
+  "qualifiers": [
+    {
+      "kind": "ConceptQualifier",
+      "type": "SMT/Cardinality",
+      "valueType": "xs:string",
+      "value": "ZeroToMany"
+    }
+  ],
+  "value": [
+    {
+      "idShort": "CompanyLogo",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/zvei/nameplate/2/0/Nameplate/CompanyLogo"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "kind": "ConceptQualifier",
+          "type": "Multiplicity",
+          "valueType": "xs:string",
+          "value": "ZeroToOne"
+        }
+      ],
+      "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/logo/MM_Logo.svg",
+      "contentType": "EMPTY",
+      "modelType": "File"
+    },
+    {
+      "category": "PARAMETER",
+      "idShort": "ArbitraryRangeDate",
+      "description": [
+        {
+          "language": "en",
+          "text": "Note: Every range property can be used."
+        },
+        {
+          "language": "en",
+          "text": "Note: The idShort is arbitrary."
+        },
+        {
+          "language": "en",
+          "text": "Note: The use of a displayName is recommended."
+        }
+      ],
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/SMT/General/Arbitrary/date"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0"
+              }
+            ]
+          },
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "ZeroToMany"
+        }
+      ],
+      "valueType": "xs:date",
+      "min": "2010-02-02",
+      "max": "2030-02-06",
+      "modelType": "Range"
+    },
+    {
+      "idShort": "RatedVoltage",
+      "description": [
+        {
+          "language": "en",
+          "text": "rated voltage"
+        },
+        {
+          "language": "fr",
+          "text": "tension assignée"
+        },
+        {
+          "language": "de",
+          "text": "Bemessungsspannung"
+        }
+      ],
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "0112/2///61987#ABA588#004"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "ZeroToMany"
+        }
+      ],
+      "valueType": "xs:double",
+      "value": "56.5",
+      "modelType": "Property"
+    },
+    {
+      "idShort": "MinimumRatedVoltage",
+      "description": [
+        {
+          "language": "en",
+          "text": "minimum rated voltage"
+        },
+        {
+          "language": "fr",
+          "text": "tension assignée minimale"
+        },
+        {
+          "language": "de",
+          "text": "minimale Bemessungsspannung"
+        }
+      ],
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "0112/2///61987#ABD461#004"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "ZeroToMany"
+        }
+      ],
+      "valueType": "xs:double",
+      "value": "12.5",
+      "modelType": "Property"
+    },
+    {
+      "idShort": "Paragraph",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0"
+          }
+        ]
+      },
+      "value": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU+PikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
+      "contentType": "text/markdown",
+      "modelType": "Blob"
+    },
+    {
+      "idShort": "ProductClassName",
+      "displayName": [
+        {
+          "language": "en",
+          "text": "Product class name"
+        },
+        {
+          "language": "de",
+          "text": "Produktklasse Name"
+        }
+      ],
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "0173-1#02-ABK273#002"
+          }
+        ]
+      },
+      "supplementalSemanticIds": [
+        {
+          "type": "ExternalReference",
+          "keys": [
+            {
+              "type": "GlobalReference",
+              "value": "https://api.eclass-cdp.com/0173-1-02-ABK273-002"
+            }
+          ]
+        }
+      ],
+      "qualifiers": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0"
+              }
+            ]
+          },
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "ZeroToOne"
+        }
+      ],
+      "value": [
+        {
+          "language": "en",
+          "text": "Name of product class in the used classification system"
+        },
+        {
+          "language": "de",
+          "text": "Name der Produktklasse im verwendeten Klassifizierungssystem"
+        },
+        {
+          "language": "",
+          "text": ""
+        }
+      ],
+      "modelType": "MultiLanguageProperty"
+    },
+    {
+      "idShort": "ModelReference",
+      "displayName": [
+        {
+          "language": "en",
+          "text": "Reference to technical property area"
+        },
+        {
+          "language": "de",
+          "text": "Referenz auf einen technsichen Merkmalsbereich"
+        }
+      ],
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "0173-1#02-ABL358#002"
+          }
+        ]
+      },
+      "supplementalSemanticIds": [
+        {
+          "type": "ExternalReference",
+          "keys": [
+            {
+              "type": "GlobalReference",
+              "value": "https://api.eclass-cdp.com/0173-1-02-ABL358-002"
+            }
+          ]
+        }
+      ],
+      "qualifiers": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0"
+              }
+            ]
+          },
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "ZeroToOne"
+        }
+      ],
+      "value": {
+        "type": "ModelReference",
+        "keys": [
+          {
+            "type": "Submodel",
+            "value": "https://mm-software.com/submodel/000-003/HandoverDocumentation"
+          },
+          {
+            "type": "SubmodelElementList",
+            "value": "Documents"
+          },
+          {
+            "type": "SubmodelElementCollection",
+            "value": "0"
+          }
+        ]
+      },
+      "modelType": "ReferenceElement"
+    }
+  ],
+  "modelType": "SubmodelElementCollection"
+}

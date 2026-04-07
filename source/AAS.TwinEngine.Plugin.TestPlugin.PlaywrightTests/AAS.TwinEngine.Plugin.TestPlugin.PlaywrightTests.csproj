@@ -43,31 +43,28 @@
     <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_Contact_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_Nameplate_Expected.json">
+    <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_HandoverDocumentation_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_Reliability_Expected.json">
+    <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_CustomSubmodel_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SubmodelRepository\TestData\GetSubmodelElement_Nameplate_ManufacturerName_Expected.json">
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_HandoverDocumentation_Documents0_DocumentVersions0_Language0.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SubmodelRepository\TestData\GetSubmodelElement_Nameplate_Markings_Expected.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="SubmodelRepository\TestData\GetSubmodelElement_Reliability_ReliabilityCharacteristics_MTTF.json">
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_CustomSubmodel_OperatingConditionsOfReliabilityCharacteristics.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SubmodelRepository\TestData\GetSubmodel_Nameplate_Expected.json">
+    <None Update="SubmodelRepository\TestData\GetSubmodel_HandoverDocumentation_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SubmodelRepository\TestData\GetSubmodel_Reliability_Expected.json">
+    <None Update="SubmodelRepository\TestData\GetSubmodel_CustomSubmodel_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

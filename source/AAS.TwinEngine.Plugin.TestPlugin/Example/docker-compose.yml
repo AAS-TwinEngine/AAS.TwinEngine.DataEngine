@@ -45,12 +45,12 @@ services:
       - Plugins__Instances__0__headerMappings__1__source=X-Organization-Id
       - Plugins__Instances__0__headerMappings__1__target=X-Tenant-Context
       - Plugins__Instances__0__headerMappings__1__required=false
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=Reliability
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=Nameplate
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=ContactInformation
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=ContactInformation
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/CustomSubmodel/Template/0/1
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=CustomSubmodel
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__1__Pattern=Regex
@@ -140,25 +140,6 @@ services:
       - mongo
     environment:
       - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
-    networks:
-      - dataengine-network
-
-  shell-template-creator:
-    image: curlimages/curl:latest
-    container_name: shell-template-creator
-    depends_on:
-      template-repository:
-        condition: service_healthy
-    entrypoint: >
-      sh -c '
-        echo "Waiting for template-repository to be ready...";
-        sleep 10;
-        curl -X POST http://template-repository:8081/shells \
-          -H "accept: application/json" \
-          -H "Content-Type: application/json" \
-          -d "{\"id\": \"https://mm-software.com/aas/aasTemplate\", \"assetInformation\": {\"assetKind\": \"Instance\"}, \"submodels\": [{\"type\": \"ModelReference\", \"keys\": [{\"type\": \"Submodel\", \"value\": \"Nameplate\"}]}, {\"type\": \"ModelReference\", \"keys\": [{\"type\": \"Submodel\", \"value\": \"ContactInformation\"}]}, {\"type\": \"ModelReference\", \"keys\": [{\"type\": \"Submodel\", \"value\": \"Reliability\"}]}], \"modelType\": \"AssetAdministrationShell\"}";
-        echo "Shell creation request sent.";
-      '
     networks:
       - dataengine-network
 

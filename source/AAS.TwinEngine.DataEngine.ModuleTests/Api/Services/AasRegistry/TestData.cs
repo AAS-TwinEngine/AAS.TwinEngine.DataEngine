@@ -132,8 +132,8 @@ internal static class TestData
                          "displayName": null,
                          "extensions": null,
                          "administration": null,
-                         "assetKind": 0,
-                         "assetType": 0,
+                         "assetKind": "Type",
+                         "assetType": "Type",
                          "endpoints": [
                            {
                              "interface": "AAS-3.0",
@@ -159,8 +159,8 @@ internal static class TestData
                          "displayName": null,
                          "extensions": null,
                          "administration": null,
-                         "assetKind": 0,
-                         "assetType": 0,
+                         "assetKind": "Type",
+                         "assetType": "Type",
                          "endpoints": [
                            {
                              "interface": "AAS-3.0",
@@ -191,8 +191,8 @@ internal static class TestData
                      "displayName": null,
                      "extensions": null,
                      "administration": null,
-                     "assetKind": 0,
-                     "assetType": 0,
+                     "assetKind": "Type",
+                     "assetType": "Type",
                      "endpoints": [
                        {
                          "interface": "AAS-3.0",

@@ -1,7 +1,7 @@
 meta {
-  name: Get Submodel - Reliability
+  name: Get Submodel -CustomSubmodel
   type: http
-  seq: 1
+  seq: 3
 }
 
 get {
@@ -11,9 +11,10 @@ get {
 }
 
 params:path {
-  submodelIdentifier: {{submodelIdentifierReliability}}
+  submodelIdentifier: {{submodelIdentifierCustomSubmodel}}
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

@@ -28,10 +28,10 @@ public class SubmodelRegistryTests : ApiTestBase
     }
 
     [Fact]
-    public async Task GetSubmodelDescriptorById_Nameplate_ShouldReturnSuccess_ContentAsExpected()
+    public async Task GetSubmodelDescriptorById_HandoverDocumentation_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
-        var url = $"/submodel-descriptors/{SubmodelIdentifierNameplate}";
+        var url = $"/submodel-descriptors/{SubmodelIdentifierHandoverDocumentation}";
 
         // Act
         var response = await ApiContext.GetAsync(url);
@@ -44,14 +44,14 @@ public class SubmodelRegistryTests : ApiTestBase
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRegistry", "TestData", "GetSubmodelDescriptorById_Nameplate_Expected.json"));
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRegistry", "TestData", "GetSubmodelDescriptorById_HandoverDocumentation_Expected.json"));
     }
 
     [Fact]
-    public async Task GetSubmodelDescriptorById_Reliability_ShouldReturnSuccess_ContentAsExpected()
+    public async Task GetSubmodelDescriptorById_CustomSubmodel_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
-        var url = $"/submodel-descriptors/{SubmodelIdentifierReliability}";
+        var url = $"/submodel-descriptors/{SubmodelIdentifierCustomSubmodel}";
 
         // Act
         var response = await ApiContext.GetAsync(url);
@@ -64,6 +64,6 @@ public class SubmodelRegistryTests : ApiTestBase
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRegistry", "TestData", "GetSubmodelDescriptorById_Reliability_Expected.json"));
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRegistry", "TestData", "GetSubmodelDescriptorById_CustomSubmodel_Expected.json"));
     }
 }

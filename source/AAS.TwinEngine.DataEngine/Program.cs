@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+﻿using System.Text.Json.Serialization;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
@@ -18,6 +20,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
         _ = builder.Host.UseSerilog();
         builder.ConfigureLogging(builder.Configuration);
         builder.ConfigureCorsServices();
@@ -29,9 +32,14 @@ public class Program
         _ = builder.Services.AddHttpContextAccessor();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
+        builder.Services.ConfigureResponseCompression();
         _ = builder.Services.AddAuthorization();
 
-        _ = builder.Services.AddControllers();
+        _ = builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         _ = builder.Services.AddEndpointsApiExplorer();
         _ = builder.Services.AddOpenApiDocument(settings =>
@@ -69,6 +77,7 @@ public class Program
         }
 
         _ = app.UseExceptionHandler();
+        _ = app.UseResponseCompression();
         _ = app.UseMiddleware<HeaderSanitizationMiddleware>();
         _ = app.UseHttpsRedirection();
         _ = app.UseAuthorization();

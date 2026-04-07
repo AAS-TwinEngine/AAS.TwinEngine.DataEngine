@@ -18,8 +18,8 @@ public abstract class ApiTestBase : IAsyncLifetime
     // Base64 encoded identifiers
     protected string AasIdentifier { get; private set; } = null!;
     protected string SubmodelIdentifierContact { get; private set; } = null!;
-    protected string SubmodelIdentifierNameplate { get; private set; } = null!;
-    protected string SubmodelIdentifierReliability { get; private set; } = null!;
+    protected string SubmodelIdentifierHandoverDocumentation { get; private set; } = null!;
+    protected string SubmodelIdentifierCustomSubmodel { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
@@ -40,8 +40,8 @@ public abstract class ApiTestBase : IAsyncLifetime
         // Initialize base64 encoded identifiers
         AasIdentifier = Base64EncodeUrl("https://mm-software.com/ids/aas/000-001");
         SubmodelIdentifierContact = Base64EncodeUrl("https://mm-software.com/submodel/000-001/ContactInformation");
-        SubmodelIdentifierNameplate = Base64EncodeUrl("https://mm-software.com/submodel/000-001/Nameplate");
-        SubmodelIdentifierReliability = Base64EncodeUrl("https://mm-software.com/submodel/000-001/Reliability");
+        SubmodelIdentifierHandoverDocumentation = Base64EncodeUrl("https://mm-software.com/submodel/000-001/HandoverDocumentation");
+        SubmodelIdentifierCustomSubmodel = Base64EncodeUrl("https://mm-software.com/submodel/000-001/CustomSubmodel");
     }
 
     public async Task DisposeAsync() => await ApiContext.DisposeAsync();
