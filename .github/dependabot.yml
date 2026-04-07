@@ -32,6 +32,8 @@ updates:
           - "patch"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 3
 
   - package-ecosystem: "github-actions"
     target-branch: "develop"
