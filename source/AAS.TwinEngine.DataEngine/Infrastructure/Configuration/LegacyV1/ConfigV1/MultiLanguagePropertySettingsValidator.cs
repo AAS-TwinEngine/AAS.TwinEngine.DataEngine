@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
+#pragma warning disable S1133 
+[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
 public partial class MultiLanguagePropertySettingsValidator : IValidateOptions<MultiLanguagePropertySettings>
 {
     public ValidateOptionsResult Validate(string? name, MultiLanguagePropertySettings options)

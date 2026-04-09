@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+﻿using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
@@ -10,7 +10,8 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 /// then map them into the new V2 POCO shapes via <see cref="IConfigureOptions{T}"/>.
 /// When V2 config is present, the adapters are registered but short-circuit (no-op).
 /// </summary>
-[Obsolete("Remove in v2.0.0 — V1 configuration support will be dropped.")]
+#pragma warning disable S1133 
+[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
 public static class LegacyV1ConfigurationExtensions
 {
     /// <summary>
@@ -18,7 +19,8 @@ public static class LegacyV1ConfigurationExtensions
     /// Must be called BEFORE <c>services.Configure&lt;GeneralConfig&gt;(…)</c> etc. so that the
     /// V2 section-bind (if present) overwrites the adapter-provided defaults.
     /// </summary>
-    [Obsolete("Remove in v2.0.0 — V1 configuration support will be dropped.")]
+
+    [Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
     public static IServiceCollection AddLegacyV1ConfigurationAdapters(this IServiceCollection services)
     {
         _ = services.AddSingleton<IConfigureOptions<GeneralConfig>, LegacyGeneralConfigAdapter>();
