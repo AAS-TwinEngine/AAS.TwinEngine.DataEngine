@@ -6,6 +6,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 /// Detects whether the running configuration uses the V1 (flat sections) or V2 (grouped) schema.
 /// V2 is identified by the existence of "General", "Plugins:Instances", or "TemplateManagement" top-level sections.
 /// </summary>
+#pragma warning disable S1133 
 [Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
 public static class LegacyConfigurationDetector
 {

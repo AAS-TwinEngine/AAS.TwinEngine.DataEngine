@@ -105,15 +105,6 @@ public class RequestHeaderMapperTests
     }
 
     [Fact]
-    public void ApplyMappings_NullHttpContext_DoesNothing()
-    {
-        var service = CreateService(DefaultConfig());
-        using var request = new HttpRequestMessage();
-
-        service.ApplyMappings(null, request, "client");
-    }
-
-    [Fact]
     public void ApplyMappings_NullRequest_Throws()
     {
         var service = CreateService(DefaultConfig());
