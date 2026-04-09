@@ -53,6 +53,9 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.Configure<TemplateManagementConfig>(configuration.GetSection(TemplateManagementConfig.Section));
         _ = services.Configure<RegistrySettingsConfig>(configuration.GetSection(RegistrySettingsConfig.Section));
 
+        // Normalizer: applies TemplateRepository shorthand to individual repository endpoints
+        _ = services.AddSingleton<IPostConfigureOptions<TemplateManagementConfig>, TemplateManagementConfigNormalizer>();
+
         // PluginsConfig: single registration via AddOptions to avoid double-binding of list properties
         _ = services.AddOptions<PluginsConfig>()
             .Bind(configuration.GetSection(PluginsConfig.Section))
@@ -68,14 +71,21 @@ public static class InfrastructureDependencyInjectionExtensions
         var templateManagement = tempProvider.GetRequiredService<IOptions<TemplateManagementConfig>>().Value;
         var pluginsConfig = tempProvider.GetRequiredService<IOptions<PluginsConfig>>().Value;
 
-        // Template repository/registry HttpClients (base URLs from TemplateManagement)
-        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, templateManagement.ResiliencePolicies.Retry, templateManagement.AasTemplateRepository.BaseUrl!);
-        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.AasRegistryHttpClientName, templateManagement.ResiliencePolicies.Retry, templateManagement.AasTemplateRegistry.BaseUrl!);
-        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelRegistryHttpClientName, templateManagement.ResiliencePolicies.Retry, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
+        // Template repository HttpClients (AAS, Submodel, ConceptDescription — separate clients)
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.AasTemplateRepository, templateManagement.ResiliencePolicies.Retry, templateManagement.AasTemplateRepository.BaseUrl!);
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelTemplateRepository, templateManagement.ResiliencePolicies.Retry, templateManagement.SubmodelTemplateRepository.BaseUrl!);
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.ConceptDescriptorTemplateRepository, templateManagement.ResiliencePolicies.Retry, templateManagement.ConceptDescriptionTemplateRepository.BaseUrl!);
 
-        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, templateManagement.AasTemplateRepository.BaseUrl!);
-        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasRegistryHealthCheckHttpClientName, templateManagement.AasTemplateRegistry.BaseUrl!);
-        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.SubmodelRegistryHealthCheckHttpClientName, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
+        // Template registry HttpClients (AAS, Submodel)
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.AasRegistry, templateManagement.ResiliencePolicies.Retry, templateManagement.AasTemplateRegistry.BaseUrl!);
+        _ = services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelRegistry, templateManagement.ResiliencePolicies.Retry, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
+
+        // Health check clients (without resilience)
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasTemplateRepositoryHealthCheck, templateManagement.AasTemplateRepository.BaseUrl!);
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.SubmodelTemplateRepositoryHealthCheck, templateManagement.SubmodelTemplateRepository.BaseUrl!);
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.ConceptDescriptorTemplateRepositoryHealthCheck, templateManagement.ConceptDescriptionTemplateRepository.BaseUrl!);
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.AasRegistryHealthCheck, templateManagement.AasTemplateRegistry.BaseUrl!);
+        _ = services.AddHttpClientWithoutResilience(AasEnvironmentConfig.SubmodelRegistryHealthCheck, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
 
         // Plugin HttpClients (from PluginsConfig.Instances)
         if (pluginsConfig.Instances.Count > 0)

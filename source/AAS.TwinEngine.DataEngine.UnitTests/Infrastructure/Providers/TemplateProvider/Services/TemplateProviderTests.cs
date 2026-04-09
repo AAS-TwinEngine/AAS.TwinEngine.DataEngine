@@ -37,7 +37,7 @@ public class TemplateProviderTests
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository).Returns(httpClient);
 
         var result = await _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None);
 
@@ -54,7 +54,7 @@ public class TemplateProviderTests
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository).Returns(httpClient);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None));
     }
@@ -67,7 +67,7 @@ public class TemplateProviderTests
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository).Returns(httpClient);
 
         var exception = await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None));
     }
@@ -78,7 +78,7 @@ public class TemplateProviderTests
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(new HttpRequestException("Network error"));
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository).Returns(httpClient);
 
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() => _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None));
         Assert.Equal("Network error", exception.Message);
@@ -396,7 +396,7 @@ public class TemplateProviderTests
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository).Returns(httpClient);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None));
@@ -412,7 +412,7 @@ public class TemplateProviderTests
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository).Returns(httpClient);
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
             _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None));
@@ -428,7 +428,7 @@ public class TemplateProviderTests
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName).Returns(httpClient);
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository).Returns(httpClient);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetSubmodelTemplateAsync(TemplateId, CancellationToken.None));
@@ -445,7 +445,7 @@ public class TemplateProviderTests
         using var mockHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName)
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.ConceptDescriptorTemplateRepository)
                           .Returns(httpClient);
 
         var result = await _sut.GetConceptDescriptionByIdAsync(CdIdentifier, CancellationToken.None);
@@ -466,7 +466,7 @@ public class TemplateProviderTests
         using var mockHandler = new FakeHttpMessageHandler(exception);
         using var httpClient = new HttpClient(mockHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName)
+        _httpClientFactory.CreateClient(AasEnvironmentConfig.ConceptDescriptorTemplateRepository)
                           .Returns(httpClient);
 
         var result = await _sut.GetConceptDescriptionByIdAsync(CdIdentifier, CancellationToken.None);

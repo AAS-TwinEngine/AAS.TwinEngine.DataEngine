@@ -123,9 +123,10 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
         // Template repository/registry header mappings
         allRules.AddRange(_templateManagementConfig.AasTemplateRepository.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.SubmodelTemplateRepository.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.ConceptDescriptionTemplateRepository.HeaderMappings);
         allRules.AddRange(_templateManagementConfig.AasTemplateRegistry.HeaderMappings);
         allRules.AddRange(_templateManagementConfig.SubmodelTemplateRegistry.HeaderMappings);
-        allRules.AddRange(_templateManagementConfig.SubmodelTemplateRepository.HeaderMappings);
 
         // Plugin header mappings
         foreach (var plugin in _pluginsConfig.Instances)
@@ -188,15 +189,29 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
     private IList<HeaderMappingRule>? ResolveMappingsForClient(string clientName)
     {
-        if (string.Equals(clientName, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, AasEnvironmentConfig.AasTemplateRepository, StringComparison.OrdinalIgnoreCase))
         {
             return _templateManagementConfig.AasTemplateRepository.HeaderMappings;
         }
 
-        if (string.Equals(clientName, AasEnvironmentConfig.AasRegistryHttpClientName, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(clientName, AasEnvironmentConfig.SubmodelRegistryHttpClientName, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, AasEnvironmentConfig.SubmodelTemplateRepository, StringComparison.OrdinalIgnoreCase))
+        {
+            return _templateManagementConfig.SubmodelTemplateRepository.HeaderMappings;
+        }
+
+        if (string.Equals(clientName, AasEnvironmentConfig.ConceptDescriptorTemplateRepository, StringComparison.OrdinalIgnoreCase))
+        {
+            return _templateManagementConfig.ConceptDescriptionTemplateRepository.HeaderMappings;
+        }
+
+        if (string.Equals(clientName, AasEnvironmentConfig.AasRegistry, StringComparison.OrdinalIgnoreCase))
         {
             return _templateManagementConfig.AasTemplateRegistry.HeaderMappings;
+        }
+
+        if (string.Equals(clientName, AasEnvironmentConfig.SubmodelRegistry, StringComparison.OrdinalIgnoreCase))
+        {
+            return _templateManagementConfig.SubmodelTemplateRegistry.HeaderMappings;
         }
 
         if (!clientName.StartsWith(PluginConfig.HttpClientNamePrefix, StringComparison.OrdinalIgnoreCase))

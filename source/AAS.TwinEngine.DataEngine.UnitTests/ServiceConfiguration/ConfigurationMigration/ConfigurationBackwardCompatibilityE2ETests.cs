@@ -282,6 +282,9 @@ public class ConfigurationBackwardCompatibilityE2ETests
         services.Configure<TemplateManagementConfig>(configuration.GetSection(TemplateManagementConfig.Section));
         services.Configure<RegistrySettingsConfig>(configuration.GetSection(RegistrySettingsConfig.Section));
 
+        // Register the normalizer that propagates TemplateRepository shorthand to individual repos
+        services.AddSingleton<IPostConfigureOptions<TemplateManagementConfig>, TemplateManagementConfigNormalizer>();
+
         return services.BuildServiceProvider();
     }
 

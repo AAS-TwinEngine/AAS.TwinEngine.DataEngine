@@ -28,7 +28,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
         var url = $"{SubModelRepositoryPath}/{encodedTemplateId}";
 
-        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
+        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.SubmodelTemplateRepository, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -49,7 +49,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     {
         var url = $"{AasRegistryPath}";
 
-        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasRegistryHttpClientName, cancellationToken).ConfigureAwait(false);
+        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasRegistry, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -90,7 +90,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}";
 
-        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
+        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasTemplateRepository, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -117,7 +117,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/asset-information";
 
-        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
+        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasTemplateRepository, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -144,7 +144,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/{SubmodelRefPath}";
 
-        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
+        var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasTemplateRepository, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -191,7 +191,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
         try
         {
-            var response = await SendGetRequestAsync(url, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, cancellationToken).ConfigureAwait(false);
+            var response = await SendGetRequestAsync(url, AasEnvironmentConfig.ConceptDescriptorTemplateRepository, cancellationToken).ConfigureAwait(false);
             var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var jsonNode = JsonNode.Parse(content);
             return Jsonization.Deserialize.ConceptDescriptionFrom(jsonNode!);

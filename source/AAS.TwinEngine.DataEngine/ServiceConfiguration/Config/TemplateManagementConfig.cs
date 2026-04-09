@@ -14,8 +14,11 @@ public class TemplateManagementConfig
     public ResiliencePoliciesConfig ResiliencePolicies { get; set; } = new();
     public TemplateMappingRules TemplateMappingRules { get; set; } = new();
     public TemplateSemanticsConfig Semantics { get; set; } = new();
+
+    public ServiceEndpoint? TemplateRepository { get; set; }
     public ServiceEndpoint AasTemplateRepository { get; set; } = new();
     public ServiceEndpoint SubmodelTemplateRepository { get; set; } = new();
+    public ServiceEndpoint ConceptDescriptionTemplateRepository { get; set; } = new();
     public ServiceEndpoint AasTemplateRegistry { get; set; } = new();
     public ServiceEndpoint SubmodelTemplateRegistry { get; set; } = new();
 }

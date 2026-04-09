@@ -9,13 +9,15 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
 {
     private const string AasRepositoryPath = AasEnvironmentConfig.AasRepositoryPath;
     private const string SubModelRepositoryPath = AasEnvironmentConfig.SubModelRepositoryPath;
+    private const string ConceptDescriptionPath = AasEnvironmentConfig.ConceptDescriptionPath;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, AasRepositoryPath, "aas-repository", cancellationToken);
-        var submodelTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, SubModelRepositoryPath, "submodel-repository", cancellationToken);
+        var aasTask = CheckHealthEndpointAsync(AasEnvironmentConfig.SubmodelTemplateRepositoryHealthCheck, AasRepositoryPath, "aas-template-repository", cancellationToken);
+        var submodelTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasTemplateRepositoryHealthCheck, SubModelRepositoryPath, "submodel-template-repository", cancellationToken);
+        var conceptDiscriptorTask = CheckHealthEndpointAsync(AasEnvironmentConfig.ConceptDescriptorTemplateRepositoryHealthCheck, ConceptDescriptionPath, "concept-descriptor-template-repository", cancellationToken);
 
-        var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
+        var results = await Task.WhenAll(aasTask, submodelTask, conceptDiscriptorTask).ConfigureAwait(false);
 
         if (!results[0])
         {
@@ -27,7 +29,12 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
             logger.LogWarning("Submodel Repository health status is unhealthy");
         }
 
-        return results[0] && results[1]
+        if (!results[2])
+        {
+            logger.LogWarning("Concept Discriptor Repository health status is unhealthy");
+        }
+
+        return results[0] && results[1] && results[2]
             ? HealthCheckResult.Healthy()
             : HealthCheckResult.Unhealthy();
     }

@@ -71,8 +71,10 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        Assert.Equal(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, options.AasTemplateRepository.Name);
-        Assert.Equal(new Uri("http://localhost:8081"), options.AasTemplateRepository.BaseUrl);
+        // V1 maps AasEnvironmentRepositoryBaseUrl to the TemplateRepository shorthand
+        Assert.NotNull(options.TemplateRepository);
+        Assert.Equal(AasEnvironmentConfig.TemplateRepository, options.TemplateRepository!.Name);
+        Assert.Equal(new Uri("http://localhost:8081"), options.TemplateRepository.BaseUrl);
     }
 
     [Fact]
@@ -110,8 +112,10 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        // SubmodelTemplateRepository reuses the AasEnvironmentRepositoryBaseUrl
-        Assert.Equal(new Uri("http://localhost:8081"), options.SubmodelTemplateRepository.BaseUrl);
+        // SubmodelTemplateRepository is now populated via TemplateRepository shorthand + normalizer;
+        // the adapter sets the shorthand, not individual repos directly.
+        Assert.NotNull(options.TemplateRepository);
+        Assert.Equal(new Uri("http://localhost:8081"), options.TemplateRepository!.BaseUrl);
     }
 
     [Fact]
@@ -123,9 +127,11 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        Assert.Equal(2, options.AasTemplateRepository.HeaderMappings.Count);
-        Assert.Equal("Authorization", options.AasTemplateRepository.HeaderMappings[0].Source);
-        Assert.Equal("Authorization", options.AasTemplateRepository.HeaderMappings[0].Target);
+        // Headers now live on the TemplateRepository shorthand
+        Assert.NotNull(options.TemplateRepository);
+        Assert.Equal(2, options.TemplateRepository!.HeaderMappings.Count);
+        Assert.Equal("Authorization", options.TemplateRepository.HeaderMappings[0].Source);
+        Assert.Equal("Authorization", options.TemplateRepository.HeaderMappings[0].Target);
     }
 
     [Fact]

@@ -55,31 +55,27 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
 
         if (aasEnv != null)
         {
-            options.AasTemplateRepository = new ServiceEndpoint
+            // V1 uses a single AasEnvironmentRepositoryBaseUrl for all template repositories.
+            // Map it to the TemplateRepository shorthand so the normalizer propagates
+            // the same URL and headers to Aas/Submodel/ConceptDescription template repositories.
+            options.TemplateRepository = new ServiceEndpoint
             {
-                Name = AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
+                Name = AasEnvironmentConfig.TemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
                 HeaderMappings = headerForwarding?.HeaderMappings.TemplateRepository ?? []
             };
 
             options.AasTemplateRegistry = new ServiceEndpoint
             {
-                Name = AasEnvironmentConfig.AasRegistryHttpClientName,
+                Name = AasEnvironmentConfig.AasRegistry,
                 BaseUrl = aasEnv.AasRegistryBaseUrl,
                 HeaderMappings = headerForwarding?.HeaderMappings.TemplateRegistry ?? []
             };
 
             options.SubmodelTemplateRegistry = new ServiceEndpoint
             {
-                Name = AasEnvironmentConfig.SubmodelRegistryHttpClientName,
+                Name = AasEnvironmentConfig.SubmodelRegistry,
                 BaseUrl = aasEnv.SubModelRegistryBaseUrl,
-                HeaderMappings = []
-            };
-
-            options.SubmodelTemplateRepository = new ServiceEndpoint
-            {
-                Name = "submodel-template-repository",
-                BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
                 HeaderMappings = []
             };
         }
