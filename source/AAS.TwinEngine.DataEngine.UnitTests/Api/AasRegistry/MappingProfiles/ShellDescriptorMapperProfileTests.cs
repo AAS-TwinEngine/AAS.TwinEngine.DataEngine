@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-using AAS.TwinEngine.DataEngine.Api.AasRegistry.MappingProfiles;
+﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry.MappingProfiles;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.UnitTests.Api.Shared.MappingProfiles;
 

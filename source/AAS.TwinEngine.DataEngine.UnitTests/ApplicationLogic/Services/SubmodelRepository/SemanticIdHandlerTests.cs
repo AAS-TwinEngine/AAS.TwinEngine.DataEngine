@@ -7,12 +7,12 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using MongoDB.Bson;
-
 using AasCore.Aas3_0;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+using MongoDB.Bson;
 
 using NSubstitute;
 

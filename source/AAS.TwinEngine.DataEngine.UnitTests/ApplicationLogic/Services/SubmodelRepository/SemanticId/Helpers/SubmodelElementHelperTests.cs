@@ -1,5 +1,4 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -11,8 +10,6 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 
 using static Xunit.Assert;
-
-using File = AasCore.Aas3_0.File;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
