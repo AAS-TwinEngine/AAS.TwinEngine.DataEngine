@@ -13,8 +13,8 @@ public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasTask = CheckEndpointAsync(AasEnvironmentConfig.AasRegistryHealthCheckHttpClientName, AasRegistryPath, "aas-registry", cancellationToken);
-        var submodelTask = CheckEndpointAsync(AasEnvironmentConfig.SubmodelRegistryHealthCheckHttpClientName, SubModelRegistryPath, "submodel-registry", cancellationToken);
+        var aasTask = CheckEndpointAsync(AasEnvironmentConfig.AasRegistryHealthCheck, AasRegistryPath, "aas-registry", cancellationToken);
+        var submodelTask = CheckEndpointAsync(AasEnvironmentConfig.SubmodelRegistryHealthCheck, SubModelRegistryPath, "submodel-registry", cancellationToken);
 
         var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
 

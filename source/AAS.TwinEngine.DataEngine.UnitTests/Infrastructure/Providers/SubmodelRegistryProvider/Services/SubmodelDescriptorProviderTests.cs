@@ -36,7 +36,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         var result = await _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None);
@@ -56,7 +56,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
@@ -74,7 +74,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
@@ -92,7 +92,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
@@ -111,7 +111,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
@@ -130,7 +130,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
@@ -149,7 +149,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
@@ -168,7 +168,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>

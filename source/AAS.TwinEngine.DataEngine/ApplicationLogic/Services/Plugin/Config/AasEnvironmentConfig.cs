@@ -11,20 +11,16 @@ public class AasEnvironmentConfig
     public const string AasTemplateRepository = "aas-template-repository";
     public const string ConceptDescriptorTemplateRepository = "concept-descriptor-template-repository";
 
-    public const string TemplateRepositoryHealthCheck = TemplateRepository + "-healthcheck";
-    public const string AasRegistryHealthCheck = AasRegistry + "-healthcheck";
-    public const string SubmodelRegistryHealthCheck = SubmodelRegistry + "-healthcheck";
-    public const string SubmodelTemplateRepositoryHealthCheck = SubmodelTemplateRepository + "-healthcheck";
-    public const string AasTemplateRepositoryHealthCheck = AasTemplateRepository + "-healthcheck";
-    public const string ConceptDescriptorTemplateRepositoryHealthCheck = ConceptDescriptorTemplateRepository + "-healthcheck";
+    private const string HealthCheckSuffix = "-healthcheck";
 
-    // Backward-compatible aliases used by existing code (TemplateProvider, health checks, etc.)
-    public const string AasEnvironmentRepoHttpClientName = AasTemplateRepository;
-    public const string AasRegistryHttpClientName = AasRegistry;
-    public const string SubmodelRegistryHttpClientName = SubmodelRegistry;
-    public const string AasEnvironmentRepoHealthCheckHttpClientName = AasTemplateRepositoryHealthCheck;
-    public const string AasRegistryHealthCheckHttpClientName = AasRegistryHealthCheck;
-    public const string SubmodelRegistryHealthCheckHttpClientName = SubmodelRegistryHealthCheck;
+    public static string GetHealthCheckName(string clientName) => $"{clientName}{HealthCheckSuffix}";
+
+    public static string TemplateRepositoryHealthCheck => GetHealthCheckName(TemplateRepository);
+    public static string AasRegistryHealthCheck => GetHealthCheckName(AasRegistry);
+    public static string SubmodelRegistryHealthCheck => GetHealthCheckName(SubmodelRegistry);
+    public static string SubmodelTemplateRepositoryHealthCheck => GetHealthCheckName(SubmodelTemplateRepository);
+    public static string AasTemplateRepositoryHealthCheck => GetHealthCheckName(AasTemplateRepository);
+    public static string ConceptDescriptorTemplateRepositoryHealthCheck => GetHealthCheckName(ConceptDescriptorTemplateRepository);
 
     // Path constants (no longer configurable — fixed API contracts)
     public const string SubModelRepositoryPath = "submodels";

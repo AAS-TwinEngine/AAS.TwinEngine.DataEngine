@@ -9,186 +9,196 @@ using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-using HealthStatus = Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus;
-
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Monitoring;
 
 public class TemplateRepositoryHealthCheckTests
 {
-    [Fact]
-    public async Task CheckHealthAsync_Returns_Healthy_When_Repository_And_Submodel_Are_Healthy()
+    private readonly ICreateClient _clientFactory;
+    private readonly ILogger<TemplateRepositoryHealthCheck> _logger;
+
+    public TemplateRepositoryHealthCheckTests()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
+        _clientFactory = Substitute.For<ICreateClient>();
+        _logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+    }
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-            .Returns(
-                _ => CreateHttpClient(HttpStatusCode.OK),
-                _ => CreateHttpClient(HttpStatusCode.OK));
+    private TemplateRepositoryHealthCheck CreateSut() => new(_clientFactory, _logger);
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+    private static HttpClient CreateHttpClient(HttpStatusCode statusCode)
+    {
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(statusCode));
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
+        return new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://localhost")
+        };
+    }
 
-        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+    private static HttpClient CreateHttpClientThatThrows(Exception ex)
+    {
+        var handler = new ExceptionHttpMessageHandler(ex);
 
+        return new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://localhost")
+        };
+    }
+
+    private sealed class FakeHttpMessageHandler : HttpMessageHandler
+    {
+        private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
+
+        public FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> handler) => _handler = handler;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => Task.FromResult(_handler(request));
+    }
+
+    private sealed class ExceptionHttpMessageHandler(Exception exception) : HttpMessageHandler
+    {
+        private readonly Exception _exception = exception;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => throw _exception;
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_AllRepositoriesHealthy_ReturnsHealthy()
+    {
+        // Arrange
+        var client = CreateHttpClient(HttpStatusCode.OK);
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
+
+        // Assert
         Assert.Equal(HealthStatus.Healthy, result.Status);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Returns_Unhealthy_When_Repository_Is_Unhealthy()
+    public async Task CheckHealthAsync_OneRepositoryFails_ReturnsUnhealthy()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
+        // Arrange
+        var successClient = CreateHttpClient(HttpStatusCode.OK);
+        var failClient = CreateHttpClient(HttpStatusCode.InternalServerError);
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-            .Returns(
-                _ => CreateHttpClient(HttpStatusCode.InternalServerError),
-                _ => CreateHttpClient(HttpStatusCode.OK));
+        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepositoryHealthCheck)
+            .Returns(successClient);
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        _clientFactory.CreateClient(AasEnvironmentConfig.AasTemplateRepositoryHealthCheck)
+            .Returns(failClient);
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
+        _clientFactory.CreateClient(AasEnvironmentConfig.ConceptDescriptorTemplateRepositoryHealthCheck)
+            .Returns(successClient);
 
-        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+        var sut = CreateSut();
 
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
+
+        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Returns_Unhealthy_When_SubmodelRepository_Is_Unhealthy()
+    public async Task CheckHealthAsync_AllRepositoriesFail_ReturnsUnhealthy()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
+        // Arrange
+        var failClient = CreateHttpClient(HttpStatusCode.InternalServerError);
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(failClient);
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-            .Returns(
-                _ => CreateHttpClient(HttpStatusCode.OK),
-                _ => CreateHttpClient(HttpStatusCode.InternalServerError));
+        var sut = CreateSut();
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
-
-        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
+        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Returns_Unhealthy_When_Repository_Request_Throws_HttpRequestException()
+    public async Task CheckHealthAsync_WhenHttpRequestException_ReturnsUnhealthy()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-            .Returns(
-                _ => CreateThrowingHttpClient(new HttpRequestException("network")),
-                _ => CreateHttpClient(HttpStatusCode.OK));
+        // Arrange
+        var client = CreateHttpClientThatThrows(new HttpRequestException());
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        var sut = CreateSut();
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
+        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Returns_Unhealthy_When_Repository_Request_Throws_Unexpected_Exception()
+    public async Task CheckHealthAsync_WhenTimeout_ReturnsUnhealthy()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-                     .Returns(
-                         _ => CreateThrowingHttpClient(new InvalidOperationException("unexpected")),
-                         _ => CreateHttpClient(HttpStatusCode.OK));
+        // Arrange
+        var client = CreateHttpClientThatThrows(new TaskCanceledException());
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        var sut = CreateSut();
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
+        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Returns_Unhealthy_When_SubmodelRepository_Request_Throws_TaskCanceledException()
+    public async Task CheckHealthAsync_WhenGenericException_ReturnsUnhealthy()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-            .Returns(
-                _ => CreateHttpClient(HttpStatusCode.OK),
-                _ => CreateThrowingHttpClient(new TaskCanceledException("timeout")));
+        // Arrange
+        var client = CreateHttpClientThatThrows(new Exception("boom"));
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        var sut = CreateSut();
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
+        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Checks_Both_Endpoints_In_Parallel_Even_When_First_Is_Unhealthy()
+    public async Task CheckHealthAsync_NonSuccessStatusCodes_ReturnUnhealthy()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
+        // Arrange
+        var client = CreateHttpClient(HttpStatusCode.NotFound);
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-            .Returns(
-                _ => CreateHttpClient(HttpStatusCode.InternalServerError),
-                _ => CreateHttpClient(HttpStatusCode.OK));
+        var sut = CreateSut();
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
-
-        _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
-        clientFactory.Received(2).CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName);
+        // Assert
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_Uses_HealthCheck_Client_Name_Without_Retry_Policy()
+    public async Task CheckHealthAsync_LogsWarning_WhenRepositoryFails()
     {
-        var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName)
-            .Returns(
-                _ => CreateHttpClient(HttpStatusCode.OK),
-                _ => CreateHttpClient(HttpStatusCode.OK));
+        // Arrange
+        var failClient = CreateHttpClient(HttpStatusCode.InternalServerError);
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(failClient);
 
-        var logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        var sut = CreateSut();
 
-        var sut = new TemplateRepositoryHealthCheck(clientFactory, logger);
+        // Act
+        await sut.CheckHealthAsync(new HealthCheckContext());
 
-        _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
-        clientFactory.Received(2).CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName);
-        clientFactory.DidNotReceive().CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
-    }
-
-    private static HttpClient CreateHttpClient(HttpStatusCode statusCode)
-    {
-        var handler = new StubHttpMessageHandler((_, _) =>
-            Task.FromResult(new HttpResponseMessage(statusCode)));
-
-        return new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost")
-        };
-    }
-
-    private static HttpClient CreateThrowingHttpClient(Exception exception)
-    {
-        var handler = new StubHttpMessageHandler((_, _) => throw exception);
-
-        return new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost")
-        };
-    }
-
-    private sealed class StubHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler)
-        : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => handler(request, cancellationToken);
+        // Assert
+        _logger.Received().Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception, string>>());
     }
 }

@@ -16,7 +16,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider
 public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateClient clientFactory) : IAasRegistryProvider
 {
     private const string AasRegistryPath = AasEnvironmentConfig.AasRegistryPath;
-    private const string HttpClientName = AasEnvironmentConfig.AasRegistryHttpClientName;
+    private const string HttpClientName = AasEnvironmentConfig.AasRegistry;
 
     public async Task<List<ShellDescriptor>> GetAllAsync(CancellationToken cancellationToken)
     {

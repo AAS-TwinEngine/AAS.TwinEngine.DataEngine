@@ -9,7 +9,7 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Clients;
 public class HttpClientFactoryTests
 {
     [Theory]
-    [InlineData(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName)]
+    [InlineData(AasEnvironmentConfig.SubmodelTemplateRepository)]
     [InlineData(PluginConfig.HttpClientNamePrefix + "PluginName")]
     public void CreateClient_Returns_HttpClient(string clientName)
     {

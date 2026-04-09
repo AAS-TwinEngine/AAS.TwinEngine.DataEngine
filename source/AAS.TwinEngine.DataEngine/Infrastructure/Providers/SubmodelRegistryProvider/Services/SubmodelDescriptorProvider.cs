@@ -24,7 +24,7 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
 
         var relativeUri = new Uri(url, UriKind.Relative);
 
-        var httpClient = clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName);
+        var httpClient = clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry);
 
         var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);
 

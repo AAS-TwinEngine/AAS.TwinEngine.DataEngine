@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -86,7 +86,7 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        Assert.Equal(AasEnvironmentConfig.AasRegistryHttpClientName, options.AasTemplateRegistry.Name);
+        Assert.Equal(AasEnvironmentConfig.AasRegistry, options.AasTemplateRegistry.Name);
         Assert.Equal(new Uri("http://localhost:8082"), options.AasTemplateRegistry.BaseUrl);
     }
 
@@ -99,7 +99,7 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        Assert.Equal(AasEnvironmentConfig.SubmodelRegistryHttpClientName, options.SubmodelTemplateRegistry.Name);
+        Assert.Equal(AasEnvironmentConfig.SubmodelRegistry, options.SubmodelTemplateRegistry.Name);
         Assert.Equal(new Uri("http://localhost:8083"), options.SubmodelTemplateRegistry.BaseUrl);
     }
 

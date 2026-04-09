@@ -26,12 +26,12 @@ public class HttpClientRegistrationExtensionsTests
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, DefaultRetryConfig, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
 
         var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var httpClient = httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+        var httpClient = httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
 
         Assert.Contains(httpClient.DefaultRequestHeaders.Accept,
             h => h.MediaType == "application/json");
@@ -47,12 +47,12 @@ public class HttpClientRegistrationExtensionsTests
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, DefaultRetryConfig, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
 
         var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var httpClient = httpClientFactory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+        var httpClient = httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
 
         Assert.Contains(httpClient.DefaultRequestHeaders.Accept,
             h => h.MediaType == "application/json");
@@ -69,12 +69,12 @@ public class HttpClientRegistrationExtensionsTests
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, DefaultRetryConfig, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
         using var handler = new FaultyHttpMessageHandler();
-        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
+        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.SubmodelTemplateRepository, options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
         var serviceProvider = services.BuildServiceProvider();
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var client = factory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+        var client = factory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
 
         await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(new Uri("http://test.com")));
 
@@ -92,12 +92,12 @@ public class HttpClientRegistrationExtensionsTests
         _ = services.AddScoped(_ => mappingService);
 
         services.AddHttpClientWithResilience(
-            AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
+            AasEnvironmentConfig.SubmodelTemplateRepository,
             DefaultRetryConfig,
             new Uri("https://example.com"));
 
         using var handler = new FaultyHttpMessageHandler();
-        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName,
+        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.SubmodelTemplateRepository,
             options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
 
         var serviceProvider = services.BuildServiceProvider();
@@ -109,13 +109,13 @@ public class HttpClientRegistrationExtensionsTests
         };
 
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var client = factory.CreateClient(AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+        var client = factory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
 
         _ = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync("/test")).ConfigureAwait(false);
 
         mappingService
             .Received()
-            .ApplyMappings(httpContextAccessor.HttpContext, Arg.Any<HttpRequestMessage>(), AasEnvironmentConfig.AasEnvironmentRepoHttpClientName);
+            .ApplyMappings(httpContextAccessor.HttpContext, Arg.Any<HttpRequestMessage>(), AasEnvironmentConfig.SubmodelTemplateRepository);
     }
 
     private sealed class FaultyHttpMessageHandler : HttpMessageHandler
