@@ -55,7 +55,7 @@ services:
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=Regex
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=6
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Separator=/
-      - TemplateManagement__TemplateRepository__Name=AasTemplateRepository
+      - TemplateManagement__TemplateRepository__Name=TemplateRepository
       - TemplateManagement__TemplateRepository__baseUrl=http://template-repository:8081
       - TemplateManagement__TemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__TemplateRepository__headerMappings__0__target=Authorization

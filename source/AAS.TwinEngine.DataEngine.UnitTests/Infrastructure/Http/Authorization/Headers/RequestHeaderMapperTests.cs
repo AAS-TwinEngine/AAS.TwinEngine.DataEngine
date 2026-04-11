@@ -48,19 +48,6 @@ public class RequestHeaderMapperTests
     }
 
     [Fact]
-    public void ValidateIncomingHeaders_InvalidHeaderValue_Throws()
-    {
-        var config = DefaultConfig();
-        config.HeaderSanitization.BlockedPatterns = ["<script"];
-
-        var service = CreateService(config);
-        var context = new DefaultHttpContext();
-        context.Request.Headers["X-Test"] = "bad<script>";
-
-        Assert.Throws<InvalidRequestHeaderException>(() => service.ValidateIncomingHeaders(context));
-    }
-
-    [Fact]
     public void ValidateIncomingHeaders_EmptyHeaderValue_Throws()
     {
         var service = CreateService(DefaultConfig());

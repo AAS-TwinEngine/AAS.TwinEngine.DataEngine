@@ -12,30 +12,29 @@ using Microsoft.Extensions.Primitives;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 
-public class RequestHeaderMapper : IRequestHeaderMapper
+public class RequestHeaderMapper(
+    ILogger<RequestHeaderMapper> logger,
+    IOptions<GeneralConfig> generalConfig,
+    IOptions<PluginsConfig> pluginsConfig,
+    IOptions<TemplateManagementConfig> templateManagementConfig) : IRequestHeaderMapper
 {
-    private readonly ILogger<RequestHeaderMapper> _logger;
-    private readonly HeaderSanitizationOptions _sanitization;
-    private readonly PluginsConfig _pluginsConfig;
-    private readonly TemplateManagementConfig _templateManagementConfig;
-    private readonly Regex _headerNameRegex;
-    private readonly Regex _headerValueRegex;
-    private readonly List<Regex> _blockedPatterns;
+    private readonly ILogger<RequestHeaderMapper> _logger = logger;
+    private readonly HeaderSanitizationOptions _sanitization = generalConfig.Value.HeaderSanitization;
+    private readonly PluginsConfig _pluginsConfig = pluginsConfig.Value;
+    private readonly TemplateManagementConfig _templateManagementConfig = templateManagementConfig.Value;
 
-    public RequestHeaderMapper(
-        ILogger<RequestHeaderMapper> logger,
-        IOptions<GeneralConfig> generalConfig,
-        IOptions<PluginsConfig> pluginsConfig,
-        IOptions<TemplateManagementConfig> templateManagementConfig)
+    private readonly Regex _headerNameRegex =
+        new(generalConfig.Value.HeaderSanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
+
+    private readonly Regex _headerValueRegex =
+        new(generalConfig.Value.HeaderSanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
+
+    private readonly List<Regex> _blockedPatterns =
+        CreateBlockedPatterns(generalConfig.Value.HeaderSanitization);
+
+    private static List<Regex> CreateBlockedPatterns(HeaderSanitizationOptions sanitization)
     {
-        _logger = logger;
-        _sanitization = generalConfig.Value.HeaderSanitization;
-        _pluginsConfig = pluginsConfig.Value;
-        _templateManagementConfig = templateManagementConfig.Value;
-
-        _headerNameRegex = new Regex(_sanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
-        _headerValueRegex = new Regex(_sanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
-        _blockedPatterns = _sanitization.BlockedPatterns
+        return sanitization.BlockedPatterns
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .Select(p => new Regex(p, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000)))
             .ToList();
@@ -57,7 +56,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
     {
         foreach (var (headerName, values) in httpContext.Request.Headers)
         {
-            if (values.Count == 0 || StringValues.IsNullOrEmpty(values))
+            if (StringValues.IsNullOrEmpty(values))
             {
                 _logger.LogWarning("Incoming header '{HeaderName}' failed sanitization.", headerName);
                 throw new InvalidRequestHeaderException($"Invalid request header: {headerName}");
@@ -163,7 +162,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             var sourceName = rule.Source;
             var targetName = rule.Target;
 
-            if (!httpContext.Request.Headers.TryGetValue(sourceName, out var values) || values.Count == 0 || StringValues.IsNullOrEmpty(values))
+            if (!httpContext.Request.Headers.TryGetValue(sourceName, out var values) || StringValues.IsNullOrEmpty(values))
             {
                 continue;
             }
