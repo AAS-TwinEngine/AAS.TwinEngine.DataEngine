@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 /// <summary>
 /// Post-configuration step that applies the <see cref="TemplateManagementConfig.TemplateRepository"/>

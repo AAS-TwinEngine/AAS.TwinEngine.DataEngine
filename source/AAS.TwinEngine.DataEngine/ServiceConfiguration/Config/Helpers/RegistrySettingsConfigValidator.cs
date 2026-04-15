@@ -1,8 +1,8 @@
-using Cronos;
+﻿using Cronos;
 
 using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 public class RegistrySettingsConfigValidator : IValidateOptions<RegistrySettingsConfig>
 {

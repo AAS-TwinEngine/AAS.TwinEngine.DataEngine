@@ -1,10 +1,8 @@
-using System.Text.RegularExpressions;
-
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+﻿using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
+namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 /// <summary>
 /// Validates the MultiLanguageProperty settings within PluginsConfig.
