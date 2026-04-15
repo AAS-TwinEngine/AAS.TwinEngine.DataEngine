@@ -1,8 +1,7 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -32,7 +31,7 @@ public class PluginManifestProviderTests
 
     private PluginManifestProvider CreateSut(HttpClient httpClient)
     {
-        _clientFactory.CreateClient($"{PluginConfig.HttpClientNamePrefix}TestPlugin").Returns(httpClient);
+        _clientFactory.CreateClient($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin").Returns(httpClient);
 
         return new PluginManifestProvider(_logger, _options, _clientFactory);
     }

@@ -1,5 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -7,15 +7,15 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
 public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, ILogger<TemplateRepositoryHealthCheck> logger) : IHealthCheck
 {
-    private const string AasRepositoryPath = AasEnvironmentConfig.AasRepositoryPath;
-    private const string SubModelRepositoryPath = AasEnvironmentConfig.SubModelRepositoryPath;
-    private const string ConceptDescriptionPath = AasEnvironmentConfig.ConceptDescriptionPath;
+    private const string AasRepositoryPath = ApiPaths.Shells;
+    private const string SubModelRepositoryPath = ApiPaths.Submodels;
+    private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasTask = CheckHealthEndpointAsync(AasEnvironmentConfig.SubmodelTemplateRepositoryHealthCheck, AasRepositoryPath, "aas-template-repository", cancellationToken);
-        var submodelTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasTemplateRepositoryHealthCheck, SubModelRepositoryPath, "submodel-template-repository", cancellationToken);
-        var conceptDiscriptorTask = CheckHealthEndpointAsync(AasEnvironmentConfig.ConceptDescriptorTemplateRepositoryHealthCheck, ConceptDescriptionPath, "concept-descriptor-template-repository", cancellationToken);
+        var aasTask = CheckHealthEndpointAsync(HttpClientNames.SubmodelTemplateRepositoryHealthCheck, AasRepositoryPath, "aas-template-repository", cancellationToken);
+        var submodelTask = CheckHealthEndpointAsync(HttpClientNames.AasTemplateRepositoryHealthCheck, SubModelRepositoryPath, "submodel-template-repository", cancellationToken);
+        var conceptDiscriptorTask = CheckHealthEndpointAsync(HttpClientNames.ConceptDescriptorTemplateRepositoryHealthCheck, ConceptDescriptionPath, "concept-descriptor-template-repository", cancellationToken);
 
         var results = await Task.WhenAll(aasTask, submodelTask, conceptDiscriptorTask).ConfigureAwait(false);
 

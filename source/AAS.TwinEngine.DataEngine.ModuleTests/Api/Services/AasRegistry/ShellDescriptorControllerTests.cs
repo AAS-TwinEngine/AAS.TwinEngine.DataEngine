@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -8,7 +8,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Provide
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 
 using Microsoft.AspNetCore.WebUtilities;
@@ -16,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRegistry;
 
@@ -75,10 +76,10 @@ public abstract class ShellDescriptorControllerTestsBase : IDisposable
         using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
         httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
 
-        const string HttpClientNamePlugin1 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
 
-        const string HttpClientNamePlugin2 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin2";
+        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
 
         _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Returns(template);
@@ -159,10 +160,10 @@ public abstract class ShellDescriptorControllerTestsBase : IDisposable
         using var httpClient2 = new HttpClient(messageHandler2);
         httpClient2.BaseAddress = new Uri("https://testendpoint2.com");
 
-        const string HttpClientName1 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        const string HttpClientName1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientName1).Returns(httpClient1);
 
-        const string HttpClientName2 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin2";
+        const string HttpClientName2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
         _ = _httpClientFactory.CreateClient(HttpClientName2).Returns(httpClient2);
 
         _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Returns(template);

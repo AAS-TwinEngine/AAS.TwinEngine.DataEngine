@@ -1,5 +1,4 @@
 ﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
@@ -15,15 +14,20 @@ public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : I
 {
     private readonly IConfiguration _configuration = configuration;
 
-    public void Configure(PluginsConfig options)
+    public void Configure(PluginsConfig options) => MapToConfig(_configuration, options);
+
+    /// <summary>
+    /// Static entry point used during DI registration to apply V1 mapping without BuildServiceProvider().
+    /// </summary>
+    public static void MapToConfig(IConfiguration configuration, PluginsConfig options)
     {
-        if (!LegacyConfigurationDetector.IsV1Configuration(_configuration))
+        if (!LegacyConfigurationDetector.IsV1Configuration(configuration))
         {
             return;
         }
 
         // Semantics (V1: "Semantics") → split into Plugins + TemplateManagement
-        var semantics = _configuration.GetSection(Semantics.Section).Get<Semantics>();
+        var semantics = configuration.GetSection(Semantics.Section).Get<Semantics>();
         if (semantics != null)
         {
             options.SubmodelElementIndexContextPrefix = semantics.SubmodelElementIndexContextPrefix;
@@ -31,7 +35,7 @@ public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : I
         }
 
         // MultiLanguageProperty (V1: "MultiLanguageProperty")
-        var mlpSettings = _configuration.GetSection(MultiLanguagePropertySettings.Section).Get<MultiLanguagePropertySettings>();
+        var mlpSettings = configuration.GetSection(MultiLanguagePropertySettings.Section).Get<MultiLanguagePropertySettings>();
         if (mlpSettings?.DefaultLanguages != null)
         {
             options.MultiLanguageProperty = new PluginMultiLanguagePropertyConfig
@@ -42,7 +46,7 @@ public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : I
         }
 
         // Resilience → Retry (V1: "HttpRetryPolicyOptions:PluginDataProvider")
-        var retryPolicy = _configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.PluginDataProvider}").Get<HttpRetryPolicyOptions>();
+        var retryPolicy = configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.PluginDataProvider}").Get<HttpRetryPolicyOptions>();
         if (retryPolicy != null)
         {
             options.ResiliencePolicies.Retry.MaxRetryAttempts = retryPolicy.MaxRetryAttempts;
@@ -50,8 +54,8 @@ public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : I
         }
 
         // Plugin instances (V1: "PluginConfig:Plugins") → Plugins:Instances with property renames
-        var pluginConfig = _configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
-        var headerForwarding = _configuration.GetSection(HeaderForwardingOptions.Section).Get<HeaderForwardingOptions>();
+        var pluginConfig = configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
+        var headerForwarding = configuration.GetSection(HeaderForwardingOptions.Section).Get<HeaderForwardingOptions>();
 
         if (pluginConfig?.Plugins != null)
         {

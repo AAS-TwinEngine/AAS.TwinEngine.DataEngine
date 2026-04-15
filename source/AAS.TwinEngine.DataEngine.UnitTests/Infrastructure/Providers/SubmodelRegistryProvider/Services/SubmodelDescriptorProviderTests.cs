@@ -1,7 +1,7 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
@@ -36,7 +36,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         var result = await _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None);
@@ -56,7 +56,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
@@ -74,7 +74,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
@@ -92,7 +92,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
@@ -111,7 +111,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
@@ -130,7 +130,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
@@ -149,7 +149,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
@@ -168,7 +168,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>

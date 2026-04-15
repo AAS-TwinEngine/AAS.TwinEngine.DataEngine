@@ -1,8 +1,7 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
@@ -145,7 +144,7 @@ public class RequestHeaderMapperTests
 
         using var request = new HttpRequestMessage();
 
-        service.ApplyMappings(context, request, AasEnvironmentConfig.AasTemplateRepository);
+        service.ApplyMappings(context, request, HttpClientNames.AasTemplateRepository);
 
         Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
         Assert.Equal("token", request.Headers.Authorization?.Parameter);
@@ -173,7 +172,7 @@ public class RequestHeaderMapperTests
 
         using var request = new HttpRequestMessage();
 
-        service.ApplyMappings(context, request, AasEnvironmentConfig.AasTemplateRepository);
+        service.ApplyMappings(context, request, HttpClientNames.AasTemplateRepository);
 
         Assert.True(request.Headers.Contains("X-Target"));
     }
@@ -201,7 +200,7 @@ public class RequestHeaderMapperTests
         using var request = new HttpRequestMessage();
         request.Headers.TryAddWithoutValidation("X-Test", "old");
 
-        service.ApplyMappings(context, request, AasEnvironmentConfig.AasTemplateRepository);
+        service.ApplyMappings(context, request, HttpClientNames.AasTemplateRepository);
 
         var value = request.Headers.GetValues("X-Test").First();
         Assert.Equal("new", value);
@@ -229,7 +228,7 @@ public class RequestHeaderMapperTests
 
         using var request = new HttpRequestMessage();
 
-        service.ApplyMappings(context, request, AasEnvironmentConfig.AasTemplateRepository);
+        service.ApplyMappings(context, request, HttpClientNames.AasTemplateRepository);
 
         var value = request.Headers.GetValues("X-Target").First();
         Assert.Equal("a,b", value);
@@ -264,7 +263,7 @@ public class RequestHeaderMapperTests
 
         using var request = new HttpRequestMessage();
 
-        var clientName = PluginConfig.HttpClientNamePrefix + pluginName;
+        var clientName = HttpClientNames.PluginDataProviderPrefix + pluginName;
 
         service.ApplyMappings(context, request, clientName);
 

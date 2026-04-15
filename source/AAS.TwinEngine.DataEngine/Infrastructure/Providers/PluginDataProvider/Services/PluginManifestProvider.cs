@@ -4,7 +4,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
@@ -27,7 +26,7 @@ public class PluginManifestProvider(ILogger<PluginManifestProvider> logger,
 
         foreach (var plugin in _plugins)
         {
-            using var httpClient = CreateClient($"{PluginConfig.HttpClientNamePrefix}{plugin.Name}");
+            using var httpClient = CreateClient($"{HttpClientNames.PluginDataProviderPrefix}{plugin.Name}");
             try
             {
                 var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);

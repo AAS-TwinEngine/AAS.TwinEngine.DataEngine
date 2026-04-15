@@ -16,15 +16,20 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
 {
     private readonly IConfiguration _configuration = configuration;
 
-    public void Configure(TemplateManagementConfig options)
+    public void Configure(TemplateManagementConfig options) => MapToConfig(_configuration, options);
+
+    /// <summary>
+    /// Static entry point used during DI registration to apply V1 mapping without BuildServiceProvider().
+    /// </summary>
+    public static void MapToConfig(IConfiguration configuration, TemplateManagementConfig options)
     {
-        if (!LegacyConfigurationDetector.IsV1Configuration(_configuration))
+        if (!LegacyConfigurationDetector.IsV1Configuration(configuration))
         {
             return;
         }
 
         // Semantics:InternalSemanticId → TemplateManagement:Semantics:InternalSemanticId
-        var semantics = _configuration.GetSection(Semantics.Section).Get<Semantics>();
+        var semantics = configuration.GetSection(Semantics.Section).Get<Semantics>();
         if (semantics != null)
         {
             options.Semantics = new TemplateSemanticsConfig
@@ -34,14 +39,14 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
         }
 
         // TemplateMappingRules (V1: top-level "TemplateMappingRules")
-        var mappingRules = _configuration.GetSection(TemplateMappingRules.Section).Get<TemplateMappingRules>();
+        var mappingRules = configuration.GetSection(TemplateMappingRules.Section).Get<TemplateMappingRules>();
         if (mappingRules != null)
         {
             options.TemplateMappingRules = mappingRules;
         }
 
         // Resilience → Retry (V1: "HttpRetryPolicyOptions:TemplateProvider")
-        var retryPolicy = _configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}").Get<HttpRetryPolicyOptions>();
+        var retryPolicy = configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}").Get<HttpRetryPolicyOptions>();
         if (retryPolicy != null)
         {
             options.ResiliencePolicies.Retry.MaxRetryAttempts = retryPolicy.MaxRetryAttempts;
@@ -49,10 +54,10 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
         }
 
         // AasEnvironment base URLs → service endpoints
-        var aasEnv = _configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
+        var aasEnv = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
 
         // Header mappings from HeaderForwarding
-        var headerForwarding = _configuration.GetSection(HeaderForwardingOptions.Section).Get<HeaderForwardingOptions>();
+        var headerForwarding = configuration.GetSection(HeaderForwardingOptions.Section).Get<HeaderForwardingOptions>();
 
         if (aasEnv != null)
         {
@@ -61,21 +66,21 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
             // the same URL and headers to Aas/Submodel/ConceptDescription template repositories.
             options.TemplateRepository = new ServiceEndpoint
             {
-                Name = AasEnvironmentConfig.TemplateRepository,
+                Name = HttpClientNames.TemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
                 HeaderMappings = headerForwarding?.HeaderMappings.TemplateRepository ?? []
             };
 
             options.AasTemplateRegistry = new ServiceEndpoint
             {
-                Name = AasEnvironmentConfig.AasRegistry,
+                Name = HttpClientNames.AasRegistry,
                 BaseUrl = aasEnv.AasRegistryBaseUrl,
                 HeaderMappings = headerForwarding?.HeaderMappings.TemplateRegistry ?? []
             };
 
             options.SubmodelTemplateRegistry = new ServiceEndpoint
             {
-                Name = AasEnvironmentConfig.SubmodelRegistry,
+                Name = HttpClientNames.SubmodelRegistry,
                 BaseUrl = aasEnv.SubModelRegistryBaseUrl,
                 HeaderMappings = []
             };

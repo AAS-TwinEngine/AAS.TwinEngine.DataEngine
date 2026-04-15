@@ -1,5 +1,4 @@
 ﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -39,7 +38,7 @@ public sealed class PluginAvailabilityHealthCheck(ICreateClient clientFactory,
     {
         try
         {
-            var httpClient = clientFactory.CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}{plugin.Name}");
+            var httpClient = clientFactory.CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}{plugin.Name}");
 
             using var response = await httpClient
                 .GetAsync(new Uri(HealthEndpoint, UriKind.Relative), cancellationToken)

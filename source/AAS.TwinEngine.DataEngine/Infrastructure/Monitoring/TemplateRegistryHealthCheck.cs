@@ -1,5 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -8,13 +8,13 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
                                                 ILogger<TemplateRegistryHealthCheck> logger) : IHealthCheck
 {
-    private const string AasRegistryPath = AasEnvironmentConfig.AasRegistryPath;
-    private const string SubModelRegistryPath = AasEnvironmentConfig.SubModelRegistryPath;
+    private const string AasRegistryPath = ApiPaths.ShellDescriptors;
+    private const string SubModelRegistryPath = ApiPaths.SubmodelDescriptors;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasTask = CheckEndpointAsync(AasEnvironmentConfig.AasRegistryHealthCheck, AasRegistryPath, "aas-registry", cancellationToken);
-        var submodelTask = CheckEndpointAsync(AasEnvironmentConfig.SubmodelRegistryHealthCheck, SubModelRegistryPath, "submodel-registry", cancellationToken);
+        var aasTask = CheckEndpointAsync(HttpClientNames.AasRegistryHealthCheck, AasRegistryPath, "aas-registry", cancellationToken);
+        var submodelTask = CheckEndpointAsync(HttpClientNames.SubmodelRegistryHealthCheck, SubModelRegistryPath, "submodel-registry", cancellationToken);
 
         var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
 

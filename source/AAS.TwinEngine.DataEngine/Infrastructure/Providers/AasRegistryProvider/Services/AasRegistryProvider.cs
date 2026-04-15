@@ -4,10 +4,10 @@ using System.Text.Json;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -15,8 +15,8 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider
 
 public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateClient clientFactory) : IAasRegistryProvider
 {
-    private const string AasRegistryPath = AasEnvironmentConfig.AasRegistryPath;
-    private const string HttpClientName = AasEnvironmentConfig.AasRegistry;
+    private const string AasRegistryPath = ApiPaths.ShellDescriptors;
+    private const string HttpClientName = HttpClientNames.AasRegistry;
 
     public async Task<List<ShellDescriptor>> GetAllAsync(CancellationToken cancellationToken)
     {
