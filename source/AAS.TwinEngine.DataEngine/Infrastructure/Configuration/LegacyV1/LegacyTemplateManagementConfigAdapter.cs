@@ -25,6 +25,7 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
     {
         if (!LegacyConfigurationDetector.IsV1Configuration(configuration))
         {
+            ApplyV1Overrides(configuration, options);
             return;
         }
 
@@ -54,30 +55,79 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
         }
 
         // AasEnvironment base URLs → service endpoints
-        var aasEnv = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
+        ApplyV1ServiceEndpointOverrides(configuration, options);
+    }
 
-        // Header mappings from HeaderForwarding
+    /// <summary>
+    /// If V1-specific sections exist (e.g. from V1-style env vars), overrides the corresponding
+    /// V2 values. Called in both V1 and V2 modes so that legacy env vars work even when
+    /// <c>appsettings.json</c> already ships V2 sections.
+    /// </summary>
+    public static void ApplyV1Overrides(IConfiguration configuration, TemplateManagementConfig options)
+    {
+        // Top-level TemplateMappingRules (V1-only; in V2 it is nested under TemplateManagement)
+        var mappingRules = configuration.GetSection(TemplateMappingRules.Section).Get<TemplateMappingRules>();
+        if (mappingRules?.SubmodelTemplateMappings?.Count > 0
+            || mappingRules?.ShellTemplateMappings?.Count > 0
+            || mappingRules?.AasIdExtractionRules?.Count > 0)
+        {
+            options.TemplateMappingRules = mappingRules;
+        }
+
+        // Semantics (V1: top-level "Semantics")
+        var semantics = configuration.GetSection(Semantics.Section).Get<Semantics>();
+        if (semantics != null && !string.IsNullOrEmpty(semantics.InternalSemanticId))
+        {
+            options.Semantics = new TemplateSemanticsConfig
+            {
+                InternalSemanticId = semantics.InternalSemanticId
+            };
+        }
+
+        // Resilience (V1: "HttpRetryPolicyOptions:TemplateProvider")
+        var retryPolicy = configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}").Get<HttpRetryPolicyOptions>();
+        if (retryPolicy != null)
+        {
+            options.ResiliencePolicies.Retry.MaxRetryAttempts = retryPolicy.MaxRetryAttempts;
+            options.ResiliencePolicies.Retry.DelayInSeconds = retryPolicy.DelayInSeconds;
+        }
+
+        // AasEnvironment → service endpoints
+        ApplyV1ServiceEndpointOverrides(configuration, options);
+    }
+
+    private static void ApplyV1ServiceEndpointOverrides(IConfiguration configuration, TemplateManagementConfig options)
+    {
+        var aasEnv = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
+        if (aasEnv == null)
+        {
+            return;
+        }
+
         var headerForwarding = configuration.GetSection(HeaderForwardingOptions.Section).Get<HeaderForwardingOptions>();
 
-        if (aasEnv != null)
+        if (aasEnv.AasEnvironmentRepositoryBaseUrl != null)
         {
-            // V1 uses a single AasEnvironmentRepositoryBaseUrl for all template repositories.
-            // Map it to the TemplateRepository shorthand so the normalizer propagates
-            // the same URL and headers to Aas/Submodel/ConceptDescription template repositories.
             options.TemplateRepository = new ServiceEndpoint
             {
                 Name = HttpClientNames.TemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
                 HeaderMappings = headerForwarding?.HeaderMappings.TemplateRepository ?? []
             };
+        }
 
+        if (aasEnv.AasRegistryBaseUrl != null)
+        {
             options.AasTemplateRegistry = new ServiceEndpoint
             {
                 Name = HttpClientNames.AasRegistry,
                 BaseUrl = aasEnv.AasRegistryBaseUrl,
                 HeaderMappings = headerForwarding?.HeaderMappings.TemplateRegistry ?? []
             };
+        }
 
+        if (aasEnv.SubModelRegistryBaseUrl != null)
+        {
             options.SubmodelTemplateRegistry = new ServiceEndpoint
             {
                 Name = HttpClientNames.SubmodelRegistry,

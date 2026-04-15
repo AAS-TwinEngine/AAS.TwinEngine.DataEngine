@@ -17,11 +17,25 @@ public sealed class LegacyRegistrySettingsConfigAdapter(IConfiguration configura
     {
         if (!LegacyConfigurationDetector.IsV1Configuration(_configuration))
         {
+            ApplyV1Overrides(_configuration, options);
             return;
         }
 
         // V1: "AasRegistryPreComputed" → V2: "RegistrySettings:PreComputed"
-        var preComputed = _configuration.GetSection(AasRegistryPreComputed.Section).Get<AasRegistryPreComputed>();
+        ApplyV1Overrides(_configuration, options);
+    }
+
+    /// <summary>
+    /// If the V1 <c>AasRegistryPreComputed</c> section exists, overrides the corresponding V2 values.
+    /// </summary>
+    public static void ApplyV1Overrides(IConfiguration configuration, RegistrySettingsConfig options)
+    {
+        if (!configuration.GetSection(AasRegistryPreComputed.Section).Exists())
+        {
+            return;
+        }
+
+        var preComputed = configuration.GetSection(AasRegistryPreComputed.Section).Get<AasRegistryPreComputed>();
         if (preComputed != null)
         {
             options.PreComputed = new PreComputedConfig

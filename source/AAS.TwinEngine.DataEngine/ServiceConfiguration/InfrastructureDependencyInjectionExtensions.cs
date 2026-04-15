@@ -56,18 +56,28 @@ public static class InfrastructureDependencyInjectionExtensions
             .Bind(configuration.GetSection(RegistrySettingsConfig.Section))
             .ValidateOnStart();
 
-        // Normalizer: applies TemplateRepository shorthand to individual repository endpoints
-        _ = services.AddSingleton<IPostConfigureOptions<TemplateManagementConfig>, TemplateManagementConfigNormalizer>();
-
-        // Validators
-        _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateManagementConfigValidator>();
-        _ = services.AddSingleton<IValidateOptions<RegistrySettingsConfig>, RegistrySettingsConfigValidator>();
-
         // PluginsConfig: single registration via AddOptions to avoid double-binding of list properties
         _ = services.AddOptions<PluginsConfig>()
             .Bind(configuration.GetSection(PluginsConfig.Section))
             .ValidateOnStart();
         _ = services.AddSingleton<IValidateOptions<PluginsConfig>, PluginsConfigValidator>();
+
+#pragma warning disable CS0618 // Obsolete — intentional V1 backward-compat registration
+        _ = services.PostConfigure<PluginsConfig>(options =>
+            LegacyPluginsConfigAdapter.ApplyV1PluginInstanceOverrides(configuration, options));
+        _ = services.PostConfigure<GeneralConfig>(options =>
+            LegacyGeneralConfigAdapter.ApplyV1Overrides(configuration, options));
+        _ = services.PostConfigure<TemplateManagementConfig>(options =>
+            LegacyTemplateManagementConfigAdapter.ApplyV1Overrides(configuration, options));
+        _ = services.PostConfigure<RegistrySettingsConfig>(options =>
+            LegacyRegistrySettingsConfigAdapter.ApplyV1Overrides(configuration, options));
+#pragma warning restore CS0618
+
+        _ = services.AddSingleton<IPostConfigureOptions<TemplateManagementConfig>, TemplateManagementConfigNormalizer>();
+
+        // Validators
+        _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateManagementConfigValidator>();
+        _ = services.AddSingleton<IValidateOptions<RegistrySettingsConfig>, RegistrySettingsConfigValidator>();
 
         // ── Resolve config for HttpClient registration (no BuildServiceProvider) ──
         // Bind V2 sections, apply V1 adapter + normalizer manually.

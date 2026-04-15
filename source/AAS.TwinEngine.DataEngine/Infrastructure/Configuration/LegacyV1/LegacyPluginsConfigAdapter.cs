@@ -23,6 +23,7 @@ public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : I
     {
         if (!LegacyConfigurationDetector.IsV1Configuration(configuration))
         {
+            ApplyV1PluginInstanceOverrides(configuration, options);
             return;
         }
 
@@ -54,10 +55,21 @@ public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : I
         }
 
         // Plugin instances (V1: "PluginConfig:Plugins") → Plugins:Instances with property renames
+        ApplyV1PluginInstanceOverrides(configuration, options);
+    }
+
+    /// <summary>
+    /// If the V1 <c>PluginConfig:Plugins</c> section contains values (e.g. from V1-style env vars),
+    /// overrides <see cref="PluginsConfig.Instances"/> with the mapped V1 values.
+    /// Called in both V1 and V2 modes so that legacy env vars work even when
+    /// <c>appsettings.json</c> already ships V2 sections.
+    /// </summary>
+    public static void ApplyV1PluginInstanceOverrides(IConfiguration configuration, PluginsConfig options)
+    {
         var pluginConfig = configuration.GetSection(PluginConfig.Section).Get<PluginConfig>();
         var headerForwarding = configuration.GetSection(HeaderForwardingOptions.Section).Get<HeaderForwardingOptions>();
 
-        if (pluginConfig?.Plugins != null)
+        if (pluginConfig?.Plugins != null && pluginConfig.Plugins.Count > 0)
         {
             options.Instances = pluginConfig.Plugins.Select(plugin => new PluginInstance
             {

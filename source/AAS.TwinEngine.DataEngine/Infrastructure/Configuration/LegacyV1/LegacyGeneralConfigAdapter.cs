@@ -21,6 +21,7 @@ public sealed class LegacyGeneralConfigAdapter(IConfiguration configuration) : I
     {
         if (!LegacyConfigurationDetector.IsV1Configuration(_configuration))
         {
+            ApplyV1Overrides(_configuration, options);
             return;
         }
 
@@ -55,6 +56,29 @@ public sealed class LegacyGeneralConfigAdapter(IConfiguration configuration) : I
         if (otel != null)
         {
             options.OpenTelemetry = otel;
+        }
+    }
+
+    /// <summary>
+    /// If V1-specific sections exist (e.g. from V1-style env vars), overrides the corresponding
+    /// V2 values. Called in both V1 and V2 modes so that legacy env vars work even when
+    /// <c>appsettings.json</c> already ships V2 sections.
+    /// </summary>
+    public static void ApplyV1Overrides(IConfiguration configuration, GeneralConfig options)
+    {
+        // AasEnvironment (V1-only top-level section)
+        var aasEnv = configuration.GetSection(AasEnvironmentConfig.Section).Get<AasEnvironmentConfig>();
+        if (aasEnv != null)
+        {
+            if (aasEnv.CustomerDomainUrl != null)
+            {
+                options.CustomerDomainUrl = aasEnv.CustomerDomainUrl;
+            }
+
+            if (aasEnv.DataEngineRepositoryBaseUrl != null)
+            {
+                options.DataEngineRepositoryBaseUrl = aasEnv.DataEngineRepositoryBaseUrl;
+            }
         }
     }
 }
