@@ -1,7 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
