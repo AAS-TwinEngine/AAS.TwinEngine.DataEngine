@@ -11,7 +11,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Se
 
 public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> logger, IOptions<TemplateManagementConfig> options) : IShellTemplateMappingProvider
 {
-    private readonly ILogger<ShellTemplateMappingProvider> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger<ShellTemplateMappingProvider> _logger = logger ?? throw new ArgumentNullException();
     private readonly IList<ShellTemplateMappings> _shellTemplateMappings = options.Value.TemplateMappingRules.ShellTemplateMappings ?? throw new ArgumentException("ShellTemplateMappings are missing in TemplateMappingRules");
     private readonly IList<AasIdExtractionRules> _aasIdExtractionRules = options.Value.TemplateMappingRules.AasIdExtractionRules ?? throw new ArgumentException("AasIdExtractionRules are missing in TemplateMappingRules");
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(2);

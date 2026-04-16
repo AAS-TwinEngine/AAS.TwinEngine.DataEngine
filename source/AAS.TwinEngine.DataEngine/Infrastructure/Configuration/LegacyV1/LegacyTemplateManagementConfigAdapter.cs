@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1.ConfigV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 

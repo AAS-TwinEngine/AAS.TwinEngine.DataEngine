@@ -2,17 +2,6 @@
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 
-public class HeaderForwardingOptions
-{
-    public const string Section = "HeaderForwarding";
-
-    [Required]
-    public HeaderSanitizationOptions HeaderSanitization { get; set; } = new();
-
-    [Required]
-    public HeaderMappings HeaderMappings { get; set; } = new();
-}
-
 public class HeaderSanitizationOptions
 {
     [Range(1, int.MaxValue)]
@@ -34,15 +23,6 @@ public class AllowedCharactersOptions
 
     [Required]
     public string HeaderValues { get; set; } = "^[\\x20-\\x7E]+$";
-}
-
-public class HeaderMappings
-{
-    public IList<HeaderMappingRule> TemplateRepository { get; } = [];
-
-    public IList<HeaderMappingRule> TemplateRegistry { get; } = [];
-
-    public Dictionary<string, IList<HeaderMappingRule>> Plugins { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public class HeaderMappingRule

@@ -15,10 +15,10 @@ public partial class SubmodelTemplateService(
     ITemplateProvider templateProvider,
     ISubmodelTemplateMappingProvider submodelTemplateMappingProvider) : ISubmodelTemplateService
 {
-    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new ArgumentNullException(nameof(templateProvider));
+    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new ArgumentNullException();
 
     private readonly ISubmodelTemplateMappingProvider _submodelTemplateMappingProvider =
-        submodelTemplateMappingProvider ?? throw new ArgumentNullException(nameof(submodelTemplateMappingProvider));
+        submodelTemplateMappingProvider ?? throw new ArgumentNullException();
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, CancellationToken cancellationToken)
     {
