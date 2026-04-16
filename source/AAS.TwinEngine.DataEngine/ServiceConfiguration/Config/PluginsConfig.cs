@@ -1,4 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -36,14 +37,6 @@ public class PluginInstance
     public required string Name { get; set; }
     public required Uri BaseUrl { get; set; }
     public IList<HeaderMappingRule> HeaderMappings { get; init; } = [];
-}
-
-/// <summary>
-/// Resilience policies shared within a domain (Plugins or TemplateManagement).
-/// </summary>
-public class ResiliencePoliciesConfig
-{
-    public RetryConfig Retry { get; set; } = new();
 }
 
 public class RetryConfig
