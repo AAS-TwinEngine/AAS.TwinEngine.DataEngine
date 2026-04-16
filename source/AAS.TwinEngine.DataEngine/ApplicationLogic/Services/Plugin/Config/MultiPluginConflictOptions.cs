@@ -3,7 +3,7 @@
 public class MultiPluginConflictOptions
 {
     public const string Section = "MultiPluginConflictOption";
-    public MultiPluginConflictOption HandlingMode { get; set; } = MultiPluginConflictOption.TakeFirst;
+    public MultiPluginConflictOption HandlingMode { get; set; } = MultiPluginConflictOption.ThrowError;
 
     public enum MultiPluginConflictOption
     {
