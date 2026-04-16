@@ -4,7 +4,7 @@ namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 public class TemplateManagementConfigValidator : IValidateOptions<TemplateManagementConfig>
 {
-    private static readonly (string Name, Func<TemplateManagementConfig, ServiceEndpoint> Accessor)[] Endpoints =
+    private static readonly (string Name, Func<TemplateManagementConfig, ServiceInstance> Accessor)[] Endpoints =
     [
         ("AasTemplateRepository", c => c.AasTemplateRepository),
         ("SubmodelTemplateRepository", c => c.SubmodelTemplateRepository),

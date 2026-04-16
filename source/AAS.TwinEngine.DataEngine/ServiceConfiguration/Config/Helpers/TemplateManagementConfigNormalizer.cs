@@ -23,7 +23,7 @@ public sealed class TemplateManagementConfigNormalizer : IPostConfigureOptions<T
         ApplyFallback(options.ConceptDescriptionTemplateRepository, fallback);
     }
 
-    private static void ApplyFallback(ServiceEndpoint target, ServiceEndpoint fallback)
+    private static void ApplyFallback(ServiceInstance target, ServiceInstance fallback)
     {
         target.BaseUrl ??= fallback.BaseUrl;
 

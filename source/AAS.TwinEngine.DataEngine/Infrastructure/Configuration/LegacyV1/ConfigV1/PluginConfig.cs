@@ -8,7 +8,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 /// Only the Section, Plugins list, and Plugin child class remain for V1 legacy adapter deserialization.
 /// </summary>
 #pragma warning disable S1133
-[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version. Use HttpClientNames and ApiPaths instead.")]
+[Obsolete("V1 configuration is deprecated and will be removed in next major release Use HttpClientNames and ApiPaths instead.")]
 public class PluginConfig
 {
     public const string Section = "PluginConfig";
@@ -25,7 +25,7 @@ public class PluginConfig
 }
 
 #pragma warning disable S1133
-[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version. Use PluginInstance instead.")]
+[Obsolete("V1 configuration is deprecated and will be removed in next major release Use ServiceInstance instead.")]
 public class Plugin
 {
     public required string PluginName { get; set; }

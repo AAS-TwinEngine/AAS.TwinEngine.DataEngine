@@ -44,7 +44,10 @@ public static class InfrastructureDependencyInjectionExtensions
 #pragma warning restore CS0618
 
         // ── V2 POCO registrations (section-bind overwrites adapter defaults when V2 JSON exists) ──
-        _ = services.Configure<GeneralConfig>(configuration.GetSection(GeneralConfig.Section));
+        _ = services.AddOptions<GeneralConfig>()
+                .Bind(configuration.GetSection(GeneralConfig.Section))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
         // MultiPluginConflictOptions: V1 config binds the old section value; V2 has no section → default ThrowError
         _ = services.Configure<MultiPluginConflictOptions>(configuration.GetSection(MultiPluginConflictOptions.Section));

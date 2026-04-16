@@ -12,7 +12,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 /// merges these values before any consumer resolves <c>IOptions&lt;GeneralConfig&gt;</c>.
 /// </summary>
 #pragma warning disable S1133 
-[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
+[Obsolete("V1 configuration is deprecated and will be removed in next major release")]
 public sealed class LegacyGeneralConfigAdapter(IConfiguration configuration) : IConfigureOptions<GeneralConfig>
 {
     private readonly IConfiguration _configuration = configuration;

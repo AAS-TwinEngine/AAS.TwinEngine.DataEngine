@@ -11,7 +11,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 /// When V2 config is present, the adapters are registered but short-circuit (no-op).
 /// </summary>
 #pragma warning disable S1133 
-[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
+[Obsolete("V1 configuration is deprecated and will be removed in next major release")]
 public static class LegacyV1ConfigurationExtensions
 {
     /// <summary>
@@ -20,7 +20,7 @@ public static class LegacyV1ConfigurationExtensions
     /// V2 section-bind (if present) overwrites the adapter-provided defaults.
     /// </summary>
 
-    [Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
+    [Obsolete("V1 configuration is deprecated and will be removed in next major release")]
     public static IServiceCollection AddLegacyV1ConfigurationAdapters(this IServiceCollection services)
     {
         _ = services.AddSingleton<IConfigureOptions<GeneralConfig>, LegacyGeneralConfigAdapter>();

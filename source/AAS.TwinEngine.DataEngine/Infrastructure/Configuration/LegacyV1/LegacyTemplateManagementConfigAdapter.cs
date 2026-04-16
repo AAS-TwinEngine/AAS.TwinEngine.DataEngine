@@ -10,7 +10,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 /// Reads V1 flat config sections and maps them into the V2 <see cref="TemplateManagementConfig"/> shape.
 /// </summary>
 #pragma warning disable S1133 
-[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
+[Obsolete("V1 configuration is deprecated and will be removed in next major release")]
 public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configuration) : IConfigureOptions<TemplateManagementConfig>
 {
     private readonly IConfiguration _configuration = configuration;
@@ -107,7 +107,7 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
 
         if (aasEnv.AasEnvironmentRepositoryBaseUrl != null)
         {
-            options.TemplateRepository = new ServiceEndpoint
+            options.TemplateRepository = new ServiceInstance
             {
                 Name = HttpClientNames.TemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
@@ -117,7 +117,7 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
 
         if (aasEnv.AasRegistryBaseUrl != null)
         {
-            options.AasTemplateRegistry = new ServiceEndpoint
+            options.AasTemplateRegistry = new ServiceInstance
             {
                 Name = HttpClientNames.AasRegistry,
                 BaseUrl = aasEnv.AasRegistryBaseUrl,
@@ -127,7 +127,7 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
 
         if (aasEnv.SubModelRegistryBaseUrl != null)
         {
-            options.SubmodelTemplateRegistry = new ServiceEndpoint
+            options.SubmodelTemplateRegistry = new ServiceInstance
             {
                 Name = HttpClientNames.SubmodelRegistry,
                 BaseUrl = aasEnv.SubModelRegistryBaseUrl,

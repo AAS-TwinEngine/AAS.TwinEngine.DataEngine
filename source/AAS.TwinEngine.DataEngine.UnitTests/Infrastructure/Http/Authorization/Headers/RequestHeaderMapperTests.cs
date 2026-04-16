@@ -75,7 +75,7 @@ public class RequestHeaderMapperTests
         var config = DefaultConfig();
         var templateConfig = new TemplateManagementConfig
         {
-            AasTemplateRepository = new ServiceEndpoint
+            AasTemplateRepository = new ServiceInstance
             {
                 HeaderMappings =
                 [
@@ -128,7 +128,7 @@ public class RequestHeaderMapperTests
         var config = DefaultConfig();
         var templateConfig = new TemplateManagementConfig
         {
-            AasTemplateRepository = new ServiceEndpoint
+            AasTemplateRepository = new ServiceInstance
             {
                 HeaderMappings =
                 [
@@ -156,7 +156,7 @@ public class RequestHeaderMapperTests
         var config = DefaultConfig();
         var templateConfig = new TemplateManagementConfig
         {
-            AasTemplateRepository = new ServiceEndpoint
+            AasTemplateRepository = new ServiceInstance
             {
                 HeaderMappings =
                 [
@@ -183,7 +183,7 @@ public class RequestHeaderMapperTests
         var config = DefaultConfig();
         var templateConfig = new TemplateManagementConfig
         {
-            AasTemplateRepository = new ServiceEndpoint
+            AasTemplateRepository = new ServiceInstance
             {
                 HeaderMappings =
                 [
@@ -212,7 +212,7 @@ public class RequestHeaderMapperTests
         var config = DefaultConfig();
         var templateConfig = new TemplateManagementConfig
         {
-            AasTemplateRepository = new ServiceEndpoint
+            AasTemplateRepository = new ServiceInstance
             {
                 HeaderMappings =
                 [
@@ -244,7 +244,7 @@ public class RequestHeaderMapperTests
         {
             Instances =
             [
-                new PluginInstance
+                new ServiceInstance
                 {
                     Name = pluginName,
                     BaseUrl = new Uri("http://test"),

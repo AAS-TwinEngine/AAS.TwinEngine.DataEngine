@@ -1,5 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
+﻿using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -14,7 +13,7 @@ public class PluginsConfig
     public string SubmodelElementIndexContextPrefix { get; set; } = "_aastwinengineindex_";
     public PluginMultiLanguagePropertyConfig MultiLanguageProperty { get; set; } = new();
     public ResiliencePoliciesConfig ResiliencePolicies { get; set; } = new();
-    public IList<PluginInstance> Instances { get; set; } = [];
+    public IList<ServiceInstance> Instances { get; set; } = [];
 }
 
 /// <summary>
@@ -26,22 +25,4 @@ public class PluginMultiLanguagePropertyConfig
 {
     public IList<string>? DefaultLanguages { get; init; }
     public string SemanticPostfixSeparator { get; set; } = "_";
-}
-
-/// <summary>
-/// A single plugin instance. Replaces old Plugin class with renamed properties
-/// and co-located header mappings.
-/// </summary>
-public class PluginInstance
-{
-    public required string Name { get; set; }
-    public required Uri BaseUrl { get; set; }
-    public IList<HeaderMappingRule> HeaderMappings { get; init; } = [];
-}
-
-public class RetryConfig
-{
-    public int MaxRetryAttempts { get; set; }
-    public int DelayInSeconds { get; set; }
-    public double BackoffMultiplier { get; set; } = 2.0;
 }

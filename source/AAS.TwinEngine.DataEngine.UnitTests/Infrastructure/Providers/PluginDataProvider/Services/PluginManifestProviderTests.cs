@@ -18,9 +18,9 @@ public class PluginManifestProviderTests
     private readonly ICreateClient _clientFactory = Substitute.For<ICreateClient>();
     private readonly IOptions<PluginsConfig> _options;
 
-    private readonly List<PluginInstance> _plugins =
+    private readonly List<ServiceInstance> _plugins =
     [
-        new PluginInstance
+        new ServiceInstance
         {
             Name = "TestPlugin",
             BaseUrl = new Uri("https://plugin.url")

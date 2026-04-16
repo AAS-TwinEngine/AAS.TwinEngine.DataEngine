@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization.Middleware;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
 
 public class HeaderForwardingHandlerTests
 {
@@ -28,7 +28,7 @@ public class HeaderForwardingHandlerTests
         {
             Instances =
             [
-                new PluginInstance
+                new ServiceInstance
                 {
                     Name = "TestPlugin",
                     BaseUrl = new Uri("http://example.com"),

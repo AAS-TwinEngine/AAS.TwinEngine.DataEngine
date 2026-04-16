@@ -6,7 +6,7 @@
 /// Only the URI properties and Section remain for V1 legacy adapter deserialization.
 /// </summary>
 #pragma warning disable S1133 
-[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version. Use HttpClientNames and ApiPaths instead.")]
+[Obsolete("V1 configuration is deprecated and will be removed in next major release Use HttpClientNames and ApiPaths instead.")]
 public class AasEnvironmentConfig
 {
     public const string Section = "AasEnvironment";

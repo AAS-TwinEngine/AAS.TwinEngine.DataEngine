@@ -14,9 +14,9 @@ public class AasRepositoryTemplateService(
     IShellTemplateMappingProvider shellTemplateMappingProvider,
     IOptions<GeneralConfig> generalConfig) : IAasRepositoryTemplateService
 {
-    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new ArgumentNullException();
-    private readonly IShellTemplateMappingProvider _shellTemplateMappingProvider = shellTemplateMappingProvider ?? throw new ArgumentNullException();
-    private readonly Uri _customerDomainUrl = generalConfig.Value.CustomerDomainUrl ?? throw new ArgumentNullException();
+    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new ArgumentNullException(nameof(templateProvider));
+    private readonly IShellTemplateMappingProvider _shellTemplateMappingProvider = shellTemplateMappingProvider ?? throw new ArgumentNullException(nameof(shellTemplateMappingProvider));
+    private readonly Uri _customerDomainUrl = generalConfig.Value.CustomerDomainUrl ?? throw new ArgumentNullException(nameof(generalConfig), "CustomerDomainUrl is required.");
     private const string SubmodelUrlSegment = "submodel";
 
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string aasIdentifier, CancellationToken cancellationToken)

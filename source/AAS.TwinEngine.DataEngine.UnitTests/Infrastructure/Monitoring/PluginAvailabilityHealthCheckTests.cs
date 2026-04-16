@@ -76,8 +76,8 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
-                new PluginInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
+                new ServiceInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -112,7 +112,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -145,7 +145,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -178,7 +178,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -211,7 +211,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -241,8 +241,8 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
-                new PluginInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
+                new ServiceInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -272,7 +272,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 

@@ -10,7 +10,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 /// Reads V1 flat config sections and maps them into the V2 <see cref="PluginsConfig"/> shape.
 /// </summary>
 #pragma warning disable S1133 
-[Obsolete("V1 configuration is deprecated and will be removed in v2.0.0 version.")]
+[Obsolete("V1 configuration is deprecated and will be removed in next major release")]
 public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : IConfigureOptions<PluginsConfig>
 {
     private readonly IConfiguration _configuration = configuration;
@@ -72,7 +72,7 @@ public sealed class LegacyPluginsConfigAdapter(IConfiguration configuration) : I
 
         if (pluginConfig?.Plugins != null && pluginConfig.Plugins.Count > 0)
         {
-            options.Instances = pluginConfig.Plugins.Select(plugin => new PluginInstance
+            options.Instances = pluginConfig.Plugins.Select(plugin => new ServiceInstance
             {
                 Name = plugin.PluginName,
                 BaseUrl = plugin.PluginUrl,

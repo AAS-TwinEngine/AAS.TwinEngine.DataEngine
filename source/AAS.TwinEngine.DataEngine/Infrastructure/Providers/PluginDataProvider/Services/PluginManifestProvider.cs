@@ -17,7 +17,7 @@ public class PluginManifestProvider(ILogger<PluginManifestProvider> logger,
                                     ICreateClient clientFactory) : IPluginManifestProvider
 {
     private const string ManifestEndpoint = "manifest";
-    private readonly IList<PluginInstance> _plugins = pluginsConfig.Value.Instances;
+    private readonly IList<ServiceInstance> _plugins = pluginsConfig.Value.Instances;
 
     public async Task<IList<PluginManifest>> GetAllPluginManifestsAsync(CancellationToken cancellationToken)
     {
