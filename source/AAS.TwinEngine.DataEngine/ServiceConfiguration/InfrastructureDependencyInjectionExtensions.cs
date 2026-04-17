@@ -75,8 +75,6 @@ public static class InfrastructureDependencyInjectionExtensions
             LegacyRegistrySettingsConfigAdapter.ApplyV1Overrides(configuration, options));
 #pragma warning restore CS0618
 
-        _ = services.AddSingleton<IPostConfigureOptions<TemplateManagementConfig>, TemplateManagementConfigNormalizer>();
-
         // Validators
         _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateManagementConfigValidator>();
         _ = services.AddSingleton<IValidateOptions<RegistrySettingsConfig>, RegistrySettingsConfigValidator>();
@@ -88,7 +86,6 @@ public static class InfrastructureDependencyInjectionExtensions
 #pragma warning disable CS0618 // Obsolete — intentional V1 backward-compat mapping
         LegacyTemplateManagementConfigAdapter.MapToConfig(configuration, templateManagement);
 #pragma warning restore CS0618
-        new TemplateManagementConfigNormalizer().PostConfigure(Options.DefaultName, templateManagement);
 
         var pluginsConfig = new PluginsConfig();
         configuration.GetSection(PluginsConfig.Section).Bind(pluginsConfig);

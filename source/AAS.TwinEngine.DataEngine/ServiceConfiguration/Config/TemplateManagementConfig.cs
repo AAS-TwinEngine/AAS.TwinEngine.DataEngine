@@ -15,7 +15,6 @@ public class TemplateManagementConfig
     public TemplateMappingRules TemplateMappingRules { get; set; } = new();
     public TemplateSemanticsConfig Semantics { get; set; } = new();
 
-    public ServiceInstance? TemplateRepository { get; set; }
     public ServiceInstance AasTemplateRepository { get; set; } = new();
     public ServiceInstance SubmodelTemplateRepository { get; set; } = new();
     public ServiceInstance ConceptDescriptionTemplateRepository { get; set; } = new();

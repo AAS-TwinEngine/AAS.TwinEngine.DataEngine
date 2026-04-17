@@ -107,11 +107,25 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
 
         if (aasEnv.AasEnvironmentRepositoryBaseUrl != null)
         {
-            options.TemplateRepository = new ServiceInstance
+            var repoHeaders = headerForwarding?.HeaderMappings.TemplateRepository ?? [];
+
+            options.AasTemplateRepository = new ServiceInstance
             {
-                Name = HttpClientNames.TemplateRepository,
+                Name = HttpClientNames.AasTemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
-                HeaderMappings = headerForwarding?.HeaderMappings.TemplateRepository ?? []
+                HeaderMappings = repoHeaders
+            };
+            options.SubmodelTemplateRepository = new ServiceInstance
+            {
+                Name = HttpClientNames.SubmodelTemplateRepository,
+                BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
+                HeaderMappings = repoHeaders
+            };
+            options.ConceptDescriptionTemplateRepository = new ServiceInstance
+            {
+                Name = HttpClientNames.ConceptDescriptorTemplateRepository,
+                BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
+                HeaderMappings = repoHeaders
             };
         }
 

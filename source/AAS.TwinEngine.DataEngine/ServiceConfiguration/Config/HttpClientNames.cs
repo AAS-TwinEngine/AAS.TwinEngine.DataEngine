@@ -7,7 +7,6 @@ namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 /// </summary>
 public static class HttpClientNames
 {
-    public const string TemplateRepository = "template-repository";
     public const string AasRegistry = "aas-registry";
     public const string SubmodelRegistry = "submodel-registry";
     public const string SubmodelTemplateRepository = "submodel-template-repository";
@@ -23,7 +22,6 @@ public static class HttpClientNames
 
     public static string GetHealthCheckName(string clientName) => $"{clientName}{HealthCheckSuffix}";
 
-    public static string TemplateRepositoryHealthCheck => GetHealthCheckName(TemplateRepository);
     public static string AasRegistryHealthCheck => GetHealthCheckName(AasRegistry);
     public static string SubmodelRegistryHealthCheck => GetHealthCheckName(SubmodelRegistry);
     public static string SubmodelTemplateRepositoryHealthCheck => GetHealthCheckName(SubmodelTemplateRepository);

@@ -70,10 +70,9 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        // V1 maps AasEnvironmentRepositoryBaseUrl to the TemplateRepository shorthand
-        Assert.NotNull(options.TemplateRepository);
-        Assert.Equal(HttpClientNames.TemplateRepository, options.TemplateRepository!.Name);
-        Assert.Equal(new Uri("http://localhost:8081"), options.TemplateRepository.BaseUrl);
+        // V1 maps AasEnvironmentRepositoryBaseUrl to all 3 repository endpoints directly
+        Assert.Equal(HttpClientNames.AasTemplateRepository, options.AasTemplateRepository.Name);
+        Assert.Equal(new Uri("http://localhost:8081"), options.AasTemplateRepository.BaseUrl);
     }
 
     [Fact]
@@ -111,10 +110,9 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        // SubmodelTemplateRepository is now populated via TemplateRepository shorthand + normalizer;
-        // the adapter sets the shorthand, not individual repos directly.
-        Assert.NotNull(options.TemplateRepository);
-        Assert.Equal(new Uri("http://localhost:8081"), options.TemplateRepository!.BaseUrl);
+        // SubmodelTemplateRepository is populated directly from AasEnvironmentRepositoryBaseUrl
+        Assert.Equal(HttpClientNames.SubmodelTemplateRepository, options.SubmodelTemplateRepository.Name);
+        Assert.Equal(new Uri("http://localhost:8081"), options.SubmodelTemplateRepository.BaseUrl);
     }
 
     [Fact]
@@ -126,11 +124,10 @@ public class LegacyTemplateManagementConfigAdapterTests
 
         adapter.Configure(options);
 
-        // Headers now live on the TemplateRepository shorthand
-        Assert.NotNull(options.TemplateRepository);
-        Assert.Equal(2, options.TemplateRepository!.HeaderMappings.Count);
-        Assert.Equal("Authorization", options.TemplateRepository.HeaderMappings[0].Source);
-        Assert.Equal("Authorization", options.TemplateRepository.HeaderMappings[0].Target);
+        // Headers now live on each repository endpoint directly
+        Assert.Equal(2, options.AasTemplateRepository.HeaderMappings.Count);
+        Assert.Equal("Authorization", options.AasTemplateRepository.HeaderMappings[0].Source);
+        Assert.Equal("Authorization", options.AasTemplateRepository.HeaderMappings[0].Target);
     }
 
     [Fact]
