@@ -1,9 +1,12 @@
-﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
+
+#pragma warning disable S1133 
+[Obsolete("V1 configuration is deprecated and will be removed in next major release")]
 
 public class MultiPluginConflictOptions
 {
     public const string Section = "MultiPluginConflictOption";
-    public MultiPluginConflictOption HandlingMode { get; set; } = MultiPluginConflictOption.TakeFirst;
+    public MultiPluginConflictOption HandlingMode { get; set; } = MultiPluginConflictOption.ThrowError;
 
     public enum MultiPluginConflictOption
     {

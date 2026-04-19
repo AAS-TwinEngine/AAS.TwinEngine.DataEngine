@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -14,7 +14,6 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 using Json.Schema;
@@ -22,6 +21,8 @@ using Json.Schema;
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
+
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -86,7 +87,7 @@ public class PluginDataHandlerTests
 
         var requestList = new List<PluginRequestSubmodel>
             {
-                new($"{PluginConfig.HttpClientNamePrefix}TestPlugin", jsonContent)
+                new($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin", jsonContent)
             };
 
         var manifests = new List<PluginManifest>
@@ -174,7 +175,7 @@ public class PluginDataHandlerTests
             .Returns(new List<string> { "PluginA" });
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
-            .Returns(new List<PluginRequestMetaData> { new($"{PluginConfig.HttpClientNamePrefix}PluginA", "") });
+            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
@@ -242,7 +243,7 @@ public class PluginDataHandlerTests
             .Returns(new List<string> { "PluginA" });
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
-            .Returns(new List<PluginRequestMetaData> { new($"{PluginConfig.HttpClientNamePrefix}PluginA", "") });
+            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
@@ -307,7 +308,7 @@ public class PluginDataHandlerTests
             .Returns(new List<string> { "PluginA" });
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
-            .Returns(new List<PluginRequestMetaData> { new($"{PluginConfig.HttpClientNamePrefix}PluginA", "") });
+            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())

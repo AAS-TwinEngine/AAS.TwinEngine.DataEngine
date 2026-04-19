@@ -1,8 +1,7 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -77,8 +76,8 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
-                new PluginInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
+                new ServiceInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -113,7 +112,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -146,7 +145,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -179,7 +178,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -212,7 +211,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -231,19 +230,19 @@ public class PluginAvailabilityHealthCheckTests
         var clientFactory = Substitute.For<ICreateClient>();
 
         clientFactory
-            .CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin1")
+            .CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}Plugin1")
             .Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
 
         clientFactory
-            .CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin2")
+            .CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}Plugin2")
             .Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var pluginConfig = Options.Create(new PluginsConfig
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
-                new PluginInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") },
+                new ServiceInstance { Name = "Plugin2", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -253,8 +252,8 @@ public class PluginAvailabilityHealthCheckTests
 
         _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        clientFactory.Received(1).CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin1");
-        clientFactory.Received(1).CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin2");
+        clientFactory.Received(1).CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}Plugin1");
+        clientFactory.Received(1).CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}Plugin2");
     }
 
     [Fact]
@@ -273,7 +272,7 @@ public class PluginAvailabilityHealthCheckTests
         {
             Instances =
             [
-                new PluginInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
+                new ServiceInstance { Name = "Plugin1", BaseUrl = new Uri("http://localhost") }
             ]
         });
 
@@ -283,8 +282,8 @@ public class PluginAvailabilityHealthCheckTests
 
         _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        clientFactory.Received(1).CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}Plugin1");
-        clientFactory.DidNotReceive().CreateClient($"{PluginConfig.HttpClientNamePrefix}Plugin1");
+        clientFactory.Received(1).CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}Plugin1");
+        clientFactory.DidNotReceive().CreateClient($"{HttpClientNames.PluginDataProviderPrefix}Plugin1");
     }
 
     private static HttpClient CreateHttpClient(HttpStatusCode statusCode)

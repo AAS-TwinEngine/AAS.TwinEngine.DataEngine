@@ -1,9 +1,8 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
@@ -12,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization.Middleware;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
 
 public class HeaderForwardingHandlerTests
 {
@@ -29,7 +28,7 @@ public class HeaderForwardingHandlerTests
         {
             Instances =
             [
-                new PluginInstance
+                new ServiceInstance
                 {
                     Name = "TestPlugin",
                     BaseUrl = new Uri("http://example.com"),
@@ -64,7 +63,7 @@ public class HeaderForwardingHandlerTests
     public async Task HeaderForwardingHandler_ForwardsMappedHeaderToInnerHandler()
     {
         const string pluginName = "TestPlugin";
-        var clientName = PluginConfig.HttpClientNamePrefix + pluginName;
+        var clientName = HttpClientNames.PluginDataProviderPrefix + pluginName;
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers.Authorization = "Bearer test-token";

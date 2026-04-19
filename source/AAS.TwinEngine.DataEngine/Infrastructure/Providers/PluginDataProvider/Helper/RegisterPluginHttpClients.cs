@@ -1,6 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
@@ -15,7 +14,7 @@ public static class RegisterPluginHttpClients
         foreach (var manifest in manifests)
         {
             _ = services.AddHttpClientWithResilience(
-                $"{PluginConfig.HttpClientNamePrefix}{manifest.PluginName}",
+                $"{HttpClientNames.PluginDataProviderPrefix}{manifest.PluginName}",
                 retryConfig,
                 manifest.PluginUrl!
             );

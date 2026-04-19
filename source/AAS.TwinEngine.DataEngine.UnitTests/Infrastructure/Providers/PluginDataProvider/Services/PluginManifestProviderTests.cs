@@ -1,8 +1,7 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -19,9 +18,9 @@ public class PluginManifestProviderTests
     private readonly ICreateClient _clientFactory = Substitute.For<ICreateClient>();
     private readonly IOptions<PluginsConfig> _options;
 
-    private readonly List<PluginInstance> _plugins =
+    private readonly List<ServiceInstance> _plugins =
     [
-        new PluginInstance
+        new ServiceInstance
         {
             Name = "TestPlugin",
             BaseUrl = new Uri("https://plugin.url")
@@ -32,7 +31,7 @@ public class PluginManifestProviderTests
 
     private PluginManifestProvider CreateSut(HttpClient httpClient)
     {
-        _clientFactory.CreateClient($"{PluginConfig.HttpClientNamePrefix}TestPlugin").Returns(httpClient);
+        _clientFactory.CreateClient($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin").Returns(httpClient);
 
         return new PluginManifestProvider(_logger, _options, _clientFactory);
     }

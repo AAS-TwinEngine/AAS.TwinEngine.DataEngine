@@ -15,12 +15,11 @@ public class TemplateManagementConfig
     public TemplateMappingRules TemplateMappingRules { get; set; } = new();
     public TemplateSemanticsConfig Semantics { get; set; } = new();
 
-    public ServiceEndpoint? TemplateRepository { get; set; }
-    public ServiceEndpoint AasTemplateRepository { get; set; } = new();
-    public ServiceEndpoint SubmodelTemplateRepository { get; set; } = new();
-    public ServiceEndpoint ConceptDescriptionTemplateRepository { get; set; } = new();
-    public ServiceEndpoint AasTemplateRegistry { get; set; } = new();
-    public ServiceEndpoint SubmodelTemplateRegistry { get; set; } = new();
+    public ServiceInstance AasTemplateRepository { get; set; } = new();
+    public ServiceInstance SubmodelTemplateRepository { get; set; } = new();
+    public ServiceInstance ConceptDescriptionTemplateRepository { get; set; } = new();
+    public ServiceInstance AasTemplateRegistry { get; set; } = new();
+    public ServiceInstance SubmodelTemplateRegistry { get; set; } = new();
 }
 
 /// <summary>
@@ -32,10 +31,10 @@ public class TemplateSemanticsConfig
 }
 
 /// <summary>
-/// A named service endpoint with a base URL and co-located header mappings.
-/// Used for template repositories and registries in the V2 schema.
+/// A named service instance with a base URL and co-located header mappings.
+/// Used for both plugin instances and template service endpoints.
 /// </summary>
-public class ServiceEndpoint
+public class ServiceInstance
 {
     public string Name { get; set; } = string.Empty;
     public Uri? BaseUrl { get; set; }

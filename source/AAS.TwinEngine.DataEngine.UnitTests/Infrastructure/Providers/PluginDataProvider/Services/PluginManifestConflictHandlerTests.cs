@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 using Microsoft.Extensions.Logging;

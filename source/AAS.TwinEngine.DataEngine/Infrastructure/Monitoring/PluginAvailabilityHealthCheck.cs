@@ -1,5 +1,4 @@
 ﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -28,18 +27,18 @@ public sealed class PluginAvailabilityHealthCheck(ICreateClient clientFactory,
                    : HealthCheckResult.Unhealthy();
     }
 
-    private async Task<bool> CheckAllPluginsAsync(IList<PluginInstance> plugins, CancellationToken cancellationToken)
+    private async Task<bool> CheckAllPluginsAsync(IList<ServiceInstance> plugins, CancellationToken cancellationToken)
     {
         var tasks = plugins.Select(plugin => CheckSinglePluginAsync(plugin, cancellationToken)).ToList();
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
         return results.All(healthy => healthy);
     }
 
-    private async Task<bool> CheckSinglePluginAsync(PluginInstance plugin, CancellationToken cancellationToken)
+    private async Task<bool> CheckSinglePluginAsync(ServiceInstance plugin, CancellationToken cancellationToken)
     {
         try
         {
-            var httpClient = clientFactory.CreateClient($"{PluginConfig.HealthCheckHttpClientNamePrefix}{plugin.Name}");
+            var httpClient = clientFactory.CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}{plugin.Name}");
 
             using var response = await httpClient
                 .GetAsync(new Uri(HealthEndpoint, UriKind.Relative), cancellationToken)

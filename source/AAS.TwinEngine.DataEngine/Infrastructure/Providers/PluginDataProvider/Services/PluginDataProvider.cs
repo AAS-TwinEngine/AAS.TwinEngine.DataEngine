@@ -5,7 +5,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -137,7 +137,7 @@ public class PluginDataProvider(
 
         foreach (var pluginRequest in pluginRequests)
         {
-            var url = BuildUrl(PluginConfig.MetaData, path, pluginRequest.AasIdentifier.EncodeBase64Url());
+            var url = BuildUrl(ApiPaths.PluginMetadata, path, pluginRequest.AasIdentifier.EncodeBase64Url());
             var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken);
             if (response == null)
             {
@@ -194,7 +194,7 @@ public class PluginDataProvider(
 
     private static string BuildShellsUrl(int? limit, string? cursor)
     {
-        const string BaseUrl = $"{PluginConfig.MetaData}/{ShellsEndpoint}";
+        const string BaseUrl = $"{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
         var queryParams = new Dictionary<string, string>();
 
         if (limit is > 0)

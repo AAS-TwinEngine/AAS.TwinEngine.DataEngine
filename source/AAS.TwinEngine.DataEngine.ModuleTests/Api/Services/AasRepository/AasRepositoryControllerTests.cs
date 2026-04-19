@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -9,7 +9,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Provide
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 
 using AasCore.Aas3_0;
@@ -19,6 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRepository;
 
@@ -71,7 +72,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://testendpoint.com");
 
-        const string HttpClientName = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
 
         _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockShellTemplate);
@@ -112,7 +113,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://testendpoint.com");
 
-        var httpClientName = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        var httpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(httpClientName).Returns(httpClient);
 
         _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockShellTemplate);
@@ -141,7 +142,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://testendpoint.com");
 
-        const string HttpClientName = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
 
         _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);

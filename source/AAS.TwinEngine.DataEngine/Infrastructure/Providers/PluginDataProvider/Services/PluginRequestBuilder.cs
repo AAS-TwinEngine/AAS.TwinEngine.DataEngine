@@ -2,8 +2,8 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Json.Schema;
 
@@ -17,7 +17,7 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 
         return jsonSchema
             .Select(kvp => new PluginRequestSubmodel(
-                $"{PluginConfig.HttpClientNamePrefix}{kvp.Key}",
+                $"{HttpClientNames.PluginDataProviderPrefix}{kvp.Key}",
                 CreateHttpContent(kvp.Value)))
             .ToList();
     }
@@ -28,7 +28,7 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 
         return plugins
             .Select(plugin => new PluginRequestMetaData(
-                $"{PluginConfig.HttpClientNamePrefix}{plugin}",
+                $"{HttpClientNames.PluginDataProviderPrefix}{plugin}",
                 aasIdentifier ?? string.Empty))
             .ToList();
     }

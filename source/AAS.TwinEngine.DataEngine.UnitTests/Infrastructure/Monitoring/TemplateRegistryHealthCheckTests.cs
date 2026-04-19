@@ -1,6 +1,6 @@
-﻿using System.Net;
+using System.Net;
 
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
@@ -20,8 +20,8 @@ public class TemplateRegistryHealthCheckTests
     {
         var clientFactory = Substitute.For<ICreateClient>();
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -37,8 +37,8 @@ public class TemplateRegistryHealthCheckTests
     {
         var clientFactory = Substitute.For<ICreateClient>();
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -54,8 +54,8 @@ public class TemplateRegistryHealthCheckTests
     {
         var clientFactory = Substitute.For<ICreateClient>();
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -70,8 +70,8 @@ public class TemplateRegistryHealthCheckTests
     public async Task CheckHealthAsync_Returns_Unhealthy_When_AasRegistry_Request_Throws_HttpRequestException()
     {
         var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck).Returns(CreateThrowingHttpClient(new HttpRequestException("network")));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck).Returns(CreateThrowingHttpClient(new HttpRequestException("network")));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -87,8 +87,8 @@ public class TemplateRegistryHealthCheckTests
     {
         var clientFactory = Substitute.For<ICreateClient>();
 
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateThrowingHttpClient(new TaskCanceledException("timeout")));
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateThrowingHttpClient(new TaskCanceledException("timeout")));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -103,9 +103,9 @@ public class TemplateRegistryHealthCheckTests
     public async Task CheckHealthAsync_Returns_Unhealthy_When_AasRegistry_Request_Throws_Exception()
     {
         var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck)
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck)
             .Returns(CreateThrowingHttpClient(new Exception("unexpected")));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -120,8 +120,8 @@ public class TemplateRegistryHealthCheckTests
     public async Task CheckHealthAsync_Checks_Both_Endpoints_In_Parallel_Even_When_AasRegistry_Is_Unhealthy()
     {
         var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.InternalServerError));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -129,16 +129,16 @@ public class TemplateRegistryHealthCheckTests
 
         _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        clientFactory.Received(1).CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck);
-        clientFactory.Received(1).CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck);
+        clientFactory.Received(1).CreateClient(HttpClientNames.AasRegistryHealthCheck);
+        clientFactory.Received(1).CreateClient(HttpClientNames.SubmodelRegistryHealthCheck);
     }
 
     [Fact]
     public async Task CheckHealthAsync_Uses_HealthCheck_Client_Names_Without_Retry_Policy()
     {
         var clientFactory = Substitute.For<ICreateClient>();
-        clientFactory.CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
-        clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.AasRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
+        clientFactory.CreateClient(HttpClientNames.SubmodelRegistryHealthCheck).Returns(CreateHttpClient(HttpStatusCode.OK));
 
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
@@ -146,10 +146,10 @@ public class TemplateRegistryHealthCheckTests
 
         _ = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        clientFactory.Received().CreateClient(AasEnvironmentConfig.AasRegistryHealthCheck);
-        clientFactory.Received().CreateClient(AasEnvironmentConfig.SubmodelRegistryHealthCheck);
-        clientFactory.DidNotReceive().CreateClient(AasEnvironmentConfig.AasRegistry);
-        clientFactory.DidNotReceive().CreateClient(AasEnvironmentConfig.SubmodelRegistry);
+        clientFactory.Received().CreateClient(HttpClientNames.AasRegistryHealthCheck);
+        clientFactory.Received().CreateClient(HttpClientNames.SubmodelRegistryHealthCheck);
+        clientFactory.DidNotReceive().CreateClient(HttpClientNames.AasRegistry);
+        clientFactory.DidNotReceive().CreateClient(HttpClientNames.SubmodelRegistry);
     }
 
     private static HttpClient CreateThrowingHttpClient(Exception exception)

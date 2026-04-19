@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Configuration;
@@ -244,6 +244,12 @@ public class ConfigurationBackwardCompatibilityE2ETests
         // AasEnvironmentRepositoryBaseUrl → TemplateManagement:AasTemplateRepository
         Assert.Equal(new Uri("http://localhost:8081"), tmConfig.AasTemplateRepository.BaseUrl);
 
+        // AasEnvironmentRepositoryBaseUrl → TemplateManagement:SubmodelTemplateRepository
+        Assert.Equal(new Uri("http://localhost:8081"), tmConfig.SubmodelTemplateRepository.BaseUrl);
+
+        // AasEnvironmentRepositoryBaseUrl → TemplateManagement:ConceptDescriptionTemplateRepository
+        Assert.Equal(new Uri("http://localhost:8081"), tmConfig.ConceptDescriptionTemplateRepository.BaseUrl);
+
         // AasRegistryBaseUrl → TemplateManagement:AasTemplateRegistry
         Assert.Equal(new Uri("http://localhost:8082"), tmConfig.AasTemplateRegistry.BaseUrl);
 
@@ -281,9 +287,6 @@ public class ConfigurationBackwardCompatibilityE2ETests
         services.Configure<PluginsConfig>(configuration.GetSection(PluginsConfig.Section));
         services.Configure<TemplateManagementConfig>(configuration.GetSection(TemplateManagementConfig.Section));
         services.Configure<RegistrySettingsConfig>(configuration.GetSection(RegistrySettingsConfig.Section));
-
-        // Register the normalizer that propagates TemplateRepository shorthand to individual repos
-        services.AddSingleton<IPostConfigureOptions<TemplateManagementConfig>, TemplateManagementConfigNormalizer>();
 
         return services.BuildServiceProvider();
     }

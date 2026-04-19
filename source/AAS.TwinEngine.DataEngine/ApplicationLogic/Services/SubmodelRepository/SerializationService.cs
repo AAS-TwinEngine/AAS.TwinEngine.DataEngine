@@ -3,7 +3,6 @@ using System.Xml;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 
 using AasCore.Aas3.Package;
 using AasCore.Aas3_0;
@@ -18,6 +17,10 @@ public class SerializationService(
     IConceptDescriptionService conceptDescriptionService,
     ILogger<SerializationService> logger) : ISerializationService
 {
+    public const string DefaultXmlFileName = "content.xml";
+
+    public const string RootFolder = "aasx";
+
     public async Task<Stream> GetAasxFileStreamAsync(IList<string> aasIds,
                                                      IList<string> submodelIds,
                                                      bool includeConceptDescriptions,
@@ -192,13 +195,13 @@ public class SerializationService(
     /// and the file will be placed directly under the root folder.
     /// Otherwise, a subfolder with the IdShort as its name will be included in the path.
     /// </summary>
-    private string BuildRelativeXmlPath(string? idShort)
+    private static string BuildRelativeXmlPath(string? idShort)
     {
         var validName = GetValidFolderName(idShort ?? string.Empty);
         var includeFolder = validName == idShort;
         return includeFolder
-                   ? $"/{AasxExportOptions.RootFolder}/{validName}/{validName}.xml"
-                   : $"/{AasxExportOptions.RootFolder}/{AasxExportOptions.DefaultXmlFileName}";
+                   ? $"/{RootFolder}/{validName}/{validName}.xml"
+                   : $"/{RootFolder}/{DefaultXmlFileName}";
     }
 
     /// <summary>

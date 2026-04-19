@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -26,12 +26,12 @@ public class HttpClientRegistrationExtensionsTests
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(HttpClientNames.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
 
         var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var httpClient = httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
+        var httpClient = httpClientFactory.CreateClient(HttpClientNames.SubmodelTemplateRepository);
 
         Assert.Contains(httpClient.DefaultRequestHeaders.Accept,
             h => h.MediaType == "application/json");
@@ -47,12 +47,12 @@ public class HttpClientRegistrationExtensionsTests
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(HttpClientNames.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
 
         var serviceProvider = services.BuildServiceProvider();
 
         var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var httpClient = httpClientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
+        var httpClient = httpClientFactory.CreateClient(HttpClientNames.SubmodelTemplateRepository);
 
         Assert.Contains(httpClient.DefaultRequestHeaders.Accept,
             h => h.MediaType == "application/json");
@@ -69,12 +69,12 @@ public class HttpClientRegistrationExtensionsTests
         var headerMapper = Substitute.For<IRequestHeaderMapper>();
         _ = services.AddScoped(_ => headerMapper);
 
-        services.AddHttpClientWithResilience(AasEnvironmentConfig.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
+        services.AddHttpClientWithResilience(HttpClientNames.SubmodelTemplateRepository, DefaultRetryConfig, new Uri("https://example.com"));
         using var handler = new FaultyHttpMessageHandler();
-        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.SubmodelTemplateRepository, options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
+        services.Configure<HttpClientFactoryOptions>(HttpClientNames.SubmodelTemplateRepository, options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
         var serviceProvider = services.BuildServiceProvider();
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var client = factory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
+        var client = factory.CreateClient(HttpClientNames.SubmodelTemplateRepository);
 
         await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(new Uri("http://test.com")));
 
@@ -92,12 +92,12 @@ public class HttpClientRegistrationExtensionsTests
         _ = services.AddScoped(_ => mappingService);
 
         services.AddHttpClientWithResilience(
-            AasEnvironmentConfig.SubmodelTemplateRepository,
+            HttpClientNames.SubmodelTemplateRepository,
             DefaultRetryConfig,
             new Uri("https://example.com"));
 
         using var handler = new FaultyHttpMessageHandler();
-        services.Configure<HttpClientFactoryOptions>(AasEnvironmentConfig.SubmodelTemplateRepository,
+        services.Configure<HttpClientFactoryOptions>(HttpClientNames.SubmodelTemplateRepository,
             options => options.HttpMessageHandlerBuilderActions.Add(builder => builder.PrimaryHandler = handler));
 
         var serviceProvider = services.BuildServiceProvider();
@@ -109,13 +109,13 @@ public class HttpClientRegistrationExtensionsTests
         };
 
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var client = factory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepository);
+        var client = factory.CreateClient(HttpClientNames.SubmodelTemplateRepository);
 
         _ = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync("/test")).ConfigureAwait(false);
 
         mappingService
             .Received()
-            .ApplyMappings(httpContextAccessor.HttpContext, Arg.Any<HttpRequestMessage>(), AasEnvironmentConfig.SubmodelTemplateRepository);
+            .ApplyMappings(httpContextAccessor.HttpContext, Arg.Any<HttpRequestMessage>(), HttpClientNames.SubmodelTemplateRepository);
     }
 
     private sealed class FaultyHttpMessageHandler : HttpMessageHandler

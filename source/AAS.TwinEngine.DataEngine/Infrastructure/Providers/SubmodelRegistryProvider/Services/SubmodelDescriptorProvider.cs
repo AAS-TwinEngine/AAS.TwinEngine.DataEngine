@@ -3,10 +3,10 @@ using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -14,7 +14,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryPro
 
 public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logger, ICreateClient clientFactory) : ISubmodelDescriptorProvider
 {
-    private const string SubModelRegistryPath = AasEnvironmentConfig.SubModelRegistryPath;
+    private const string SubModelRegistryPath = ApiPaths.SubmodelDescriptors;
 
     public async Task<SubmodelDescriptor> GetDataForSubmodelDescriptorByIdAsync(string id, CancellationToken cancellationToken)
     {
@@ -24,7 +24,7 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
 
         var relativeUri = new Uri(url, UriKind.Relative);
 
-        var httpClient = clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistry);
+        var httpClient = clientFactory.CreateClient(HttpClientNames.SubmodelRegistry);
 
         var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);
 

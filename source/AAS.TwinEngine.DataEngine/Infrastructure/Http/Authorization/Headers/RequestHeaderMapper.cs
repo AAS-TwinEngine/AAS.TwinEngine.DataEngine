@@ -2,9 +2,7 @@
 using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
@@ -188,37 +186,37 @@ public class RequestHeaderMapper(
 
     private IList<HeaderMappingRule>? ResolveMappingsForClient(string clientName)
     {
-        if (string.Equals(clientName, AasEnvironmentConfig.AasTemplateRepository, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.AasTemplateRepository, StringComparison.OrdinalIgnoreCase))
         {
             return _templateManagementConfig.AasTemplateRepository.HeaderMappings;
         }
 
-        if (string.Equals(clientName, AasEnvironmentConfig.SubmodelTemplateRepository, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.SubmodelTemplateRepository, StringComparison.OrdinalIgnoreCase))
         {
             return _templateManagementConfig.SubmodelTemplateRepository.HeaderMappings;
         }
 
-        if (string.Equals(clientName, AasEnvironmentConfig.ConceptDescriptorTemplateRepository, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.ConceptDescriptorTemplateRepository, StringComparison.OrdinalIgnoreCase))
         {
             return _templateManagementConfig.ConceptDescriptionTemplateRepository.HeaderMappings;
         }
 
-        if (string.Equals(clientName, AasEnvironmentConfig.AasRegistry, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.AasRegistry, StringComparison.OrdinalIgnoreCase))
         {
             return _templateManagementConfig.AasTemplateRegistry.HeaderMappings;
         }
 
-        if (string.Equals(clientName, AasEnvironmentConfig.SubmodelRegistry, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.SubmodelRegistry, StringComparison.OrdinalIgnoreCase))
         {
             return _templateManagementConfig.SubmodelTemplateRegistry.HeaderMappings;
         }
 
-        if (!clientName.StartsWith(PluginConfig.HttpClientNamePrefix, StringComparison.OrdinalIgnoreCase))
+        if (!clientName.StartsWith(HttpClientNames.PluginDataProviderPrefix, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
-        var pluginName = clientName[PluginConfig.HttpClientNamePrefix.Length..];
+        var pluginName = clientName[HttpClientNames.PluginDataProviderPrefix.Length..];
 
         return _pluginsConfig.Instances
             .FirstOrDefault(p => string.Equals(p.Name, pluginName, StringComparison.OrdinalIgnoreCase))

@@ -29,7 +29,6 @@ public class HttpRequestBaseUrlProviderTests
         return context;
     }
 
-    // ✅ 1. Configured URL should take priority
     [Fact]
     public void GetBaseUrl_WithConfiguredUrl_ReturnsConfiguredValue()
     {
@@ -46,7 +45,6 @@ public class HttpRequestBaseUrlProviderTests
         Assert.Equal(configuredUrl, result);
     }
 
-    // ✅ 2. Dynamic URL from HTTP request
     [Fact]
     public void GetBaseUrl_WithDynamicUrl_ExtractsFromHttpRequest()
     {
@@ -64,7 +62,6 @@ public class HttpRequestBaseUrlProviderTests
         Assert.Equal(new Uri("https://mydomain.com"), result);
     }
 
-    // ✅ 3. Null HttpContext should throw
     [Fact]
     public void GetBaseUrl_WithNullHttpContext_ThrowsInvalidOperationException()
     {
@@ -79,7 +76,6 @@ public class HttpRequestBaseUrlProviderTests
         Assert.Contains("No HTTP request context", ex.Message);
     }
 
-    // 🔒 4. Host header injection is now rejected when AllowedHosts is configured
     [Fact]
     public void GetBaseUrl_WithMaliciousHostHeader_ThrowsWhenAllowedHostsConfigured()
     {
@@ -95,7 +91,6 @@ public class HttpRequestBaseUrlProviderTests
         Assert.Contains("not in the configured AllowedHosts", ex.Message);
     }
 
-    // 🔒 5. Allowed host passes validation
     [Fact]
     public void GetBaseUrl_WithAllowedHost_ReturnsUrl()
     {
@@ -113,7 +108,6 @@ public class HttpRequestBaseUrlProviderTests
         Assert.Equal(new Uri("https://mydomain.com"), result);
     }
 
-    // 🔒 6. Wildcard AllowedHosts permits any host (backward compatible default)
     [Fact]
     public void GetBaseUrl_WithWildcardAllowedHosts_PermitsAnyHost()
     {
@@ -131,7 +125,6 @@ public class HttpRequestBaseUrlProviderTests
         Assert.Equal(new Uri("https://anyhost.com"), result);
     }
 
-    // 🔒 7. Host matching is case-insensitive
     [Fact]
     public void GetBaseUrl_WithDifferentCaseHost_PermitsHost()
     {

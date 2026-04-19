@@ -1,6 +1,6 @@
-﻿using System.Net;
+using System.Net;
 
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
@@ -83,13 +83,13 @@ public class TemplateRepositoryHealthCheckTests
         var successClient = CreateHttpClient(HttpStatusCode.OK);
         var failClient = CreateHttpClient(HttpStatusCode.InternalServerError);
 
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelTemplateRepositoryHealthCheck)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelTemplateRepositoryHealthCheck)
             .Returns(successClient);
 
-        _clientFactory.CreateClient(AasEnvironmentConfig.AasTemplateRepositoryHealthCheck)
+        _clientFactory.CreateClient(HttpClientNames.AasTemplateRepositoryHealthCheck)
             .Returns(failClient);
 
-        _clientFactory.CreateClient(AasEnvironmentConfig.ConceptDescriptorTemplateRepositoryHealthCheck)
+        _clientFactory.CreateClient(HttpClientNames.ConceptDescriptorTemplateRepositoryHealthCheck)
             .Returns(successClient);
 
         var sut = CreateSut();

@@ -1,13 +1,14 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 using Json.Schema;
 
 using NSubstitute;
+
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -49,8 +50,8 @@ public class PluginRequestBuilderTests
         var result = _sut.Build(jsonSchemas).ToList();
 
         Assert.Equal(2, result.Count);
-        Assert.Contains(result, r => r.HttpClientName == $"{PluginConfig.HttpClientNamePrefix}schema1");
-        Assert.Contains(result, r => r.HttpClientName == $"{PluginConfig.HttpClientNamePrefix}schema2");
+        Assert.Contains(result, r => r.HttpClientName == $"{HttpClientNames.PluginDataProviderPrefix}schema1");
+        Assert.Contains(result, r => r.HttpClientName == $"{HttpClientNames.PluginDataProviderPrefix}schema2");
     }
 
     [Fact]
@@ -80,8 +81,8 @@ public class PluginRequestBuilderTests
         var result = _sut.Build(jsonSchemas).ToList();
 
         Assert.Equal(2, result.Count);
-        Assert.Contains(result, r => r.HttpClientName == $"{PluginConfig.HttpClientNamePrefix}schema1");
-        Assert.Contains(result, r => r.HttpClientName == $"{PluginConfig.HttpClientNamePrefix}schema2");
+        Assert.Contains(result, r => r.HttpClientName == $"{HttpClientNames.PluginDataProviderPrefix}schema1");
+        Assert.Contains(result, r => r.HttpClientName == $"{HttpClientNames.PluginDataProviderPrefix}schema2");
     }
 
     [Fact]
@@ -116,12 +117,12 @@ public class PluginRequestBuilderTests
         Assert.Collection(result,
             item =>
             {
-                Assert.Equal($"{PluginConfig.HttpClientNamePrefix}PluginA", item.HttpClientName);
+                Assert.Equal($"{HttpClientNames.PluginDataProviderPrefix}PluginA", item.HttpClientName);
                 Assert.Equal(string.Empty, item.AasIdentifier);
             },
             item =>
             {
-                Assert.Equal($"{PluginConfig.HttpClientNamePrefix}PluginB", item.HttpClientName);
+                Assert.Equal($"{HttpClientNames.PluginDataProviderPrefix}PluginB", item.HttpClientName);
                 Assert.Equal(string.Empty, item.AasIdentifier);
             });
     }
@@ -136,7 +137,7 @@ public class PluginRequestBuilderTests
         var result = _sut.Build(plugins, AasIdentifier);
 
         var item = Assert.Single(result);
-        Assert.Equal($"{PluginConfig.HttpClientNamePrefix}PluginA", item.HttpClientName);
+        Assert.Equal($"{HttpClientNames.PluginDataProviderPrefix}PluginA", item.HttpClientName);
         Assert.Equal("aas-123", item.AasIdentifier);
     }
 
@@ -149,7 +150,7 @@ public class PluginRequestBuilderTests
         var result = _sut.Build(plugins, null);
 
         var item = Assert.Single(result);
-        Assert.Equal($"{PluginConfig.HttpClientNamePrefix}PluginA", item.HttpClientName);
+        Assert.Equal($"{HttpClientNames.PluginDataProviderPrefix}PluginA", item.HttpClientName);
         Assert.Equal(string.Empty, item.AasIdentifier);
     }
 
