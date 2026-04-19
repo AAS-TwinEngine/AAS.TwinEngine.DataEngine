@@ -37,6 +37,7 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
         var mappingRules = _configuration.GetSection(TemplateMappingRules.Section).Get<TemplateMappingRules>();
         if (mappingRules != null)
         {
+            RemapLegacyExtractionRules(mappingRules);
             options.TemplateMappingRules = mappingRules;
         }
 
@@ -79,6 +80,35 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
                 BaseUrl = aasEnv.SubModelRegistryBaseUrl,
                 HeaderMappings = []
             };
+        }
+    }
+
+    /// <summary>
+    /// V1 used { "Pattern": "Split", "Separator": "/", "Index": 6 }
+    /// where Pattern held the strategy name and Separator held the actual delimiter.
+    /// Detects this by checking for a "Separator" key in the raw config and remaps accordingly.
+    /// </summary>
+    private void RemapLegacyExtractionRules(TemplateMappingRules rules)
+    {
+        var rulesSection = _configuration.GetSection($"{TemplateMappingRules.Section}:AasIdExtractionRules");
+
+        for (var i = 0; i < rules.AasIdExtractionRules.Count; i++)
+        {
+            var separator = rulesSection.GetSection(i.ToString())["Separator"];
+
+            if (string.IsNullOrEmpty(separator))
+            {
+                continue;
+            }
+
+            var rule = rules.AasIdExtractionRules[i];
+            // In old config, "Pattern" was the strategy name (e.g. "Split")
+            if (Enum.TryParse<ExtractionStrategy>(rule.Pattern, ignoreCase: true, out var strategy))
+            {
+                rule.Strategy = strategy;
+            }
+
+            rule.Pattern = separator;
         }
     }
 }

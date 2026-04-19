@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 
 using AasCore.Aas3_0;
 
@@ -201,25 +200,12 @@ internal static class TestData
 
     public static string? GetProductIdFromRule(string aasIdentifier, int index)
     {
-        var aasIdExtractionRules = new List<AasIdExtractionRules>
+        var parts = aasIdentifier?.Split("/");
+        if (parts is null || parts.Length < index || index < 1)
         {
-            new() {
-                Pattern = "Regex",
-                Index = index,
-                Separator = "/"
-            }
-        };
+            return null;
+        }
 
-        var productId = aasIdExtractionRules
-            .Select(rule => new
-            {
-                Rule = rule,
-                Parts = aasIdentifier?.Split(rule.Separator)
-            })
-            .Where(x => x.Parts is { Length: >= 1 } && x.Rule.Index > 0 && x.Parts.Length >= x.Rule.Index)
-            .Select(x => x.Parts![x.Rule.Index - 1])
-            .FirstOrDefault();
-
-        return productId;
+        return parts[index - 1];
     }
 }

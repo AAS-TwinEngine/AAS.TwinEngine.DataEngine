@@ -13,7 +13,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
 {
     private readonly ILogger<ShellTemplateMappingProvider> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IList<ShellTemplateMappings> _shellTemplateMappings = options.Value.TemplateMappingRules.ShellTemplateMappings ?? throw new ArgumentException("ShellTemplateMappings are missing in TemplateMappingRules");
-    private readonly IList<AasIdExtractionRules> _aasIdExtractionRules = options.Value.TemplateMappingRules.AasIdExtractionRules ?? throw new ArgumentException("AasIdExtractionRules are missing in TemplateMappingRules");
+    private readonly IList<AasIdExtractionRule> _aasIdExtractionRules = options.Value.TemplateMappingRules.AasIdExtractionRules ?? throw new ArgumentException("AasIdExtractionRules are missing in TemplateMappingRules");
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(2);
 
     public string? GetTemplateId(string aasIdentifier)
@@ -36,22 +36,59 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
 
     public string GetProductIdFromRule(string aasIdentifier)
     {
-        var productId = _aasIdExtractionRules
-            .Select(rule => new
-            {
-                Rule = rule,
-                Parts = aasIdentifier?.Split(rule.Separator)
-            })
-            .Where(x => x.Parts is { Length: >= 1 } && x.Rule.Index > 0 && x.Parts.Length >= x.Rule.Index)
-            .Select(x => x.Parts![x.Rule.Index - 1])
-            .FirstOrDefault(extractedId => !string.Equals(extractedId, aasIdentifier, StringComparison.Ordinal));
-
-        if (!string.IsNullOrEmpty(productId))
+        foreach (var rule in _aasIdExtractionRules)
         {
-            return productId;
+            var extracted = rule.Strategy switch
+            {
+                ExtractionStrategy.Regex => TryExtractWithRegex(aasIdentifier, rule),
+                ExtractionStrategy.Split => TryExtractWithSplit(aasIdentifier, rule),
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(extracted))
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrEmpty(rule.ValidationPattern))
+            {
+                if (!Regex.IsMatch(extracted, rule.ValidationPattern, RegexOptions.None, _regexTimeout))
+                {
+                    continue;
+                }
+            }
+
+            return extracted;
         }
 
         _logger.LogError("ProductId could not be extracted from the provided aas Identifier.");
         throw new ResourceNotFoundException();
+    }
+
+    private string? TryExtractWithRegex(string input, AasIdExtractionRule rule)
+    {
+        var match = Regex.Match(input, rule.Pattern, RegexOptions.None, _regexTimeout);
+        if (!match.Success || rule.Index < 1 || rule.Index >= match.Groups.Count)
+        {
+            return null;
+        }
+
+        var value = match.Groups[rule.Index].Value;
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
+
+    private static string? TryExtractWithSplit(string input, AasIdExtractionRule rule)
+    {
+        var parts = input.Split(rule.Pattern);
+        var startIndex = rule.Index - 1; // convert 1-based to 0-based
+        var endIndex = (rule.EndIndex ?? rule.Index) - 1;
+
+        if (startIndex < 0 || endIndex < startIndex || endIndex >= parts.Length)
+        {
+            return null;
+        }
+
+        var extracted = string.Join(rule.Pattern, parts[startIndex..(endIndex + 1)]);
+        return string.IsNullOrEmpty(extracted) ? null : extracted;
     }
 }
