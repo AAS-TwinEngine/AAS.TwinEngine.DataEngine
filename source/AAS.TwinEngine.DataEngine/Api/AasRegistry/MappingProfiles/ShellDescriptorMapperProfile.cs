@@ -10,8 +10,6 @@ public static class ShellDescriptorMapperProfile
 {
     public static ShellDescriptorsDto ToDto(this ShellDescriptors descriptors)
     {
-        ArgumentNullException.ThrowIfNull(descriptors);
-
         return new ShellDescriptorsDto
         {
             PagingMetaData = new PagingMetaDataDto
@@ -24,8 +22,6 @@ public static class ShellDescriptorMapperProfile
 
     public static ShellDescriptorDto ToDto(this ShellDescriptor descriptor)
     {
-        ArgumentNullException.ThrowIfNull(descriptor);
-
         return new ShellDescriptorDto
         {
             Description = descriptor.Description,

@@ -8,8 +8,6 @@ public static class SubmodelRefMapperProfile
 {
     public static SubmodelRefDto ToDto(this SubmodelRef submodelRefs)
     {
-        ArgumentNullException.ThrowIfNull(submodelRefs);
-
         return new SubmodelRefDto
         {
             PagingMetaData = new PagingMetaDataDto

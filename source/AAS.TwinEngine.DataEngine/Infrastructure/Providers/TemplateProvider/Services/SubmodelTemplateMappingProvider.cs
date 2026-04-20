@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
@@ -11,7 +12,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Se
 
 public class SubmodelTemplateMappingProvider(ILogger<SubmodelTemplateMappingProvider> logger, IOptions<TemplateManagementConfig> options) : ISubmodelTemplateMappingProvider
 {
-    private readonly IList<SubmodelTemplateMappings> _submodelTemplateMappings = options.Value.TemplateMappingRules.SubmodelTemplateMappings ?? throw new ArgumentException("SubmodelTemplateMappings is missing in TemplateMappingSettings");
+    private readonly IList<SubmodelTemplateMappings> _submodelTemplateMappings = options.Value.TemplateMappingRules.SubmodelTemplateMappings ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.SubmodelTemplateMappings), logger);
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(2);
 
     public string? GetTemplateId(string submodelId)

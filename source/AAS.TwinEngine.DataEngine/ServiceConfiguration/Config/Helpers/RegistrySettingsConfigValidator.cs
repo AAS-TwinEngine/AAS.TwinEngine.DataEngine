@@ -1,4 +1,6 @@
-﻿using Cronos;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
+using Cronos;
 
 using Microsoft.Extensions.Options;
 
@@ -8,7 +10,10 @@ public class RegistrySettingsConfigValidator : IValidateOptions<RegistrySettings
 {
     public ValidateOptionsResult Validate(string? name, RegistrySettingsConfig options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options is null)
+        {
+            throw new InvalidDependencyException(nameof(options));
+        }
 
         if (!options.PreComputed.Enabled)
         {
@@ -24,7 +29,7 @@ public class RegistrySettingsConfigValidator : IValidateOptions<RegistrySettings
 
         try
         {
-            CronExpression.Parse(schedule, CronFormat.IncludeSeconds);
+            _ = CronExpression.Parse(schedule, CronFormat.IncludeSeconds);
         }
         catch (CronFormatException ex)
         {

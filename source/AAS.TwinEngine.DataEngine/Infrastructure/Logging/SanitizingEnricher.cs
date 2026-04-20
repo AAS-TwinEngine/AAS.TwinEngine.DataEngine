@@ -1,4 +1,6 @@
-﻿using Serilog.Core;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
+using Serilog.Core;
 using Serilog.Events;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Logging;
@@ -11,7 +13,10 @@ public class SanitizingEnricher : ILogEventEnricher
 {
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        ArgumentNullException.ThrowIfNull(logEvent);
+        if (logEvent is null)
+        {
+            throw new InvalidDependencyException(nameof(logEvent));
+        }
 
         var propertiesToUpdate = new List<LogEventProperty>();
 

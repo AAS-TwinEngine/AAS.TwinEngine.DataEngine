@@ -18,7 +18,10 @@ public class PluginManifestConflictHandler(
 
     public Task ProcessManifests(IList<PluginManifest> manifests)
     {
-        ArgumentNullException.ThrowIfNull(manifests);
+        if (manifests is null)
+        {
+            throw new InvalidDependencyException(nameof(manifests), logger);
+        }
         if (manifests.Count == 0)
         {
             logger.LogError("No plugin manifests found. ");

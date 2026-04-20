@@ -2,6 +2,7 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
@@ -16,9 +17,10 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 public class SubmodelDescriptorService(
     ISubmodelDescriptorProvider submodelDescriptorProvider,
     ISubmodelTemplateMappingProvider submodelTemplateMappingProvider,
-    IOptions<GeneralConfig> generalConfig) : ISubmodelDescriptorService
+    IOptions<GeneralConfig> generalConfig,
+    ILogger<SubmodelDescriptorService> logger) : ISubmodelDescriptorService
 {
-    private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new ArgumentNullException(nameof(generalConfig), "BaseUrl is required.");
+    private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
 
     public async Task<SubmodelDescriptor> GetSubmodelDescriptorByIdAsync(string id, CancellationToken cancellationToken)
     {

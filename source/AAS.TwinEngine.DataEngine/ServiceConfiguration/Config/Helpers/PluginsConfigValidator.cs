@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
@@ -12,7 +14,10 @@ public partial class PluginsConfigValidator : IValidateOptions<PluginsConfig>
 {
     public ValidateOptionsResult Validate(string? name, PluginsConfig options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options is null)
+        {
+            throw new InvalidDependencyException(nameof(options));
+        }
 
         var defaultLanguages = options.MultiLanguageProperty.DefaultLanguages;
         if (defaultLanguages == null || defaultLanguages.Count == 0)
@@ -38,8 +43,8 @@ public partial class PluginsConfigValidator : IValidateOptions<PluginsConfig>
         if (invalidLanguages.Count > 0)
         {
             return ValidateOptionsResult.Fail(
-                $"Invalid BCP-47 language tag(s) in {PluginsConfig.Section}.MultiLanguageProperty.DefaultLanguages: " +
-                $"{string.Join(", ", invalidLanguages)}. Note: Use hyphens (-) not underscores (_).");
+                $"Invalid BCP-47 or Null language tag(s) in {PluginsConfig.Section}.MultiLanguageProperty.DefaultLanguages: " +
+                $"{string.Join(", ", invalidLanguages)}.");
         }
 
         return ValidateOptionsResult.Success;

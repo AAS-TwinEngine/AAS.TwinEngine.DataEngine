@@ -136,9 +136,15 @@ public class RequestHeaderMapper(
 
     public void ApplyMappings(HttpContext? httpContext, HttpRequestMessage outgoingRequest, string clientName)
     {
-        ArgumentNullException.ThrowIfNull(outgoingRequest);
-        ArgumentNullException.ThrowIfNull(clientName);
+        if (outgoingRequest is null)
+        {
+            throw new InvalidDependencyException(nameof(outgoingRequest), logger);
+        }
 
+        if (clientName is null)
+        {
+            throw new InvalidDependencyException(nameof(clientName), logger);
+        }
         if (httpContext == null)
         {
             return;
