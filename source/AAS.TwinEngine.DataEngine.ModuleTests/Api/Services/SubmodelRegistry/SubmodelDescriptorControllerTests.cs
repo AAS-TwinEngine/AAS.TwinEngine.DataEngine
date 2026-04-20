@@ -186,12 +186,6 @@ public abstract class SubmodelDescriptorControllerTestsBase : IDisposable
     }
 }
 
-public class SubmodelDescriptorControllerTests_V1Config : SubmodelDescriptorControllerTestsBase
-{
-    public SubmodelDescriptorControllerTests_V1Config() : base("v1-config") { }
-}
+public class SubmodelDescriptorControllerTestsV1Config() : SubmodelDescriptorControllerTestsBase("v1-config");
 
-public class SubmodelDescriptorControllerTests_V2Config : SubmodelDescriptorControllerTestsBase
-{
-    public SubmodelDescriptorControllerTests_V2Config() : base("v2-config") { }
-}
+public class SubmodelDescriptorControllerTestsV2Config() : SubmodelDescriptorControllerTestsBase("v2-config");

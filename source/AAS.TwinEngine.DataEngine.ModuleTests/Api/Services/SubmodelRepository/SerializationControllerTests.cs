@@ -242,12 +242,6 @@ public abstract class SerializationControllerTestsBase : IDisposable
     }
 }
 
-public class SerializationControllerTests_V1Config : SerializationControllerTestsBase
-{
-    public SerializationControllerTests_V1Config() : base("v1-config") { }
-}
+public class SerializationControllerTestsV1Config() : SerializationControllerTestsBase("v1-config");
 
-public class SerializationControllerTests_V2Config : SerializationControllerTestsBase
-{
-    public SerializationControllerTests_V2Config() : base("v2-config") { }
-}
+public class SerializationControllerTestsV2Config() : SerializationControllerTestsBase("v2-config");

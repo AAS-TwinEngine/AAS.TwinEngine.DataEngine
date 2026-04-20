@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -328,15 +328,9 @@ public abstract class SubmodelRepositoryControllerTestsBase : IDisposable
         => $"/submodels/{submodelIdentifier}/submodel-elements/{Uri.EscapeDataString(idShortPath)}";
 }
 
-public class SubmodelRepositoryControllerTests_V1Config : SubmodelRepositoryControllerTestsBase
-{
-    public SubmodelRepositoryControllerTests_V1Config() : base("v1-config") { }
-}
+public class SubmodelRepositoryControllerTestsV1Config() : SubmodelRepositoryControllerTestsBase("v1-config");
 
-public class SubmodelRepositoryControllerTests_V2Config : SubmodelRepositoryControllerTestsBase
-{
-    public SubmodelRepositoryControllerTests_V2Config() : base("v2-config") { }
-}
+public class SubmodelRepositoryControllerTestsV2Config() : SubmodelRepositoryControllerTestsBase("v2-config");
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
 {

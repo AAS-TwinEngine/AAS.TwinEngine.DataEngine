@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -23,14 +23,14 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRepository;
 
-public abstract class AasRepositoryControllerTestsBase : IDisposable
+public abstract class AasRepositoryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
-    protected AasRepositoryControllerTestsBase(string configDir)
+    protected AasRepositoryControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
@@ -60,7 +60,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
     public async Task GetShellByIdAsync_ReturnsOkAsync()
     {
         // Arrange
-        var aasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1NjgvdGVzdC9hYXM=";
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1NjgvdGVzdC9hYXM=";
         var mockShellTemplate = TestData.CreateShellTemplate();
         var mockAssetInformationTemplate = TestData.CreateAssetInformationTemplate();
         using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
@@ -80,7 +80,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
         _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
 
         // Act
-        var response = await _client.GetAsync($"/shells/{aasIdentifier}");
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -93,7 +93,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
         var expectedShell = TestData.CreateShellResponse();
         Assert.Equal(shellResponse, expectedShell);
         var productId = TestData.GetProductIdFromRule(shell.Submodels!.FirstOrDefault()?.Keys.FirstOrDefault()!.Value!, 5);
-        var expectedProductId = TestData.GetProductIdFromRule(aasIdentifier.DecodeBase64Url(), 6);
+        var expectedProductId = TestData.GetProductIdFromRule(AasIdentifier.DecodeBase64Url(), 6);
         Assert.Equal(productId, expectedProductId);
     }
 
@@ -101,7 +101,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
     public async Task GetShellByIdAsync_ReturnsNotFoundAsync_WhenErrorWhileExtractionOfProductIdAsync()
     {
         // Arrange
-        var aasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFz";
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFz";
         var mockShellTemplate = TestData.CreateShellTemplate();
         var mockAssetInformationTemplate = TestData.CreateAssetInformationTemplate();
         using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
@@ -121,7 +121,7 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
         _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
 
         // Act
-        var response = await _client.GetAsync($"/shells/{aasIdentifier}");
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}");
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -341,15 +341,9 @@ public abstract class AasRepositoryControllerTestsBase : IDisposable
     }
 }
 
-public class AasRepositoryControllerTests_V1Config : AasRepositoryControllerTestsBase
-{
-    public AasRepositoryControllerTests_V1Config() : base("v1-config") { }
-}
+public class AasRepositoryControllerTestsV1Config() : AasRepositoryControllerTests("v1-config");
 
-public class AasRepositoryControllerTests_V2Config : AasRepositoryControllerTestsBase
-{
-    public AasRepositoryControllerTests_V2Config() : base("v2-config") { }
-}
+public class AasRepositoryControllerTestsV2Config() : AasRepositoryControllerTests("v2-config");
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
 {

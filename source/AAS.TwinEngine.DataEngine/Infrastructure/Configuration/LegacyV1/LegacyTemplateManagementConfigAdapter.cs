@@ -13,9 +13,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 [Obsolete("V1 configuration is deprecated and will be removed in next major release")]
 public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configuration) : IConfigureOptions<TemplateManagementConfig>
 {
-    private readonly IConfiguration _configuration = configuration;
-
-    public void Configure(TemplateManagementConfig options) => MapToConfig(_configuration, options);
+    public void Configure(TemplateManagementConfig options) => MapToConfig(configuration, options);
 
     /// <summary>
     /// Static entry point used during DI registration to apply V1 mapping without BuildServiceProvider().
@@ -42,7 +40,7 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
         var mappingRules = configuration.GetSection(TemplateMappingRules.Section).Get<TemplateMappingRules>();
         if (mappingRules != null)
         {
-            RemapLegacyExtractionRules(mappingRules);
+            RemapLegacyExtractionRules(configuration, mappingRules);
             options.TemplateMappingRules = mappingRules;
         }
 
@@ -156,9 +154,9 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
     /// where Pattern held the strategy name and Separator held the actual delimiter.
     /// Detects this by checking for a "Separator" key in the raw config and remaps accordingly.
     /// </summary>
-    private void RemapLegacyExtractionRules(TemplateMappingRules rules)
+    private static void RemapLegacyExtractionRules(IConfiguration configuration, TemplateMappingRules rules)
     {
-        var rulesSection = _configuration.GetSection($"{TemplateMappingRules.Section}:AasIdExtractionRules");
+        var rulesSection = configuration.GetSection($"{TemplateMappingRules.Section}:AasIdExtractionRules");
 
         for (var i = 0; i < rules.AasIdExtractionRules.Count; i++)
         {
