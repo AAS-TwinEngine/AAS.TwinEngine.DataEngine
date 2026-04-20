@@ -51,6 +51,11 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
                 continue;
             }
 
+            if (string.Equals(extracted, aasIdentifier, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             if (!string.IsNullOrEmpty(rule.ValidationPattern) &&
                 !Regex.IsMatch(extracted, rule.ValidationPattern, RegexOptions.None, _regexTimeout))
             {
