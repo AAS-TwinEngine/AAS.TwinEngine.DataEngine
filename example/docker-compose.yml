@@ -111,9 +111,10 @@ services:
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__0=CarbonFootprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__1=Footprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__2=Carbon
-      - ExtractionRules__ProductIdExtractionRules__0__Pattern=Regex
+      - ExtractionRules__ProductIdExtractionRules__0__Pattern=/
       - ExtractionRules__ProductIdExtractionRules__0__Index=5
-      - ExtractionRules__ProductIdExtractionRules__0__Separator=/
+      - ExtractionRules__ProductIdExtractionRules__0__Strategy=Split
+      - ExtractionRules__ProductIdExtractionRules__0__Description=Default split by '/' segment 6
     networks:
       - twinengine-network
 

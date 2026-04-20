@@ -433,20 +433,18 @@ public class ShellTemplateMappingProviderTests
     // ── Constructor: null logger ──
 
     [Fact]
-    public void Constructor_NullLogger_ThrowsArgumentNullException()
+    public void Constructor_NullLogger_ThrowsInvalidDependencyException()
     {
         var options = Substitute.For<IOptions<TemplateManagementConfig>>();
         options.Value.Returns(new TemplateManagementConfig());
 
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-            new ShellTemplateMappingProvider(null!, options));
-        Assert.Equal("logger", ex.ParamName);
+        var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(null!, options));
     }
 
     // ── Constructor: null ShellTemplateMappings ──
 
     [Fact]
-    public void Constructor_NullShellTemplateMappings_ThrowsArgumentException()
+    public void Constructor_NullShellTemplateMappings_ThrowsInvalidDependencyException()
     {
         var options = Substitute.For<IOptions<TemplateManagementConfig>>();
         options.Value.Returns(new TemplateManagementConfig
@@ -458,15 +456,13 @@ public class ShellTemplateMappingProviderTests
             }
         });
 
-        var ex = Assert.Throws<ArgumentException>(() =>
-            new ShellTemplateMappingProvider(_logger, options));
-        Assert.Contains("ShellTemplateMappings are missing", ex.Message, StringComparison.Ordinal);
+        var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(_logger, options));
     }
 
     // ── Constructor: null AasIdExtractionRules ──
 
     [Fact]
-    public void Constructor_NullAasIdExtractionRules_ThrowsArgumentException()
+    public void Constructor_NullAasIdExtractionRules_ThrowsInvalidDependencyException()
     {
         var options = Substitute.For<IOptions<TemplateManagementConfig>>();
         options.Value.Returns(new TemplateManagementConfig
@@ -478,9 +474,7 @@ public class ShellTemplateMappingProviderTests
             }
         });
 
-        var ex = Assert.Throws<ArgumentException>(() =>
-            new ShellTemplateMappingProvider(_logger, options));
-        Assert.Contains("AasIdExtractionRules are missing", ex.Message, StringComparison.Ordinal);
+        var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(_logger, options));
     }
 
     // ── Empty identifier ──

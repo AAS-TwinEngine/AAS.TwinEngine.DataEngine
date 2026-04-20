@@ -69,6 +69,7 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
             || mappingRules?.ShellTemplateMappings?.Count > 0
             || mappingRules?.AasIdExtractionRules?.Count > 0)
         {
+            RemapLegacyExtractionRules(configuration, mappingRules);
             options.TemplateMappingRules = mappingRules;
         }
 
