@@ -15,7 +15,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository
 public partial class SubmodelTemplateService(
     ITemplateProvider templateProvider,
     ISubmodelTemplateMappingProvider submodelTemplateMappingProvider,
-    ILogger<AasRepositoryTemplateService> logger) : ISubmodelTemplateService
+    ILogger<SubmodelTemplateService> logger) : ISubmodelTemplateService
 {
     private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new InvalidDependencyException(nameof(templateProvider));
 

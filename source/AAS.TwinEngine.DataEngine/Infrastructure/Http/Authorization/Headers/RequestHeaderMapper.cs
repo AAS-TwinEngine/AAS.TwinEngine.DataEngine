@@ -136,15 +136,7 @@ public class RequestHeaderMapper(
 
     public void ApplyMappings(HttpContext? httpContext, HttpRequestMessage outgoingRequest, string clientName)
     {
-        if (outgoingRequest is null)
-        {
-            throw new InvalidDependencyException(nameof(outgoingRequest), logger);
-        }
-
-        if (clientName is null)
-        {
-            throw new InvalidDependencyException(nameof(clientName), logger);
-        }
+        ValidateInputs(outgoingRequest, clientName);
         if (httpContext == null)
         {
             return;
@@ -185,6 +177,19 @@ public class RequestHeaderMapper(
                 _ = outgoingRequest.Headers.Remove(targetName);
                 _ = outgoingRequest.Headers.TryAddWithoutValidation(targetName, combinedValue);
             }
+        }
+    }
+
+    private void ValidateInputs(HttpRequestMessage outgoingRequest, string clientName)
+    {
+        if (outgoingRequest is null)
+        {
+            throw new InvalidDependencyException(nameof(outgoingRequest), logger);
+        }
+
+        if (clientName is null)
+        {
+            throw new InvalidDependencyException(nameof(clientName), logger);
         }
     }
 

@@ -166,6 +166,11 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
             normalized = JsonNode.Parse(json)?.AsObject();
 
             EscapeJsonReferencePointers(normalized);
+            if (normalized == null)
+            {
+                throw new InvalidDependencyException(nameof(normalized), logger);
+            }
+
             normalized["$id"] = normalized["$id"]?.GetValue<string>() ?? $"urn:uuid:{Guid.NewGuid():D}";
 
             return true;

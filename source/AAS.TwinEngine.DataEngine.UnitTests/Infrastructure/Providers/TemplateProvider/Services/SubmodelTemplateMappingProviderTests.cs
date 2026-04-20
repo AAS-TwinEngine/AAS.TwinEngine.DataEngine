@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -57,12 +58,11 @@ public class SubmodelTemplateMappingProviderTests
     }
 
     [Fact]
-    public void GetTemplateId_ThrowsArgumentException_WhenTemplateMappingsIsMissing()
+    public void GetTemplateId_ThrowsInvalidDependencyException_WhenTemplateMappingsIsMissing()
     {
         _options.Value.Returns(new TemplateManagementConfig { TemplateMappingRules = new TemplateMappingRules { SubmodelTemplateMappings = null! } });
 
-        var exception = Assert.Throws<ArgumentException>(() => new SubmodelTemplateMappingProvider(_logger, _options));
-        Assert.IsType<ArgumentException>(exception);
-        Assert.Equal("SubmodelTemplateMappings is missing in TemplateMappingSettings", exception.Message);
+        var exception = Assert.Throws<InvalidDependencyException>(() => new SubmodelTemplateMappingProvider(_logger, _options));
+        Assert.IsType<InvalidDependencyException>(exception);
     }
 }
