@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
@@ -10,7 +12,10 @@ public partial class MultiLanguagePropertySettingsValidator : IValidateOptions<M
 {
     public ValidateOptionsResult Validate(string? name, MultiLanguagePropertySettings options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options == null)
+        {
+            throw new InvalidDependencyException(nameof(options));
+        }
 
         if (options.DefaultLanguages == null || options.DefaultLanguages.Count == 0)
         {
@@ -36,7 +41,7 @@ public partial class MultiLanguagePropertySettingsValidator : IValidateOptions<M
         if (invalidLanguages.Count > 0)
         {
             return ValidateOptionsResult.Fail(
-                                              $"Invalid BCP-47 language tag(s) in {MultiLanguagePropertySettings.Section}.DefaultLanguages: " +
+                                              $"Invalid BCP-47 or Null language tag(s) in {MultiLanguagePropertySettings.Section}.DefaultLanguages: " +
                                               $"{string.Join(", ", invalidLanguages)}. Note: Use hyphens (-) not underscores (_).");
         }
 

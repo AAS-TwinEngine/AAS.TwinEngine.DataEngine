@@ -28,10 +28,12 @@ public class SemanticIdHandlerTests
     private readonly ILogger<SubmodelFiller> _fillerLogger;
     private readonly IOptions<PluginsConfig> _pluginsConfig;
     private readonly IOptions<TemplateManagementConfig> _templateManagementConfig;
+    private readonly ILogger<SemanticTreeExtractor> _logger;
 
     public SemanticIdHandlerTests()
     {
         _fillerLogger = Substitute.For<ILogger<SubmodelFiller>>();
+        _logger = Substitute.For<ILogger<SemanticTreeExtractor>>();
         _pluginsConfig = Options.Create(new PluginsConfig
         {
             MultiLanguageProperty = new PluginMultiLanguagePropertyConfig
@@ -681,7 +683,7 @@ public class SemanticIdHandlerTests
     }
 
     [Fact]
-    public void FillOutTemplate_ThrowsArgumentException_WhenElementTypeIsUnsupported()
+    public void FillOutTemplate_ThrowsInternalDataProcessingException_WhenElementTypeIsUnsupported()
     {
         var unsupportedElement = new Operation
         {
@@ -868,7 +870,7 @@ public class SemanticIdHandlerTests
             new RelationshipElementHandler(resolver, referenceHelper),
         };
 
-        var extractor = new SemanticTreeExtractor(resolver, helper, handlers);
+        var extractor = new SemanticTreeExtractor(resolver, helper, handlers, _logger);
         var filler = new SubmodelFiller(resolver, helper, handlers, _fillerLogger);
         return new SemanticIdHandler(extractor, filler);
     }

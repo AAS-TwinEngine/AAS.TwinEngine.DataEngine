@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
@@ -12,7 +13,10 @@ public static class LegacyConfigurationDetector
 {
     public static bool IsV1Configuration(IConfiguration configuration)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
+        if (configuration == null)
+        {
+            throw new InvalidDependencyException(nameof(configuration));
+        }
 
         // V2 introduces these grouped top-level sections; if any exists → V2
         var isV2 = configuration.GetSection(GeneralConfig.Section).Exists()

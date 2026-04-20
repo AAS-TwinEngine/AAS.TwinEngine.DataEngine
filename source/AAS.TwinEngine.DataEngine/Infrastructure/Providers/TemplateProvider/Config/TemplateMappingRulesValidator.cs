@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
@@ -10,7 +11,10 @@ public class TemplateMappingRulesValidator : IValidateOptions<TemplateManagement
 {
     public ValidateOptionsResult Validate(string? name, TemplateManagementConfig options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options == null)
+        {
+            throw new InvalidDependencyException(nameof(options));
+        }
 
         var rules = options.TemplateMappingRules.AasIdExtractionRules;
 
@@ -134,7 +138,7 @@ public class TemplateMappingRulesValidator : IValidateOptions<TemplateManagement
             error = null;
             return true;
         }
-        catch (ArgumentException ex)
+        catch (InvalidDependencyException ex)
         {
             error = ex.Message;
             return false;

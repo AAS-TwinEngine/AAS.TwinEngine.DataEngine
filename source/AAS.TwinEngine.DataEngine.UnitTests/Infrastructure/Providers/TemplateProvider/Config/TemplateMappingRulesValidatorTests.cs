@@ -1,3 +1,4 @@
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -204,10 +205,7 @@ public class TemplateMappingRulesValidatorTests
     // ── Null options → throws ──
 
     [Fact]
-    public void Validate_NullOptions_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => _sut.Validate(null, null!));
-    }
+    public void Validate_NullOptions_ThrowsInvalidDependencyException() => Assert.Throws<InvalidDependencyException>(() => _sut.Validate(null, null!));
 
     // ── Uses Description in error message when available ──
 
