@@ -2,11 +2,12 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -15,8 +16,11 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 public class SubmodelDescriptorService(
     ISubmodelDescriptorProvider submodelDescriptorProvider,
     ISubmodelTemplateMappingProvider submodelTemplateMappingProvider,
-    IBaseUrlProvider baseUrlProvider) : ISubmodelDescriptorService
+    IOptions<GeneralConfig> generalConfig,
+    ILogger<SubmodelDescriptorService> logger) : ISubmodelDescriptorService
 {
+    private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
+
     public async Task<SubmodelDescriptor> GetSubmodelDescriptorByIdAsync(string id, CancellationToken cancellationToken)
     {
         try
@@ -85,5 +89,5 @@ public class SubmodelDescriptorService(
         endpoint.ProtocolInformation.Href = href;
     }
 
-    private string GenerateHref(string encodedId) => $"{baseUrlProvider.GetBaseUrl()}{ApiPaths.Submodels}/{encodedId}";
+    private string GenerateHref(string encodedId) => $"{_baseUrl}{ApiPaths.Submodels}/{encodedId}";
 }

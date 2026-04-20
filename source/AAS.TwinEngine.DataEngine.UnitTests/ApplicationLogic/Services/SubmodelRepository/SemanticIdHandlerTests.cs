@@ -47,20 +47,10 @@ public class SemanticIdHandlerTests
     }
 
     [Fact]
-    public void Extract_TemplateNull_ThrowsException()
-    {
-        _ = Throws<ArgumentNullException>(() => _sut.Extract(submodelTemplate: null!));
-        _ = Throws<ArgumentNullException>(() => _sut.Extract(submodelTemplate: null!, idShortPath: "TestIdShortPath"));
-    }
+    public void FillOutTemplate_ValuesNull_ThrowsException() => _ = Throws<InvalidDependencyException>(() => _sut.FillOutTemplate(TestData.CreateSubmodel(), values: null!));
 
     [Fact]
-    public void Extract_IdShortNull_ThrowsException() => _ = Throws<ArgumentNullException>(() => _sut.Extract(TestData.CreateSubmodel(), null!));
-
-    [Fact]
-    public void FillOutTemplate_ValuesNull_ThrowsException() => _ = Throws<ArgumentNullException>(() => _sut.FillOutTemplate(TestData.CreateSubmodel(), values: null!));
-
-    [Fact]
-    public void FillOutTemplate_TemplateNull_ThrowsException() => _ = Throws<ArgumentNullException>(() => _sut.FillOutTemplate(submodelTemplate: null!, TestData.SubmodelTreeNode));
+    public void FillOutTemplate_TemplateNull_ThrowsException() => _ = Throws<InvalidDependencyException>(() => _sut.FillOutTemplate(submodelTemplate: null!, TestData.SubmodelTreeNode));
 
     [Fact]
     public void Extract_Submodel_ReturnsSemanticTreeNode()

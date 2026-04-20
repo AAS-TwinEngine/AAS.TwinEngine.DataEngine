@@ -5,6 +5,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_0;
@@ -13,12 +14,13 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository
 
 public partial class SubmodelTemplateService(
     ITemplateProvider templateProvider,
-    ISubmodelTemplateMappingProvider submodelTemplateMappingProvider) : ISubmodelTemplateService
+    ISubmodelTemplateMappingProvider submodelTemplateMappingProvider,
+    ILogger<SubmodelTemplateService> logger) : ISubmodelTemplateService
 {
-    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new ArgumentNullException(nameof(templateProvider));
+    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new InvalidDependencyException(nameof(templateProvider));
 
     private readonly ISubmodelTemplateMappingProvider _submodelTemplateMappingProvider =
-        submodelTemplateMappingProvider ?? throw new ArgumentNullException(nameof(submodelTemplateMappingProvider));
+        submodelTemplateMappingProvider ?? throw new InvalidDependencyException(nameof(submodelTemplateMappingProvider), logger);
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, CancellationToken cancellationToken)
     {
@@ -50,38 +52,48 @@ public partial class SubmodelTemplateService(
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(idShortPath);
-        try
+        if (!string.IsNullOrWhiteSpace(idShortPath))
         {
-            ValidateSubmodelId(submodelId);
+            try
+            {
+                ValidateSubmodelId(submodelId);
 
-            var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-            var submodel = await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
+                var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
+                var submodel = await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
 
-            return BuildSubmodel(submodel, idShortPath);
+                return BuildSubmodel(submodel, idShortPath);
+            }
+            catch (ResourceNotFoundException ex)
+            {
+                throw new SubmodelElementNotFoundException(ex, submodelId);
+            }
+            catch (ResponseParsingException ex)
+            {
+                throw new InternalDataProcessingException(ex);
+            }
+            catch (RequestTimeoutException ex)
+            {
+                throw new TemplateRequestFailedException(ex);
+            }
+            catch (ServiceUnavailableException ex)
+            {
+                throw new RepositoryNotAvailableException(ex);
+            }
         }
-        catch (ResourceNotFoundException ex)
-        {
-            throw new SubmodelElementNotFoundException(ex, submodelId);
-        }
-        catch (ResponseParsingException ex)
-        {
-            throw new InternalDataProcessingException(ex);
-        }
-        catch (RequestTimeoutException ex)
-        {
-            throw new TemplateRequestFailedException(ex);
-        }
-        catch (ServiceUnavailableException ex)
-        {
-            throw new RepositoryNotAvailableException(ex);
-        }
+        throw new InvalidDependencyException(nameof(idShortPath));
     }
 
     private static ISubmodel BuildSubmodel(ISubmodel submodel, string idShortPath)
     {
-        ArgumentNullException.ThrowIfNull(submodel);
-        ArgumentException.ThrowIfNullOrWhiteSpace(idShortPath);
+        if (submodel is null)
+        {
+            throw new InvalidDependencyException(nameof(submodel));
+        }
+
+        if (string.IsNullOrWhiteSpace(idShortPath))
+        {
+            throw new InvalidDependencyException(nameof(idShortPath));
+        }
 
         var idShortPathSegments = idShortPath.Split('.');
         var currentSubmodelElements = submodel.SubmodelElements;

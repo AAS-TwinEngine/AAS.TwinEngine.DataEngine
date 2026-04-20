@@ -14,9 +14,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Ser
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
-using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
@@ -31,8 +29,6 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddHttpClient();
 
         _ = services.AddScoped<IRequestHeaderMapper, RequestHeaderMapper>();
-
-        _ = services.AddScoped<IBaseUrlProvider, HttpRequestBaseUrlProvider>();
 
         _ = services.AddScoped<PluginManifestInitializer>();
         _ = services.AddScoped<ITemplateProvider, TemplateProvider>();
@@ -58,9 +54,6 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddOptions<RegistrySettingsConfig>()
             .Bind(configuration.GetSection(RegistrySettingsConfig.Section))
             .ValidateOnStart();
-
-        // Validator: enforces AasIdExtractionRules constraints at startup
-        _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateMappingRulesValidator>();
 
         // PluginsConfig: single registration via AddOptions to avoid double-binding of list properties
         _ = services.AddOptions<PluginsConfig>()

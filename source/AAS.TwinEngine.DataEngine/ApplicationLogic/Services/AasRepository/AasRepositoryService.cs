@@ -80,8 +80,15 @@ public class AasRepositoryService(
 
     private static IAssetInformation FillOutAssetInformation(IAssetInformation template, AssetData pluginData)
     {
-        ArgumentNullException.ThrowIfNull(template);
-        ArgumentNullException.ThrowIfNull(pluginData);
+        if (template is null)
+        {
+            throw new InvalidDependencyException(nameof(template));
+        }
+
+        if (pluginData is null)
+        {
+            throw new InvalidDependencyException(nameof(pluginData));
+        }
 
         SetDefaultThumbnail(template, pluginData);
         SetGlobalAssetId(template, pluginData);

@@ -32,30 +32,30 @@ public class SubmodelFillerTests
     }
 
     [Fact]
-    public void FillOutTemplate_NullSubmodel_ThrowsArgumentNullException()
+    public void FillOutTemplate_NullSubmodel_ThrowsInvalidDependencyException()
     {
         var values = new SemanticBranchNode("root", Cardinality.Unknown);
 
-        Throws<ArgumentNullException>(() => _sut.FillOutTemplate(null!, values));
+        Throws<InvalidDependencyException>(() => _sut.FillOutTemplate(null!, values));
     }
 
     [Fact]
-    public void FillOutTemplate_NullValues_ThrowsArgumentNullException()
+    public void FillOutTemplate_NullValues_ThrowsInvalidDependencyException()
     {
         var submodel = Substitute.For<ISubmodel>();
         submodel.SubmodelElements.Returns([]);
 
-        Throws<ArgumentNullException>(() => _sut.FillOutTemplate(submodel, null!));
+        Throws<InvalidDependencyException>(() => _sut.FillOutTemplate(submodel, null!));
     }
 
     [Fact]
-    public void FillOutTemplate_NullSubmodelElements_ThrowsArgumentNullException()
+    public void FillOutTemplate_NullSubmodelElements_ThrowsInvalidDependencyException()
     {
         var submodel = Substitute.For<ISubmodel>();
         submodel.SubmodelElements.Returns((List<ISubmodelElement>?)null);
         var values = new SemanticBranchNode("root", Cardinality.Unknown);
 
-        Throws<ArgumentNullException>(() => _sut.FillOutTemplate(submodel, values));
+        Throws<InvalidDependencyException>(() => _sut.FillOutTemplate(submodel, values));
     }
 
     [Fact]
@@ -75,19 +75,19 @@ public class SubmodelFillerTests
     }
 
     [Fact]
-    public void FillOutElement_NullElement_ThrowsArgumentNullException()
+    public void FillOutElement_NullElement_ThrowsInvalidDependencyException()
     {
         var values = new SemanticLeafNode("test", "val", DataType.String, Cardinality.One);
 
-        Throws<ArgumentNullException>(() => _sut.FillOutElement(null!, values));
+        Throws<InvalidDependencyException>(() => _sut.FillOutElement(null!, values));
     }
 
     [Fact]
-    public void FillOutElement_NullValues_ThrowsArgumentNullException()
+    public void FillOutElement_NullValues_ThrowsInvalidDependencyException()
     {
         var element = new Property(idShort: "Prop", valueType: DataTypeDefXsd.String);
 
-        Throws<ArgumentNullException>(() => _sut.FillOutElement(element, null!));
+        Throws<InvalidDependencyException>(() => _sut.FillOutElement(element, null!));
     }
 
     [Fact]

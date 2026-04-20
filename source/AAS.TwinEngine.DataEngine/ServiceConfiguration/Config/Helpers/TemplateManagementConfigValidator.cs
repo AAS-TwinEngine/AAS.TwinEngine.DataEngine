@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
+using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
@@ -15,7 +17,10 @@ public class TemplateManagementConfigValidator : IValidateOptions<TemplateManage
 
     public ValidateOptionsResult Validate(string? name, TemplateManagementConfig options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options is null)
+        {
+            throw new InvalidDependencyException(nameof(options));
+        }
 
         var errors = new List<string>();
 

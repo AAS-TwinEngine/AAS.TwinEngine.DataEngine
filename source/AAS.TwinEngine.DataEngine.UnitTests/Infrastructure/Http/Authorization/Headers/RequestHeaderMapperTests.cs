@@ -94,7 +94,7 @@ public class RequestHeaderMapperTests
     {
         var service = CreateService(DefaultConfig());
 
-        Assert.Throws<ArgumentNullException>(() =>
+        Assert.Throws<InvalidDependencyException>(() =>
             service.ApplyMappings(new DefaultHttpContext(), null!, "client"));
     }
 
@@ -104,7 +104,7 @@ public class RequestHeaderMapperTests
         var service = CreateService(DefaultConfig());
         using var request = new HttpRequestMessage();
 
-        Assert.Throws<ArgumentNullException>(() =>
+        Assert.Throws<InvalidDependencyException>(() =>
             service.ApplyMappings(new DefaultHttpContext(), request, null!));
     }
 

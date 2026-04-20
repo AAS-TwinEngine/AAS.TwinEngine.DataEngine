@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -344,6 +344,16 @@ public abstract class ShellDescriptorControllerTestsBase : IDisposable
         var bytes = Encoding.UTF8.GetBytes(plainText);
         return WebEncoders.Base64UrlEncode(bytes);
     }
+}
+
+public class ShellDescriptorControllerTests_V1Config : ShellDescriptorControllerTestsBase
+{
+    public ShellDescriptorControllerTests_V1Config() : base("v1-config") { }
+}
+
+public class ShellDescriptorControllerTests_V2Config : ShellDescriptorControllerTestsBase
+{
+    public ShellDescriptorControllerTests_V2Config() : base("v2-config") { }
 }
 
 public class ShellDescriptorControllerTestsV1Config() : ShellDescriptorControllerTestsBase("v1-config");

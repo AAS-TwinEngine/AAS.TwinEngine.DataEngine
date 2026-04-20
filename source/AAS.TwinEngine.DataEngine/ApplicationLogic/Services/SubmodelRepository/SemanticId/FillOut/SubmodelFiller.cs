@@ -16,9 +16,20 @@ public class SubmodelFiller(
 {
     public ISubmodel FillOutTemplate(ISubmodel submodelTemplate, SemanticTreeNode values)
     {
-        ArgumentNullException.ThrowIfNull(submodelTemplate);
-        ArgumentNullException.ThrowIfNull(submodelTemplate.SubmodelElements);
-        ArgumentNullException.ThrowIfNull(values);
+        if (submodelTemplate is null)
+        {
+            throw new InvalidDependencyException(nameof(submodelTemplate), logger);
+        }
+
+        if (submodelTemplate.SubmodelElements is null)
+        {
+            throw new InvalidDependencyException(nameof(submodelTemplate.SubmodelElements), logger);
+        }
+
+        if (values is null)
+        {
+            throw new InvalidDependencyException(nameof(values), logger);
+        }
 
         var submodelElements = submodelTemplate.SubmodelElements.ToList();
         foreach (var submodelElement in submodelElements)
@@ -110,8 +121,15 @@ public class SubmodelFiller(
 
     public ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values)
     {
-        ArgumentNullException.ThrowIfNull(element);
-        ArgumentNullException.ThrowIfNull(values);
+if (element is null)
+{
+    throw new InvalidDependencyException(nameof(element));
+}
+
+if (values is null)
+{
+    throw new InvalidDependencyException(nameof(values));
+}
 
         var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
         if (handler == null)

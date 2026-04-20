@@ -1,11 +1,15 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -15,15 +19,18 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Submodel
 public class SubmodelDescriptorServiceTests
 {
     private readonly ISubmodelDescriptorProvider _provider = Substitute.For<ISubmodelDescriptorProvider>();
-    private readonly IBaseUrlProvider _baseUrlProvider = Substitute.For<IBaseUrlProvider>();
     private readonly SubmodelDescriptorService _sut;
+    private readonly IOptions<GeneralConfig> _options;
+    private readonly ILogger<SubmodelDescriptorService> _logger = Substitute.For<ILogger<SubmodelDescriptorService>>();
     private readonly ISubmodelTemplateMappingProvider _submodelTemplateMappingProvider = Substitute.For<ISubmodelTemplateMappingProvider>();
 
     public SubmodelDescriptorServiceTests()
     {
-        _baseUrlProvider.GetBaseUrl().Returns(new Uri("https://www.mm-software.com/"));
-
-        _sut = new SubmodelDescriptorService(_provider, _submodelTemplateMappingProvider, _baseUrlProvider);
+        _options = Options.Create(new GeneralConfig
+        {
+            DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com"),
+        });
+        _sut = new SubmodelDescriptorService(_provider, _submodelTemplateMappingProvider, _options, _logger);
     }
 
     [Fact]

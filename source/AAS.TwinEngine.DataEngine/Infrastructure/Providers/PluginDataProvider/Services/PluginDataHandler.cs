@@ -1,19 +1,22 @@
 ﻿using System.Text.Json;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Json.Schema;
+
+using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -21,11 +24,13 @@ public class PluginDataHandler(
     IPluginRequestBuilder pluginRequestBuilder,
     IPluginDataProvider pluginDataProvider,
     IJsonSchemaValidator jsonSchemaValidator,
-    IBaseUrlProvider baseUrlProvider,
     IMultiPluginDataHandler multiPluginDataHandler,
-    ILogger<PluginDataHandler> logger) : IPluginDataHandler
+    ILogger<PluginDataHandler> logger,
+    IOptions<GeneralConfig> generalConfig) : IPluginDataHandler
 {
     private const string ShellsBasePath = "shells";
+
+    private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
 
     public async Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken)
     {
@@ -181,6 +186,6 @@ public class PluginDataHandler(
     private void SetHref(ShellDescriptorMetaData value)
     {
         var encodedId = value.Id!.EncodeBase64Url();
-        value.Href = $"{baseUrlProvider.GetBaseUrl()}{ShellsBasePath}/{encodedId}";
+        value.Href = $"{_baseUrl}{ShellsBasePath}/{encodedId}";
     }
 }

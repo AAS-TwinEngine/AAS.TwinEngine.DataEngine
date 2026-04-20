@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
 
@@ -9,8 +10,15 @@ public class HeaderSanitizationMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context, IRequestHeaderMapper requestHeaderMapper)
     {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(requestHeaderMapper);
+        if (context is null)
+        {
+            throw new InvalidDependencyException(nameof(context));
+        }
+
+        if (requestHeaderMapper is null)
+        {
+            throw new InvalidDependencyException(nameof(requestHeaderMapper));
+        }
 
         if (IsHealthCheckRequest(context))
         {

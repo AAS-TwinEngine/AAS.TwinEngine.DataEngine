@@ -11,8 +11,15 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
 {
     public IList<ShellDescriptor> FillOut(ShellDescriptor template, IList<ShellDescriptorMetaData> metaData)
     {
-        ArgumentNullException.ThrowIfNull(template);
-        ArgumentNullException.ThrowIfNull(metaData);
+        if (template is null)
+        {
+            throw new InvalidDependencyException(nameof(template), logger);
+        }
+
+        if (metaData is null)
+        {
+            throw new InvalidDependencyException(nameof(metaData), logger);
+        }
 
         return metaData
                .Select(value =>
@@ -25,8 +32,15 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
 
     public ShellDescriptor FillOut(ShellDescriptor template, ShellDescriptorMetaData metaData)
     {
-        ArgumentNullException.ThrowIfNull(template);
-        ArgumentNullException.ThrowIfNull(metaData);
+        if (template is null)
+        {
+            throw new InvalidDependencyException(nameof(template), logger);
+        }
+
+        if (metaData is null)
+        {
+            throw new InvalidDependencyException(nameof(metaData), logger);
+        }
 
         var endpoint = template.Endpoints?.FirstOrDefault();
 
@@ -52,7 +66,10 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
 
     private ShellDescriptor Clone(ShellDescriptor shellDescriptor)
     {
-        ArgumentNullException.ThrowIfNull(shellDescriptor);
+        if (shellDescriptor is null)
+        {
+            throw new InvalidDependencyException(nameof(shellDescriptor), logger);
+        }
 
         try
         {

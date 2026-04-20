@@ -163,10 +163,14 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
         {
             var json = JsonSerializer.Serialize(schema, JsonSerializationOptions.SerializationWithEnum);
 
-            normalized = JsonNode.Parse(json)?.AsObject()
-            ?? throw new ArgumentException("Failed to parse schema JSON.");
+            normalized = JsonNode.Parse(json)?.AsObject();
 
             EscapeJsonReferencePointers(normalized);
+            if (normalized == null)
+            {
+                throw new InvalidDependencyException(nameof(normalized), logger);
+            }
+
             normalized["$id"] = normalized["$id"]?.GetValue<string>() ?? $"urn:uuid:{Guid.NewGuid():D}";
 
             return true;

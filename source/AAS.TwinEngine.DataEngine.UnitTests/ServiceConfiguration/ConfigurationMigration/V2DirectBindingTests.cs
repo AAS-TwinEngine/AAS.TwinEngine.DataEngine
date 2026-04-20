@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+﻿using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Configuration;
 
@@ -216,6 +216,7 @@ public class V2DirectBindingTests
             ["TemplateManagement:TemplateMappingRules:AasIdExtractionRules:0:Strategy"] = "Split",
             ["TemplateManagement:TemplateMappingRules:AasIdExtractionRules:0:Pattern"] = "/",
             ["TemplateManagement:TemplateMappingRules:AasIdExtractionRules:0:Index"] = "6",
+            ["TemplateManagement:TemplateMappingRules:AasIdExtractionRules:0:Description"] = "Default: split by '/' and take segment 6",
             ["TemplateManagement:AasTemplateRepository:Name"] = "AasTemplateRepository",
             ["TemplateManagement:AasTemplateRepository:baseUrl"] = "http://localhost:8081",
             ["TemplateManagement:AasTemplateRepository:headerMappings:0:source"] = "Authorization",

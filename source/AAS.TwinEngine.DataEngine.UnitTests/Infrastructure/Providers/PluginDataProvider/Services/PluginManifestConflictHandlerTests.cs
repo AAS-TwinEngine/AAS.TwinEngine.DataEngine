@@ -22,11 +22,11 @@ public class PluginManifestConflictHandlerTests
     }
 
     [Fact]
-    public async Task InitializeAsync_ThrowsArgumentNull_WhenInputIsNull()
+    public async Task InitializeAsync_ThrowsInvalidDependencyException_WhenInputIsNull()
     {
         var sut = CreateSut();
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => sut.ProcessManifests(null!));
+        await Assert.ThrowsAsync<InvalidDependencyException>(() => sut.ProcessManifests(null!));
     }
 
     [Fact]
