@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -20,14 +20,14 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRepository;
 
-public abstract class SubmodelRepositoryControllerTestsBase : IDisposable
+public abstract class SubmodelRepositoryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
-    protected SubmodelRepositoryControllerTestsBase(string configDir)
+    protected SubmodelRepositoryControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
@@ -328,9 +328,9 @@ public abstract class SubmodelRepositoryControllerTestsBase : IDisposable
         => $"/submodels/{submodelIdentifier}/submodel-elements/{Uri.EscapeDataString(idShortPath)}";
 }
 
-public class SubmodelRepositoryControllerTestsV1Config() : SubmodelRepositoryControllerTestsBase("v1-config");
+public class SubmodelRepositoryControllerTestsV1Config() : SubmodelRepositoryControllerTests("v1-config");
 
-public class SubmodelRepositoryControllerTestsV2Config() : SubmodelRepositoryControllerTestsBase("v2-config");
+public class SubmodelRepositoryControllerTestsV2Config() : SubmodelRepositoryControllerTests("v2-config");
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
 {

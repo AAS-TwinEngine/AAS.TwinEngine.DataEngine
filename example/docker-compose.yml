@@ -114,7 +114,7 @@ services:
       - ExtractionRules__ProductIdExtractionRules__0__Pattern=/
       - ExtractionRules__ProductIdExtractionRules__0__Index=5
       - ExtractionRules__ProductIdExtractionRules__0__Strategy=Split
-      - ExtractionRules__ProductIdExtractionRules__0__Description=Default split by '/' segment 6
+      - ExtractionRules__ProductIdExtractionRules__0__Description=Default split by '/' segment 5
     networks:
       - twinengine-network
 

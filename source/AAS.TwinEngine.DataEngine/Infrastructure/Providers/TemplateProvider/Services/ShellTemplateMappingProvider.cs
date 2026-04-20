@@ -51,12 +51,10 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
                 continue;
             }
 
-            if (!string.IsNullOrEmpty(rule.ValidationPattern))
+            if (!string.IsNullOrEmpty(rule.ValidationPattern) &&
+                !Regex.IsMatch(extracted, rule.ValidationPattern, RegexOptions.None, _regexTimeout))
             {
-                if (!Regex.IsMatch(extracted, rule.ValidationPattern, RegexOptions.None, _regexTimeout))
-                {
-                    continue;
-                }
+                continue;
             }
 
             return extracted;

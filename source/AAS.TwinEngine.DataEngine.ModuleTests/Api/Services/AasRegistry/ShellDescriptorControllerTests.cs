@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -20,14 +20,14 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRegistry;
 
-public abstract class ShellDescriptorControllerTestsBase : IDisposable
+public abstract class ShellDescriptorControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
-    protected ShellDescriptorControllerTestsBase(string configDir)
+    protected ShellDescriptorControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
@@ -346,19 +346,9 @@ public abstract class ShellDescriptorControllerTestsBase : IDisposable
     }
 }
 
-public class ShellDescriptorControllerTests_V1Config : ShellDescriptorControllerTestsBase
-{
-    public ShellDescriptorControllerTests_V1Config() : base("v1-config") { }
-}
+public class ShellDescriptorControllerTestsV1Config() : ShellDescriptorControllerTests("v1-config");
 
-public class ShellDescriptorControllerTests_V2Config : ShellDescriptorControllerTestsBase
-{
-    public ShellDescriptorControllerTests_V2Config() : base("v2-config") { }
-}
-
-public class ShellDescriptorControllerTestsV1Config() : ShellDescriptorControllerTestsBase("v1-config");
-
-public class ShellDescriptorControllerTestsV2Config() : ShellDescriptorControllerTestsBase("v2-config");
+public class ShellDescriptorControllerTestsV2Config() : ShellDescriptorControllerTests("v2-config");
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
 {

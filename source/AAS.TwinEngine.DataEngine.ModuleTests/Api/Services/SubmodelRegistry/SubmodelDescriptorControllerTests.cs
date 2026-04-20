@@ -16,13 +16,13 @@ using NSubstitute.ExceptionExtensions;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRegistry;
 
-public abstract class SubmodelDescriptorControllerTestsBase : IDisposable
+public abstract class SubmodelDescriptorControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ISubmodelDescriptorProvider _mockSubmodelDescriptorProvider;
     private readonly HttpClient _client;
 
-    protected SubmodelDescriptorControllerTestsBase(string configDir)
+    protected SubmodelDescriptorControllerTests(string configDir)
     {
         _mockSubmodelDescriptorProvider = Substitute.For<ISubmodelDescriptorProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
@@ -186,16 +186,6 @@ public abstract class SubmodelDescriptorControllerTestsBase : IDisposable
     }
 }
 
-public class SubmodelDescriptorControllerTests_V1Config : SubmodelDescriptorControllerTestsBase
-{
-    public SubmodelDescriptorControllerTests_V1Config() : base("v1-config") { }
-}
+public class SubmodelDescriptorControllerTestsV1Config() : SubmodelDescriptorControllerTests("v1-config");
 
-public class SubmodelDescriptorControllerTests_V2Config : SubmodelDescriptorControllerTestsBase
-{
-    public SubmodelDescriptorControllerTests_V2Config() : base("v2-config") { }
-}
-
-public class SubmodelDescriptorControllerTestsV1Config() : SubmodelDescriptorControllerTestsBase("v1-config");
-
-public class SubmodelDescriptorControllerTestsV2Config() : SubmodelDescriptorControllerTestsBase("v2-config");
+public class SubmodelDescriptorControllerTestsV2Config() : SubmodelDescriptorControllerTests("v2-config");
