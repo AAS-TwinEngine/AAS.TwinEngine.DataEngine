@@ -3,7 +3,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
@@ -15,7 +14,6 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Help
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
-using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
@@ -30,8 +28,6 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddHttpClient();
 
         _ = services.AddScoped<IRequestHeaderMapper, RequestHeaderMapper>();
-
-        _ = services.AddScoped<IBaseUrlProvider, HttpRequestBaseUrlProvider>();
 
         _ = services.AddScoped<PluginManifestInitializer>();
         _ = services.AddScoped<ITemplateProvider, TemplateProvider>();
