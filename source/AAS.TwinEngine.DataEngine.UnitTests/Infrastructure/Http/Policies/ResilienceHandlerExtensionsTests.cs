@@ -1,9 +1,8 @@
 ﻿using System.Net;
 
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Policies;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 
@@ -117,25 +116,20 @@ public class ResilienceHandlerExtensionsTests
 
     private static ServiceCollection CreateServiceCollection(int maxRetries, int delaySeconds)
     {
-        var configValues = new Dictionary<string, string>
+        var retryConfig = new RetryConfig
         {
-            { $"{HttpRetryPolicyOptions.Section}:{ClientName}:MaxRetryAttempts", maxRetries.ToString() },
-            { $"{HttpRetryPolicyOptions.Section}:{ClientName}:DelayInSeconds", delaySeconds.ToString() }
+            MaxRetryAttempts = maxRetries,
+            DelayInSeconds = delaySeconds
         };
 
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(configValues!)
-            .Build();
-
         var services = new ServiceCollection();
-        services.Configure<HttpRetryPolicyOptions>(ClientName, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{ClientName}"));
         services.AddLogging();
 
         services.AddHttpClient(ClientName, client =>
         {
             client.BaseAddress = new Uri("https://example.com");
         })
-        .AddStandardResilienceHandler(ClientName);
+        .AddStandardResilienceHandler(retryConfig);
 
         return services;
     }

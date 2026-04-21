@@ -1,24 +1,27 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 public class PluginManifestConflictHandler(
-    ILogger<PluginManifestConflictHandler> logger,
-    IOptions<MultiPluginConflictOptions> options) : IPluginManifestConflictHandler
+    IOptions<MultiPluginConflictOptions> conflictOptions,
+    ILogger<PluginManifestConflictHandler> logger) : IPluginManifestConflictHandler
 {
     private readonly List<PluginManifest> _manifests = [];
-    private readonly MultiPluginConflictOptions.MultiPluginConflictOption _handlingMode = options.Value.HandlingMode;
+    private readonly MultiPluginConflictOptions.MultiPluginConflictOption _handlingMode = conflictOptions.Value.HandlingMode;
 
     public IReadOnlyList<PluginManifest> Manifests => _manifests.AsReadOnly();
 
     public Task ProcessManifests(IList<PluginManifest> manifests)
     {
-        ArgumentNullException.ThrowIfNull(manifests);
+        if (manifests is null)
+        {
+            throw new InvalidDependencyException(nameof(manifests), logger);
+        }
         if (manifests.Count == 0)
         {
             logger.LogError("No plugin manifests found. ");

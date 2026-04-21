@@ -4,25 +4,23 @@ using System.Text.Json;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
-
-using Microsoft.Extensions.Options;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 
-public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateClient clientFactory, IOptions<AasEnvironmentConfig> aasEnvironment) : IAasRegistryProvider
+public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateClient clientFactory) : IAasRegistryProvider
 {
-    private readonly string _aasRegistryPath = aasEnvironment.Value.AasRegistryPath;
-    private const string HttpClientName = AasEnvironmentConfig.AasRegistryHttpClientName;
+    private const string AasRegistryPath = ApiPaths.ShellDescriptors;
+    private const string HttpClientName = HttpClientNames.AasRegistry;
 
     public async Task<List<ShellDescriptor>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var url = $"{_aasRegistryPath}";
+        var url = $"{AasRegistryPath}";
 
         var content = await SendGetRequestAndReadContentAsync(url, cancellationToken).ConfigureAwait(false);
 
@@ -40,18 +38,18 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
     {
         var encodedAasIdentifier = aasIdentifier.EncodeBase64Url();
 
-        var url = $"{_aasRegistryPath}/{encodedAasIdentifier}";
+        var url = $"{AasRegistryPath}/{encodedAasIdentifier}";
 
         var content = await SendGetRequestAndReadContentAsync(url, cancellationToken).ConfigureAwait(false);
 
-        return DeserializeContent<ShellDescriptor>(content, "shell descriptor", url);
+        return DeserializeContent<ShellDescriptor>(content, "shell descriptor");
     }
 
     public async Task PutAsync(string aasIdentifier, ShellDescriptor shellDescriptorData, CancellationToken cancellationToken)
     {
         var encodedAasIdentifier = aasIdentifier.EncodeBase64Url();
 
-        var url = $"{_aasRegistryPath}/{encodedAasIdentifier}";
+        var url = $"{AasRegistryPath}/{encodedAasIdentifier}";
 
         await SendRequestWithBodyAsync(HttpMethod.Put, url, shellDescriptorData, cancellationToken).ConfigureAwait(false);
     }
@@ -60,7 +58,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
     {
         var encodedAasIdentifier = aasIdentifier.EncodeBase64Url();
 
-        var url = $"{_aasRegistryPath}/{encodedAasIdentifier}";
+        var url = $"{AasRegistryPath}/{encodedAasIdentifier}";
 
         var relativeUri = new Uri(url, UriKind.Relative);
 
@@ -70,10 +68,10 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
 
         var response = await client.DeleteAsync(relativeUri, cancellationToken).ConfigureAwait(false);
 
-        await HandleResponseAsync(response, $"delete ShellDescriptor for {aasIdentifier}", url, cancellationToken).ConfigureAwait(false);
+        await HandleResponseAsync(response, $"delete ShellDescriptor for {aasIdentifier}", cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task CreateAsync(ShellDescriptor shellDescriptorData, CancellationToken cancellationToken) => await SendRequestWithBodyAsync(HttpMethod.Post, _aasRegistryPath, shellDescriptorData, cancellationToken).ConfigureAwait(false);
+    public async Task CreateAsync(ShellDescriptor shellDescriptorData, CancellationToken cancellationToken) => await SendRequestWithBodyAsync(HttpMethod.Post, AasRegistryPath, shellDescriptorData, cancellationToken).ConfigureAwait(false);
 
     private async Task<string> SendGetRequestAndReadContentAsync(string url, CancellationToken cancellationToken)
     {
@@ -127,10 +125,10 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
 
         var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        await HandleResponseAsync(response, $"{method} ShellDescriptor", url, cancellationToken).ConfigureAwait(false);
+        await HandleResponseAsync(response, $"{method} ShellDescriptor", cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task HandleResponseAsync(HttpResponseMessage response, string action, string url, CancellationToken cancellationToken)
+    private async Task HandleResponseAsync(HttpResponseMessage response, string action, CancellationToken cancellationToken)
     {
         if (response.IsSuccessStatusCode)
         {
@@ -151,7 +149,7 @@ public class AasRegistryProvider(ILogger<AasRegistryProvider> logger, ICreateCli
         };
     }
 
-    private static T DeserializeContent<T>(string content, string context, string url)
+    private static T DeserializeContent<T>(string content, string context)
     {
         try
         {

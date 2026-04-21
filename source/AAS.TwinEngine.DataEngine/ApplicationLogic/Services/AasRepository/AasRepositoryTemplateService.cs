@@ -1,7 +1,7 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_0;
 
@@ -12,11 +12,12 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 public class AasRepositoryTemplateService(
     ITemplateProvider templateProvider,
     IShellTemplateMappingProvider shellTemplateMappingProvider,
-    IOptions<AasEnvironmentConfig> aasEnvironment) : IAasRepositoryTemplateService
+    IOptions<GeneralConfig> generalConfig,
+    ILogger<AasRepositoryTemplateService> logger) : IAasRepositoryTemplateService
 {
-    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new ArgumentNullException(nameof(templateProvider));
-    private readonly IShellTemplateMappingProvider _shellTemplateMappingProvider = shellTemplateMappingProvider ?? throw new ArgumentNullException(nameof(shellTemplateMappingProvider));
-    private readonly Uri _customerDomainUrl = aasEnvironment.Value.CustomerDomainUrl ?? throw new ArgumentNullException(nameof(aasEnvironment.Value.CustomerDomainUrl));
+    private readonly ITemplateProvider _templateProvider = templateProvider ?? throw new InvalidDependencyException(nameof(templateProvider), logger);
+    private readonly IShellTemplateMappingProvider _shellTemplateMappingProvider = shellTemplateMappingProvider ?? throw new InvalidDependencyException(nameof(shellTemplateMappingProvider), logger);
+    private readonly Uri _customerDomainUrl = generalConfig.Value.CustomerDomainUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.CustomerDomainUrl), logger);
     private const string SubmodelUrlSegment = "submodel";
 
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string aasIdentifier, CancellationToken cancellationToken)

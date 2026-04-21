@@ -1,7 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 
@@ -9,15 +8,14 @@ public static class RegisterPluginHttpClients
 {
     public static void RegisterHttpClients(
         IServiceCollection services,
-        IConfiguration configuration,
+        RetryConfig retryConfig,
         IReadOnlyCollection<PluginManifest> manifests)
     {
         foreach (var manifest in manifests)
         {
             _ = services.AddHttpClientWithResilience(
-                configuration,
-                $"{PluginConfig.HttpClientNamePrefix}{manifest.PluginName}",
-                HttpRetryPolicyOptions.PluginDataProvider,
+                $"{HttpClientNames.PluginDataProviderPrefix}{manifest.PluginName}",
+                retryConfig,
                 manifest.PluginUrl!
             );
         }

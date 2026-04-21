@@ -1,3 +1,4 @@
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
 using Serilog.Events;
@@ -173,8 +174,5 @@ public class SanitizingEnricherTests
     }
 
     [Fact]
-    public void Enrich_ThrowsOnNullLogEvent()
-    {
-        Assert.Throws<ArgumentNullException>(() => _sut.Enrich(null!, null!));
-    }
+    public void Enrich_ThrowsOnNullLogEvent() => Assert.Throws<InvalidDependencyException>(() => _sut.Enrich(null!, null!));
 }

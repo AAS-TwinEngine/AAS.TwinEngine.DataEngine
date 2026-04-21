@@ -12,7 +12,7 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest;
 [ApiController]
 [Route("")]
 [ApiVersion(1)]
-public class ManifestController(IManifestHandler manifestHandler) :ControllerBase
+public class ManifestController(IManifestHandler manifestHandler) : ControllerBase
 {
     [HttpGet("manifest")]
     [ProducesResponseType(typeof(JsonObject), StatusCodes.Status200OK)]

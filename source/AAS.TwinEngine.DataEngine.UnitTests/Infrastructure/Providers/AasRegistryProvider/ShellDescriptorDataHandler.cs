@@ -22,13 +22,13 @@ public class ShellDescriptorDataHandlerTests
     }
 
     [Fact]
-    public void FillOut_ThrowsIfTemplateIsNull() => Assert.Throws<ArgumentNullException>(() => _sut.FillOut(null!, []));
+    public void FillOut_ThrowsIfTemplateIsNull() => Assert.Throws<InvalidDependencyException>(() => _sut.FillOut(null!, []));
 
     [Fact]
     public void FillOut_ThrowsIfValuesIsNull()
     {
         var template = CreateShellDescriptorTemplate();
-        Assert.Throws<ArgumentNullException>(() => _sut.FillOut(template, (List<ShellDescriptorMetaData>)null!));
+        Assert.Throws<InvalidDependencyException>(() => _sut.FillOut(template, (List<ShellDescriptorMetaData>)null!));
     }
 
     [Fact]

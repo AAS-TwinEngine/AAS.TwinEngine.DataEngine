@@ -1,14 +1,13 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -22,30 +21,7 @@ public class SubmodelDescriptorProviderTests
     private readonly ICreateClient _clientFactory = Substitute.For<ICreateClient>();
     private readonly SubmodelDescriptorProvider _sut;
 
-    public SubmodelDescriptorProviderTests()
-    {
-        var options = Options.Create(new AasEnvironmentConfig
-        {
-            SubModelRegistryPath = "submodel-registry",
-            SubModelRegistryBaseUrl = new Uri("https://mm-software/fakeUrl")
-        });
-
-        _sut = new SubmodelDescriptorProvider(_logger, _clientFactory, options);
-    }
-
-    [Fact]
-    public void Constructor_Throws_WhenBaseUrlMissing()
-    {
-        var invalidEnv = new AasEnvironmentConfig
-        {
-            SubModelRegistryPath = null!,
-        };
-        var options = Options.Create(invalidEnv);
-
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-                                                          new SubmodelDescriptorProvider(_logger, _clientFactory, options));
-        Assert.Contains("aasEnvironment", ex.Message, StringComparison.OrdinalIgnoreCase);
-    }
+    public SubmodelDescriptorProviderTests() => _sut = new SubmodelDescriptorProvider(_logger, _clientFactory);
 
     [Fact]
     public async Task GetDataForSubmodelDescriptorByIdAsync_ReturnsSubmodelDesciptor_WhenResponseIsSuccessful()
@@ -60,7 +36,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         var result = await _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None);
@@ -80,7 +56,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
@@ -98,7 +74,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
@@ -116,7 +92,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
@@ -135,7 +111,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
@@ -154,7 +130,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
@@ -173,7 +149,7 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
@@ -192,11 +168,10 @@ public class SubmodelDescriptorProviderTests
         }));
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
-        _clientFactory.CreateClient(AasEnvironmentConfig.SubmodelRegistryHttpClientName)
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry)
                       .Returns(httpClient);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForSubmodelDescriptorByIdAsync(Id, CancellationToken.None));
     }
-
 }

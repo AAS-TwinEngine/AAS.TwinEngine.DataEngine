@@ -1,5 +1,7 @@
-﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
+﻿namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
+#pragma warning disable S1133 
+[Obsolete("V1 configuration is deprecated and will be removed in next major release")]
 public class Semantics
 {
     public const string Section = "Semantics";

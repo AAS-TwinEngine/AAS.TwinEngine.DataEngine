@@ -1,6 +1,8 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,14 +14,16 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateP
 public class ShellTemplateMappingProviderTests
 {
     private readonly ILogger<ShellTemplateMappingProvider> _logger = Substitute.For<ILogger<ShellTemplateMappingProvider>>();
-    private readonly IOptions<TemplateMappingRules> _options = Substitute.For<IOptions<TemplateMappingRules>>();
+    private readonly IOptions<TemplateManagementConfig> _options = Substitute.For<IOptions<TemplateManagementConfig>>();
     private ShellTemplateMappingProvider _sut;
 
     public ShellTemplateMappingProviderTests()
     {
-        var settings = new TemplateMappingRules
+        var settings = new TemplateManagementConfig
         {
-            ShellTemplateMappings =
+            TemplateMappingRules = new TemplateMappingRules
+            {
+                ShellTemplateMappings =
             [
                 new ShellTemplateMappings
                 {
@@ -32,7 +36,7 @@ public class ShellTemplateMappingProviderTests
                     TemplateId = "template2"
                 }
             ],
-            AasIdExtractionRules =
+                AasIdExtractionRules =
             [
                 new AasIdExtractionRules
                 {
@@ -47,6 +51,7 @@ public class ShellTemplateMappingProviderTests
                     Separator = "-"
                 }
             ]
+            }
         };
 
         _options.Value.Returns(settings);
@@ -96,43 +101,43 @@ public class ShellTemplateMappingProviderTests
     }
 
     [Fact]
-    public void Constructor_NullLogger_ThrowsArgumentNullException()
+    public void Constructor_NullLogger_ThrowsInvalidDependencyException()
     {
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-            new ShellTemplateMappingProvider(null!, _options));
-        Assert.Equal("logger", ex.ParamName);
+        var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(null!, _options));
     }
 
     [Fact]
-    public void Constructor_NullShellTemplateMappings_ThrowsArgumentException()
+    public void Constructor_NullShellTemplateMappings_ThrowsInvalidDependencyException()
     {
-        var config = new TemplateMappingRules
+        var config = new TemplateManagementConfig
         {
-            ShellTemplateMappings = null!,
-            AasIdExtractionRules = []
+            TemplateMappingRules = new TemplateMappingRules
+            {
+                ShellTemplateMappings = null!,
+                AasIdExtractionRules = []
+            }
         };
 
         _options.Value.Returns(config);
 
-        var ex = Assert.Throws<ArgumentException>(() =>
-            new ShellTemplateMappingProvider(_logger, _options));
-        Assert.Contains("ShellTemplateMappings are missing in TemplateMappingRules", ex.Message, StringComparison.Ordinal);
+        var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(_logger, _options));
     }
 
     [Fact]
-    public void Constructor_NullAasIdExtractionRules_ThrowsArgumentException()
+    public void Constructor_NullAasIdExtractionRules_ThrowsInvalidDependencyException()
     {
-        var config = new TemplateMappingRules
+        var config = new TemplateManagementConfig
         {
-            ShellTemplateMappings = [],
-            AasIdExtractionRules = null!
+            TemplateMappingRules = new TemplateMappingRules
+            {
+                ShellTemplateMappings = [],
+                AasIdExtractionRules = null!
+            }
         };
 
         _options.Value.Returns(config);
 
-        var ex = Assert.Throws<ArgumentException>(() =>
-            new ShellTemplateMappingProvider(_logger, _options));
-        Assert.Contains("AasIdExtractionRules are missing", ex.Message, StringComparison.Ordinal);
+        var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(_logger, _options));
     }
 
     [Fact]
@@ -145,16 +150,19 @@ public class ShellTemplateMappingProviderTests
     [Fact]
     public void GetTemplateId_PatternIsRegex_WildcardMatch_ReturnsMatch()
     {
-        var config = new TemplateMappingRules
+        var config = new TemplateManagementConfig
         {
-            ShellTemplateMappings =
-            [
-                new ShellTemplateMappings { Pattern = ["shell.*"], TemplateId = "template-wild" }
-            ],
-            AasIdExtractionRules =
-            [
-                new AasIdExtractionRules { Pattern = ".*", Index = 2, Separator = "-" }
-            ]
+            TemplateMappingRules = new TemplateMappingRules
+            {
+                ShellTemplateMappings =
+                [
+                    new ShellTemplateMappings { Pattern = ["shell.*"], TemplateId = "template-wild" }
+                ],
+                AasIdExtractionRules =
+                [
+                    new AasIdExtractionRules { Pattern = ".*", Index = 2, Separator = "-" }
+                ]
+            }
         };
 
         _options.Value.Returns(config);

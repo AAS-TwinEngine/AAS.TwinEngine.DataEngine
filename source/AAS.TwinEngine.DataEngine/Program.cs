@@ -30,6 +30,15 @@ public class Program
             .AddCheck<TemplateRepositoryHealthCheck>("template_repository");
 
         _ = builder.Services.AddHttpContextAccessor();
+
+        var allowedHosts = builder.Configuration.GetValue<string>("General:AllowedHosts") ?? "*";
+        _ = builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>
+        {
+            options.AllowedHosts = allowedHosts
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+        });
+
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
         builder.Services.ConfigureResponseCompression();
@@ -78,6 +87,7 @@ public class Program
 
         _ = app.UseExceptionHandler();
         _ = app.UseResponseCompression();
+        _ = app.UseHostFiltering();
         _ = app.UseMiddleware<HeaderSanitizationMiddleware>();
         _ = app.UseHttpsRedirection();
         _ = app.UseAuthorization();

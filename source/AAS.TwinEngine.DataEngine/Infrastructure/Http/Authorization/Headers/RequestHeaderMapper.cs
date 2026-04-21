@@ -2,34 +2,37 @@
 using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 
-public class RequestHeaderMapper : IRequestHeaderMapper
+public class RequestHeaderMapper(
+    ILogger<RequestHeaderMapper> logger,
+    IOptions<GeneralConfig> generalConfig,
+    IOptions<PluginsConfig> pluginsConfig,
+    IOptions<TemplateManagementConfig> templateManagementConfig) : IRequestHeaderMapper
 {
-    private readonly ILogger<RequestHeaderMapper> _logger;
-    private readonly IOptions<HeaderForwardingOptions> _options;
-    private readonly Regex _headerNameRegex;
-    private readonly Regex _headerValueRegex;
-    private readonly List<Regex> _blockedPatterns;
+    private readonly ILogger<RequestHeaderMapper> _logger = logger;
+    private readonly HeaderSanitizationOptions _sanitization = generalConfig.Value.HeaderSanitization;
+    private readonly PluginsConfig _pluginsConfig = pluginsConfig.Value;
+    private readonly TemplateManagementConfig _templateManagementConfig = templateManagementConfig.Value;
 
-    public RequestHeaderMapper(ILogger<RequestHeaderMapper> logger, IOptions<HeaderForwardingOptions> options)
+    private readonly Regex _headerNameRegex =
+        new(generalConfig.Value.HeaderSanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
+
+    private readonly Regex _headerValueRegex =
+        new(generalConfig.Value.HeaderSanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
+
+    private readonly List<Regex> _blockedPatterns =
+        CreateBlockedPatterns(generalConfig.Value.HeaderSanitization);
+
+    private static List<Regex> CreateBlockedPatterns(HeaderSanitizationOptions sanitization)
     {
-        _logger = logger;
-        _options = options;
-
-        var sanitization = options.Value.HeaderSanitization;
-
-        _headerNameRegex = new Regex(sanitization.AllowedCharacters.HeaderNames, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
-        _headerValueRegex = new Regex(sanitization.AllowedCharacters.HeaderValues, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000));
-        _blockedPatterns = sanitization.BlockedPatterns
+        return sanitization.BlockedPatterns
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .Select(p => new Regex(p, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1000)))
             .ToList();
@@ -51,7 +54,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
     {
         foreach (var (headerName, values) in httpContext.Request.Headers)
         {
-            if (values.Count == 0 || StringValues.IsNullOrEmpty(values))
+            if (StringValues.IsNullOrEmpty(values))
             {
                 _logger.LogWarning("Incoming header '{HeaderName}' failed sanitization.", headerName);
                 throw new InvalidRequestHeaderException($"Invalid request header: {headerName}");
@@ -79,7 +82,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             {
                 continue;
             }
-            
+
             var sourceName = rule.Source!;
             var targetName = rule.Target!;
 
@@ -113,15 +116,19 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
     private List<HeaderMappingRule> GetAllMappingRules()
     {
-        var mappings = _options.Value.HeaderMappings;
         var allRules = new List<HeaderMappingRule>();
 
-        allRules.AddRange(mappings.TemplateRepository);
-        allRules.AddRange(mappings.TemplateRegistry);
+        // Template repository/registry header mappings
+        allRules.AddRange(_templateManagementConfig.AasTemplateRepository.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.SubmodelTemplateRepository.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.ConceptDescriptionTemplateRepository.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.AasTemplateRegistry.HeaderMappings);
+        allRules.AddRange(_templateManagementConfig.SubmodelTemplateRegistry.HeaderMappings);
 
-        foreach (var pluginMappings in mappings.Plugins.Values)
+        // Plugin header mappings
+        foreach (var plugin in _pluginsConfig.Instances)
         {
-            allRules.AddRange(pluginMappings);
+            allRules.AddRange(plugin.HeaderMappings);
         }
 
         return allRules;
@@ -129,9 +136,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
 
     public void ApplyMappings(HttpContext? httpContext, HttpRequestMessage outgoingRequest, string clientName)
     {
-        ArgumentNullException.ThrowIfNull(outgoingRequest);
-        ArgumentNullException.ThrowIfNull(clientName);
-
+        ValidateInputs(outgoingRequest, clientName);
         if (httpContext == null)
         {
             return;
@@ -153,7 +158,7 @@ public class RequestHeaderMapper : IRequestHeaderMapper
             var sourceName = rule.Source;
             var targetName = rule.Target;
 
-            if (!httpContext.Request.Headers.TryGetValue(sourceName, out var values) || values.Count == 0 || StringValues.IsNullOrEmpty(values))
+            if (!httpContext.Request.Headers.TryGetValue(sourceName, out var values) || StringValues.IsNullOrEmpty(values))
             {
                 continue;
             }
@@ -175,45 +180,65 @@ public class RequestHeaderMapper : IRequestHeaderMapper
         }
     }
 
+    private void ValidateInputs(HttpRequestMessage outgoingRequest, string clientName)
+    {
+        if (outgoingRequest is null)
+        {
+            throw new InvalidDependencyException(nameof(outgoingRequest), logger);
+        }
+
+        if (clientName is null)
+        {
+            throw new InvalidDependencyException(nameof(clientName), logger);
+        }
+    }
+
     private static bool IsRuleValid(HeaderMappingRule rule) => !string.IsNullOrWhiteSpace(rule.Source) && !string.IsNullOrWhiteSpace(rule.Target);
 
-    private List<HeaderMappingRule>? ResolveMappingsForClient(string clientName)
+    private IList<HeaderMappingRule>? ResolveMappingsForClient(string clientName)
     {
-        var mappings = _options.Value.HeaderMappings;
-
-        if (string.Equals(clientName, AasEnvironmentConfig.AasEnvironmentRepoHttpClientName, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.AasTemplateRepository, StringComparison.OrdinalIgnoreCase))
         {
-            return mappings.TemplateRepository;
+            return _templateManagementConfig.AasTemplateRepository.HeaderMappings;
         }
 
-        if (string.Equals(clientName, AasEnvironmentConfig.AasRegistryHttpClientName, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(clientName, AasEnvironmentConfig.SubmodelRegistryHttpClientName, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.SubmodelTemplateRepository, StringComparison.OrdinalIgnoreCase))
         {
-            return mappings.TemplateRegistry;
+            return _templateManagementConfig.SubmodelTemplateRepository.HeaderMappings;
         }
 
-        if (!clientName.StartsWith(PluginConfig.HttpClientNamePrefix, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(clientName, HttpClientNames.ConceptDescriptorTemplateRepository, StringComparison.OrdinalIgnoreCase))
+        {
+            return _templateManagementConfig.ConceptDescriptionTemplateRepository.HeaderMappings;
+        }
+
+        if (string.Equals(clientName, HttpClientNames.AasRegistry, StringComparison.OrdinalIgnoreCase))
+        {
+            return _templateManagementConfig.AasTemplateRegistry.HeaderMappings;
+        }
+
+        if (string.Equals(clientName, HttpClientNames.SubmodelRegistry, StringComparison.OrdinalIgnoreCase))
+        {
+            return _templateManagementConfig.SubmodelTemplateRegistry.HeaderMappings;
+        }
+
+        if (!clientName.StartsWith(HttpClientNames.PluginDataProviderPrefix, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
-        var pluginName = clientName[PluginConfig.HttpClientNamePrefix.Length..];
+        var pluginName = clientName[HttpClientNames.PluginDataProviderPrefix.Length..];
 
-        return mappings.Plugins.TryGetValue(pluginName, out var pluginMappings) ? pluginMappings : null;
+        return _pluginsConfig.Instances
+            .FirstOrDefault(p => string.Equals(p.Name, pluginName, StringComparison.OrdinalIgnoreCase))
+            ?.HeaderMappings;
     }
 
-    private bool IsHeaderNameValid(string headerName)
-    {
-        var sanitization = _options.Value.HeaderSanitization;
-
-        return headerName.Length <= sanitization.MaxHeaderNameSize && _headerNameRegex.IsMatch(headerName);
-    }
+    private bool IsHeaderNameValid(string headerName) => headerName.Length <= _sanitization.MaxHeaderNameSize && _headerNameRegex.IsMatch(headerName);
 
     private bool IsHeaderValueValid(string value)
     {
-        var sanitization = _options.Value.HeaderSanitization;
-
-        if (value.Length > sanitization.MaxHeaderSize)
+        if (value.Length > _sanitization.MaxHeaderSize)
         {
             return false;
         }

@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -14,15 +13,16 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 using Json.Schema;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NSubstitute;
+
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -33,6 +33,7 @@ public class PluginDataHandlerTests
     private readonly IJsonSchemaValidator _jsonSchemaValidator;
     private readonly IMultiPluginDataHandler _multiPluginDataHandler;
     private readonly ILogger<PluginDataHandler> _logger;
+    private readonly IOptions<GeneralConfig> _options;
     private readonly PluginDataHandler _sut;
 
     public PluginDataHandlerTests()
@@ -42,11 +43,12 @@ public class PluginDataHandlerTests
         _jsonSchemaValidator = Substitute.For<IJsonSchemaValidator>();
         _multiPluginDataHandler = Substitute.For<IMultiPluginDataHandler>();
         _logger = Substitute.For<ILogger<PluginDataHandler>>();
+        _options = Options.Create(new GeneralConfig
+        {
+            DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com"),
+        });
 
-        var aasOptions = Substitute.For<IOptions<AasEnvironmentConfig>>();
-        aasOptions.Value.Returns(new AasEnvironmentConfig { DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com") });
-
-        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, aasOptions, _multiPluginDataHandler, _logger);
+        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, _multiPluginDataHandler, _logger, _options);
     }
 
     private readonly JsonSerializerOptions _jsonoptions = new()
@@ -60,13 +62,6 @@ public class PluginDataHandlerTests
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         }
     };
-
-    [Fact]
-    public void Controller_Throws_WhenBaseUrlMissing()
-    {
-        var opts = Options.Create(new AasEnvironmentConfig { DataEngineRepositoryBaseUrl = null! });
-        Assert.Throws<ArgumentNullException>(() => new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, opts, _multiPluginDataHandler, _logger));
-    }
 
     [Fact]
     public async Task TryGetValuesAsync_WithValidManifestAndResponse_ReturnsMergedSemanticTreeNode()
@@ -94,7 +89,7 @@ public class PluginDataHandlerTests
 
         var requestList = new List<PluginRequestSubmodel>
             {
-                new($"{PluginConfig.HttpClientNamePrefix}TestPlugin", jsonContent)
+                new($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin", jsonContent)
             };
 
         var manifests = new List<PluginManifest>
@@ -182,7 +177,7 @@ public class PluginDataHandlerTests
             .Returns(new List<string> { "PluginA" });
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
-            .Returns(new List<PluginRequestMetaData> { new($"{PluginConfig.HttpClientNamePrefix}PluginA", "") });
+            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
@@ -250,7 +245,7 @@ public class PluginDataHandlerTests
             .Returns(new List<string> { "PluginA" });
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
-            .Returns(new List<PluginRequestMetaData> { new($"{PluginConfig.HttpClientNamePrefix}PluginA", "") });
+            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
@@ -315,7 +310,7 @@ public class PluginDataHandlerTests
             .Returns(new List<string> { "PluginA" });
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
-            .Returns(new List<PluginRequestMetaData> { new($"{PluginConfig.HttpClientNamePrefix}PluginA", "") });
+            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())

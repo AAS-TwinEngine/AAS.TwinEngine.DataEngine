@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -9,45 +9,51 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Provide
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 
 using AasCore.Aas3_0;
 
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRepository;
 
-public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public abstract class AasRepositoryControllerTestsBase : IDisposable
 {
+    private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
-    public AasRepositoryControllerTests(WebApplicationFactory<Program> factory)
+    protected AasRepositoryControllerTestsBase(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
 
-        var factory1 = factory.WithWebHostBuilder(builder =>
+        _factory = new ConfigTestFactory(configDir, services =>
         {
-            _ = builder.ConfigureServices(services =>
-            {
-                _ = services.AddSingleton(mockPluginManifestProvider);
-                _ = services.AddSingleton(mockPluginManifestConflictHandler);
-                _ = services.AddSingleton(_httpClientFactory);
-                _ = services.AddSingleton(_mockTemplateProvider);
-            });
+            _ = services.AddSingleton(mockPluginManifestProvider);
+            _ = services.AddSingleton(mockPluginManifestConflictHandler);
+            _ = services.AddSingleton(_httpClientFactory);
+            _ = services.AddSingleton(_mockTemplateProvider);
         });
 
-        _client = factory1.CreateClient();
+        _client = _factory.CreateClient();
         _ = mockPluginManifestConflictHandler.Manifests.Returns(TestData.CreatePluginManifests());
+    }
+
+    public void Dispose()
+    {
+        _client.Dispose();
+        _factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -66,7 +72,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://testendpoint.com");
 
-        const string HttpClientName = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
 
         _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockShellTemplate);
@@ -92,7 +98,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
-    public async Task GetShellByIdAsync_ReturnsOkAsync_WhenErrorWhileExtractionOfProductId()
+    public async Task GetShellByIdAsync_ReturnsNotFoundAsync_WhenErrorWhileExtractionOfProductIdAsync()
     {
         // Arrange
         var aasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFz";
@@ -107,7 +113,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://testendpoint.com");
 
-        var httpClientName = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        var httpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(httpClientName).Returns(httpClient);
 
         _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockShellTemplate);
@@ -136,7 +142,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://testendpoint.com");
 
-        const string HttpClientName = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
 
         _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
@@ -266,7 +272,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
     [Theory]
     [InlineData("not-valid-base64!!!")]
     [InlineData("invalid!!base64")]
-    public async Task GetShellById_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    public async Task GetShellById_InvalidBase64_Returns400BadRequestAsync(string invalidBase64)
     {
         var response = await _client.GetAsync($"/shells/{invalidBase64}");
 
@@ -277,7 +283,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
     [InlineData("javascript:alert(1)")]
     [InlineData("<img onerror=alert('xss')>")]
     [InlineData("'; DROP TABLE shells--")]
-    public async Task GetShellById_MaliciousPattern_Returns400BadRequest(string maliciousContent)
+    public async Task GetShellById_MaliciousPattern_Returns400BadRequestAsync(string maliciousContent)
     {
         var encoded = EncodeBase64Url(maliciousContent);
 
@@ -289,7 +295,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
     [Theory]
     [InlineData("vbscript:msgbox('xss')")]
     [InlineData("file:///etc/passwd")]
-    public async Task GetAssetInformation_MaliciousPattern_Returns400BadRequest(string maliciousContent)
+    public async Task GetAssetInformation_MaliciousPattern_Returns400BadRequesAsync(string maliciousContent)
     {
         var encoded = EncodeBase64Url(maliciousContent);
 
@@ -300,7 +306,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
 
     [Theory]
     [InlineData("invalid!!")]
-    public async Task GetSubmodelRefs_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    public async Task GetSubmodelRefs_InvalidBase64_Returns400BadRequestAsync(string invalidBase64)
     {
         var response = await _client.GetAsync($"/shells/{invalidBase64}/submodel-refs");
 
@@ -310,7 +316,7 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
     [Theory]
     [InlineData("https://example.com/shells/shell123")]
     [InlineData("urn:uuid:test-123")]
-    public async Task GetShellById_ValidIdentifier_DoesNotReturn400(string validId)
+    public async Task GetShellById_ValidIdentifier_DoesNotReturn400Async(string validId)
     {
         var encoded = EncodeBase64Url(validId);
         _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -333,6 +339,16 @@ public class AasRepositoryControllerTests : IClassFixture<WebApplicationFactory<
         var bytes = Encoding.UTF8.GetBytes(plainText);
         return WebEncoders.Base64UrlEncode(bytes);
     }
+}
+
+public class AasRepositoryControllerTests_V1Config : AasRepositoryControllerTestsBase
+{
+    public AasRepositoryControllerTests_V1Config() : base("v1-config") { }
+}
+
+public class AasRepositoryControllerTests_V2Config : AasRepositoryControllerTestsBase
+{
+    public AasRepositoryControllerTests_V2Config() : base("v2-config") { }
 }
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
