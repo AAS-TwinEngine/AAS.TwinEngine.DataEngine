@@ -138,7 +138,7 @@ public class TemplateMappingRulesValidator : IValidateOptions<TemplateManagement
             error = null;
             return true;
         }
-        catch (InvalidDependencyException ex)
+        catch (ArgumentException ex)
         {
             error = ex.Message;
             return false;

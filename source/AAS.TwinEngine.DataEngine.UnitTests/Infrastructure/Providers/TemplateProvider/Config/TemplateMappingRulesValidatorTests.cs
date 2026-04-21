@@ -2,8 +2,6 @@
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using Microsoft.Extensions.Options;
-
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Config;
 
 public class TemplateMappingRulesValidatorTests
