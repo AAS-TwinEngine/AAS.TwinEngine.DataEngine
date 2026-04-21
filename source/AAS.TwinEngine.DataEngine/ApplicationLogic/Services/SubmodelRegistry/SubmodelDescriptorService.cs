@@ -2,10 +2,11 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
@@ -13,44 +14,21 @@ using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.E
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 
-public class SubmodelDescriptorService : ISubmodelDescriptorService
+public class SubmodelDescriptorService(
+    ISubmodelDescriptorProvider submodelDescriptorProvider,
+    ISubmodelTemplateMappingProvider submodelTemplateMappingProvider,
+    IOptions<GeneralConfig> generalConfig,
+    ILogger<SubmodelDescriptorService> logger) : ISubmodelDescriptorService
 {
-    private readonly ISubmodelDescriptorProvider _submodelDescriptorProvider;
-    private readonly Uri _dataEngineRepositoryBaseUrl;
-    private readonly string _subModelRepositoryPath;
-    private readonly ISubmodelTemplateMappingProvider _submodelTemplateMappingProvider;
-
-    public SubmodelDescriptorService(
-        ISubmodelDescriptorProvider submodelDescriptorProvider,
-        ILogger<SubmodelDescriptorService> logger,
-        ISubmodelTemplateMappingProvider submodelTemplateMappingProvider,
-        IOptions<AasEnvironmentConfig> aasEnvironment)
-    {
-        _submodelDescriptorProvider = submodelDescriptorProvider;
-        _submodelTemplateMappingProvider = submodelTemplateMappingProvider;
-        if (aasEnvironment?.Value.DataEngineRepositoryBaseUrl == null)
-        {
-            logger.LogError("DataEngineRepositoryBaseUrl is missing in AasEnvironmentConfig configuration.");
-            throw new ArgumentNullException(nameof(aasEnvironment), "DataEngineRepositoryBaseUrl is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(aasEnvironment.Value.SubModelRepositoryPath))
-        {
-            logger.LogError("SubModelRepositoryPath is missing in AasEnvironmentConfig configuration.");
-            throw new ArgumentNullException(nameof(aasEnvironment), "SubModelRepositoryPath is required.");
-        }
-
-        _dataEngineRepositoryBaseUrl = aasEnvironment.Value.DataEngineRepositoryBaseUrl;
-        _subModelRepositoryPath = aasEnvironment.Value.SubModelRepositoryPath;
-    }
+    private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
 
     public async Task<SubmodelDescriptor> GetSubmodelDescriptorByIdAsync(string id, CancellationToken cancellationToken)
     {
         try
         {
-            var templateId = _submodelTemplateMappingProvider.GetTemplateId(id);
+            var templateId = submodelTemplateMappingProvider.GetTemplateId(id);
 
-            var submodelDescriptorData = await _submodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(templateId, cancellationToken).ConfigureAwait(false);
+            var submodelDescriptorData = await submodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(templateId, cancellationToken).ConfigureAwait(false);
 
             SetHref(submodelDescriptorData, id);
 
@@ -112,5 +90,5 @@ public class SubmodelDescriptorService : ISubmodelDescriptorService
         endpoint.ProtocolInformation.Href = href;
     }
 
-    private string GenerateHref(string encodedId) => $"{_dataEngineRepositoryBaseUrl}{_subModelRepositoryPath}/{encodedId}";
+    private string GenerateHref(string encodedId) => $"{_baseUrl}{ApiPaths.Submodels}/{encodedId}";
 }

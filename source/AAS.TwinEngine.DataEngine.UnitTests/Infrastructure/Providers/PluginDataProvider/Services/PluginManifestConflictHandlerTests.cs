@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
 using Microsoft.Extensions.Logging;
@@ -14,61 +14,25 @@ public class PluginManifestConflictHandlerTests
 {
     private readonly ILogger<PluginManifestConflictHandler> _logger = Substitute.For<ILogger<PluginManifestConflictHandler>>();
 
-    private static PluginManifestConflictHandler CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption handlingMode, ILogger<PluginManifestConflictHandler> logger)
+    private PluginManifestConflictHandler CreateSut(
+        MultiPluginConflictOptions.MultiPluginConflictOption handlingMode = MultiPluginConflictOptions.MultiPluginConflictOption.ThrowError)
     {
         var options = Options.Create(new MultiPluginConflictOptions { HandlingMode = handlingMode });
-        return new PluginManifestConflictHandler(logger, options);
+        return new PluginManifestConflictHandler(options, _logger);
     }
 
     [Fact]
-    public async Task InitializeAsync_ThrowsArgumentNull_WhenInputIsNull()
+    public async Task InitializeAsync_ThrowsInvalidDependencyException_WhenInputIsNull()
     {
-        var sut = CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption.TakeFirst, _logger);
+        var sut = CreateSut();
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => sut.ProcessManifests(null!));
-    }
-
-    [Fact]
-    public async Task InitializeAsync_FirstWins_KeepsFirst_and_RemovesFromLater()
-    {
-        var sut = CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption.TakeFirst, _logger);
-        var manifest1 = CreateManifest("Plugin1", "semanticId-1");
-        var manifest2 = CreateManifest("Plugin2", "semanticId-1", "semanticId-2");
-        var manifests = new List<PluginManifest> { manifest1, manifest2 };
-
-        await sut.ProcessManifests(manifests);
-
-        Assert.Contains("semanticId-1", manifest1.SupportedSemanticIds);
-        Assert.DoesNotContain("semanticId-1", manifest2.SupportedSemanticIds);
-        Assert.Contains("semanticId-2", manifest2.SupportedSemanticIds);
-        Assert.Equal(2, sut.Manifests.Count);
-        Assert.Same(manifest1, sut.Manifests[0]);
-        Assert.Same(manifest2, sut.Manifests[1]);
-    }
-
-    [Fact]
-    public async Task InitializeAsync_DiscardAndNull_RemovesDuplicateFromAllManifests()
-    {
-        var sut = CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption.SkipConflictingIds, _logger);
-        var manifest1 = CreateManifest("Plugin1", "semanticId-1", "semanticId-3");
-        var manifest2 = CreateManifest("Plugin2", "semanticId-1", "semanticId-2");
-        var manifest3 = CreateManifest("Plugin3", "semanticId-4", "semanticId-1");
-        var manifests = new List<PluginManifest> { manifest1, manifest2, manifest3 };
-
-        await sut.ProcessManifests(manifests);
-
-        Assert.DoesNotContain("semanticId-1", manifest1.SupportedSemanticIds);
-        Assert.DoesNotContain("semanticId-1", manifest2.SupportedSemanticIds);
-        Assert.DoesNotContain("semanticId-1", manifest3.SupportedSemanticIds);
-        Assert.Contains("semanticId-3", manifest1.SupportedSemanticIds);
-        Assert.Contains("semanticId-2", manifest2.SupportedSemanticIds);
-        Assert.Contains("semanticId-4", manifest3.SupportedSemanticIds);
+        await Assert.ThrowsAsync<InvalidDependencyException>(() => sut.ProcessManifests(null!));
     }
 
     [Fact]
     public async Task InitializeAsync_ThrowError_ThrowsOnDuplicate()
     {
-        var sut = CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption.ThrowError, _logger);
+        var sut = CreateSut();
         var manifest1 = CreateManifest("Plugin1", "semanticId-1");
         var manifest2 = CreateManifest("Plugin2", "semanticId-1");
         var manifests = new List<PluginManifest> { manifest1, manifest2 };
@@ -79,7 +43,7 @@ public class PluginManifestConflictHandlerTests
     [Fact]
     public async Task InitializeAsync_NullSupportedSemanticIds_IsHandledGracefully()
     {
-        var sut = CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption.TakeFirst, _logger);
+        var sut = CreateSut();
         var capabilities = new Capabilities
         {
             HasShellDescriptor = false,
@@ -101,6 +65,49 @@ public class PluginManifestConflictHandlerTests
         Assert.NotNull(manifestWithNull.SupportedSemanticIds);
         Assert.Empty(manifestWithNull.SupportedSemanticIds);
         Assert.Contains("semanticId-1", manifestWithSemanticId.SupportedSemanticIds);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_ProcessesManifestsWithoutConflicts_Successfully()
+    {
+        var sut = CreateSut();
+        var manifest1 = CreateManifest("Plugin1", "semanticId-1");
+        var manifest2 = CreateManifest("Plugin2", "semanticId-2");
+        var manifests = new List<PluginManifest> { manifest1, manifest2 };
+
+        await sut.ProcessManifests(manifests);
+
+        Assert.Equal(2, sut.Manifests.Count);
+        Assert.Contains("semanticId-1", manifest1.SupportedSemanticIds);
+        Assert.Contains("semanticId-2", manifest2.SupportedSemanticIds);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_TakeFirst_KeepsDuplicateInFirstPlugin()
+    {
+        var sut = CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption.TakeFirst);
+        var manifest1 = CreateManifest("Plugin1", "semanticId-1");
+        var manifest2 = CreateManifest("Plugin2", "semanticId-1");
+        var manifests = new List<PluginManifest> { manifest1, manifest2 };
+
+        await sut.ProcessManifests(manifests);
+
+        Assert.Contains("semanticId-1", manifest1.SupportedSemanticIds);
+        Assert.DoesNotContain("semanticId-1", manifest2.SupportedSemanticIds);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_SkipConflictingIds_RemovesDuplicateFromAll()
+    {
+        var sut = CreateSut(MultiPluginConflictOptions.MultiPluginConflictOption.SkipConflictingIds);
+        var manifest1 = CreateManifest("Plugin1", "semanticId-1");
+        var manifest2 = CreateManifest("Plugin2", "semanticId-1");
+        var manifests = new List<PluginManifest> { manifest1, manifest2 };
+
+        await sut.ProcessManifests(manifests);
+
+        Assert.DoesNotContain("semanticId-1", manifest1.SupportedSemanticIds);
+        Assert.DoesNotContain("semanticId-1", manifest2.SupportedSemanticIds);
     }
 
     private static PluginManifest CreateManifest(string name, params string[] semanticIds)

@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -12,6 +12,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Json.Schema;
 
@@ -23,12 +24,13 @@ public class PluginDataHandler(
     IPluginRequestBuilder pluginRequestBuilder,
     IPluginDataProvider pluginDataProvider,
     IJsonSchemaValidator jsonSchemaValidator,
-    IOptions<AasEnvironmentConfig> aasEnvironment,
     IMultiPluginDataHandler multiPluginDataHandler,
-    ILogger<PluginDataHandler> logger) : IPluginDataHandler
+    ILogger<PluginDataHandler> logger,
+    IOptions<GeneralConfig> generalConfig) : IPluginDataHandler
 {
-    private readonly Uri _dataEngineRepositoryBaseUrl = aasEnvironment.Value.DataEngineRepositoryBaseUrl ?? throw new ArgumentNullException(nameof(aasEnvironment), "DataEngineRepositoryBaseUrl is required.");
     private const string ShellsBasePath = "shells";
+
+    private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
 
     public async Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken)
     {
@@ -184,6 +186,6 @@ public class PluginDataHandler(
     private void SetHref(ShellDescriptorMetaData value)
     {
         var encodedId = value.Id!.EncodeBase64Url();
-        value.Href = $"{_dataEngineRepositoryBaseUrl}{ShellsBasePath}/{encodedId}";
+        value.Href = $"{_baseUrl}{ShellsBasePath}/{encodedId}";
     }
 }

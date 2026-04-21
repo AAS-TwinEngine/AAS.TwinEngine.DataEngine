@@ -1,11 +1,9 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 
 using AasCore.Aas3_0;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -24,12 +22,8 @@ public class SerializationServiceTests
         _shellService = Substitute.For<IAasRepositoryService>();
         _conceptDescriptionService = Substitute.For<IConceptDescriptionService>();
 
-        var options = Options.Create(new AasxExportOptions
-        {
-            RootFolder = "aas"
-        });
         var logger = Substitute.For<ILogger<SerializationService>>();
-        _sut = new SerializationService(_submodelRepositoryService, _shellService, _conceptDescriptionService, options, logger);
+        _sut = new SerializationService(_submodelRepositoryService, _shellService, _conceptDescriptionService, logger);
     }
 
     [Fact]

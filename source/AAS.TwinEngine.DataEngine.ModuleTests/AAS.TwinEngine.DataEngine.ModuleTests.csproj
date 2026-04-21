@@ -26,4 +26,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="TestData\v1-config\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="TestData\v2-config\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

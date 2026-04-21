@@ -3,8 +3,8 @@ using System.Net.Http.Headers;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Policies;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 
@@ -12,13 +12,10 @@ public static class HttpClientRegistrationExtensions
 {
     public static IServiceCollection AddHttpClientWithResilience(
         this IServiceCollection services,
-        IConfiguration configuration,
         string clientName,
-        string retryPolicySectionKey,
+        RetryConfig retryConfig,
         Uri baseUrl)
     {
-        _ = services.Configure<HttpRetryPolicyOptions>(configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{retryPolicySectionKey}"));
-
         var httpClientBuilder = services.AddHttpClient(clientName, client =>
         {
             client.BaseAddress = baseUrl;
@@ -26,7 +23,7 @@ public static class HttpClientRegistrationExtensions
             client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
             client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
         })
-        .AddStandardResilienceHandler(retryPolicySectionKey);
+        .AddStandardResilienceHandler(retryConfig);
 
         httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
         {

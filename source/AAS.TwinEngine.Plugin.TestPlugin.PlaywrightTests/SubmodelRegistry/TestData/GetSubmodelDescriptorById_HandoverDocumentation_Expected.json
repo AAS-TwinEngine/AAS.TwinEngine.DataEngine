@@ -21,13 +21,7 @@
     "referredSemanticId": null,
     "keys": null
   },
-  "supplementalSemanticId": [
-    {
-      "type": "ExternalReference",
-      "referredSemanticId": null,
-      "keys": null
-    }
-  ],
+  "supplementalSemanticId": null,
   "endpoints": [
     {
       "interface": "SUBMODEL-3.0",

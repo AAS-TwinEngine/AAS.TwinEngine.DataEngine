@@ -1,11 +1,12 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,62 +19,18 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Submodel
 public class SubmodelDescriptorServiceTests
 {
     private readonly ISubmodelDescriptorProvider _provider = Substitute.For<ISubmodelDescriptorProvider>();
-    private readonly ILogger<SubmodelDescriptorService> _logger = Substitute.For<ILogger<SubmodelDescriptorService>>();
-    private readonly IOptions<AasEnvironmentConfig> _options;
     private readonly SubmodelDescriptorService _sut;
+    private readonly IOptions<GeneralConfig> _options;
+    private readonly ILogger<SubmodelDescriptorService> _logger = Substitute.For<ILogger<SubmodelDescriptorService>>();
     private readonly ISubmodelTemplateMappingProvider _submodelTemplateMappingProvider = Substitute.For<ISubmodelTemplateMappingProvider>();
 
     public SubmodelDescriptorServiceTests()
     {
-        _options = Options.Create(new AasEnvironmentConfig
+        _options = Options.Create(new GeneralConfig
         {
             DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com"),
-            SubModelRepositoryPath = "submodels"
         });
-
-        _sut = new SubmodelDescriptorService(_provider, _logger, _submodelTemplateMappingProvider, _options);
-    }
-
-    [Fact]
-    public void Constructor_Throws_WhenBaseUrlMissing()
-    {
-        var invalidEnv = new AasEnvironmentConfig
-        {
-            DataEngineRepositoryBaseUrl = null!,
-            SubModelRepositoryPath = "submodels"
-        };
-        var options = Options.Create(invalidEnv);
-
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-                                                          new SubmodelDescriptorService(_provider, _logger, _submodelTemplateMappingProvider, options));
-        Assert.Contains("DataEngineRepositoryBaseUrl", ex.Message, StringComparison.OrdinalIgnoreCase);
-        _logger.Received().Log(
-                               LogLevel.Error,
-                               Arg.Any<EventId>(),
-                               Arg.Is<object>(o => o.ToString()!.Contains("DataEngineRepositoryBaseUrl is missing")),
-                               null,
-                               Arg.Any<Func<object, Exception?, string>>());
-    }
-
-    [Fact]
-    public void Constructor_Throws_WhenPathMissing()
-    {
-        var invalidEnv = new AasEnvironmentConfig
-        {
-            DataEngineRepositoryBaseUrl = new Uri("http://localhost"),
-            SubModelRepositoryPath = null!
-        };
-        var options = Options.Create(invalidEnv);
-
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-                                                          new SubmodelDescriptorService(_provider, _logger, _submodelTemplateMappingProvider, options));
-        Assert.Contains("SubModelRepositoryPath", ex.Message, StringComparison.OrdinalIgnoreCase);
-        _logger.Received().Log(
-                               LogLevel.Error,
-                               Arg.Any<EventId>(),
-                               Arg.Is<object>(o => o.ToString()!.Contains("SubModelRepositoryPath is missing")),
-                               null,
-                               Arg.Any<Func<object, Exception?, string>>());
+        _sut = new SubmodelDescriptorService(_provider, _submodelTemplateMappingProvider, _options, _logger);
     }
 
     [Fact]

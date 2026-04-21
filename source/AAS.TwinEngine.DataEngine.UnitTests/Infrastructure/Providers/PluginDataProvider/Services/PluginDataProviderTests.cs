@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -8,7 +8,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 
 using AasCore.Aas3_0;
 
@@ -18,6 +17,8 @@ using NSubstitute;
 
 using PluginDataProviderRepo = AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -63,7 +64,7 @@ public class PluginDataProviderTests
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri(endpoint);
 
-        var httpClientName = $"{PluginConfig.HttpClientNamePrefix}PluginName";
+        var httpClientName = $"{HttpClientNames.PluginDataProviderPrefix}PluginName";
         _httpClientFactory.CreateClient(httpClientName).Returns(httpClient);
 
         using var simpleRequestSchema = ConvertToJsonContent(SimpleRequestSchema);
@@ -86,7 +87,7 @@ public class PluginDataProviderTests
     public async Task GetDataForSemanticIdsAsync_404Response_ThrowsResourceNotFoundExceptionAsync()
     {
         using var simpleRequestSchema = ConvertToJsonContent(SimpleRequestSchema);
-        var pluginRequest = new PluginRequestSubmodel($"{PluginConfig.HttpClientNamePrefix}PluginName", simpleRequestSchema);
+        var pluginRequest = new PluginRequestSubmodel($"{HttpClientNames.PluginDataProviderPrefix}PluginName", simpleRequestSchema);
         var pluginRequests = new List<PluginRequestSubmodel> { pluginRequest };
 
         using var messageHandler = new FakeHttpMessageHandler((_, _) =>
@@ -121,11 +122,11 @@ public class PluginDataProviderTests
 
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://example.com");
-        _httpClientFactory.CreateClient(PluginConfig.MetaData).Returns(httpClient);
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(httpClient);
 
         var metadata = new List<PluginRequestMetaData>
         {
-            new(PluginConfig.MetaData, "")
+            new(ApiPaths.PluginMetadata, "")
         };
 
         var result = await _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None);
@@ -149,12 +150,12 @@ public class PluginDataProviderTests
             return Task.FromResult(new HttpResponseMessage(callCount % 2 == 0 ? HttpStatusCode.NotFound : HttpStatusCode.NotFound));
         });
 
-        _httpClientFactory.CreateClient(PluginConfig.MetaData).Returns(_ => new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") });
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(_ => new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") });
 
         var metadata = new List<PluginRequestMetaData>
         {
-            new(PluginConfig.MetaData, "plugin1"),
-            new(PluginConfig.MetaData, "plugin2"),
+            new(ApiPaths.PluginMetadata, "plugin1"),
+            new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
@@ -167,11 +168,11 @@ public class PluginDataProviderTests
 
         using var httpClient = new HttpClient(messageHandler);
         httpClient.BaseAddress = new Uri("https://example.com");
-        _httpClientFactory.CreateClient(PluginConfig.MetaData).Returns(httpClient);
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(httpClient);
 
         var metadata = new List<PluginRequestMetaData>
         {
-            new(PluginConfig.MetaData, "")
+            new(ApiPaths.PluginMetadata, "")
         };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
@@ -187,12 +188,12 @@ public class PluginDataProviderTests
             return Task.FromResult(new HttpResponseMessage(callCount % 2 == 0 ? HttpStatusCode.Conflict : HttpStatusCode.Conflict));
         });
 
-        _httpClientFactory.CreateClient(PluginConfig.MetaData).Returns(_ => new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") });
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(_ => new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") });
 
         var metadata = new List<PluginRequestMetaData>
         {
-            new(PluginConfig.MetaData, "plugin1"),
-            new(PluginConfig.MetaData, "plugin2"),
+            new(ApiPaths.PluginMetadata, "plugin1"),
+            new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
         await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
@@ -208,12 +209,12 @@ public class PluginDataProviderTests
             return Task.FromResult(new HttpResponseMessage(callCount % 2 == 0 ? HttpStatusCode.Unauthorized : HttpStatusCode.NotFound));
         });
 
-        _httpClientFactory.CreateClient(PluginConfig.MetaData).Returns(_ => new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") });
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(_ => new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") });
 
         var metadata = new List<PluginRequestMetaData>
         {
-            new(PluginConfig.MetaData, "plugin1"),
-            new(PluginConfig.MetaData, "plugin2"),
+            new(ApiPaths.PluginMetadata, "plugin1"),
+            new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
         await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
@@ -235,14 +236,14 @@ public class PluginDataProviderTests
         });
 
         using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://testendpoint.com") };
-        _httpClientFactory.CreateClient(PluginConfig.MetaData).Returns(httpClient);
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(httpClient);
 
         var testId = GetTestShellDescriptorDataList().First().Id!;
         var expectedEncoded = testId.EncodeBase64Url();
 
         var metadata = new List<PluginRequestMetaData>
         {
-            new(PluginConfig.MetaData, testId)
+            new(ApiPaths.PluginMetadata, testId)
         };
 
         var result = await _sut.GetDataForShellDescriptorByIdAsync(metadata, CancellationToken.None);
@@ -275,14 +276,14 @@ public class PluginDataProviderTests
         });
 
         using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://testendpoint.com") };
-        _httpClientFactory.CreateClient(PluginConfig.MetaData).Returns(httpClient);
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(httpClient);
 
         var testId = CreateAssetInformation().GlobalAssetId!;
         var expectedEncoded = testId.EncodeBase64Url();
 
         var metadata = new List<PluginRequestMetaData>
         {
-            new(PluginConfig.MetaData, testId)
+            new(ApiPaths.PluginMetadata, testId)
         };
 
         var result = await _sut.GetDataForAssetInformationByIdAsync(metadata, CancellationToken.None);
@@ -309,7 +310,7 @@ public class PluginDataProviderTests
     public async Task GetDataForSemanticIdsAsync_WhenTaskCanceled_ThrowsRequestTimeoutException()
     {
         using var simpleRequestSchema = ConvertToJsonContent(SimpleRequestSchema);
-        var pluginRequest = new PluginRequestSubmodel($"{PluginConfig.HttpClientNamePrefix}PluginName", simpleRequestSchema);
+        var pluginRequest = new PluginRequestSubmodel($"{HttpClientNames.PluginDataProviderPrefix}PluginName", simpleRequestSchema);
         var pluginRequests = new List<PluginRequestSubmodel> { pluginRequest };
 
         using var messageHandler = new FakeHttpMessageHandler((_, _) => throw new TaskCanceledException("timeout"));
@@ -326,7 +327,7 @@ public class PluginDataProviderTests
     public async Task GetDataForSemanticIdsAsync_WhenUnauthorizedOrForbidden_ThrowsServiceAuthorizationException(HttpStatusCode statusCode)
     {
         using var simpleRequestSchema = ConvertToJsonContent(SimpleRequestSchema);
-        var pluginRequest = new PluginRequestSubmodel($"{PluginConfig.HttpClientNamePrefix}PluginName", simpleRequestSchema);
+        var pluginRequest = new PluginRequestSubmodel($"{HttpClientNames.PluginDataProviderPrefix}PluginName", simpleRequestSchema);
         var pluginRequests = new List<PluginRequestSubmodel> { pluginRequest };
 
         using var messageHandler = new FakeHttpMessageHandler((_, _) =>
@@ -347,7 +348,7 @@ public class PluginDataProviderTests
     public async Task GetDataForSemanticIdsAsync_WhenUnexpectedStatusCode_ThrowsResponseParsingException()
     {
         using var simpleRequestSchema = ConvertToJsonContent(SimpleRequestSchema);
-        var pluginRequest = new PluginRequestSubmodel($"{PluginConfig.HttpClientNamePrefix}PluginName", simpleRequestSchema);
+        var pluginRequest = new PluginRequestSubmodel($"{HttpClientNames.PluginDataProviderPrefix}PluginName", simpleRequestSchema);
         var pluginRequests = new List<PluginRequestSubmodel> { pluginRequest };
 
         using var messageHandler = new FakeHttpMessageHandler((_, _) =>

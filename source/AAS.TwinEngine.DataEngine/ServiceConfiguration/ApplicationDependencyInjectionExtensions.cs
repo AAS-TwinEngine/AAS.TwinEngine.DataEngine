@@ -1,6 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
-using AAS.TwinEngine.DataEngine.Api.Configuration;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions;
@@ -16,6 +15,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
@@ -27,8 +27,7 @@ public static class ApplicationDependencyInjectionExtensions
     {
         _ = services.AddExceptionHandler<GlobalExceptionHandler>();
         _ = services.AddProblemDetails();
-        _ = services.Configure<ApiConfiguration>(configuration.GetSection("ApiConfiguration"));
-        _ = services.AddSingleton(sp => sp.GetRequiredService<IOptions<ApiConfiguration>>().Value);
+        _ = services.AddSingleton(sp => sp.GetRequiredService<IOptions<GeneralConfig>>().Value.ApiConfiguration);
         _ = services.AddScoped<ISubmodelRepositoryHandler, SubmodelRepositoryHandler>();
         _ = services.AddScoped<IShellDescriptorHandler, ShellDescriptorHandler>();
         _ = services.AddScoped<IShellDescriptorService, ShellDescriptorService>();

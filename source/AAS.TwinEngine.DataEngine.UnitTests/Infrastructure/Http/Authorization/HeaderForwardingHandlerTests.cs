@@ -1,9 +1,9 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization.Middleware;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
 
 public class HeaderForwardingHandlerTests
 {
@@ -19,14 +19,20 @@ public class HeaderForwardingHandlerTests
     {
         var accessor = new HttpContextAccessor { HttpContext = httpContext };
 
-        var options = new HeaderForwardingOptions
+        var generalConfig = Options.Create(new GeneralConfig
         {
-            HeaderSanitization = new HeaderSanitizationOptions(),
-            HeaderMappings = new HeaderMappings
-            {
-                Plugins =
+            HeaderSanitization = new HeaderSanitizationOptions()
+        });
+
+        var pluginsConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
                 {
-                    ["TestPlugin"] =
+                    Name = "TestPlugin",
+                    BaseUrl = new Uri("http://example.com"),
+                    HeaderMappings =
                     [
                         new HeaderMappingRule
                         {
@@ -36,10 +42,16 @@ public class HeaderForwardingHandlerTests
                         }
                     ]
                 }
-            }
-        };
+            ]
+        });
 
-        var headerMapper = new RequestHeaderMapper(new NullLogger<RequestHeaderMapper>(), Options.Create(options));
+        var templateManagementConfig = Options.Create(new TemplateManagementConfig());
+
+        var headerMapper = new RequestHeaderMapper(
+            new NullLogger<RequestHeaderMapper>(),
+            generalConfig,
+            pluginsConfig,
+            templateManagementConfig);
 
         return new HeaderForwardingHandler(accessor, headerMapper, clientName)
         {
@@ -51,7 +63,7 @@ public class HeaderForwardingHandlerTests
     public async Task HeaderForwardingHandler_ForwardsMappedHeaderToInnerHandler()
     {
         const string pluginName = "TestPlugin";
-        var clientName = PluginConfig.HttpClientNamePrefix + pluginName;
+        var clientName = HttpClientNames.PluginDataProviderPrefix + pluginName;
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers.Authorization = "Bearer test-token";

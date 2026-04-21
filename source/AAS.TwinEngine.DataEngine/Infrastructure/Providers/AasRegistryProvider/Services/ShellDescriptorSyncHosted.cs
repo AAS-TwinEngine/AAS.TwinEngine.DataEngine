@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Cronos;
 
@@ -10,11 +10,11 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider
 
 public class ShellDescriptorSyncHosted(
     IServiceScopeFactory scopeFactory,
-    IOptions<AasRegistryPreComputed> config,
+    IOptions<RegistrySettingsConfig> config,
     ILogger<ShellDescriptorSyncHosted> logger) : BackgroundService
 {
-    private readonly CronExpression _cronExpression = CronExpression.Parse(config.Value.ShellDescriptorCron, CronFormat.IncludeSeconds);
-    private readonly bool _isPreComputed = config.Value.IsPreComputed;
+    private readonly CronExpression _cronExpression = CronExpression.Parse(config.Value.PreComputed.Schedule, CronFormat.IncludeSeconds);
+    private readonly bool _isPreComputed = config.Value.PreComputed.Enabled;
     private readonly TimeZoneInfo _timeZone = TimeZoneInfo.Local;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

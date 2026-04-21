@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Json.Schema;
 
@@ -28,13 +28,13 @@ public class JsonSchemaValidatorTests
 
     public JsonSchemaValidatorTests()
     {
-        var semantics = Substitute.For<IOptions<Semantics>>();
-        semantics.Value.Returns(new Semantics
+        var pluginsConfig = Substitute.For<IOptions<PluginsConfig>>();
+        pluginsConfig.Value.Returns(new PluginsConfig
         {
             SubmodelElementIndexContextPrefix = "_aastwinengine_"
         });
         var logger = Substitute.For<ILogger<JsonSchemaValidator>>();
-        _sut = new JsonSchemaValidator(semantics, logger);
+        _sut = new JsonSchemaValidator(pluginsConfig, logger);
     }
 
     [Fact]

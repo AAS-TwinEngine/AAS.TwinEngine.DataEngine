@@ -1,6 +1,8 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,26 +14,29 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateP
 public class SubmodelTemplateMappingProviderTests
 {
     private readonly ILogger<SubmodelTemplateMappingProvider> _logger = Substitute.For<ILogger<SubmodelTemplateMappingProvider>>();
-    private readonly IOptions<TemplateMappingRules> _options = Substitute.For<IOptions<TemplateMappingRules>>();
+    private readonly IOptions<TemplateManagementConfig> _options = Substitute.For<IOptions<TemplateManagementConfig>>();
     private readonly SubmodelTemplateMappingProvider _sut;
 
     public SubmodelTemplateMappingProviderTests()
     {
-        var settings = new TemplateMappingRules
+        var settings = new TemplateManagementConfig
         {
-            SubmodelTemplateMappings =
-            [
-                new SubmodelTemplateMappings
-                {
-                    Pattern = ["submodel1", "submodel2"],
-                    TemplateId = "template1"
-                },
-                new SubmodelTemplateMappings
-                {
-                    Pattern = ["submodel3"],
-                    TemplateId = "template2"
-                }
-            ]
+            TemplateMappingRules = new TemplateMappingRules
+            {
+                SubmodelTemplateMappings =
+                [
+                    new SubmodelTemplateMappings
+                    {
+                        Pattern = ["submodel1", "submodel2"],
+                        TemplateId = "template1"
+                    },
+                    new SubmodelTemplateMappings
+                    {
+                        Pattern = ["submodel3"],
+                        TemplateId = "template2"
+                    }
+                ]
+            }
         };
         _options.Value.Returns(settings);
         _sut = new SubmodelTemplateMappingProvider(_logger, _options);
@@ -53,12 +58,11 @@ public class SubmodelTemplateMappingProviderTests
     }
 
     [Fact]
-    public void GetTemplateId_ThrowsArgumentException_WhenTemplateMappingsIsMissing()
+    public void GetTemplateId_ThrowsInvalidDependencyException_WhenTemplateMappingsIsMissing()
     {
-        _options.Value.Returns(new TemplateMappingRules { SubmodelTemplateMappings = null! });
+        _options.Value.Returns(new TemplateManagementConfig { TemplateMappingRules = new TemplateMappingRules { SubmodelTemplateMappings = null! } });
 
-        var exception = Assert.Throws<ArgumentException>(() => new SubmodelTemplateMappingProvider(_logger, _options));
-        Assert.IsType<ArgumentException>(exception);
-        Assert.Equal("SubmodelTemplateMappings is missing in TemplateMappingSettings", exception.Message);
+        var exception = Assert.Throws<InvalidDependencyException>(() => new SubmodelTemplateMappingProvider(_logger, _options));
+        Assert.IsType<InvalidDependencyException>(exception);
     }
 }

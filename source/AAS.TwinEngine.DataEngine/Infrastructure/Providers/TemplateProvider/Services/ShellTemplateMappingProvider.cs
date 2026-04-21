@@ -1,18 +1,20 @@
 ﻿using System.Text.RegularExpressions;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
-public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> logger, IOptions<TemplateMappingRules> options) : IShellTemplateMappingProvider
+public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> logger, IOptions<TemplateManagementConfig> options) : IShellTemplateMappingProvider
 {
-    private readonly ILogger<ShellTemplateMappingProvider> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly IList<ShellTemplateMappings> _shellTemplateMappings = options.Value.ShellTemplateMappings ?? throw new ArgumentException("ShellTemplateMappings are missing in TemplateMappingRules");
-    private readonly IList<AasIdExtractionRules> _aasIdExtractionRules = options.Value.AasIdExtractionRules ?? throw new ArgumentException("AasIdExtractionRules are missing in TemplateMappingRules");
+    private readonly ILogger<ShellTemplateMappingProvider> _logger = logger ?? throw new InvalidDependencyException(nameof(logger), logger);
+    private readonly IList<ShellTemplateMappings> _shellTemplateMappings = options.Value.TemplateMappingRules.ShellTemplateMappings ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.ShellTemplateMappings), logger);
+    private readonly IList<AasIdExtractionRules> _aasIdExtractionRules = options.Value.TemplateMappingRules.AasIdExtractionRules ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.AasIdExtractionRules), logger);
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(2);
 
     public string? GetTemplateId(string aasIdentifier)
