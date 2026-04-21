@@ -186,21 +186,20 @@ public class TemplateMappingRulesValidatorTests
     public void Validate_NullOptions_ThrowsInvalidDependencyException() => Assert.Throws<InvalidDependencyException>(() => _sut.Validate(null, null!));
 
     [Fact]
-    public void Validate_UsesDescriptionInErrorMessage()
+    public void Validate_UsesRuleIndexInErrorMessage()
     {
         var config = CreateConfig(
             new AasIdExtractionRule
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
-                Index = 0,
-                Description = "My broken rule"
+                Index = 0
             });
 
         var result = _sut.Validate(null, config);
 
         Assert.True(result.Failed);
-        Assert.Contains("My broken rule", result.FailureMessage);
+        Assert.Contains("Rule[0]", result.FailureMessage);
     }
 
     [Fact]
@@ -211,8 +210,7 @@ public class TemplateMappingRulesValidatorTests
             {
                 Strategy = ExtractionStrategy.Regex,
                 Pattern = @"^https?://[^/]+/ids/submodel/([^/]+)(?:/|$)",
-                Index = 1,
-                Description = "Single-segment"
+                Index = 1
             });
 
         var result = _sut.Validate(null, config);

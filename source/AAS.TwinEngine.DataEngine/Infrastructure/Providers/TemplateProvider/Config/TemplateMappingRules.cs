@@ -42,6 +42,4 @@ public class AasIdExtractionRule
     public int? EndIndex { get; set; }
 
     public string? ValidationPattern { get; set; }
-
-    public string? Description { get; set; }
 }

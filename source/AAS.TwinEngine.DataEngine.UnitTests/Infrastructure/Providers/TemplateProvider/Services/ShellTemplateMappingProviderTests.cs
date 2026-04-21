@@ -106,16 +106,14 @@ public class ShellTemplateMappingProviderTests
                 Strategy = ExtractionStrategy.Regex,
                 Pattern = @"^https?://[^/]+/ids/submodel/([^/]+/[^/]+)(?:/|$)",
                 Index = 1,
-                ValidationPattern = @"^[0-9\-/]+$",
-                Description = "Multi-segment (digits only)"
+                ValidationPattern = @"^[0-9\-/]+$"
             },
             new AasIdExtractionRule
             {
                 Strategy = ExtractionStrategy.Regex,
                 Pattern = @"^https?://[^/]+/ids/submodel/([^/]+)(?:/|$)",
                 Index = 1,
-                ValidationPattern = @"^[a-zA-Z0-9\-]+$",
-                Description = "Single-segment"
+                ValidationPattern = @"^[a-zA-Z0-9\-]+$"
             }
         ]);
 

@@ -29,7 +29,7 @@ public class TemplateMappingRulesValidator : IValidateOptions<TemplateManagement
         for (var i = 0; i < rules.Count; i++)
         {
             var rule = rules[i];
-            var label = GetLabel(rule, i);
+            var label = GetLabel(i);
 
             var result =
                 ValidatePattern(rule, label) ??
@@ -57,8 +57,7 @@ public class TemplateMappingRulesValidator : IValidateOptions<TemplateManagement
         return null;
     }
 
-    private static string GetLabel(AasIdExtractionRule rule, int index) =>
-        !string.IsNullOrEmpty(rule.Description) ? rule.Description : $"Rule[{index}]";
+    private static string GetLabel(int index) => $"Rule[{index}]";
 
     private static ValidateOptionsResult? ValidatePattern(AasIdExtractionRule rule, string label)
     {

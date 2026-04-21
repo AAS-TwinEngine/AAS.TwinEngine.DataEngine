@@ -13,6 +13,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Ser
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
@@ -73,6 +74,7 @@ public static class InfrastructureDependencyInjectionExtensions
 
         // Validators
         _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateManagementConfigValidator>();
+        _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateMappingRulesValidator>();
         _ = services.AddSingleton<IValidateOptions<RegistrySettingsConfig>, RegistrySettingsConfigValidator>();
 
         // ── Resolve config for HttpClient registration (no BuildServiceProvider) ──
