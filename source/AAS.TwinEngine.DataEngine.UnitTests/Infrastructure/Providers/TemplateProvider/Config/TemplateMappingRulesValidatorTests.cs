@@ -2,11 +2,13 @@
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Config;
 
 public class TemplateMappingRulesValidatorTests
 {
-    private readonly TemplateMappingRulesValidator _sut = new();
+    private readonly TemplateMappingRulesValidator _sut = new(new NullLogger<TemplateMappingRulesValidator>());
 
     private static TemplateManagementConfig CreateConfig(params AasIdExtractionRule[] rules)
     {
@@ -79,20 +81,19 @@ public class TemplateMappingRulesValidatorTests
                 Strategy = ExtractionStrategy.Regex,
                 Pattern = @"^https?://[^/]+/ids/submodel/([^/]+)(?:/|$)",
                 Index = 1,
-                ValidationPattern = @"^[0-9\-]+$"
+                // Missing ValidationPattern
             },
             new AasIdExtractionRule
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
                 Index = 6
-                // Missing ValidationPattern
             });
 
         var result = _sut.Validate(null, config);
 
         Assert.True(result.Failed);
-        Assert.Contains("ValidationPattern is required when multiple extraction rules are configured", result.FailureMessage);
+        Assert.Contains("AasIdExtractionRules: Rule[0] is missing ValidationPattern.", result.FailureMessage);
     }
 
     [Fact]

@@ -62,6 +62,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
                 continue;
             }
 
+            _logger.LogInformation("Successfully extracted ProductId: {ProductId}", extracted);
             return extracted;
         }
 
@@ -72,27 +73,39 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
     private string? TryExtractWithRegex(string input, AasIdExtractionRule rule)
     {
         var match = Regex.Match(input, rule.Pattern, RegexOptions.None, _regexTimeout);
-        if (!match.Success || rule.Index < 1 || rule.Index >= match.Groups.Count)
+
+        if (match.Success == false)
+        {
+            return null;
+        }
+
+        if (rule.Index >= match.Groups.Count)
         {
             return null;
         }
 
         var value = match.Groups[rule.Index].Value;
-        return string.IsNullOrEmpty(value) ? null : value;
+        if (!Regex.IsMatch(value, rule.ValidationPattern))
+        {
+            return null;
+        }
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     private static string? TryExtractWithSplit(string input, AasIdExtractionRule rule)
     {
         var parts = input.Split(rule.Pattern);
-        var startIndex = rule.Index - 1; // convert 1-based to 0-based
-        var endIndex = (rule.EndIndex ?? rule.Index) - 1;
 
-        if (startIndex < 0 || endIndex < startIndex || endIndex >= parts.Length)
+        var startIndex = rule.Index;
+        var endIndex = rule.EndIndex ?? rule.Index;
+
+        if (endIndex >= parts.Length)
         {
             return null;
         }
 
         var extracted = string.Join(rule.Pattern, parts[startIndex..(endIndex + 1)]);
-        return string.IsNullOrEmpty(extracted) ? null : extracted;
+
+        return string.IsNullOrWhiteSpace(extracted) ? null : extracted;
     }
 }

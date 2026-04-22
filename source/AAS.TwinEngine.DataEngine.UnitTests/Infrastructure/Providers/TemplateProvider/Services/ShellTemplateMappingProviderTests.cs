@@ -35,8 +35,6 @@ public class ShellTemplateMappingProviderTests
         return new ShellTemplateMappingProvider(_logger, options);
     }
 
-    // ── Regex Strategy: Single-segment extraction ──
-
     [Fact]
     public void GetProductIdFromRule_Regex_SingleSegment_ExtractsCorrectly()
     {
@@ -46,15 +44,14 @@ public class ShellTemplateMappingProviderTests
             {
                 Strategy = ExtractionStrategy.Regex,
                 Pattern = @"^https?://[^/]+/ids/submodel/([^/]+)(?:/|$)",
-                Index = 1
+                Index = 1,
+                ValidationPattern = @"^[0-9\-/]+$"
             }
         ]);
 
         var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
-
-    // ── Regex Strategy: Multi-segment extraction (two parts) ──
 
     [Fact]
     public void GetProductIdFromRule_Regex_MultiSegment_TwoParts_ExtractsCorrectly()
@@ -74,8 +71,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Equal("2000-2201/353-000", result);
     }
 
-    // ── Regex Strategy: Multi-segment extraction (three parts) ──
-
     [Fact]
     public void GetProductIdFromRule_Regex_MultiSegment_ThreeParts_ExtractsCorrectly()
     {
@@ -93,8 +88,6 @@ public class ShellTemplateMappingProviderTests
         var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/v2/ContactInformation");
         Assert.Equal("2000-2201/353-000/v2", result);
     }
-
-    // ── Regex Strategy: Validation pattern rejects — falls through ──
 
     [Fact]
     public void GetProductIdFromRule_Regex_ValidationFails_FallsToNextRule()
@@ -124,8 +117,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Equal("2000-2201", result);
     }
 
-    // ── Regex Strategy: No match at all ──
-
     [Fact]
     public void GetProductIdFromRule_Regex_NoMatch_ThrowsResourceNotFoundException()
     {
@@ -141,8 +132,6 @@ public class ShellTemplateMappingProviderTests
 
         Assert.Throws<ResourceNotFoundException>(() => sut.GetProductIdFromRule("random-garbage"));
     }
-
-    // ── Regex Strategy: Invalid capture group index ──
 
     [Fact]
     public void GetProductIdFromRule_Regex_InvalidGroupIndex_SkipsRule()
@@ -161,8 +150,6 @@ public class ShellTemplateMappingProviderTests
             sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
     }
 
-    // ── Split Strategy: Single segment (no EndIndex = old IndexSplit) ──
-
     [Fact]
     public void GetProductIdFromRule_Split_SingleSegment_ExtractsCorrectly()
     {
@@ -172,7 +159,7 @@ public class ShellTemplateMappingProviderTests
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
-                Index = 6
+                Index = 5
             }
         ]);
 
@@ -181,8 +168,6 @@ public class ShellTemplateMappingProviderTests
         var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
-
-    // ── Split Strategy: Range (with EndIndex = old RangeSplit) ──
 
     [Fact]
     public void GetProductIdFromRule_Split_Range_ExtractsMultipleSegments()
@@ -193,8 +178,8 @@ public class ShellTemplateMappingProviderTests
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
-                Index = 6,
-                EndIndex = 7
+                Index = 5,
+                EndIndex = 6
             }
         ]);
 
@@ -203,8 +188,6 @@ public class ShellTemplateMappingProviderTests
         var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/ContactInformation");
         Assert.Equal("2000-2201/353-000", result);
     }
-
-    // ── Split Strategy: Out of bounds ──
 
     [Fact]
     public void GetProductIdFromRule_Split_IndexOutOfBounds_SkipsRule()
@@ -222,8 +205,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Throws<ResourceNotFoundException>(() =>
             sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
     }
-
-    // ── Split Strategy: EndIndex out of bounds ──
 
     [Fact]
     public void GetProductIdFromRule_Split_EndIndexOutOfBounds_SkipsRule()
@@ -243,8 +224,6 @@ public class ShellTemplateMappingProviderTests
             sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
     }
 
-    // ── Split Strategy: Validation pattern rejects ──
-
     [Fact]
     public void GetProductIdFromRule_Split_ValidationFails_SkipsRule()
     {
@@ -263,8 +242,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Throws<ResourceNotFoundException>(() =>
             sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
     }
-
-    // ── First rule matches — stops (does not try second) ──
 
     [Fact]
     public void GetProductIdFromRule_FirstRuleMatches_StopsImmediately()
@@ -291,7 +268,30 @@ public class ShellTemplateMappingProviderTests
         Assert.Equal("2000-2201/353-000", result);
     }
 
-    // ── Mixed strategies: Regex then Split fallback ──
+    [Fact]
+    public void GetProductIdFromRule_ThreeSagmentMatches_SuccessResult()
+    {
+        var sut = CreateSut(
+        [
+            new AasIdExtractionRule
+            {
+                Strategy = ExtractionStrategy.Regex,
+                Pattern = @"^https?://[^/]+/ids/submodel/([^/]+/[^/]+/[^/]+)(?:/|$)",
+                Index = 1,
+                ValidationPattern = @"^[0-9a-zA-Z/-]+$"
+            },
+            new AasIdExtractionRule
+            {
+                Strategy = ExtractionStrategy.Regex,
+                Pattern = @"^https?://[^/]+/ids/submodel/([^/]+/[^/]+)(?:/|$)",
+                Index = 1,
+                ValidationPattern = @"^[0-9\\-/]+$"
+            }
+        ]);
+
+        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/v2/ContactInformation");
+        Assert.Equal("2000-2201/353-000/v2", result);
+    }
 
     [Fact]
     public void GetProductIdFromRule_RegexFails_FallsToSplit()
@@ -309,8 +309,7 @@ public class ShellTemplateMappingProviderTests
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
-                Index = 6,
-                ValidationPattern = @"^[0-9\-]+$"
+                Index = 5,
             }
         ]);
 
@@ -318,10 +317,8 @@ public class ShellTemplateMappingProviderTests
         Assert.Equal("2000-2201", result);
     }
 
-    // ── Single rule without ValidationPattern works ──
-
     [Fact]
-    public void GetProductIdFromRule_SingleRule_NoValidationPattern_Works()
+    public void GetProductIdFromRule_SplitRule_NoValidationPattern_Works()
     {
         var sut = CreateSut(
         [
@@ -329,16 +326,13 @@ public class ShellTemplateMappingProviderTests
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
-                Index = 6
-                // No ValidationPattern — allowed for single rule
+                Index = 5
             }
         ]);
 
         var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
-
-    // ── Split with colon separator ──
 
     [Fact]
     public void GetProductIdFromRule_Split_ColonSeparator_ExtractsCorrectly()
@@ -349,15 +343,13 @@ public class ShellTemplateMappingProviderTests
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = ":",
-                Index = 3
+                Index = 2
             }
         ]);
 
         var result = sut.GetProductIdFromRule("one:two:shell1:four");
         Assert.Equal("shell1", result);
     }
-
-    // ── GetTemplateId: end-to-end with Regex extraction + template matching ──
 
     [Fact]
     public void GetTemplateId_RegexExtraction_MatchesTemplate()
@@ -369,7 +361,8 @@ public class ShellTemplateMappingProviderTests
                 {
                     Strategy = ExtractionStrategy.Regex,
                     Pattern = @"^https?://[^/]+/ids/submodel/([^/]+)(?:/|$)",
-                    Index = 1
+                    Index = 1,
+                    ValidationPattern = @"^[0-9\-/]+$"
                 }
             ],
             shellMappings:
@@ -381,8 +374,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Equal("wago-template", result);
     }
 
-    // ── GetTemplateId: case-insensitive template matching ──
-
     [Fact]
     public void GetTemplateId_CaseInsensitive_MatchesTemplate()
     {
@@ -393,7 +384,7 @@ public class ShellTemplateMappingProviderTests
                 {
                     Strategy = ExtractionStrategy.Split,
                     Pattern = ":",
-                    Index = 3
+                    Index = 2
                 }
             ],
             shellMappings:
@@ -404,8 +395,6 @@ public class ShellTemplateMappingProviderTests
         var result = sut.GetTemplateId("A:B:shell1:D");
         Assert.Equal("template1", result);
     }
-
-    // ── GetTemplateId: no matching template ──
 
     [Fact]
     public void GetTemplateId_NoMatchingTemplate_ThrowsResourceNotFoundException()
@@ -428,8 +417,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Throws<ResourceNotFoundException>(() => sut.GetTemplateId("A:B:shell1:D"));
     }
 
-    // ── Constructor: null logger ──
-
     [Fact]
     public void Constructor_NullLogger_ThrowsInvalidDependencyException()
     {
@@ -438,8 +425,6 @@ public class ShellTemplateMappingProviderTests
 
         var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(null!, options));
     }
-
-    // ── Constructor: null ShellTemplateMappings ──
 
     [Fact]
     public void Constructor_NullShellTemplateMappings_ThrowsInvalidDependencyException()
@@ -457,8 +442,6 @@ public class ShellTemplateMappingProviderTests
         var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(_logger, options));
     }
 
-    // ── Constructor: null AasIdExtractionRules ──
-
     [Fact]
     public void Constructor_NullAasIdExtractionRules_ThrowsInvalidDependencyException()
     {
@@ -474,8 +457,6 @@ public class ShellTemplateMappingProviderTests
 
         var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(_logger, options));
     }
-
-    // ── Empty identifier ──
 
     [Fact]
     public void GetProductIdFromRule_EmptyIdentifier_ThrowsResourceNotFoundException()
