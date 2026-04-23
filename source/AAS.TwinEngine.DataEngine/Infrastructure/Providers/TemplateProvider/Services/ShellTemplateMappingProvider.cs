@@ -85,10 +85,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
         }
 
         var value = match.Groups[rule.Index].Value;
-        if (!Regex.IsMatch(value, rule.ValidationPattern))
-        {
-            return null;
-        }
+
         return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
