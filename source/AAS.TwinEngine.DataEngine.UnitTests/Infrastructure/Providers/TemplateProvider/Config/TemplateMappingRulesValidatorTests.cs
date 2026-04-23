@@ -131,6 +131,8 @@ public class TemplateMappingRulesValidatorTests
     }
 
     [Fact]
+
+
     public void Validate_IndexLessThanOne_Fails()
     {
         var config = CreateConfig(
@@ -138,13 +140,13 @@ public class TemplateMappingRulesValidatorTests
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
-                Index = 0
+                Index = -1
             });
 
         var result = _sut.Validate(null, config);
 
         Assert.True(result.Failed);
-        Assert.Contains("Index must be >= 1", result.FailureMessage);
+        Assert.Contains("Index must be >= 0", result.FailureMessage);
     }
 
     [Fact]
@@ -194,7 +196,7 @@ public class TemplateMappingRulesValidatorTests
             {
                 Strategy = ExtractionStrategy.Split,
                 Pattern = "/",
-                Index = 0
+                Index = -1
             });
 
         var result = _sut.Validate(null, config);
