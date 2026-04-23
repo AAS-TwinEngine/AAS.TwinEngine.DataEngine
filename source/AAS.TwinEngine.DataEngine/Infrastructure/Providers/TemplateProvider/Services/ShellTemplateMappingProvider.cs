@@ -74,7 +74,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
     {
         var match = Regex.Match(input, rule.Pattern, RegexOptions.None, _regexTimeout);
 
-        if (match.Success == false)
+        if (!match.Success)
         {
             return null;
         }

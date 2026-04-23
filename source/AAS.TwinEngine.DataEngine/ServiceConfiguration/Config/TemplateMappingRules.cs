@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
+namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 public class TemplateMappingRules
 {

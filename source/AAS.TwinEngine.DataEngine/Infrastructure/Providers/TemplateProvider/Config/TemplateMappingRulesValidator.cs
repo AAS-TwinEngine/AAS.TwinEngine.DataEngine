@@ -80,14 +80,11 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
 
     private ValidateOptionsResult? ValidateIndex(AasIdExtractionRule rule, string label)
     {
-        if (rule.Index < 1)
+        if (rule.Index < 0)
         {
-            if (rule.Index < 1)
-            {
-                var error = $"AasIdExtractionRules: {label} Index must be >= 1.";
-                _logger.LogError(error);
-                return ValidateOptionsResult.Fail(error);
-            }
+            var error = $"AasIdExtractionRules: {label} Index must be >= 0.";
+            _logger.LogError(error);
+            return ValidateOptionsResult.Fail(error);
         }
 
         return null;
@@ -130,17 +127,16 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
         string label,
         bool requireValidationPattern)
     {
-        if (rule.Strategy == ExtractionStrategy.Regex)
+        if (rule.Strategy == ExtractionStrategy.Regex &&
+                requireValidationPattern &&
+                string.IsNullOrWhiteSpace(rule.ValidationPattern))
         {
-            if (requireValidationPattern && string.IsNullOrWhiteSpace(rule.ValidationPattern))
-            {
-                var error =
+            var error =
                     $"AasIdExtractionRules: {label} is missing ValidationPattern. " +
                     "ValidationPattern is required for Regex rules when multiple extraction rules are configured.";
 
-                _logger.LogError(error);
-                return ValidateOptionsResult.Fail(error);
-            }
+            _logger.LogError(error);
+            return ValidateOptionsResult.Fail(error);
         }
 
         if (!string.IsNullOrWhiteSpace(rule.ValidationPattern) &&
@@ -166,7 +162,7 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
         catch (ArgumentException ex)
         {
             error = ex.Message;
-            _logger.LogError("Regex compilation failed for pattern: {Pattern}. Error: {Error}", pattern, ex.Message);
+            _logger.LogError(ex, "Regex compilation failed for pattern: {Pattern}", pattern);
             return false;
         }
     }
