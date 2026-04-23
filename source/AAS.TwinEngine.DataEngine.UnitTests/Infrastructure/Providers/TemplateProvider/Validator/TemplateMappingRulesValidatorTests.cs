@@ -179,9 +179,6 @@ public class TemplateMappingRulesValidatorTests
     }
 
     [Fact]
-    public void Validate_NullOptions_ThrowsInvalidDependencyException() => Assert.Throws<InvalidDependencyException>(() => _sut.Validate(null, null!));
-
-    [Fact]
     public void Validate_UsesRuleIndexInErrorMessage()
     {
         var config = CreateConfig(
