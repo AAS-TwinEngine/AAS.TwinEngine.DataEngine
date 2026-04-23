@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Configuration;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ServiceConfiguration.ConfigurationMigration;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Configuration.LegacyV1;
 
 /// <summary>
 /// Tests that V2 (new) configuration JSON binds directly to V2 POCO classes

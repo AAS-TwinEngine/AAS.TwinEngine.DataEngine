@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ServiceConfiguration.ConfigurationMigration;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Configuration.LegacyV1;
 
 #pragma warning disable CS0618 // Obsolete — testing V1 backward-compat code
 
@@ -277,7 +277,7 @@ public class ConfigurationBackwardCompatibilityE2ETests
     private static ServiceProvider BuildServiceProvider(IConfiguration configuration)
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton(configuration);
 
         // Register legacy adapters (no-op for V2, active for V1)
         services.AddLegacyV1ConfigurationAdapters();

@@ -1,10 +1,10 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Config;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Validator;
 
 public class TemplateMappingRulesValidatorTests
 {
