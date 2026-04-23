@@ -36,6 +36,27 @@ public class ShellTemplateMappingProviderTests
     }
 
     [Fact]
+    public void GetProductIdFromRule_Regex_IndexZero_ExtractsProductIdOnly()
+    {
+        var sut = CreateSut(
+        [
+            new AasIdExtractionRule
+        {
+            Strategy = ExtractionStrategy.Regex,
+            Pattern = @"(?<=/ids/submodel/)[^/]+",
+            Index = 0,
+            ValidationPattern = @"^[0-9\-]+$"
+        }
+        ]);
+
+        var input = "https://test.com/ids/submodel/2000-2201/ContactInformation";
+
+        var result = sut.GetProductIdFromRule(input);
+
+        Assert.Equal("2000-2201", result);
+    }
+
+    [Fact]
     public void GetProductIdFromRule_Regex_SingleSegment_ExtractsCorrectly()
     {
         var sut = CreateSut(
@@ -49,7 +70,7 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
 
@@ -67,7 +88,7 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/353-000/ContactInformation");
         Assert.Equal("2000-2201/353-000", result);
     }
 
@@ -85,7 +106,7 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/v2/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/353-000/v2/ContactInformation");
         Assert.Equal("2000-2201/353-000/v2", result);
     }
 
@@ -113,7 +134,7 @@ public class ShellTemplateMappingProviderTests
         // "2000-2201/ContactInformation" matches first regex, extracts "2000-2201/ContactInformation"
         // but validation "^[0-9\-/]+$" fails (letters in "ContactInformation")
         // Falls to second regex which extracts "2000-2201" and validates OK
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
 
@@ -147,7 +168,7 @@ public class ShellTemplateMappingProviderTests
         ]);
 
         Assert.Throws<ResourceNotFoundException>(() =>
-            sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
+            sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/CI"));
     }
 
     [Fact]
@@ -163,9 +184,9 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        // Split by "/": ["https:", "", "wago.com", "ids", "submodel", "2000-2201", "ContactInformation"]
+        // Split by "/": ["https:", "", "test.com", "ids", "submodel", "2000-2201", "ContactInformation"]
         //  indices:        1       2       3         4        5          6               7
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
 
@@ -183,9 +204,9 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        // Split: ["https:", "", "wago.com", "ids", "submodel", "2000-2201", "353-000", "ContactInformation"]
+        // Split: ["https:", "", "test.com", "ids", "submodel", "2000-2201", "353-000", "ContactInformation"]
         //          1       2       3         4        5          6            7              8
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/353-000/ContactInformation");
         Assert.Equal("2000-2201/353-000", result);
     }
 
@@ -203,7 +224,7 @@ public class ShellTemplateMappingProviderTests
         ]);
 
         Assert.Throws<ResourceNotFoundException>(() =>
-            sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
+            sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/CI"));
     }
 
     [Fact]
@@ -221,7 +242,7 @@ public class ShellTemplateMappingProviderTests
         ]);
 
         Assert.Throws<ResourceNotFoundException>(() =>
-            sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
+            sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/CI"));
     }
 
     [Fact]
@@ -240,7 +261,7 @@ public class ShellTemplateMappingProviderTests
 
         // Segment 6 = "2000-2201" which contains hyphens → fails validation
         Assert.Throws<ResourceNotFoundException>(() =>
-            sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/CI"));
+            sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/CI"));
     }
 
     [Fact]
@@ -264,7 +285,7 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/353-000/ContactInformation");
         Assert.Equal("2000-2201/353-000", result);
     }
 
@@ -289,7 +310,7 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/353-000/v2/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/353-000/v2/ContactInformation");
         Assert.Equal("2000-2201/353-000/v2", result);
     }
 
@@ -313,7 +334,7 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
 
@@ -330,7 +351,7 @@ public class ShellTemplateMappingProviderTests
             }
         ]);
 
-        var result = sut.GetProductIdFromRule("https://wago.com/ids/submodel/2000-2201/ContactInformation");
+        var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
 
@@ -367,11 +388,11 @@ public class ShellTemplateMappingProviderTests
             ],
             shellMappings:
             [
-                new ShellTemplateMappings { Pattern = ["2000.*"], TemplateId = "wago-template" }
+                new ShellTemplateMappings { Pattern = ["2000.*"], TemplateId = "test-template" }
             ]);
 
-        var result = sut.GetTemplateId("https://wago.com/ids/submodel/2000-2201/ContactInformation");
-        Assert.Equal("wago-template", result);
+        var result = sut.GetTemplateId("https://test.com/ids/submodel/2000-2201/ContactInformation");
+        Assert.Equal("test-template", result);
     }
 
     [Fact]

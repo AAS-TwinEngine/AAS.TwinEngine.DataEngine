@@ -10,6 +10,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Co
 public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator> logger) : IValidateOptions<TemplateManagementConfig>
 {
     private readonly ILogger<TemplateMappingRulesValidator> _logger = logger;
+    private const string GenericValidationError = "Invalid AasIdExtractionRules configuration.";
 
     public ValidateOptionsResult Validate(string? name, TemplateManagementConfig options)
     {
@@ -56,9 +57,8 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
     {
         if (rules == null || rules.Count == 0)
         {
-            var error = "At least one AasIdExtractionRule is required.";
-            _logger.LogError(error);
-            return ValidateOptionsResult.Fail(error);
+            _logger.LogError("At least one AasIdExtractionRule is required.");
+            return ValidateOptionsResult.Fail(GenericValidationError);
         }
 
         return null;
@@ -70,9 +70,8 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
     {
         if (string.IsNullOrWhiteSpace(rule.Pattern))
         {
-            var error = $"AasIdExtractionRules: {label} has an empty Pattern.";
-            _logger.LogError(error);
-            return ValidateOptionsResult.Fail(error);
+            _logger.LogError($"AasIdExtractionRules: {label} has an empty Pattern.");
+            return ValidateOptionsResult.Fail(GenericValidationError);
         }
 
         return null;
@@ -82,9 +81,8 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
     {
         if (rule.Index < 0)
         {
-            var error = $"AasIdExtractionRules: {label} Index must be >= 0.";
-            _logger.LogError(error);
-            return ValidateOptionsResult.Fail(error);
+            _logger.LogError($"AasIdExtractionRules: {label} Index must be >= 0.");
+            return ValidateOptionsResult.Fail(GenericValidationError);
         }
 
         return null;
@@ -99,9 +97,8 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
 
         if (!TryCompileRegex(rule.Pattern, out var errorMsg))
         {
-            var error = $"AasIdExtractionRules: {label} has an invalid regex Pattern: {errorMsg}";
-            _logger.LogError(error);
-            return ValidateOptionsResult.Fail(error);
+            _logger.LogError($"AasIdExtractionRules: {label} has an invalid regex Pattern: {errorMsg}");
+            return ValidateOptionsResult.Fail(GenericValidationError);
         }
 
         return null;
@@ -113,10 +110,8 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
             rule.EndIndex.HasValue &&
             rule.EndIndex.Value < rule.Index)
         {
-            var error = $"AasIdExtractionRules: {label} EndIndex ({rule.EndIndex}) must be >= Index ({rule.Index}).";
-
-            _logger.LogError(error);
-            return ValidateOptionsResult.Fail(error);
+            _logger.LogError($"AasIdExtractionRules: {label} EndIndex ({rule.EndIndex}) must be >= Index ({rule.Index}).");
+            return ValidateOptionsResult.Fail(GenericValidationError);
         }
 
         return null;
@@ -131,21 +126,16 @@ public class TemplateMappingRulesValidator(ILogger<TemplateMappingRulesValidator
                 requireValidationPattern &&
                 string.IsNullOrWhiteSpace(rule.ValidationPattern))
         {
-            var error =
-                    $"AasIdExtractionRules: {label} is missing ValidationPattern. " +
-                    "ValidationPattern is required for Regex rules when multiple extraction rules are configured.";
-
-            _logger.LogError(error);
-            return ValidateOptionsResult.Fail(error);
+            _logger.LogError($"AasIdExtractionRules: {label} is missing ValidationPattern. " +
+                    "ValidationPattern is required for Regex rules when multiple extraction rules are configured.");
+            return ValidateOptionsResult.Fail(GenericValidationError);
         }
 
         if (!string.IsNullOrWhiteSpace(rule.ValidationPattern) &&
             !TryCompileRegex(rule.ValidationPattern, out var errorMsg))
         {
-            var error = $"AasIdExtractionRules: {label} has an invalid ValidationPattern: {errorMsg}";
-
-            _logger.LogError(error);
-            return ValidateOptionsResult.Fail(error);
+            _logger.LogError($"AasIdExtractionRules: {label} has an invalid ValidationPattern: {errorMsg}");
+            return ValidateOptionsResult.Fail(GenericValidationError);
         }
 
         return null;
