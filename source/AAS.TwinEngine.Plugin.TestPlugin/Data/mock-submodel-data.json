@@ -19,15 +19,6 @@
               "https://mm-software.com/Phone/AvailableTime": {
                 "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
               }
-            },
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "345-678-9012"
-              },
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
-              },
-              "0173-1#02-AAO137#003": "Mobile"
             }
           ],
           "0173-1#02-AAQ836#005": [
@@ -68,15 +59,6 @@
             "0173-1#02-AAO127#003_de": "Marketing"
           },
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "234-567-8901"
-              },
-              "0173-1#02-AAO137#003": "Office",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
-            },
             {
               "0173-1#02-AAO136#002": {
                 "0173-1#02-AAO136#002_en": "345-678-9012"
@@ -503,15 +485,6 @@
             "0173-1#02-AAO127#003_de": "Marketing"
           },
           "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "234-567-8901"
-              },
-              "0173-1#02-AAO137#003": "Office",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
-            },
             {
               "0173-1#02-AAO136#002": {
                 "0173-1#02-AAO136#002_en": "345-678-9012"

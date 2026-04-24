@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
@@ -25,6 +26,10 @@ public class SubmodelController(ISubmodelHandler submodelHandler) : ControllerBa
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<JsonObject>> RetrieveDataAsync([FromBody] JsonSchema? dataQuery, [FromRoute] string submodelId, CancellationToken cancellationToken)
     {
+        var schemaJsonString = JsonSerializer.Serialize(dataQuery, new JsonSerializerOptions
+        {
+            WriteIndented = true // Optional: for human-readable output
+        });
         var decodedSubmodelId = submodelId.DecodeBase64();
         if (dataQuery is null)
         {
