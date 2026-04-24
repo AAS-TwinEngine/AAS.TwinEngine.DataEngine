@@ -35,9 +35,9 @@ public class JsonSchemaParser(ILogger<JsonSchemaParser> logger) : IJsonSchemaPar
                 throw new BadRequestException(ExceptionMessages.RequestBodyInvalid);
             }
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            logger.LogError("Requested schema is not valid");
+            logger.LogError(ex, "Requested schema is not valid");
             throw new BadRequestException(ExceptionMessages.FailedParsingJsonSchema);
         }
     }
@@ -48,12 +48,12 @@ public class JsonSchemaParser(ILogger<JsonSchemaParser> logger) : IJsonSchemaPar
 
         if (!json.TryGetPropertyValue("properties", out var propsNode) ||
             propsNode is not JsonObject props ||
-            !props.Any())
+            props.Count == 0)
         {
             throw new BadRequestException(ExceptionMessages.InvalidJsonSchemaRootElement);
         }
 
-        var rootProperty = props.First();
+        var rootProperty = ((IList<KeyValuePair<string, JsonNode?>>)props)[0];
         return ProcessProperty(rootProperty.Key, rootProperty.Value!, json);
     }
 
