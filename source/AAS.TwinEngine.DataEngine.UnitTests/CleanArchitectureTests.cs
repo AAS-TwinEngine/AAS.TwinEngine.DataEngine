@@ -93,7 +93,7 @@ public class CleanArchitectureTests
             .And()
             .DoNotHaveFullName($"{BaseNamespace}.Infrastructure.DataAccess.GenericRepository.IMongoDbRepository")
             .Should()
-            .ResideInNamespaceMatching($"{BaseNamespace}\\.ApplicationLogic($|\\..*).")
+            .ResideInNamespaceMatching($"{BaseNamespace}\\.ApplicationLogic($|\\.*)")
             .WithoutRequiringPositiveResults()
             .Check(_architecture);
     }
@@ -102,7 +102,7 @@ public class CleanArchitectureTests
     public void ServicesShallBeInCorrectNamespace()
     {
         Classes().That().HaveNameEndingWith("Service").Should()
-            .ResideInNamespaceMatching($"{BaseNamespace}\\.ApplicationLogic\\.Services($|\\..*).")
+            .ResideInNamespaceMatching($"{BaseNamespace}\\.ApplicationLogic\\.Services($|\\.*)")
             .Check(_architecture);
     }
 
@@ -111,7 +111,7 @@ public class CleanArchitectureTests
     {
         Interfaces().That().HaveNameEndingWith("Service")
             .Should()
-            .ResideInNamespaceMatching($"{BaseNamespace}\\.ApplicationLogic\\.Services($|\\..*).")
+            .ResideInNamespaceMatching($"{BaseNamespace}\\.ApplicationLogic\\.Services($|\\.*)")
             .Check(_architecture);
     }
 
@@ -119,7 +119,7 @@ public class CleanArchitectureTests
     public void ControllerShallBeInCorrectNamespace()
     {
         Classes().That().HaveNameEndingWith("Controller").Should()
-            .ResideInNamespaceMatching($"{BaseNamespace}\\.Api($|\\..*).")
+            .ResideInNamespaceMatching($"{BaseNamespace}\\.Api($|\\.*)")
             .Check(_architecture);
     }
 }
