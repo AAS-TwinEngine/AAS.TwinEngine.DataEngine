@@ -9,25 +9,28 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.
 
 public static class JsonSchemaGenerator
 {
-    private const string DefinitionsRefPrefix = "#/definitions/";
+    private const string DefinitionsRefPrefix = "#/$defs/";
 
     public static JsonSchema ConvertToJsonSchema(SemanticTreeNode rootNode)
     {
-        var definitions = new Dictionary<string, JsonSchema>();
+        var definitions = new Dictionary<string, JsonSchemaBuilder>();
         var rootSchema = BuildNode(rootNode, definitions, isRoot: true);
 
         return new JsonSchemaBuilder()
-            .Schema(MetaSchemas.Draft7Id)
+            .Schema(MetaSchemas.Draft202012Id)
             .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchema>
+            .Properties(new Dictionary<string, JsonSchemaBuilder>
             {
-                [rootNode?.SemanticId!] = rootSchema
+                [rootNode!.SemanticId] = rootSchema
             })
-            .Definitions(definitions)
+            .Defs(definitions)
             .Build();
     }
 
-    private static JsonSchema BuildNode(SemanticTreeNode node, Dictionary<string, JsonSchema> definitions, bool isRoot = false)
+    private static JsonSchemaBuilder BuildNode(
+        SemanticTreeNode node,
+        Dictionary<string, JsonSchemaBuilder> definitions,
+        bool isRoot = false)
     {
         return node switch
         {
@@ -37,7 +40,10 @@ public static class JsonSchemaGenerator
         };
     }
 
-    private static JsonSchema BuildBranch(SemanticBranchNode branch, Dictionary<string, JsonSchema> definitions, bool isRoot = false)
+    private static JsonSchemaBuilder BuildBranch(
+        SemanticBranchNode branch,
+        Dictionary<string, JsonSchemaBuilder> definitions,
+        bool isRoot = false)
     {
         if (!isRoot && definitions.ContainsKey(branch.SemanticId))
         {
@@ -45,31 +51,62 @@ public static class JsonSchemaGenerator
         }
 
         var requiredProperties = new List<string>();
-
         var children = BuildChildren(branch.Children, definitions, requiredProperties);
 
-        var isArray = IsArrayCardinality(branch.Cardinality);
-
-        var schemaBuilder = new JsonSchemaBuilder()
-            .Type(isArray ? SchemaValueType.Array : SchemaValueType.Object)
-            .Properties(children)
-            .Required(requiredProperties);
+        var schemaBuilder = IsArrayCardinality(branch.Cardinality)
+            ? BuildArraySchema(children, requiredProperties)
+            : BuildObjectSchema(children, requiredProperties);
 
         if (isRoot)
         {
-            return schemaBuilder.Build();
+            return schemaBuilder;
         }
 
-        definitions[branch.SemanticId] = schemaBuilder.Build();
+        definitions[branch.SemanticId] = schemaBuilder;
+
         return CreateRefSchema(branch.SemanticId);
     }
 
-    private static Dictionary<string, JsonSchema> BuildChildren(
+    private static JsonSchemaBuilder BuildObjectSchema(
+        Dictionary<string, JsonSchemaBuilder> properties,
+        List<string> requiredProperties)
+    {
+        var schemaBuilder = new JsonSchemaBuilder()
+            .Type(SchemaValueType.Object)
+            .Properties(properties);
+
+        if (requiredProperties.Count > 0)
+        {
+            schemaBuilder = schemaBuilder.Required(requiredProperties);
+        }
+
+        return schemaBuilder;
+    }
+
+    private static JsonSchemaBuilder BuildArraySchema(
+        Dictionary<string, JsonSchemaBuilder> properties,
+        List<string> requiredProperties)
+    {
+        var itemBuilder = new JsonSchemaBuilder()
+            .Type(SchemaValueType.Object)
+            .Properties(properties);
+
+        if (requiredProperties.Count > 0)
+        {
+            itemBuilder = itemBuilder.Required(requiredProperties);
+        }
+
+        return new JsonSchemaBuilder()
+            .Type(SchemaValueType.Array)
+            .Items(itemBuilder);
+    }
+
+    private static Dictionary<string, JsonSchemaBuilder> BuildChildren(
         ReadOnlyCollection<SemanticTreeNode> children,
-        Dictionary<string, JsonSchema> definitions,
+        Dictionary<string, JsonSchemaBuilder> definitions,
         List<string> required)
     {
-        var properties = new Dictionary<string, JsonSchema>();
+        var properties = new Dictionary<string, JsonSchemaBuilder>();
 
         foreach (var child in children)
         {
@@ -91,7 +128,7 @@ public static class JsonSchemaGenerator
         return properties;
     }
 
-    private static JsonSchema BuildLeaf(SemanticLeafNode leaf)
+    private static JsonSchemaBuilder BuildLeaf(SemanticLeafNode leaf)
     {
         var type = leaf.DataType switch
         {
@@ -103,12 +140,15 @@ public static class JsonSchemaGenerator
             _ => SchemaValueType.String
         };
 
-        return new JsonSchemaBuilder().Type(type).Build();
+        return new JsonSchemaBuilder().Type(type);
     }
 
-    private static bool IsArrayCardinality(Cardinality cardinality) => cardinality is Cardinality.ZeroToMany or Cardinality.OneToMany;
+    private static bool IsArrayCardinality(Cardinality cardinality)
+        => cardinality is Cardinality.ZeroToMany or Cardinality.OneToMany;
 
-    private static bool IsRequiredCardinality(Cardinality cardinality) => cardinality is Cardinality.One or Cardinality.OneToMany;
+    private static bool IsRequiredCardinality(Cardinality cardinality)
+        => cardinality is Cardinality.One or Cardinality.OneToMany;
 
-    private static JsonSchema CreateRefSchema(string semanticId) => new JsonSchemaBuilder().Ref($"{DefinitionsRefPrefix}{semanticId}").Build();
+    private static JsonSchemaBuilder CreateRefSchema(string semanticId)
+        => new JsonSchemaBuilder().Ref($"{DefinitionsRefPrefix}{semanticId}");
 }

@@ -15,7 +15,12 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSchemaValidator> logger) : IJsonSchemaValidator
 {
     private readonly string _contextPrefix = semantics.Value.IndexContextPrefix;
-    private const string DefinitionsPrefix = "#/definitions/";
+    private const string DefsPrefix = "#/$defs/";
+
+    private readonly EvaluationOptions _evaluationOptions = new()
+    {
+        OutputFormat = OutputFormat.List
+    };
 
     private static readonly JsonSerializerOptions Serialization = new()
     {
@@ -41,15 +46,12 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
             LogAndThrowException($"Failed to normalize request schema: {normalizeError}");
         }
 
-        if (!TryRegisterJsonSchema(normalizedSchema, out var registerError))
-        {
-            LogAndThrowException($"Failed to register schema: {registerError}");
-        }
-
         try
         {
             var schema = JsonSchema.FromText(normalizedSchema.ToJsonString());
-            var result = schema.Evaluate(responseDoc!.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
+
+            var result = schema.Evaluate(responseDoc!.RootElement, _evaluationOptions);
+
             if (!result.IsValid)
             {
                 LogAndThrowException("Response did not validate against schema.");
@@ -102,10 +104,11 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
             var json = JsonSerializer.Serialize(schema, Serialization);
 
             normalized = JsonNode.Parse(json)?.AsObject()
-            ?? throw new ArgumentException("Failed to parse schema JSON.");
+                ?? throw new ArgumentException("Failed to parse schema JSON.");
 
             EscapeJsonReferencePointers(normalized);
-            normalized["$id"] = normalized["$id"]?.GetValue<string>() ?? $"urn:uuid:{Guid.NewGuid():D}";
+
+            normalized["$schema"] ??= "https://json-schema.org/draft/2020-12/schema";
 
             return true;
         }
@@ -116,38 +119,19 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
         }
     }
 
-    private static bool TryRegisterJsonSchema(JsonObject schemaJsonObject, out string? registrationErrorMessage)
-    {
-        registrationErrorMessage = null;
-
-        try
-        {
-            var jsonSchema = JsonSchema.FromText(schemaJsonObject.ToJsonString());
-            var schemaIdentifierUri = new Uri(schemaJsonObject["$id"]!.GetValue<string>()!);
-            SchemaRegistry.Global.Register(schemaIdentifierUri, jsonSchema);
-            return true;
-        }
-        catch (Exception exception)
-        {
-            registrationErrorMessage = $"Schema registration failed: {exception.Message}";
-            return false;
-        }
-    }
-
     private void EscapeJsonReferencePointers(JsonNode? currentNode)
     {
         switch (currentNode)
         {
-            case JsonObject jsonObjectNode:
-                ProcessJsonObjectForEscaping(jsonObjectNode);
+            case JsonObject obj:
+                ProcessJsonObjectForEscaping(obj);
                 break;
 
-            case JsonArray jsonArrayNode:
-                foreach (var arrayElement in jsonArrayNode)
+            case JsonArray array:
+                foreach (var item in array)
                 {
-                    EscapeJsonReferencePointers(arrayElement);
+                    EscapeJsonReferencePointers(item);
                 }
-
                 break;
         }
     }
@@ -155,37 +139,36 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
     private void ProcessJsonObjectForEscaping(JsonObject jsonObject)
     {
         var propertiesToRename = jsonObject
-            .Select(property => property.Key)
-            .Select(propertyName => (originalName: propertyName, strippedName: RemoveContextSuffix(propertyName)))
-            .Where(namePair => namePair.strippedName != namePair.originalName)
+            .Select(p => p.Key)
+            .Select(name => (original: name, stripped: RemoveContextSuffix(name)))
+            .Where(x => x.original != x.stripped)
             .ToList();
 
-        foreach (var (originalName, strippedName) in propertiesToRename)
+        foreach (var (original, stripped) in propertiesToRename)
         {
-            RenameJsonProperty(jsonObject, originalName, strippedName);
+            RenameJsonProperty(jsonObject, original, stripped);
         }
 
-        if (jsonObject.TryGetPropertyValue("required", out var requiredPropertiesNode) &&
-            requiredPropertiesNode is JsonArray requiredPropertiesArray)
+        if (jsonObject.TryGetPropertyValue("required", out var requiredNode) &&
+            requiredNode is JsonArray requiredArray)
         {
-            RemoveContextSuffixFromRequiredProperties(requiredPropertiesArray);
+            RemoveContextSuffixFromRequiredProperties(requiredArray);
         }
 
         foreach (var property in jsonObject.ToList())
         {
-            var propertyName = property.Key;
-            var propertyValue = property.Value;
-
-            if (propertyName == "$ref" &&
-                propertyValue is JsonValue referenceValue &&
-                referenceValue.TryGetValue<string>(out var referenceString) &&
-                referenceString.StartsWith(DefinitionsPrefix, StringComparison.OrdinalIgnoreCase))
+            if (property.Key == "$ref" &&
+                property.Value is JsonValue value &&
+                value.TryGetValue<string>(out var reference))
             {
-                jsonObject["$ref"] = BuildEscapedReferencePath(referenceString);
+                if (reference.StartsWith(DefsPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    jsonObject["$ref"] = BuildEscapedReferencePath(reference);
+                }
             }
             else
             {
-                EscapeJsonReferencePointers(propertyValue);
+                EscapeJsonReferencePointers(property.Value);
             }
         }
     }
@@ -201,15 +184,22 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
         }
     }
 
-    private string BuildEscapedReferencePath(string originalReferencePath)
+    private string BuildEscapedReferencePath(string reference)
     {
-        var referenceWithoutPrefix = originalReferencePath[DefinitionsPrefix.Length..];
+        if (!reference.StartsWith(DefsPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return reference;
+        }
 
-        var strippedReference = RemoveContextSuffix(referenceWithoutPrefix);
+        var body = reference[DefsPrefix.Length..];
 
-        var escapedReference = strippedReference.Replace("~", "~0", StringComparison.OrdinalIgnoreCase).Replace("/", "~1", StringComparison.OrdinalIgnoreCase);
+        var stripped = RemoveContextSuffix(body);
 
-        return DefinitionsPrefix + escapedReference;
+        var escaped = stripped
+            .Replace("~", "~0", StringComparison.OrdinalIgnoreCase)
+            .Replace("/", "~1", StringComparison.OrdinalIgnoreCase);
+
+        return DefsPrefix + escaped;
     }
 
     private string RemoveContextSuffix(string propertyName)
@@ -226,7 +216,7 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
         }
 
         var propertyValue = jsonObject[oldPropertyName];
-        jsonObject.Remove(oldPropertyName);
+        _ = jsonObject.Remove(oldPropertyName);
         jsonObject[newPropertyName] = propertyValue!;
     }
 }
