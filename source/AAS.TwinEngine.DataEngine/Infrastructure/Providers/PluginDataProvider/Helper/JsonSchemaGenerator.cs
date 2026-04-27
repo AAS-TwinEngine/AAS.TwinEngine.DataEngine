@@ -13,8 +13,9 @@ public static class JsonSchemaGenerator
 
     public static JsonSchema ConvertToJsonSchema(SemanticTreeNode rootNode)
     {
+        var branchUsage = CountBranchUsages(rootNode);
         var definitions = new Dictionary<string, JsonSchemaBuilder>();
-        var rootSchema = BuildNode(rootNode, definitions, isRoot: true);
+        var rootSchema = BuildNode(rootNode, definitions, branchUsage, isRoot: true);
 
         return new JsonSchemaBuilder()
             .Schema(MetaSchemas.Draft202012Id)
@@ -30,11 +31,12 @@ public static class JsonSchemaGenerator
     private static JsonSchemaBuilder BuildNode(
         SemanticTreeNode node,
         Dictionary<string, JsonSchemaBuilder> definitions,
+        Dictionary<string, int> branchUsage,
         bool isRoot = false)
     {
         return node switch
         {
-            SemanticBranchNode branch => BuildBranch(branch, definitions, isRoot),
+            SemanticBranchNode branch => BuildBranch(branch, definitions, branchUsage, isRoot),
             SemanticLeafNode leaf => BuildLeaf(leaf),
             _ => throw new InternalDataProcessingException()
         };
@@ -43,21 +45,27 @@ public static class JsonSchemaGenerator
     private static JsonSchemaBuilder BuildBranch(
         SemanticBranchNode branch,
         Dictionary<string, JsonSchemaBuilder> definitions,
+        Dictionary<string, int> branchUsage,
         bool isRoot = false)
     {
-        if (!isRoot && definitions.ContainsKey(branch.SemanticId))
+        if (!isRoot && ShouldUseReference(branch, branchUsage) && definitions.ContainsKey(branch.SemanticId))
         {
             return CreateRefSchema(branch.SemanticId);
         }
 
         var requiredProperties = new List<string>();
-        var children = BuildChildren(branch.Children, definitions, requiredProperties);
+        var children = BuildChildren(branch.Children, definitions, branchUsage, requiredProperties);
 
         var schemaBuilder = IsArrayCardinality(branch.Cardinality)
             ? BuildArraySchema(children, requiredProperties)
             : BuildObjectSchema(children, requiredProperties);
 
         if (isRoot)
+        {
+            return schemaBuilder;
+        }
+
+        if (!ShouldUseReference(branch, branchUsage))
         {
             return schemaBuilder;
         }
@@ -104,6 +112,7 @@ public static class JsonSchemaGenerator
     private static Dictionary<string, JsonSchemaBuilder> BuildChildren(
         ReadOnlyCollection<SemanticTreeNode> children,
         Dictionary<string, JsonSchemaBuilder> definitions,
+        Dictionary<string, int> branchUsage,
         List<string> required)
     {
         var properties = new Dictionary<string, JsonSchemaBuilder>();
@@ -112,7 +121,7 @@ public static class JsonSchemaGenerator
         {
             var childSchema = child switch
             {
-                SemanticBranchNode branch => BuildNode(branch, definitions),
+                SemanticBranchNode branch => BuildNode(branch, definitions, branchUsage),
                 SemanticLeafNode leaf => BuildLeaf(leaf),
                 _ => throw new InternalDataProcessingException()
             };
@@ -140,8 +149,38 @@ public static class JsonSchemaGenerator
             _ => SchemaValueType.String
         };
 
-        return new JsonSchemaBuilder().Type(type);
+        var primitiveSchema = new JsonSchemaBuilder().Type(type);
+
+        return IsArrayCardinality(leaf.Cardinality)
+            ? new JsonSchemaBuilder().Type(SchemaValueType.Array).Items(primitiveSchema)
+            : primitiveSchema;
     }
+
+    private static Dictionary<string, int> CountBranchUsages(SemanticTreeNode rootNode)
+    {
+        var usage = new Dictionary<string, int>(StringComparer.Ordinal);
+        CountBranchUsages(rootNode, usage);
+        return usage;
+    }
+
+    private static void CountBranchUsages(SemanticTreeNode node, Dictionary<string, int> usage)
+    {
+        if (node is not SemanticBranchNode branch)
+        {
+            return;
+        }
+
+        usage.TryGetValue(branch.SemanticId, out var count);
+        usage[branch.SemanticId] = count + 1;
+
+        foreach (var child in branch.Children)
+        {
+            CountBranchUsages(child, usage);
+        }
+    }
+
+    private static bool ShouldUseReference(SemanticBranchNode branch, Dictionary<string, int> branchUsage)
+        => branchUsage.TryGetValue(branch.SemanticId, out var usageCount) && usageCount > 1;
 
     private static bool IsArrayCardinality(Cardinality cardinality)
         => cardinality is Cardinality.ZeroToMany or Cardinality.OneToMany;

@@ -7,6 +7,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Json.Schema;
+using Json.Schema.Keywords;
 
 using Microsoft.Extensions.Options;
 
@@ -15,6 +16,11 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
     private readonly string _contextPrefix = pluginsConfig.Value.SubmodelElementIndexContextPrefix;
 
     private const string DefsPrefix = "#/$defs/";
+    private const string DefinitionsPrefix = "#/definitions/";
+    private const string Draft7Schema = "http://json-schema.org/draft-07/schema#";
+    private const string Draft7SchemaHttps = "https://json-schema.org/draft-07/schema#";
+    private const string Draft201909Schema = "https://json-schema.org/draft/2019-09/schema";
+    private const string Draft202012Schema = "https://json-schema.org/draft/2020-12/schema";
 
     private readonly EvaluationOptions _evaluationOptions = new()
     {
@@ -45,18 +51,20 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
 
         try
         {
-            var jsonElement = JsonDocument.Parse(schemaNode!.ToJsonString()).RootElement;
+            var normalizedSchema = schemaNode!.AsObject();
+            var draftUri = ExtractDraftUri(normalizedSchema);
+            var jsonElement = JsonDocument.Parse(normalizedSchema.ToJsonString()).RootElement;
 
-            var result = MetaSchemas.Draft202012.Evaluate(jsonElement, _evaluationOptions);
+            var result = ResolveMetaSchema(draftUri).Evaluate(jsonElement, _evaluationOptions);
 
             if (!result.IsValid)
             {
-                LogAndThrowException("Schema is not valid against Draft 2020-12.");
+                LogAndThrowException($"Schema is not valid against '{draftUri}'.");
             }
         }
         catch (Exception ex)
         {
-            LogAndThrowException("Draft 2020-12 evaluation failed.", ex);
+            LogAndThrowException("Schema dialect evaluation failed.", ex);
         }
     }
 
@@ -173,7 +181,7 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
 
             EscapeJsonReferencePointers(normalized);
 
-            normalized["$schema"] ??= "https://json-schema.org/draft/2020-12/schema";
+            normalized["$schema"] = ExtractDraftUri(normalized);
 
             return true;
         }
@@ -230,6 +238,10 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
                 {
                     jsonObject["$ref"] = BuildEscapedReferencePath(reference);
                 }
+                else if (reference.StartsWith(DefinitionsPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    jsonObject["$ref"] = BuildEscapedReferencePath(reference);
+                }
             }
             else
             {
@@ -251,12 +263,27 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
 
     private string BuildEscapedReferencePath(string reference)
     {
-        if (!reference.StartsWith(DefsPrefix, StringComparison.OrdinalIgnoreCase))
+        if (reference.StartsWith(DefsPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildEscapedReferencePath(reference, DefsPrefix);
+        }
+
+        if (reference.StartsWith(DefinitionsPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildEscapedReferencePath(reference, DefinitionsPrefix);
+        }
+
+        return reference;
+    }
+
+    private string BuildEscapedReferencePath(string reference, string prefix)
+    {
+        if (!reference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             return reference;
         }
 
-        var body = reference[DefsPrefix.Length..];
+        var body = reference[prefix.Length..];
 
         var stripped = RemoveContextSuffix(body);
 
@@ -264,7 +291,7 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
             .Replace("~", "~0", StringComparison.OrdinalIgnoreCase)
             .Replace("/", "~1", StringComparison.OrdinalIgnoreCase);
 
-        return DefsPrefix + escaped;
+        return prefix + escaped;
     }
 
     private string RemoveContextSuffix(string propertyName)
@@ -283,5 +310,30 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
         var value = jsonObject[oldName];
         _ = jsonObject.Remove(oldName);
         jsonObject[newName] = value!;
+    }
+
+    private static string ExtractDraftUri(JsonObject schema)
+    {
+        var raw = schema.TryGetPropertyValue("$schema", out var node) && node != null
+            ? node.GetValue<string>().Trim()
+            : null;
+
+        return raw switch
+        {
+            Draft7Schema or Draft7SchemaHttps => Draft7Schema,
+            Draft201909Schema => Draft201909Schema,
+            Draft202012Schema => Draft202012Schema,
+            _ => Draft202012Schema
+        };
+    }
+
+    private static JsonSchema ResolveMetaSchema(string draftUri)
+    {
+        return draftUri switch
+        {
+            Draft7Schema => MetaSchemas.Draft7,
+            Draft201909Schema => MetaSchemas.Draft201909,
+            _ => MetaSchemas.Draft202012
+        };
     }
 }

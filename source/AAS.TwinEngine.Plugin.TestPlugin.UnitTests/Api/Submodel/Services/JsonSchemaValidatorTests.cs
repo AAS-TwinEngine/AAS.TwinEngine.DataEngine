@@ -80,6 +80,27 @@ public class JsonSchemaValidatorTests
     }
 
     [Theory]
+    [InlineData("http://json-schema.org/draft-07/schema#")]
+    [InlineData("https://json-schema.org/draft/2019-09/schema")]
+    [InlineData("https://json-schema.org/draft/2020-12/schema")]
+    public void ValidateResponseContent_SupportedDrafts_DoesNotThrow(string draft)
+    {
+        var schema = new JsonSchemaBuilder()
+            .Schema(draft)
+            .Type(SchemaValueType.Object)
+            .Properties(new Dictionary<string, JsonSchemaBuilder>
+            {
+                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
+            })
+            .Required("name")
+            .Build();
+
+        const string json = "{\"name\": \"Test\"}";
+
+        _sut.ValidateResponseContent(json, schema);
+    }
+
+    [Theory]
     [MemberData(nameof(InvalidPrimitives))]
     public void ValidateResponseContent_InvalidValueType_ThrowsBadRequest(
         SchemaValueType expectedType,
@@ -451,6 +472,90 @@ public class JsonSchemaValidatorTests
         var schema = JsonSchema.FromText(schemaJson);
 
         const string json = @"{ ""item"": { ""name"": ""test"" } }";
+
+        _sut.ValidateResponseContent(json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_Draft7DefinitionsReferenceWithSuffix_DoesNotThrow()
+    {
+        const string schemaJson = @"{
+        ""$schema"": ""http://json-schema.org/draft-07/schema#"",
+        ""type"": ""object"",
+        ""properties"": {
+            ""item_aastwinengine_00"": { ""$ref"": ""#/definitions/Type_aastwinengine_00"" }
+        },
+        ""required"": [""item_aastwinengine_00""],
+        ""definitions"": {
+            ""Type_aastwinengine_00"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name_aastwinengine_00"": { ""type"": ""string"" }
+                },
+                ""required"": [""name_aastwinengine_00""]
+            }
+        }
+        }";
+
+        var schema = JsonSchema.FromText(schemaJson);
+
+        const string json = @"{ ""item"": { ""name"": ""ok"" } }";
+
+        _sut.ValidateResponseContent(json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_Draft202012DefinitionsReferenceWithSuffix_DoesNotThrow()
+    {
+        const string schemaJson = @"{
+        ""$schema"": ""https://json-schema.org/draft/2020-12/schema"",
+        ""type"": ""object"",
+        ""properties"": {
+            ""item_aastwinengine_00"": { ""$ref"": ""#/definitions/Type_aastwinengine_00"" }
+        },
+        ""required"": [""item_aastwinengine_00""],
+        ""definitions"": {
+            ""Type_aastwinengine_00"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name_aastwinengine_00"": { ""type"": ""string"" }
+                },
+                ""required"": [""name_aastwinengine_00""]
+            }
+        }
+        }";
+
+        var schema = JsonSchema.FromText(schemaJson);
+
+        const string json = @"{ ""item"": { ""name"": ""ok"" } }";
+
+        _sut.ValidateResponseContent(json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_Draft7DefsReferenceWithSuffix_DoesNotThrow()
+    {
+        const string schemaJson = @"{
+        ""$schema"": ""http://json-schema.org/draft-07/schema#"",
+        ""type"": ""object"",
+        ""properties"": {
+            ""item_aastwinengine_00"": { ""$ref"": ""#/$defs/Type_aastwinengine_00"" }
+        },
+        ""required"": [""item_aastwinengine_00""],
+        ""$defs"": {
+            ""Type_aastwinengine_00"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name_aastwinengine_00"": { ""type"": ""string"" }
+                },
+                ""required"": [""name_aastwinengine_00""]
+            }
+        }
+        }";
+
+        var schema = JsonSchema.FromText(schemaJson);
+
+        const string json = @"{ ""item"": { ""name"": ""ok"" } }";
 
         _sut.ValidateResponseContent(json, schema);
     }

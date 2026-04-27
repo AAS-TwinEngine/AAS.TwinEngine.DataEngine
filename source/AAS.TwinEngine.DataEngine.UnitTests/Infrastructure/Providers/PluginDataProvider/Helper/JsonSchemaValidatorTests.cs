@@ -58,6 +58,24 @@ public class JsonSchemaValidatorTests
         _sut.ValidateRequestSchema(schema);
     }
 
+    [Theory]
+    [InlineData("http://json-schema.org/draft-07/schema#")]
+    [InlineData("https://json-schema.org/draft/2019-09/schema")]
+    [InlineData("https://json-schema.org/draft/2020-12/schema")]
+    public void ValidateRequestSchema_SupportedDrafts_DoesNotThrow(string draft)
+    {
+        var schema = new JsonSchemaBuilder()
+            .Schema(draft)
+            .Type(SchemaValueType.Object)
+            .Properties(new Dictionary<string, JsonSchemaBuilder>
+            {
+                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
+            })
+            .Build();
+
+        _sut.ValidateRequestSchema(schema);
+    }
+
     [Fact]
     public void ValidateResponseContent_EmptyResponse_ThrowsBadRequest()
     {
@@ -226,6 +244,72 @@ public class JsonSchemaValidatorTests
         var schema = JsonSchema.FromText(schemaJson);
 
         const string json = @"{ ""item"": { ""name"": ""test"" } }";
+
+        _sut.ValidateResponseContent(json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_Draft7Schema_DoesNotThrow()
+    {
+        const string schemaJson = @"{
+        ""$schema"": ""http://json-schema.org/draft-07/schema#"",
+        ""type"": ""object"",
+        ""properties"": {
+            ""value"": { ""type"": ""string"" }
+        },
+        ""required"": [""value""]
+        }";
+
+        var schema = JsonSchema.FromText(schemaJson);
+
+        const string json = @"{ ""value"": ""ok"" }";
+
+        _sut.ValidateResponseContent(json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_Draft201909Schema_DoesNotThrow()
+    {
+        const string schemaJson = @"{
+        ""$schema"": ""https://json-schema.org/draft/2019-09/schema"",
+        ""type"": ""object"",
+        ""properties"": {
+            ""value"": { ""type"": ""integer"" }
+        },
+        ""required"": [""value""]
+        }";
+
+        var schema = JsonSchema.FromText(schemaJson);
+
+        const string json = @"{ ""value"": 12 }";
+
+        _sut.ValidateResponseContent(json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_Draft7DefinitionsReferenceWithSuffix_DoesNotThrow()
+    {
+        const string schemaJson = @"{
+        ""$schema"": ""http://json-schema.org/draft-07/schema#"",
+        ""type"": ""object"",
+        ""properties"": {
+            ""item_aastwinengine_00"": { ""$ref"": ""#/definitions/Type_aastwinengine_00"" }
+        },
+        ""required"": [""item_aastwinengine_00""],
+        ""definitions"": {
+            ""Type_aastwinengine_00"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name_aastwinengine_00"": { ""type"": ""string"" }
+                },
+                ""required"": [""name_aastwinengine_00""]
+            }
+        }
+        }";
+
+        var schema = JsonSchema.FromText(schemaJson);
+
+        const string json = @"{ ""item"": { ""name"": ""ok"" } }";
 
         _sut.ValidateResponseContent(json, schema);
     }

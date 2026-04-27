@@ -93,7 +93,7 @@ public class JsonSchemaGeneratorTests
     }
 
     [Fact]
-    public void ConvertToJsonSchema_NestedBranchNodes_UsesRefAndDefsCorrectly()
+    public void ConvertToJsonSchema_NestedBranchNodes_UsesInlineSchemaWithoutDefs()
     {
         const string RootSemanticId = "http://example.com/idta/digital-nameplate";
         const string BranchSemanticId = "http://example.com/idta/digital-nameplate/contact-list";
@@ -108,15 +108,14 @@ public class JsonSchemaGeneratorTests
 
         Assert.Equal("object", json["type"]!.ToString());
         var rootProps = json["properties"]![RootSemanticId]!["properties"]!;
-        var branchRef = rootProps[BranchSemanticId]!["$ref"]!.ToString();
-        Assert.Equal($"#/$defs/{BranchSemanticId}", branchRef);
-        var defs = json["$defs"]!;
-        Assert.NotNull(defs[BranchSemanticId]);
-        var branchDef = defs[BranchSemanticId];
-        Assert.Equal("object", branchDef!["type"]!.ToString());
-        var branchProps = branchDef["properties"]!;
+        var branchSchema = rootProps[BranchSemanticId]!;
+        Assert.Null(branchSchema["$ref"]);
+        Assert.Equal("object", branchSchema["type"]!.ToString());
+        var defs = json["$defs"];
+        Assert.True(defs == null || defs.AsObject().Count == 0);
+        var branchProps = branchSchema["properties"]!;
         Assert.NotNull(branchProps[NameId]);
-        var required = branchDef["required"]!.AsArray();
+        var required = branchSchema["required"]!.AsArray();
         Assert.Contains(NameId, required.Select(x => x!.ToString()));
     }
 
@@ -156,6 +155,20 @@ public class JsonSchemaGeneratorTests
 
         Assert.Equal("array", rootProps["type"]!.ToString());
         Assert.NotNull(rootProps["items"]);
+    }
+
+    [Fact]
+    public void ConvertToJsonSchema_LeafWithOneToManyCardinality_UsesArrayItems()
+    {
+        var branch = new SemanticBranchNode("root", Cardinality.One);
+        branch.AddChild(new SemanticLeafNode("tags", "", DataType.String, Cardinality.OneToMany));
+
+        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
+        var json = ToJson(schema);
+
+        var leaf = json["properties"]!["root"]!["properties"]!["tags"]!;
+        Assert.Equal("array", leaf["type"]!.ToString());
+        Assert.Equal("string", leaf["items"]!["type"]!.ToString());
     }
 
     [Fact]
@@ -225,9 +238,12 @@ public class JsonSchemaGeneratorTests
         var schema = JsonSchemaGenerator.ConvertToJsonSchema(level1);
 
         var json = ToJson(schema);
-        var defs = json["$defs"]!;
-        Assert.NotNull(defs["level2"]);
-        Assert.NotNull(defs["level3"]);
+        var level2Schema = json["properties"]!["level1"]!["properties"]!["level2"]!;
+        Assert.Equal("object", level2Schema["type"]!.ToString());
+        var level3Schema = level2Schema["properties"]!["level3"]!;
+        Assert.Equal("object", level3Schema["type"]!.ToString());
+        var leafSchema = level3Schema["properties"]!["leaf"]!;
+        Assert.Equal("string", leafSchema["type"]!.ToString());
     }
 
     [Fact]
@@ -245,16 +261,30 @@ public class JsonSchemaGeneratorTests
 
         var json = ToJson(schema);
         var props = json["properties"]!["root"]!["properties"]!;
-        var objectRef = props["objectChild"]!["$ref"]!.ToString();
-        Assert.Equal("#/$defs/objectChild", objectRef);
-        var arrayRef = props["arrayChild"]!["$ref"]!.ToString();
-        Assert.Equal("#/$defs/arrayChild", arrayRef);
-        var defs = json["$defs"]!;
-        var objectDef = defs["objectChild"]!;
-        Assert.Equal("object", objectDef["type"]!.ToString());
-        var arrayDef = defs["arrayChild"]!;
-        Assert.Equal("array", arrayDef["type"]!.ToString());
-        Assert.NotNull(arrayDef["items"]);
+        var objectSchema = props["objectChild"]!;
+        Assert.Equal("object", objectSchema["type"]!.ToString());
+        var arraySchema = props["arrayChild"]!;
+        Assert.Equal("array", arraySchema["type"]!.ToString());
+        Assert.NotNull(arraySchema["items"]);
+        var defs = json["$defs"];
+        Assert.True(defs == null || defs.AsObject().Count == 0);
+    }
+
+    [Fact]
+    public void ConvertToJsonSchema_SingleNestedBranch_OmitsRefAndDefs()
+    {
+        var root = new SemanticBranchNode("root", Cardinality.One);
+        var child = new SemanticBranchNode("child", Cardinality.One);
+        child.AddChild(new SemanticLeafNode("name", "", DataType.String, Cardinality.One));
+        root.AddChild(child);
+
+        var schema = JsonSchemaGenerator.ConvertToJsonSchema(root);
+        var json = ToJson(schema);
+
+        var childSchema = json["properties"]!["root"]!["properties"]!["child"]!;
+        Assert.Null(childSchema["$ref"]);
+        Assert.Equal("object", childSchema["type"]!.ToString());
+        Assert.True(json["$defs"] == null || json["$defs"]!.AsObject().Count == 0);
     }
 
     [Fact]
