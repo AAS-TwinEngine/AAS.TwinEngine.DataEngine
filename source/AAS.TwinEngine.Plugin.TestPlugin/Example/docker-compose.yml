@@ -56,8 +56,7 @@ services:
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=6
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Description=Default split by '/' segment 6
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
       - TemplateManagement__AasTemplateRepository__Name=AasTemplateRepository
       - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository:8081
       - TemplateManagement__AasTemplateRepository__healthEndpoint=/actuator/health
