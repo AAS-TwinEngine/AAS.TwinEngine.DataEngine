@@ -222,7 +222,7 @@ public class TemplateRepositoryHealthCheckTests
     }
 
     [Fact]
-    public async Task CheckHealthAsync_WhenHealthEndpointIsNull_UsesDefaultFallbackPath()
+    public async Task CheckHealthAsync_WhenHealthEndpointIsNull_UsesDefaultHealthEndpoint()
     {
         // Arrange
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
@@ -234,14 +234,12 @@ public class TemplateRepositoryHealthCheckTests
         // Act
         await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
-        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Shells));
-        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Submodels));
-        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.ConceptDescriptions));
+        // Assert - falls back to /actuator/health, not business endpoints
+        Assert.All(handler.RequestedUris, u => Assert.Contains("actuator/health", u!.AbsolutePath));
     }
 
     [Fact]
-    public async Task CheckHealthAsync_WhenHealthEndpointIsEmpty_UsesDefaultFallbackPath()
+    public async Task CheckHealthAsync_WhenHealthEndpointIsEmpty_UsesDefaultHealthEndpoint()
     {
         // Arrange - empty string is the ServiceInstance default, simulating V1 config
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
@@ -253,10 +251,30 @@ public class TemplateRepositoryHealthCheckTests
         // Act
         await sut.CheckHealthAsync(new HealthCheckContext());
 
+        // Assert - falls back to /actuator/health, not business endpoints
+        Assert.All(handler.RequestedUris, u => Assert.Contains("actuator/health", u!.AbsolutePath));
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenHealthEndpointIsBlank_LogsWarning()
+    {
+        // Arrange
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSutWithHealthEndpoints(string.Empty, string.Empty, string.Empty);
+
+        // Act
+        await sut.CheckHealthAsync(new HealthCheckContext());
+
         // Assert
-        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Shells));
-        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Submodels));
-        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.ConceptDescriptions));
+        _logger.Received(3).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception, string>>());
     }
 
     [Fact]

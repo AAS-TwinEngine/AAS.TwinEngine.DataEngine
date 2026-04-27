@@ -11,6 +11,7 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
     private const string AasRepositoryPath = ApiPaths.Shells;
     private const string SubModelRepositoryPath = ApiPaths.Submodels;
     private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
+    private const string DefaultHealthEndpoint = "/actuator/health";
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
@@ -49,8 +50,13 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
         }
 
         var requestPath = string.IsNullOrWhiteSpace(healthEndpoint)
-                             ? $"{path}?limit=1"
+                             ? DefaultHealthEndpoint
                              : healthEndpoint;
+
+        if (string.IsNullOrWhiteSpace(healthEndpoint))
+        {
+            logger.LogWarning("HealthEndpoint is not configured for {EndpointKey}. Falling back to default endpoint. Configure a dedicated health endpoint to avoid relying on defaults.", endpointKey);
+        }
 
         try
         {

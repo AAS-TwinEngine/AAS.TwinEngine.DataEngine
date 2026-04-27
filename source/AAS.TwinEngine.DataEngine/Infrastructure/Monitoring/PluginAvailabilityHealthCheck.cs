@@ -43,6 +43,11 @@ public sealed class PluginAvailabilityHealthCheck(ICreateClient clientFactory,
                                     ? HealthEndpoint
                                     : plugin.HealthEndpoint;
 
+            if (string.IsNullOrWhiteSpace(plugin.HealthEndpoint))
+            {
+                logger.LogWarning("HealthEndpoint is not configured for plugin {Plugin}. Falling back to default endpoint. Configure a dedicated health endpoint to avoid relying on defaults.", plugin.Name);
+            }
+
             using var response = await httpClient
                 .GetAsync(new Uri(healthEndpoint, UriKind.Relative), cancellationToken)
                 .ConfigureAwait(false);

@@ -421,6 +421,51 @@ public class PluginAvailabilityHealthCheckTests
         Assert.Contains("healthz", requestedPath);
     }
 
+    [Fact]
+    public async Task CheckHealthAsync_LogsWarning_When_HealthEndpoint_Is_Blank()
+    {
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(_ =>
+            {
+                var handler = new StubHttpMessageHandler((_, _) =>
+                    Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("http://localhost")
+                };
+            });
+
+        var pluginConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
+                {
+                    Name = "Plugin1",
+                    BaseUrl = new Uri("http://localhost"),
+                    HealthEndpoint = ""
+                }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        logger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception, string>>());
+    }
+
     private static HttpClient CreateHttpClient(HttpStatusCode statusCode)
     {
         var handler = new StubHttpMessageHandler((_, _) =>
