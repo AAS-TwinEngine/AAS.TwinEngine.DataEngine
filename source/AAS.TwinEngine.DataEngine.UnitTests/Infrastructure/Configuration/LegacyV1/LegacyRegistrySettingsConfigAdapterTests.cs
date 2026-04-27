@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Configuration;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.ServiceConfiguration.ConfigurationMigration;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Configuration.LegacyV1;
 
 #pragma warning disable CS0618 // Obsolete — testing V1 backward-compat code
 

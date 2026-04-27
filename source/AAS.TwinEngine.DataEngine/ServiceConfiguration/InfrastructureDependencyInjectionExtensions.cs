@@ -73,6 +73,7 @@ public static class InfrastructureDependencyInjectionExtensions
 
         // Validators
         _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateManagementConfigValidator>();
+        _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateMappingRulesValidator>();
         _ = services.AddSingleton<IValidateOptions<RegistrySettingsConfig>, RegistrySettingsConfigValidator>();
 
         // ── Resolve config for HttpClient registration (no BuildServiceProvider) ──
