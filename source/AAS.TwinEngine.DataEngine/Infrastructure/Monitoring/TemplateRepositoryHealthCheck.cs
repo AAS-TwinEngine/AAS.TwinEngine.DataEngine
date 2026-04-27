@@ -48,7 +48,9 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
             return false;
         }
 
-        var requestPath = healthEndpoint ?? $"{path}?limit=1";
+        var requestPath = string.IsNullOrWhiteSpace(healthEndpoint)
+                             ? $"{path}?limit=1"
+                             : healthEndpoint;
 
         try
         {

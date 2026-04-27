@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -15,14 +16,27 @@ public class TemplateRepositoryHealthCheckTests
 {
     private readonly ICreateClient _clientFactory;
     private readonly ILogger<TemplateRepositoryHealthCheck> _logger;
+    private readonly IOptions<TemplateManagementConfig> _options;
 
     public TemplateRepositoryHealthCheckTests()
     {
         _clientFactory = Substitute.For<ICreateClient>();
         _logger = Substitute.For<ILogger<TemplateRepositoryHealthCheck>>();
+        _options = Options.Create(new TemplateManagementConfig());
     }
 
-    private TemplateRepositoryHealthCheck CreateSut() => new(_clientFactory, _logger);
+    private TemplateRepositoryHealthCheck CreateSut() => new(_clientFactory, _options, _logger);
+
+    private TemplateRepositoryHealthCheck CreateSutWithHealthEndpoints(string? aasEndpoint, string? submodelEndpoint, string? conceptEndpoint)
+    {
+        var config = new TemplateManagementConfig
+        {
+            AasTemplateRepository = new ServiceInstance { HealthEndpoint = aasEndpoint! },
+            SubmodelTemplateRepository = new ServiceInstance { HealthEndpoint = submodelEndpoint! },
+            ConceptDescriptionTemplateRepository = new ServiceInstance { HealthEndpoint = conceptEndpoint! }
+        };
+        return new(_clientFactory, Options.Create(config), _logger);
+    }
 
     private static HttpClient CreateHttpClient(HttpStatusCode statusCode)
     {
@@ -47,10 +61,15 @@ public class TemplateRepositoryHealthCheckTests
     private sealed class FakeHttpMessageHandler : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
+        public List<Uri?> RequestedUris { get; } = [];
 
         public FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> handler) => _handler = handler;
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => Task.FromResult(_handler(request));
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestedUris.Add(request.RequestUri);
+            return Task.FromResult(_handler(request));
+        }
     }
 
     private sealed class ExceptionHttpMessageHandler(Exception exception) : HttpMessageHandler
@@ -200,5 +219,95 @@ public class TemplateRepositoryHealthCheckTests
             Arg.Any<object>(),
             Arg.Any<Exception>(),
             Arg.Any<Func<object, Exception, string>>());
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenHealthEndpointIsNull_UsesDefaultFallbackPath()
+    {
+        // Arrange
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSutWithHealthEndpoints(null, null, null);
+
+        // Act
+        await sut.CheckHealthAsync(new HealthCheckContext());
+
+        // Assert
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Shells));
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Submodels));
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.ConceptDescriptions));
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenHealthEndpointIsEmpty_UsesDefaultFallbackPath()
+    {
+        // Arrange - empty string is the ServiceInstance default, simulating V1 config
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSutWithHealthEndpoints(string.Empty, string.Empty, string.Empty);
+
+        // Act
+        await sut.CheckHealthAsync(new HealthCheckContext());
+
+        // Assert
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Shells));
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.Submodels));
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(ApiPaths.ConceptDescriptions));
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_UsesConfiguredEndpoint()
+    {
+        // Arrange
+        const string customEndpoint = "actuator/health";
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSutWithHealthEndpoints(customEndpoint, customEndpoint, customEndpoint);
+
+        // Act
+        await sut.CheckHealthAsync(new HealthCheckContext());
+
+        // Assert
+        Assert.All(handler.RequestedUris, u => Assert.Contains(customEndpoint, u!.AbsolutePath));
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_ReturnsHealthy()
+    {
+        // Arrange
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSutWithHealthEndpoints("actuator/health", "actuator/health", "actuator/health");
+
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
+
+        // Assert
+        Assert.Equal(HealthStatus.Healthy, result.Status);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_ReturnsUnhealthy_OnFailure()
+    {
+        // Arrange
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSutWithHealthEndpoints("actuator/health", "actuator/health", "actuator/health");
+
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
+
+        // Assert
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 }
