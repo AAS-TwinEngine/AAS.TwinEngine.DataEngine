@@ -61,7 +61,7 @@ services:
       - TemplateManagement__AasTemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__AasTemplateRepository__headerMappings__0__target=Authorization
       - TemplateManagement__AasTemplateRepository__headerMappings__0__required=false
-      - TemplateManagement__AasTemplateRepository__healthEndpoint=/actuator/health      
+      - TemplateManagement__AasTemplateRepository__healthEndpoint=/actuator/health
       - TemplateManagement__SubmodelTemplateRepository__Name=SubmodelTemplateRepository
       - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository:8081
       - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__source=Authorization

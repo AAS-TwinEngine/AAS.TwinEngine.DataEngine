@@ -362,7 +362,7 @@ public class PluginAvailabilityHealthCheckTests
             {
                 Name = "Plugin1",
                 BaseUrl = new Uri("http://localhost"),
-                HealthEndpoint = null
+                HealthEndpoint = string.Empty
             }
             ]
         });
