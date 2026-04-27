@@ -26,6 +26,10 @@ public static class Program
         builder.Services.AddHealthChecks().AddCheck<MockDataHealthCheck>("mock_data");
 
         builder.Services.AddControllers();
+        builder.Services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+        {
+            options.MaxValidationDepth = null;
+        });
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddOpenApiDocument(settings =>

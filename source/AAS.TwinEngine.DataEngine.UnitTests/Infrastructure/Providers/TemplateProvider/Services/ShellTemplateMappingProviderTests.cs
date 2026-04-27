@@ -263,8 +263,6 @@ public class ShellTemplateMappingProviderTests
             sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/CI"));
     }
 
-    // ── First rule matches — stops (does not try second) ──
-
     [Fact]
     public void GetProductIdFromRule_FirstRuleMatches_StopsImmediately()
     {
@@ -290,7 +288,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Equal("2000-2201/353-000", result);
     }
 
-    // ── Mixed strategies: Regex then Split fallback ──
 
     [Fact]
     public void GetProductIdFromRule_ThreeSagmentMatches_SuccessResult()
@@ -340,8 +337,6 @@ public class ShellTemplateMappingProviderTests
         var result = sut.GetProductIdFromRule("https://test.com/ids/submodel/2000-2201/ContactInformation");
         Assert.Equal("2000-2201", result);
     }
-
-    // ── Split with colon separator ──
 
     [Fact]
     public void GetProductIdFromRule_SplitRule_NoValidationPattern_Works()
@@ -400,8 +395,6 @@ public class ShellTemplateMappingProviderTests
         Assert.Equal("test-template", result);
     }
 
-    // ── GetTemplateId: case-insensitive template matching ──
-
     [Fact]
     public void GetTemplateId_CaseInsensitive_MatchesTemplate()
     {
@@ -423,8 +416,6 @@ public class ShellTemplateMappingProviderTests
         var result = sut.GetTemplateId("A:B:shell1:D");
         Assert.Equal("template1", result);
     }
-
-    // ── GetTemplateId: no matching template ──
 
     [Fact]
     public void GetTemplateId_NoMatchingTemplate_ThrowsResourceNotFoundException()
@@ -471,8 +462,6 @@ public class ShellTemplateMappingProviderTests
 
         var ex = Assert.Throws<InvalidDependencyException>(() => new ShellTemplateMappingProvider(_logger, options));
     }
-
-    // ── Constructor: null AasIdExtractionRules ──
 
     [Fact]
     public void Constructor_NullAasIdExtractionRules_ThrowsInvalidDependencyException()

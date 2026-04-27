@@ -1,5 +1,4 @@
 ﻿using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Configuration;
