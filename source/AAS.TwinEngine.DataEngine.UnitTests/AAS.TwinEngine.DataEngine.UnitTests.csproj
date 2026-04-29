@@ -34,9 +34,5 @@
   <ItemGroup>
     <None Include="TestData\Test.png" CopyToOutputDirectory="Always" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Infrastructure\Providers\PluginDataProvider\Helper\NewFolder\" />
-  </ItemGroup>
   
 </Project>

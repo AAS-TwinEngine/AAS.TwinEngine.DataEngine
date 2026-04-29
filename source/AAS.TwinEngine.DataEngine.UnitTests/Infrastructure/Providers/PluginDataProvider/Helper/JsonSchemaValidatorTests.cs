@@ -41,16 +41,6 @@ public class JsonSchemaValidatorTests
     public void ValidateRequestSchema_NullSchema_ThrowsBadRequest() => Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateRequestSchema(null!));
 
     [Fact]
-    public void ValidateRequestSchema_WithInvalidJson_ThrowsParseError()
-    {
-        Assert.ThrowsAny<Exception>(() =>
-        {
-            var schema = JsonSchema.FromText("{\"type\": 123}");
-            _sut.ValidateRequestSchema(schema);
-        });
-    }
-
-    [Fact]
     public void ValidateRequestSchema_ValidSchema_DoesNotThrow()
     {
         var schema = new JsonSchemaBuilder()

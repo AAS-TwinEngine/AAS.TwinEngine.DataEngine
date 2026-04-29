@@ -1,7 +1,7 @@
 ﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 
 /// <summary>
-/// Thrown when a plugin rejects the request schema with HTTP 400.
-/// This triggers a legacy Draft-07 compatibility retry.
+/// Thrown when a plugin indicates the request schema is rejected or incompatible,
+/// currently via HTTP 400, 404, or 500.
 /// </summary>
 public class PluginSchemaRejectionException : Exception;

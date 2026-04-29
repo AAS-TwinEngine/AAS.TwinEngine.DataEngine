@@ -115,12 +115,10 @@ public class JsonSchemaParserTests
 
     private readonly ILogger<JsonSchemaParser> _logger;
     private readonly JsonSchemaParser _sut;
-    private readonly IJsonSchemaValidator _jsonSchemaValidator;
 
     public JsonSchemaParserTests()
     {
         _logger = Substitute.For<ILogger<JsonSchemaParser>>();
-        _jsonSchemaValidator = Substitute.For<IJsonSchemaValidator>();
         _sut = new JsonSchemaParser(_logger);
     }
 
