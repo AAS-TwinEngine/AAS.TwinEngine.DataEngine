@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 
-using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
 
@@ -8,159 +7,434 @@ using Json.Schema;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 
-public class JsonSchemaParser(ILogger<JsonSchemaParser> logger) : IJsonSchemaParser
+public class JsonSchemaParser(ILogger<JsonSchemaParser> logger, IJsonSchemaValidator jsonSchemaValidator) : IJsonSchemaParser
 {
+    private const string DefinitionsPath = "#/definitions/";
+    private const string DefsPath = "#/$defs/";
+
     public SemanticTreeNode ParseJsonSchema(JsonSchema jsonSchema)
     {
-        ValidateRequest(jsonSchema);
-        return CreateSemanticTree(jsonSchema);
+        jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
+
+        return BuildSemanticTree(GetRootElement(jsonSchema));
     }
 
-    private void ValidateRequest(JsonSchema jsonSchema)
+    private static SemanticTreeNode BuildSemanticTree(JsonElement schemaRoot)
     {
-        try
+        if (!TryGetProperties(schemaRoot, out var propertiesElement))
         {
-            var node = JsonSerializer.SerializeToNode(jsonSchema);
-            var result = MetaSchemas.Draft7.Evaluate(node, new EvaluationOptions { OutputFormat = OutputFormat.List });
-            if (!result.IsValid)
-            {
-                logger.LogError("Requested schema is not validate");
-                throw new BadRequestException(ExceptionMessages.RequestBodyInvalid);
-            }
+            throw new BadRequestException("Schema must contain at least one property.");
         }
-        catch (JsonException)
-        {
-            logger.LogError("Requested schema is not validate");
-            throw new BadRequestException(ExceptionMessages.FailedParsingJsonSchema);
-        }
+
+        var rootProperty = propertiesElement.EnumerateObject().First();
+        var definitions = GetDefinitionsElement(schemaRoot);
+
+        return ConvertPropertyToNode(rootProperty.Name, rootProperty.Value, definitions);
     }
 
-    private SemanticTreeNode CreateSemanticTree(JsonSchema jsonSchema)
+    private static SemanticTreeNode ConvertPropertyToNode(string propertyName, JsonElement propertySchema, JsonElement? definitions)
     {
-        var propertiesKeyword = jsonSchema.GetKeyword<PropertiesKeyword>();
-        if (propertiesKeyword == null || !propertiesKeyword.Properties.Any())
+        if (TryGetReference(propertySchema, out var reference))
         {
-            throw new BadRequestException(ExceptionMessages.InvalidJsonSchemaRootElement);
+            return ResolveReference(propertyName, reference, definitions);
         }
 
-        var rootProperty = propertiesKeyword.Properties.First();
-        return ProcessProperty(rootProperty.Key, rootProperty.Value, jsonSchema.GetKeyword<DefinitionsKeyword>());
+        if (!TryMapSchemaTypeToDataType(propertySchema, out var dataType))
+        {
+            return CreateLeafNode(propertyName, DataType.String);
+        }
+
+        if (dataType == DataType.Array
+            && TryGetPrimitiveArrayItemType(propertySchema, definitions, out var primitiveItemType))
+        {
+            return CreateLeafNode(propertyName, primitiveItemType);
+        }
+
+        if (IsComplexType(dataType))
+        {
+            return CreateBranchNode(propertyName, dataType, propertySchema, definitions);
+        }
+
+        return CreateLeafNode(propertyName, dataType);
     }
 
-    private SemanticTreeNode ProcessProperty(string schemaPropertyName, JsonSchema property, DefinitionsKeyword definitions)
+    private static SemanticTreeNode ResolveReference(string propertyName, string schemaReference, JsonElement? definitions)
     {
-        var refKeyword = property.GetKeyword<RefKeyword>();
-        if (refKeyword != null)
+        var definitionKey = ExtractDefinitionKey(schemaReference);
+
+        if (!TryGetDefinition(definitions, definitionKey, out var definitionSchema))
         {
-            return HandleReference(schemaPropertyName, property, definitions);
+            return CreateLeafNode(propertyName, DataType.Unknown);
         }
 
-        var typeKeyword = property.GetKeyword<TypeKeyword>();
-        if (typeKeyword == null)
+        if (!TryMapSchemaTypeToDataType(definitionSchema, out var dataType))
         {
-            return new SemanticLeafNode(schemaPropertyName, DataType.String, "");
+            return CreateLeafNode(propertyName, DataType.String);
         }
 
-        var schemaType = GetSchemaType(typeKeyword);
-        if (schemaType is DataType.Object or DataType.Array)
+        if (dataType == DataType.Array
+            && TryGetPrimitiveArrayItemType(definitionSchema, definitions, out var primitiveItemType))
         {
-            return BuildObjectNode(schemaPropertyName, schemaType, property, definitions);
+            return CreateLeafNode(propertyName, primitiveItemType);
         }
 
-        return new SemanticLeafNode(schemaPropertyName, schemaType, "");
+        if (IsComplexType(dataType))
+        {
+            return CreateBranchNode(propertyName, dataType, definitionSchema, definitions);
+        }
+
+        return CreateLeafNode(propertyName, dataType);
     }
 
-    private SemanticTreeNode HandleReference(string schemaPropertyName, JsonSchema property, DefinitionsKeyword definitions)
+    private static string ExtractDefinitionKey(string schemaReference)
     {
-        var refKeyword = property.GetKeyword<RefKeyword>();
-        if (refKeyword == null)
+        if (schemaReference.StartsWith(DefinitionsPath, StringComparison.Ordinal))
         {
-            return new SemanticLeafNode(schemaPropertyName, DataType.String, "");
+            return schemaReference[DefinitionsPath.Length..];
         }
 
-        var definitionKey = refKeyword.Reference.ToString().Replace("#/definitions/", "");
-        if (definitions == null || !definitions.Definitions.TryGetValue(definitionKey, out var def))
+        if (schemaReference.StartsWith(DefsPath, StringComparison.Ordinal))
         {
-            return new SemanticLeafNode(schemaPropertyName, DataType.Unknown, "");
+            return schemaReference[DefsPath.Length..];
         }
 
-        var defTypeKeyword = def.GetKeyword<TypeKeyword>();
-        if (defTypeKeyword == null)
-        {
-            return new SemanticLeafNode(schemaPropertyName, DataType.String, "");
-        }
-
-        var schemaType = GetSchemaType(defTypeKeyword);
-        if (schemaType is DataType.Object or DataType.Array)
-        {
-            return BuildObjectNode(schemaPropertyName, schemaType, def, definitions);
-        }
-
-        return new SemanticLeafNode(schemaPropertyName, schemaType, "");
+        return schemaReference;
     }
 
-    private SemanticBranchNode BuildObjectNode(string schemaPropertyName, DataType dataType, JsonSchema schema, DefinitionsKeyword definitions)
+    private static bool TryGetDefinition(JsonElement? definitions, string definitionKey, out JsonElement definitionSchema)
     {
-        var branchNode = new SemanticBranchNode(schemaPropertyName, dataType);
+        definitionSchema = default;
+
+        if (!definitions.HasValue || definitions.Value.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!definitions.Value.TryGetProperty(definitionKey, out var found))
+        {
+            return false;
+        }
+
+        definitionSchema = found;
+        return true;
+    }
+
+    private static SemanticBranchNode CreateBranchNode(string propertyName, DataType dataType, JsonElement schema, JsonElement? definitions)
+    {
+        var branchNode = new SemanticBranchNode(propertyName, dataType);
 
         switch (dataType)
         {
             case DataType.Object:
-                {
-                    var propertiesKeyword = schema.GetKeyword<PropertiesKeyword>();
-                    if (propertiesKeyword != null)
-                    {
-                        foreach (var prop in propertiesKeyword.Properties)
-                        {
-                            branchNode.AddChild(ProcessProperty(prop.Key, prop.Value, definitions));
-                        }
-                    }
+                AddChildPropertiesFromObject(branchNode, schema, definitions);
+                break;
 
-                    break;
-                }
             case DataType.Array:
-                {
-                    var itemsKeyword = schema.GetKeyword<ItemsKeyword>();
-                    if (itemsKeyword == null)
-                    {
-                        var propertiesKeyword = schema.GetKeyword<PropertiesKeyword>();
-                        if (propertiesKeyword != null)
-                        {
-                            foreach (var prop in propertiesKeyword.Properties)
-                            {
-                                branchNode.AddChild(ProcessProperty(prop.Key, prop.Value, definitions));
-                            }
-                        }
-
-                        break;
-                    }
-
-                    if (itemsKeyword is { SingleSchema: not null })
-                    {
-                        branchNode.AddChild(ProcessProperty("item", itemsKeyword.SingleSchema, definitions));
-                    }
-
-                    break;
-                }
+                AddChildPropertiesFromArray(branchNode, schema, definitions);
+                break;
         }
 
         return branchNode;
     }
 
-    private static DataType GetSchemaType(TypeKeyword typeKeyword)
+    private static void AddChildPropertiesFromObject(SemanticBranchNode parentBranch, JsonElement schema, JsonElement? definitions)
     {
-        var t = typeKeyword.Type;
-
-        return t switch
+        if (!TryGetProperties(schema, out var propertiesElement))
         {
-            _ when t.HasFlag(SchemaValueType.Object) => DataType.Object,
-            _ when t.HasFlag(SchemaValueType.Array) => DataType.Array,
-            _ when t.HasFlag(SchemaValueType.String) => DataType.String,
-            _ when t.HasFlag(SchemaValueType.Integer) => DataType.Integer,
-            _ when t.HasFlag(SchemaValueType.Number) => DataType.Number,
-            _ when t.HasFlag(SchemaValueType.Boolean) => DataType.Boolean,
-            _ => DataType.String
-        };
+            return;
+        }
+
+        foreach (var property in propertiesElement.EnumerateObject())
+        {
+            var childNode = ConvertPropertyToNode(property.Name, property.Value, definitions);
+            parentBranch.AddChild(childNode);
+        }
     }
 
+    private static void AddChildPropertiesFromArray(SemanticBranchNode parentBranch, JsonElement schema, JsonElement? definitions)
+    {
+        if (!schema.TryGetProperty("items", out var itemsElement))
+        {
+            AddChildPropertiesFromObject(parentBranch, schema, definitions);
+            return;
+        }
+
+        if (TryAddChildrenFromObjectItems(parentBranch, itemsElement, definitions))
+        {
+            return;
+        }
+
+        if (TryAddChildrenFromArrayItems(parentBranch, itemsElement, definitions))
+        {
+            return;
+        }
+
+        AddChildPropertiesFromObject(parentBranch, schema, definitions);
+    }
+
+    private static bool TryAddChildrenFromObjectItems(SemanticBranchNode parentBranch, JsonElement itemsElement, JsonElement? definitions)
+    {
+        if (itemsElement.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (itemsElement.TryGetProperty("properties", out var itemPropertiesElement)
+            && itemPropertiesElement.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in itemPropertiesElement.EnumerateObject())
+            {
+                var childNode = ConvertPropertyToNode(property.Name, property.Value, definitions);
+                parentBranch.AddChild(childNode);
+            }
+
+            return true;
+        }
+
+        AddItemNodeOrFlatten(parentBranch, ConvertPropertyToNode("item", itemsElement, definitions));
+        return true;
+    }
+
+    private static bool TryAddChildrenFromArrayItems(SemanticBranchNode parentBranch, JsonElement itemsElement, JsonElement? definitions)
+    {
+        if (itemsElement.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        var index = 0;
+        foreach (var itemSchema in itemsElement.EnumerateArray())
+        {
+            if (itemSchema.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var itemNode = ConvertPropertyToNode($"item{index}", itemSchema, definitions);
+            AddItemNodeOrFlatten(parentBranch, itemNode);
+            index++;
+        }
+
+        return index > 0;
+    }
+
+    private static void AddItemNodeOrFlatten(SemanticBranchNode parentBranch, SemanticTreeNode itemNode)
+    {
+        if (itemNode is SemanticBranchNode itemBranch)
+        {
+            foreach (var child in itemBranch.Children)
+            {
+                parentBranch.AddChild(child);
+            }
+
+            return;
+        }
+
+        parentBranch.AddChild(itemNode);
+    }
+
+    private static SemanticLeafNode CreateLeafNode(string propertyName, DataType dataType) => new(propertyName, dataType, string.Empty);
+
+    private static bool IsComplexType(DataType dataType) => dataType is DataType.Object or DataType.Array;
+
+    private static JsonElement GetRootElement(JsonSchema schema)
+    {
+        if (schema.Root.Source.ValueKind != JsonValueKind.Undefined)
+        {
+            return schema.Root.Source;
+        }
+
+        var schemaText = JsonSerializer.Serialize(schema);
+        using var document = JsonDocument.Parse(schemaText);
+        return document.RootElement.Clone();
+    }
+
+    private static JsonElement? GetDefinitionsElement(JsonElement schema)
+    {
+        if (schema.TryGetProperty("definitions", out var definitionsElement) && definitionsElement.ValueKind == JsonValueKind.Object)
+        {
+            return definitionsElement;
+        }
+
+        if (schema.TryGetProperty("$defs", out var defsElement) && defsElement.ValueKind == JsonValueKind.Object)
+        {
+            return defsElement;
+        }
+
+        return null;
+    }
+
+    private static bool TryGetReference(JsonElement schema, out string reference)
+    {
+        reference = string.Empty;
+
+        if (!schema.TryGetProperty("$ref", out var refElement) || refElement.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        reference = refElement.GetString() ?? string.Empty;
+        return !string.IsNullOrWhiteSpace(reference);
+    }
+
+    private static bool TryGetProperties(JsonElement schema, out JsonElement properties)
+    {
+        return schema.TryGetProperty("properties", out properties)
+               && properties.ValueKind == JsonValueKind.Object
+               && properties.EnumerateObject().Any();
+    }
+
+    private static bool TryMapSchemaTypeToDataType(JsonElement schema, out DataType dataType)
+    {
+        dataType = DataType.String;
+
+        if (schema.TryGetProperty("type", out var typeElement) && TryMapTypeElement(typeElement, out dataType))
+        {
+            return true;
+        }
+
+        if (schema.TryGetProperty("properties", out var propertiesElement) && propertiesElement.ValueKind == JsonValueKind.Object)
+        {
+            dataType = DataType.Object;
+            return true;
+        }
+
+        if (schema.TryGetProperty("items", out var itemsElement)
+            && (itemsElement.ValueKind == JsonValueKind.Object || itemsElement.ValueKind == JsonValueKind.Array))
+        {
+            dataType = DataType.Array;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryMapTypeElement(JsonElement typeElement, out DataType dataType)
+    {
+        dataType = DataType.String;
+
+        if (typeElement.ValueKind == JsonValueKind.String)
+        {
+            return TryMapTypeName(typeElement.GetString(), out dataType);
+        }
+
+        if (typeElement.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var typeNameElement in typeElement.EnumerateArray())
+        {
+            if (typeNameElement.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var typeName = typeNameElement.GetString();
+
+            if (string.Equals(typeName, "null", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (TryMapTypeName(typeName, out dataType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryMapTypeName(string? schemaType, out DataType dataType)
+    {
+        dataType = DataType.String;
+
+        if (string.IsNullOrWhiteSpace(schemaType))
+        {
+            return false;
+        }
+
+        switch (schemaType)
+        {
+            case "object":
+                dataType = DataType.Object;
+                return true;
+            case "array":
+                dataType = DataType.Array;
+                return true;
+            case "string":
+                dataType = DataType.String;
+                return true;
+            case "integer":
+                dataType = DataType.Integer;
+                return true;
+            case "number":
+                dataType = DataType.Number;
+                return true;
+            case "boolean":
+                dataType = DataType.Boolean;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryGetPrimitiveArrayItemType(JsonElement arraySchema, JsonElement? definitions, out DataType itemType)
+    {
+        itemType = DataType.String;
+
+        if (!arraySchema.TryGetProperty("items", out var itemsElement))
+        {
+            return false;
+        }
+
+        if (itemsElement.ValueKind == JsonValueKind.Object)
+        {
+            return TryGetPrimitiveTypeFromSchema(itemsElement, definitions, out itemType);
+        }
+
+        if (itemsElement.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var itemSchema in itemsElement.EnumerateArray())
+        {
+            if (itemSchema.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            if (TryGetPrimitiveTypeFromSchema(itemSchema, definitions, out itemType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryGetPrimitiveTypeFromSchema(JsonElement schema, JsonElement? definitions, out DataType dataType)
+    {
+        dataType = DataType.String;
+
+        if (TryGetReference(schema, out var schemaReference))
+        {
+            var definitionKey = ExtractDefinitionKey(schemaReference);
+            if (!TryGetDefinition(definitions, definitionKey, out var definitionSchema))
+            {
+                return false;
+            }
+
+            return TryGetPrimitiveTypeFromSchema(definitionSchema, definitions, out dataType);
+        }
+
+        if (!TryMapSchemaTypeToDataType(schema, out dataType))
+        {
+            return false;
+        }
+
+        return dataType is not DataType.Object and not DataType.Array;
+    }
 }

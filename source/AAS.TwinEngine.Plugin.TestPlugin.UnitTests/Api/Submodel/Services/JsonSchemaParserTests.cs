@@ -115,19 +115,13 @@ public class JsonSchemaParserTests
 
     private readonly ILogger<JsonSchemaParser> _logger;
     private readonly JsonSchemaParser _sut;
+    private readonly IJsonSchemaValidator _jsonSchemaValidator;
 
     public JsonSchemaParserTests()
     {
         _logger = Substitute.For<ILogger<JsonSchemaParser>>();
-        _sut = new JsonSchemaParser(_logger);
-    }
-
-    [Fact]
-    public void ParseJsonSchema_InvalidJson_ThrowsBadRequestException()
-    {
-        var InvalidJsonSchema = JsonSerializer.Deserialize<JsonSchema>(_invalidJson, _options);
-
-        Assert.Throws<BadRequestException>(() => _sut.ParseJsonSchema(InvalidJsonSchema));
+        _jsonSchemaValidator = Substitute.For<IJsonSchemaValidator>();
+        _sut = new JsonSchemaParser(_logger, _jsonSchemaValidator);
     }
 
     [Fact]
@@ -385,5 +379,268 @@ public class JsonSchemaParserTests
         var innerBranch = Assert.IsType<SemanticBranchNode>(outerBranch.Children[0]);
         Assert.Equal("inner", innerBranch.SemanticId);
         Assert.Empty(innerBranch.Children);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_Draft202012WithDefsReference_ReturnsBranchNode()
+    {
+        const string SchemaString = @"{
+        ""$schema"": ""https://json-schema.org/draft/2020-12/schema"",
+        ""type"": ""object"",
+        ""properties"": {
+            ""person"": { ""$ref"": ""#/$defs/Person"" }
+        },
+        ""$defs"": {
+            ""Person"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" }
+                }
+            }
+        }
+    }";
+        var schema = JsonSerializer.Deserialize<JsonSchema>(SchemaString, _options);
+
+        var node = _sut.ParseJsonSchema(schema!);
+
+        var branch = Assert.IsType<SemanticBranchNode>(node);
+        Assert.Equal("person", branch.SemanticId);
+        Assert.Single(branch.Children);
+        var child = Assert.IsType<SemanticLeafNode>(branch.Children[0]);
+        Assert.Equal("name", child.SemanticId);
+        Assert.Equal(DataType.String, child.DataType);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_ArrayWithItemsWrapper_ReturnsProperArrayBranch()
+    {
+        const string ProperArraySchemaString = @"{
+            ""$schema"": ""http://json-schema.org/draft-07/schema#"",
+            ""type"": ""object"",
+            ""properties"": {
+                ""contactList"": {
+                    ""type"": ""array"",
+                    ""items"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""name"": { ""type"": ""string"" },
+                            ""phoneNumber"": { ""type"": ""string"" }
+                        },
+                        ""required"": [""name""]
+                    }
+                }
+            }
+        }";
+        var schema = JsonSerializer.Deserialize<JsonSchema>(ProperArraySchemaString, _options);
+
+        var node = _sut.ParseJsonSchema(schema!);
+
+        Assert.NotNull(node);
+        Assert.IsType<SemanticBranchNode>(node);
+        var contactListBranch = (SemanticBranchNode)node;
+        Assert.Equal("contactList", contactListBranch.SemanticId);
+        Assert.Equal(DataType.Array, contactListBranch.DataType);
+        Assert.Equal(2, contactListBranch.Children.Count);
+
+        var nameChild = contactListBranch.Children[0] as SemanticLeafNode;
+        Assert.NotNull(nameChild);
+        Assert.Equal("name", nameChild.SemanticId);
+        Assert.Equal(DataType.String, nameChild.DataType);
+
+        var phoneChild = contactListBranch.Children[1] as SemanticLeafNode;
+        Assert.NotNull(phoneChild);
+        Assert.Equal("phoneNumber", phoneChild.SemanticId);
+        Assert.Equal(DataType.String, phoneChild.DataType);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_ArrayWithoutItemsButWithProperties_UsesLegacyFallback()
+    {
+        const string LegacyArraySchemaString = @"{
+            ""$schema"": ""http://json-schema.org/draft-07/schema#"",
+            ""type"": ""object"",
+            ""properties"": {
+                ""contactList"": {
+                    ""type"": ""array"",
+                    ""properties"": {
+                        ""name"": { ""type"": ""string"" },
+                        ""phoneNumber"": { ""type"": ""string"" }
+                    },
+                    ""required"": [""name""]
+                }
+            }
+        }";
+
+        var schema = JsonSerializer.Deserialize<JsonSchema>(LegacyArraySchemaString, _options);
+
+        var node = _sut.ParseJsonSchema(schema!);
+
+        var contactListBranch = Assert.IsType<SemanticBranchNode>(node);
+        Assert.Equal("contactList", contactListBranch.SemanticId);
+        Assert.Equal(DataType.Array, contactListBranch.DataType);
+        Assert.Equal(2, contactListBranch.Children.Count);
+        Assert.Equal(DataType.String, contactListBranch.Children[0].DataType);
+        Assert.Equal(DataType.String, contactListBranch.Children[1].DataType);
+    }
+
+    [Theory]
+    [InlineData("http://json-schema.org/draft-07/schema#")]
+    [InlineData("https://json-schema.org/draft/2020-12/schema")]
+    public void ParseJsonSchema_SimpleSchemaAcrossDrafts_ReturnsLeafNode(string draft)
+    {
+        var schema = JsonSchema.FromText($$"""
+                        {
+                            "$schema": "{{draft}}",
+                            "type": "object",
+                            "properties": {
+                                "foo": { "type": "string" }
+                            }
+                        }
+                        """);
+
+        var node = _sut.ParseJsonSchema(schema);
+
+        var leaf = Assert.IsType<SemanticLeafNode>(node);
+        Assert.Equal("foo", leaf.SemanticId);
+        Assert.Equal(DataType.String, leaf.DataType);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_ArrayOfPrimitive_ReturnsLeaf()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "type": "object",
+                            "properties": {
+                                "tags": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                }
+                            }
+                        }
+                        """);
+
+        var result = _sut.ParseJsonSchema(schema);
+
+        var leaf = Assert.IsType<SemanticLeafNode>(result);
+        Assert.Equal("tags", leaf.SemanticId);
+        Assert.Equal(DataType.String, leaf.DataType);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_MultipleRootProperties_OnlyFirstIsUsed()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "type": "object",
+                            "properties": {
+                                "first": { "type": "string" },
+                                "second": { "type": "integer" }
+                            }
+                        }
+                        """);
+
+        var result = _sut.ParseJsonSchema(schema);
+
+        var leaf = Assert.IsType<SemanticLeafNode>(result);
+        Assert.Equal("first", leaf.SemanticId);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_InvalidRefFormat_ReturnsUnknown()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "type": "object",
+                            "properties": {
+                                "x": { "$ref": "#/invalid/A" }
+                            }
+                        }
+                        """);
+
+        var result = _sut.ParseJsonSchema(schema);
+
+        var leaf = Assert.IsType<SemanticLeafNode>(result);
+        Assert.Equal(DataType.Unknown, leaf.DataType);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_ArrayItemsEmptyObject_ReturnsItemLeaf()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "type": "object",
+                            "properties": {
+                                "arr": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            }
+                        }
+                        """);
+
+        var result = _sut.ParseJsonSchema(schema);
+
+        var branch = Assert.IsType<SemanticBranchNode>(result);
+        Assert.Equal("arr", branch.SemanticId);
+        Assert.Equal(DataType.Array, branch.DataType);
+        var itemNode = Assert.IsType<SemanticLeafNode>(Assert.Single(branch.Children));
+        Assert.Equal("item", itemNode.SemanticId);
+        Assert.Equal(DataType.String, itemNode.DataType);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_ArrayOfArray_FlattensInner()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "type": "object",
+                            "properties": {
+                                "arr": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        """);
+
+        var result = _sut.ParseJsonSchema(schema);
+
+        var branch = Assert.IsType<SemanticBranchNode>(result);
+        var child = Assert.IsType<SemanticLeafNode>(branch.Children.First());
+        Assert.Equal("arr", branch.SemanticId);
+        Assert.Equal(DataType.String, child.DataType);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_RefToPrimitive_ReturnsLeaf()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "type": "object",
+                            "properties": {
+                                "x": { "$ref": "#/$defs/A" }
+                            },
+                            "$defs": {
+                                "A": { "type": "string" }
+                            }
+                        }
+                        """);
+
+        var result = _sut.ParseJsonSchema(schema);
+
+        var leaf = Assert.IsType<SemanticLeafNode>(result);
+        Assert.Equal(DataType.String, leaf.DataType);
     }
 }
