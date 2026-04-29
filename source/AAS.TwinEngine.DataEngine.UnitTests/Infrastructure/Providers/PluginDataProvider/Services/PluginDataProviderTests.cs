@@ -84,7 +84,7 @@ public class PluginDataProviderTests
     }
 
     [Fact]
-    public async Task GetDataForSemanticIdsAsync_404Response_ThrowsResourceNotFoundExceptionAsync()
+    public async Task GetDataForSemanticIdsAsync_WhenPluginReturnsNotFound_ThrowsPluginSchemaRejectionException()
     {
         using var simpleRequestSchema = ConvertToJsonContent(SimpleRequestSchema);
         var pluginRequest = new PluginRequestSubmodel($"{HttpClientNames.PluginDataProviderPrefix}PluginName", simpleRequestSchema);
@@ -101,7 +101,7 @@ public class PluginDataProviderTests
         httpClient.BaseAddress = new Uri("https://example.com");
         _httpClientFactory.CreateClient(pluginRequest.HttpClientName).Returns(httpClient);
 
-        await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
+        await Assert.ThrowsAsync<PluginSchemaRejectionException>(() =>
             _sut.GetDataForSemanticIdsAsync(pluginRequests, "asdf", CancellationToken.None));
     }
 
@@ -345,6 +345,7 @@ public class PluginDataProviderTests
     }
 
     [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
     [InlineData(HttpStatusCode.BadRequest)]
     [InlineData(HttpStatusCode.InternalServerError)]
     public async Task GetDataForSemanticIdsAsync_WhenSchemaRejected_ThrowsPluginSchemaRejectionException(HttpStatusCode statusCode)

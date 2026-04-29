@@ -117,8 +117,8 @@ public class PluginDataProvider(
         switch (response.StatusCode)
         {
             case HttpStatusCode.NotFound:
-                logger.LogError("Requested resource could not be found. Endpoint: {Url}", url);
-                throw new ResourceNotFoundException();
+                logger.LogWarning("Plugin could not resolve the request schema (HTTP 404). Endpoint: {Url}", url);
+                throw new PluginSchemaRejectionException();
 
             case HttpStatusCode.Unauthorized:
             case HttpStatusCode.Forbidden:

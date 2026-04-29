@@ -126,6 +126,7 @@ public static class InfrastructureDependencyInjectionExtensions
 #pragma warning disable CS0618 // Obsolete — intentional legacy Draft-07 fallback registration
         _ = services.AddScoped<ILegacySchemaRetryHandler, LegacySchemaRetryHandler>();
 #pragma warning restore CS0618
+        _ = services.AddScoped<IPluginSchemaCompatibilityHandler, PluginSchemaCompatibilityHandler>();
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();
         _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
         _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();
