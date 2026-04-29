@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
@@ -202,9 +202,7 @@ public class TemplateRegistryHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsNull_UsesDefaultHealthEndpoint()
     {
-        // Arrange
-        var handler = new StubHttpMessageHandler((_, _) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        var handler = new StubHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
 
         var clientFactory = Substitute.For<ICreateClient>();
@@ -213,17 +211,14 @@ public class TemplateRegistryHealthCheckTests
 
         var sut = new TemplateRegistryHealthCheck(clientFactory, CreateOptionsWithHealthEndpoints(null, null), logger);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        // Assert - falls back to /actuator/health, not business endpoints
         Assert.All(handler.RequestedUris, u => Assert.Contains("actuator/health", u!.AbsolutePath));
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsEmpty_UsesDefaultHealthEndpoint()
     {
-        // Arrange - empty string is the ServiceInstance default, simulating V1 config
         var handler = new StubHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -234,17 +229,14 @@ public class TemplateRegistryHealthCheckTests
 
         var sut = new TemplateRegistryHealthCheck(clientFactory, CreateOptionsWithHealthEndpoints(string.Empty, string.Empty), logger);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        // Assert - falls back to /actuator/health, not business endpoints
         Assert.All(handler.RequestedUris, u => Assert.Contains("actuator/health", u!.AbsolutePath));
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsBlank_LogsWarning()
     {
-        // Arrange
         var handler = new StubHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -255,10 +247,8 @@ public class TemplateRegistryHealthCheckTests
 
         var sut = new TemplateRegistryHealthCheck(clientFactory, CreateOptionsWithHealthEndpoints(string.Empty, string.Empty), logger);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        // Assert
         logger.Received(2).Log(
             LogLevel.Warning,
             Arg.Any<EventId>(),
@@ -270,7 +260,6 @@ public class TemplateRegistryHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_UsesConfiguredEndpoint()
     {
-        // Arrange
         const string customEndpoint = "actuator/health";
         var handler = new StubHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
@@ -282,44 +271,35 @@ public class TemplateRegistryHealthCheckTests
 
         var sut = new TemplateRegistryHealthCheck(clientFactory, CreateOptionsWithHealthEndpoints(customEndpoint, customEndpoint), logger);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        // Assert
         Assert.All(handler.RequestedUris, u => Assert.Contains(customEndpoint, u!.AbsolutePath));
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_ReturnsHealthy()
     {
-        // Arrange
         var clientFactory = Substitute.For<ICreateClient>();
         clientFactory.CreateClient(Arg.Any<string>()).Returns(CreateHttpClient(HttpStatusCode.OK));
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
         var sut = new TemplateRegistryHealthCheck(clientFactory, CreateOptionsWithHealthEndpoints("actuator/health", "actuator/health"), logger);
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
 
-        // Assert
         Assert.Equal(HealthStatus.Healthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_ReturnsUnhealthy_OnFailure()
     {
-        // Arrange
         var clientFactory = Substitute.For<ICreateClient>();
         clientFactory.CreateClient(Arg.Any<string>()).Returns(CreateHttpClient(HttpStatusCode.ServiceUnavailable));
         var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
 
         var sut = new TemplateRegistryHealthCheck(clientFactory, CreateOptionsWithHealthEndpoints("actuator/health", "actuator/health"), logger);
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
-
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 }

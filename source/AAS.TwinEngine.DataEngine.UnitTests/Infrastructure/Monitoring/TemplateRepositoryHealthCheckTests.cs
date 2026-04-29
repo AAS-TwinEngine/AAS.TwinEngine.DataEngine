@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
@@ -82,23 +82,19 @@ public class TemplateRepositoryHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_AllRepositoriesHealthy_ReturnsHealthy()
     {
-        // Arrange
         var client = CreateHttpClient(HttpStatusCode.OK);
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSut();
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Healthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_OneRepositoryFails_ReturnsUnhealthy()
     {
-        // Arrange
         var successClient = CreateHttpClient(HttpStatusCode.OK);
         var failClient = CreateHttpClient(HttpStatusCode.InternalServerError);
 
@@ -113,106 +109,86 @@ public class TemplateRepositoryHealthCheckTests
 
         var sut = CreateSut();
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_AllRepositoriesFail_ReturnsUnhealthy()
     {
-        // Arrange
         var failClient = CreateHttpClient(HttpStatusCode.InternalServerError);
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(failClient);
 
         var sut = CreateSut();
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHttpRequestException_ReturnsUnhealthy()
     {
-        // Arrange
         var client = CreateHttpClientThatThrows(new HttpRequestException());
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSut();
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenTimeout_ReturnsUnhealthy()
     {
-        // Arrange
         var client = CreateHttpClientThatThrows(new TaskCanceledException());
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSut();
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenGenericException_ReturnsUnhealthy()
     {
-        // Arrange
         var client = CreateHttpClientThatThrows(new Exception("boom"));
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSut();
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_NonSuccessStatusCodes_ReturnUnhealthy()
     {
-        // Arrange
         var client = CreateHttpClient(HttpStatusCode.NotFound);
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSut();
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_LogsWarning_WhenRepositoryFails()
     {
-        // Arrange
         var failClient = CreateHttpClient(HttpStatusCode.InternalServerError);
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(failClient);
 
         var sut = CreateSut();
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         _logger.Received().Log(
             LogLevel.Warning,
             Arg.Any<EventId>(),
@@ -224,51 +200,42 @@ public class TemplateRepositoryHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsNull_UsesDefaultHealthEndpoint()
     {
-        // Arrange
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSutWithHealthEndpoints(null, null, null);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert - falls back to /actuator/health, not business endpoints
         Assert.All(handler.RequestedUris, u => Assert.Contains("actuator/health", u!.AbsolutePath));
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsEmpty_UsesDefaultHealthEndpoint()
     {
-        // Arrange - empty string is the ServiceInstance default, simulating V1 config
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSutWithHealthEndpoints(string.Empty, string.Empty, string.Empty);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert - falls back to /actuator/health, not business endpoints
         Assert.All(handler.RequestedUris, u => Assert.Contains("actuator/health", u!.AbsolutePath));
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsBlank_LogsWarning()
     {
-        // Arrange
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSutWithHealthEndpoints(string.Empty, string.Empty, string.Empty);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         _logger.Received(3).Log(
             LogLevel.Warning,
             Arg.Any<EventId>(),
@@ -280,7 +247,6 @@ public class TemplateRepositoryHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_UsesConfiguredEndpoint()
     {
-        // Arrange
         const string customEndpoint = "actuator/health";
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -288,44 +254,36 @@ public class TemplateRepositoryHealthCheckTests
 
         var sut = CreateSutWithHealthEndpoints(customEndpoint, customEndpoint, customEndpoint);
 
-        // Act
         await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.All(handler.RequestedUris, u => Assert.Contains(customEndpoint, u!.AbsolutePath));
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_ReturnsHealthy()
     {
-        // Arrange
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSutWithHealthEndpoints("actuator/health", "actuator/health", "actuator/health");
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Healthy, result.Status);
     }
 
     [Fact]
     public async Task CheckHealthAsync_WhenHealthEndpointIsConfigured_ReturnsUnhealthy_OnFailure()
     {
-        // Arrange
         var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
         var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
         _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
 
         var sut = CreateSutWithHealthEndpoints("actuator/health", "actuator/health", "actuator/health");
 
-        // Act
         var result = await sut.CheckHealthAsync(new HealthCheckContext());
 
-        // Assert
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 }
