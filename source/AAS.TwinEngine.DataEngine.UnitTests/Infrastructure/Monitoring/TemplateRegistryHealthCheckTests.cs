@@ -302,4 +302,35 @@ public class TemplateRegistryHealthCheckTests
         var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenOneHealthEndpointMissing_UsesDefaultForMissingOne()
+    {
+        const string customEndpoint = "custom/health";
+
+        var handler = new StubHttpMessageHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+
+        var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://localhost")
+        };
+
+        var clientFactory = Substitute.For<ICreateClient>();
+        clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var logger = Substitute.For<ILogger<TemplateRegistryHealthCheck>>();
+
+        var sut = new TemplateRegistryHealthCheck(
+            clientFactory,
+            CreateOptionsWithHealthEndpoints(customEndpoint, null),
+            logger);
+
+        await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        Assert.Equal(2, handler.RequestedUris.Count);
+
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(customEndpoint));
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains("actuator/health"));
+    }
 }

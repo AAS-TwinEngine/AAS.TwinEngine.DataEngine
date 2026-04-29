@@ -286,4 +286,27 @@ public class TemplateRepositoryHealthCheckTests
 
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenSomeHealthEndpointsMissing_UsesDefaultForMissingOnes()
+    {
+        const string customEndpoint = "custom/health";
+
+        var handler = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://localhost")
+        };
+
+        _clientFactory.CreateClient(Arg.Any<string>()).Returns(client);
+
+        var sut = CreateSutWithHealthEndpoints(customEndpoint, customEndpoint, null);
+
+        await sut.CheckHealthAsync(new HealthCheckContext());
+
+        Assert.Equal(3, handler.RequestedUris.Count);
+
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains(customEndpoint));
+        Assert.Contains(handler.RequestedUris, u => u!.AbsolutePath.Contains("actuator/health"));
+    }
 }

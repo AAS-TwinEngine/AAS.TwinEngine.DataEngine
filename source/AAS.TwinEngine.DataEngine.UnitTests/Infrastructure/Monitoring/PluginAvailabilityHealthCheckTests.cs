@@ -466,6 +466,65 @@ public class PluginAvailabilityHealthCheckTests
             Arg.Any<Func<object, Exception, string>>());
     }
 
+    [Fact]
+    public async Task CheckHealthAsync_WhenMultiplePlugins_OneUsesCustomAndOneUsesDefaultEndpoint()
+    {
+        // Arrange
+        var requestedPaths = new List<string>();
+
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(_ =>
+            {
+                var handler = new StubHttpMessageHandler((request, _) =>
+                {
+                    requestedPaths.Add(request.RequestUri!.ToString());
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                });
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("http://localhost")
+                };
+            });
+
+        var pluginConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
+            {
+                Name = "Plugin1",
+                BaseUrl = new Uri("http://localhost"),
+                HealthEndpoint = "custom-health"
+            },
+            new ServiceInstance
+            {
+                Name = "Plugin2",
+                BaseUrl = new Uri("http://localhost"),
+                HealthEndpoint = null
+            }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(HealthStatus.Healthy, result.Status);
+
+        Assert.Equal(2, requestedPaths.Count);
+
+        Assert.Contains(requestedPaths, p => p.Contains("custom-health"));
+        Assert.Contains(requestedPaths, p => p.Contains("healthz"));
+    }
+
     private static HttpClient CreateHttpClient(HttpStatusCode statusCode)
     {
         var handler = new StubHttpMessageHandler((_, _) =>
