@@ -10,26 +10,15 @@
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
           },
-          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "234-567-8901"
-              },
-              "0173-1#02-AAO137#003": "Office",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
+          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": {
+            "0173-1#02-AAO136#002": {
+              "0173-1#02-AAO136#002_en": "234-567-8901"
             },
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "345-678-9012"
-              },
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
-              },
-              "0173-1#02-AAO137#003": "Mobile"
+            "0173-1#02-AAO137#003": "Office",
+            "https://mm-software.com/Phone/AvailableTime": {
+              "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
             }
-          ],
+          },
           "0173-1#02-AAQ836#005": [
             {
               "0173-1#02-AAO198#002": "john.doe@example.com",
@@ -67,26 +56,15 @@
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
           },
-          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "234-567-8901"
-              },
-              "0173-1#02-AAO137#003": "Office",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
+          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": {
+            "0173-1#02-AAO136#002": {
+              "0173-1#02-AAO136#002_en": "345-678-9012"
             },
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "345-678-9012"
-              },
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
-              },
-              "0173-1#02-AAO137#003": "Mobile"
-            }
-          ],
+            "https://mm-software.com/Phone/AvailableTime": {
+              "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
+            },
+            "0173-1#02-AAO137#003": "Mobile"
+          },
           "0173-1#02-AAQ836#005": [
             {
               "0173-1#02-AAO198#002": "john.doe@example.com",
@@ -476,7 +454,7 @@
             "https://admin-shell.io/SMT/General/Arbitrary/date_max": "2030-02-06"
           },
           "0112/2///61987#ABA588#004": "56.5",
-          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU\u002BPikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
+          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU+PikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
           "0173-1#02-ABK273#002": {
             "0173-1#02-ABK273#002_en": "Name of product class in the used classification system",
             "0173-1#02-ABK273#002_de": "Name der Produktklasse im verwendeten Klassifizierungssystem"
@@ -502,26 +480,15 @@
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
           },
-          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "234-567-8901"
-              },
-              "0173-1#02-AAO137#003": "Office",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
+          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": {
+            "0173-1#02-AAO136#002": {
+              "0173-1#02-AAO136#002_en": "345-678-9012"
             },
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "345-678-9012"
-              },
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
-              },
-              "0173-1#02-AAO137#003": "Mobile"
-            }
-          ],
+            "https://mm-software.com/Phone/AvailableTime": {
+              "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
+            },
+            "0173-1#02-AAO137#003": "Mobile"
+          },
           "0173-1#02-AAQ836#005": [
             {
               "0173-1#02-AAO198#002": "john.doe@example.com",
@@ -559,17 +526,15 @@
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Vertrieb"
           },
-          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "123-456-7890"
-              },
-              "0173-1#02-AAO137#003": "assistant",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
+          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": {
+            "0173-1#02-AAO136#002": {
+              "0173-1#02-AAO136#002_en": "123-456-7890"
+            },
+            "0173-1#02-AAO137#003": "assistant",
+            "https://mm-software.com/Phone/AvailableTime": {
+              "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
             }
-          ],
+          },
           "0173-1#02-AAQ836#005": [
             {
               "0173-1#02-AAO198#002": "jane.doe@betacorp.com",
@@ -830,7 +795,7 @@
             "https://admin-shell.io/SMT/General/Arbitrary/date_max": "2050-02-06"
           },
           "0112/2///61987#ABA588#004": "56.54",
-          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU\u002BPikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
+          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU+PikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
           "0173-1#02-ABK273#002": {
             "0173-1#02-ABK273#002_en": "Name of product class in the used classification system",
             "0173-1#02-ABK273#002_de": "Name der Produktklasse im verwendeten Klassifizierungssystem"
@@ -856,26 +821,15 @@
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
           },
-          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "234-567-8901"
-              },
-              "0173-1#02-AAO137#003": "Office",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
+          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": {
+            "0173-1#02-AAO136#002": {
+              "0173-1#02-AAO136#002_en": "234-567-8901"
             },
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "345-678-9012"
-              },
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
-              },
-              "0173-1#02-AAO137#003": "Mobile"
+            "0173-1#02-AAO137#003": "Office",
+            "https://mm-software.com/Phone/AvailableTime": {
+              "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
             }
-          ],
+          },
           "0173-1#02-AAQ836#005": [
             {
               "0173-1#02-AAO198#002": "john.doe@example.com",
@@ -913,26 +867,15 @@
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
           },
-          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "234-567-8901"
-              },
-              "0173-1#02-AAO137#003": "Office",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
+          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": {
+            "0173-1#02-AAO136#002": {
+              "0173-1#02-AAO136#002_en": "234-567-8901"
             },
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "345-678-9012"
-              },
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Montags, 10-16 Uhr"
-              },
-              "0173-1#02-AAO137#003": "Mobile"
+            "0173-1#02-AAO137#003": "Office",
+            "https://mm-software.com/Phone/AvailableTime": {
+              "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
             }
-          ],
+          },
           "0173-1#02-AAQ836#005": [
             {
               "0173-1#02-AAO198#002": "john.doe@example.com",
@@ -970,17 +913,15 @@
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Vertrieb"
           },
-          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": [
-            {
-              "0173-1#02-AAO136#002": {
-                "0173-1#02-AAO136#002_en": "123-456-7890"
-              },
-              "0173-1#02-AAO137#003": "assistant",
-              "https://mm-software.com/Phone/AvailableTime": {
-                "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
-              }
+          "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone": {
+            "0173-1#02-AAO136#002": {
+              "0173-1#02-AAO136#002_en": "123-456-7890"
+            },
+            "0173-1#02-AAO137#003": "assistant",
+            "https://mm-software.com/Phone/AvailableTime": {
+              "https://mm-software.com/Phone/AvailableTime_de": "Dienstags bis Donnerstags, 9-17 Uhr"
             }
-          ],
+          },
           "0173-1#02-AAQ836#005": [
             {
               "0173-1#02-AAO198#002": "jane.doe@betacorp.com",
@@ -1353,7 +1294,7 @@
             "https://admin-shell.io/SMT/General/Arbitrary/date_max": "2032-02-06"
           },
           "0112/2///61987#ABA588#004": "5.5",
-          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU\u002BPikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
+          "http://admin-shell.io/aasx-package-explorer/functions/asciidoc/textblock/1/0": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU+PikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
           "0173-1#02-ABK273#002": {
             "0173-1#02-ABK273#002_en": "Name of product class in the used classification system",
             "0173-1#02-ABK273#002_de": "Name der Produktklasse im verwendeten Klassifizierungssystem"
