@@ -15,10 +15,10 @@ public class CleanArchitectureTests
     private const string BaseNamespace = "AAS.TwinEngine.Plugin.TestPlugin";
 
     private readonly Architecture _architecture = new ArchLoader().LoadAssemblies(System.Reflection.Assembly.Load(BaseNamespace)).Build();
-    private readonly IObjectProvider<IType> _apiLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}\\.Api($|\\..*)").As("Api");
-    private readonly IObjectProvider<IType> _applicationLogicLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}\\.ApplicationLogic($|\\..*)").As("ApplicationLogic");
-    private readonly IObjectProvider<IType> _domainModelLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}\\.DomainModel.*").As("DomainModel");
-    private readonly IObjectProvider<IType> _infrastructureLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}\\.Infrastructure($|\\..*)").As("Infrastructure");
+    private readonly IObjectProvider<IType> _apiLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.Api.*").As("Api");
+    private readonly IObjectProvider<IType> _applicationLogicLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.ApplicationLogic.*").As("ApplicationLogic");
+    private readonly IObjectProvider<IType> _domainModelLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.DomainModel*").As("DomainModel");
+    private readonly IObjectProvider<IType> _infrastructureLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.Infrastructure.*").As("Infrastructure");
 
     [Fact]
     public void DomainModelShallNotHaveExternalDependencies()

@@ -20,6 +20,7 @@ using Json.Schema;
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using Microsoft.Extensions.Options;
@@ -31,6 +32,8 @@ public class PluginDataHandlerTests
     private readonly IPluginRequestBuilder _pluginRequestBuilder;
     private readonly IPluginDataProvider _pluginDataProvider;
     private readonly IJsonSchemaValidator _jsonSchemaValidator;
+    private readonly IJsonSchemaGenerator _jsonSchemaGenerator;
+    private readonly ILegacySchemaRetryHandler _legacySchemaRetryHandler;
     private readonly IMultiPluginDataHandler _multiPluginDataHandler;
     private readonly ILogger<PluginDataHandler> _logger;
     private readonly IOptions<GeneralConfig> _options;
@@ -41,6 +44,8 @@ public class PluginDataHandlerTests
         _pluginRequestBuilder = Substitute.For<IPluginRequestBuilder>();
         _pluginDataProvider = Substitute.For<IPluginDataProvider>();
         _jsonSchemaValidator = Substitute.For<IJsonSchemaValidator>();
+        _jsonSchemaGenerator = Substitute.For<IJsonSchemaGenerator>();
+        _legacySchemaRetryHandler = Substitute.For<ILegacySchemaRetryHandler>();
         _multiPluginDataHandler = Substitute.For<IMultiPluginDataHandler>();
         _logger = Substitute.For<ILogger<PluginDataHandler>>();
         _options = Options.Create(new GeneralConfig
@@ -48,7 +53,7 @@ public class PluginDataHandlerTests
             DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com"),
         });
 
-        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, _multiPluginDataHandler, _logger, _options);
+        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, _jsonSchemaGenerator, _legacySchemaRetryHandler, _multiPluginDataHandler, _logger, _options);
     }
 
     private readonly JsonSerializerOptions _jsonoptions = new()
@@ -66,9 +71,7 @@ public class PluginDataHandlerTests
     [Fact]
     public async Task TryGetValuesAsync_WithValidManifestAndResponse_ReturnsMergedSemanticTreeNode()
     {
-        // Arrange
         var inputSemanticTreeNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
-
         const string ExpectedJsonResponse = """
                                             {
                                                 "Contact": "value"
@@ -133,14 +136,63 @@ public class PluginDataHandlerTests
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(ci => ci.ArgAt<IList<SemanticTreeNode>>(1).First());
 
-        // Act
         var result = await _sut.TryGetValuesAsync(manifests, inputSemanticTreeNode, "submodelId", CancellationToken.None);
 
-        // Assert
         Assert.NotNull(result);
         var leaf = Assert.IsType<SemanticLeafNode>(result);
         Assert.Equal("Contact", leaf.SemanticId);
         Assert.Equal("value", leaf.Value);
+
+        _jsonSchemaValidator.Received().ValidateRequestSchema(Arg.Any<JsonSchema>());
+        _jsonSchemaValidator.Received().ValidateResponseContent(ExpectedJsonResponse, Arg.Any<JsonSchema>());
+    }
+
+    [Fact]
+    public async Task TryGetValuesAsync_WhenSchemaKeyHasPrefix_ValidatesRequestAndResponse()
+    {
+        var inputSemanticTreeNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+
+        const string ExpectedJsonResponse = "{\"Contact\": \"value\"}";
+        const string PrefixedSchemaKey = "d07:TestPlugin";
+
+        var requestList = new List<PluginRequestSubmodel>
+        {
+            new($"{HttpClientNames.PluginDataProviderPrefix}{PrefixedSchemaKey}", ConvertToJsonContent("{}"))
+        };
+
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = new List<string> { "Contact" },
+                Capabilities = new Capabilities { HasShellDescriptor = true }
+            }
+        };
+
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { PrefixedSchemaKey, inputSemanticTreeNode } });
+
+        _pluginRequestBuilder
+            .Build(Arg.Any<IDictionary<string, JsonSchema>>())
+            .Returns(requestList);
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(ExpectedJsonResponse, Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult<IList<HttpContent>>(new List<HttpContent> { httpResponse.Content }));
+
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(ci => ci.ArgAt<IList<SemanticTreeNode>>(1).First());
+
+        _ = await _sut.TryGetValuesAsync(manifests, inputSemanticTreeNode, "submodelId", CancellationToken.None);
 
         _jsonSchemaValidator.Received().ValidateRequestSchema(Arg.Any<JsonSchema>());
         _jsonSchemaValidator.Received().ValidateResponseContent(ExpectedJsonResponse, Arg.Any<JsonSchema>());
@@ -390,6 +442,152 @@ public class PluginDataHandlerTests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = false
         });
+    }
+
+    [Fact]
+    public async Task TryGetValuesAsync_WhenPluginRejectsSchema_FallsBackToLegacyRetryHandler()
+    {
+        var inputNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        const string ExpectedJsonResponse = """{ "Contact": "value" }""";
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { "TestPlugin", inputNode } });
+        _pluginRequestBuilder
+            .Build(Arg.Any<IDictionary<string, JsonSchema>>())
+            .Returns(new List<PluginRequestSubmodel> { new("TestPlugin", ConvertToJsonContent("{}")) });
+        _pluginDataProvider
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new PluginSchemaRejectionException());
+        using var retryContent = new StringContent(ExpectedJsonResponse, Encoding.UTF8, "application/json");
+        _legacySchemaRetryHandler
+            .RetryWithDraft7Async(Arg.Any<IDictionary<string, SemanticTreeNode>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IList<HttpContent>>(new List<HttpContent> { retryContent }));
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(ci => ci.ArgAt<IList<SemanticTreeNode>>(1).First());
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = new List<string> { "Contact" },
+                Capabilities = new Capabilities { HasShellDescriptor = false }
+            }
+        };
+
+        var result = await _sut.TryGetValuesAsync(manifests, inputNode, "submodelId", CancellationToken.None);
+
+        await _legacySchemaRetryHandler.Received(1)
+            .RetryWithDraft7Async(
+                Arg.Is<IDictionary<string, SemanticTreeNode>>(d => d.ContainsKey("TestPlugin")),
+                "submodelId",
+                Arg.Any<CancellationToken>());
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task TryGetValuesAsync_WhenPluginRejectsSchema_DoesNotCallProviderAgainDirectly()
+    {
+        var inputNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { "TestPlugin", inputNode } });
+        _pluginRequestBuilder
+            .Build(Arg.Any<IDictionary<string, JsonSchema>>())
+            .Returns([new("TestPlugin", ConvertToJsonContent("{}"))]);
+        _pluginDataProvider
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new PluginSchemaRejectionException());
+        using var retryContent = new StringContent("{\"Contact\":\"value\"}", Encoding.UTF8, "application/json");
+        _legacySchemaRetryHandler
+            .RetryWithDraft7Async(Arg.Any<IDictionary<string, SemanticTreeNode>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IList<HttpContent>>([retryContent]));
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(ci => ci.ArgAt<IList<SemanticTreeNode>>(1).First());
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = new List<string> { "Contact" },
+                Capabilities = new Capabilities { HasShellDescriptor = false }
+            }
+        };
+
+        _ = await _sut.TryGetValuesAsync(manifests, inputNode, "submodelId", CancellationToken.None);
+
+        await _pluginDataProvider.Received(1)
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task TryGetValuesAsync_WhenRetryAlsoFails_PropagatesException()
+    {
+        var inputNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { "TestPlugin", inputNode } });
+        _pluginRequestBuilder
+            .Build(Arg.Any<IDictionary<string, JsonSchema>>())
+            .Returns([new("TestPlugin", ConvertToJsonContent("{}"))]);
+        _pluginDataProvider
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new PluginSchemaRejectionException());
+        _legacySchemaRetryHandler
+            .RetryWithDraft7Async(Arg.Any<IDictionary<string, SemanticTreeNode>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ResponseParsingException());
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = [ "Contact" ],
+                Capabilities = new Capabilities { HasShellDescriptor = false }
+            }
+        };
+
+        await Assert.ThrowsAsync<ResponseParsingException>(() =>
+            _sut.TryGetValuesAsync(manifests, inputNode, "submodelId", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task TryGetValuesAsync_WhenProviderSucceeds_DoesNotInvokeLegacyRetryHandler()
+    {
+        var inputNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        const string ExpectedJsonResponse = """{ "Contact": "value" }""";
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { "TestPlugin", inputNode } });
+        _pluginRequestBuilder
+            .Build(Arg.Any<IDictionary<string, JsonSchema>>())
+            .Returns([new("TestPlugin", ConvertToJsonContent("{}"))]);
+        using var content = new StringContent(ExpectedJsonResponse, Encoding.UTF8, "application/json");
+        _pluginDataProvider
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IList<HttpContent>>(new List<HttpContent> { content }));
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(ci => ci.ArgAt<IList<SemanticTreeNode>>(1).First());
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = new List<string> { "Contact" },
+                Capabilities = new Capabilities { HasShellDescriptor = false }
+            }
+        };
+
+        _ = await _sut.TryGetValuesAsync(manifests, inputNode, "submodelId", CancellationToken.None);
+
+        await _legacySchemaRetryHandler.DidNotReceive()
+            .RetryWithDraft7Async(Arg.Any<IDictionary<string, SemanticTreeNode>>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     private const string AssetData = """

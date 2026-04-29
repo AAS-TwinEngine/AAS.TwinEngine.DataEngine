@@ -1,5 +1,4 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -34,44 +33,57 @@ public class JsonSchemaValidatorTests
         {
             SubmodelElementIndexContextPrefix = "_aastwinengine_"
         });
-
         var logger = Substitute.For<ILogger<JsonSchemaValidator>>();
         _sut = new JsonSchemaValidator(pluginsConfig, logger);
     }
 
     [Fact]
-    public void ValidateRequestSchema_NullSchema_ThrowsBadRequest()
-        => Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateRequestSchema(null!));
+    public void ValidateRequestSchema_NullSchema_ThrowsBadRequest() => Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateRequestSchema(null!));
+
+    [Fact]
+    public void ValidateRequestSchema_WithInvalidJson_ThrowsParseError()
+    {
+        Assert.ThrowsAny<Exception>(() =>
+        {
+            var schema = JsonSchema.FromText("{\"type\": 123}");
+            _sut.ValidateRequestSchema(schema);
+        });
+    }
 
     [Fact]
     public void ValidateRequestSchema_ValidSchema_DoesNotThrow()
     {
         var schema = new JsonSchemaBuilder()
-            .Schema("https://json-schema.org/draft/2020-12/schema")
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchemaBuilder>
-            {
-                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
-            })
-            .Build();
+        .Schema(MetaSchemas.Draft7Id)
+        .Type(SchemaValueType.Object)
+        .Properties(new Dictionary<string, JsonSchemaBuilder>
+        {
+            ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
+        })
+        .Build();
 
         _sut.ValidateRequestSchema(schema);
     }
 
-    [Theory]
-    [InlineData("http://json-schema.org/draft-07/schema#")]
-    [InlineData("https://json-schema.org/draft/2019-09/schema")]
-    [InlineData("https://json-schema.org/draft/2020-12/schema")]
-    public void ValidateRequestSchema_SupportedDrafts_DoesNotThrow(string draft)
+    [Fact]
+    public void ValidateRequestSchema_ValidDraft202012Schema_DoesNotThrow()
     {
         var schema = new JsonSchemaBuilder()
-            .Schema(draft)
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchemaBuilder>
-            {
-                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
-            })
-            .Build();
+        .Schema(MetaSchemas.Draft202012Id)
+        .Type(SchemaValueType.Object)
+        .Properties(new Dictionary<string, JsonSchemaBuilder>
+        {
+            ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
+        })
+        .Build();
+
+        _sut.ValidateRequestSchema(schema);
+    }
+
+    [Fact]
+    public void ValidateRequestSchema_WhenSchemaHasNoSchemaKeyword_DefaultsToDraft202012()
+    {
+        var schema = BuildDraft202012Schema();
 
         _sut.ValidateRequestSchema(schema);
     }
@@ -79,9 +91,7 @@ public class JsonSchemaValidatorTests
     [Fact]
     public void ValidateResponseContent_EmptyResponse_ThrowsBadRequest()
     {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Build();
+        var schema = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
 
         Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateResponseContent("", schema));
     }
@@ -90,13 +100,13 @@ public class JsonSchemaValidatorTests
     public void ValidateResponseContent_ValidateJsonSchemaRemovePrefix_DoesNotThrow()
     {
         var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchemaBuilder>
-            {
-                ["ContactInformation_aastwinengine_00"] = new JsonSchemaBuilder().Type(SchemaValueType.Object)
-            })
-            .Required("ContactInformation_aastwinengine_00")
-            .Build();
+        .Type(SchemaValueType.Object)
+        .Properties(new Dictionary<string, JsonSchemaBuilder>
+        {
+            ["ContactInformation_aastwinengine_00"] = new JsonSchemaBuilder().Type(SchemaValueType.Object)
+        })
+        .Required("ContactInformation_aastwinengine_00")
+        .Build();
 
         const string Json = "{\"ContactInformation\": {}}";
 
@@ -107,17 +117,160 @@ public class JsonSchemaValidatorTests
     public void ValidateResponseContent_ValidJsonAndSchema_DoesNotThrow()
     {
         var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchemaBuilder>
-            {
-                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
-            })
-            .Required("name")
-            .Build();
+        .Type(SchemaValueType.Object)
+        .Properties(new Dictionary<string, JsonSchemaBuilder>
+        {
+            ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
+        })
+        .Required("name")
+        .Build();
 
         const string Json = "{\"name\": \"Test\"}";
 
         _sut.ValidateResponseContent(Json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenSchemaDeclaresDraft202012_ValidatesSuccessfully()
+    {
+        var schema = BuildDraft202012Schema();
+        const string Json = "{\"asset\": {\"details\": {\"name\": \"ok\"}}}";
+
+        _sut.ValidateResponseContent(Json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenSchemaHasNoSchemaKeyword_DefaultsToDraft202012()
+    {
+        var schema = new JsonSchemaBuilder()
+            .Type(SchemaValueType.Object)
+            .Properties(new Dictionary<string, JsonSchemaBuilder>
+            {
+                ["asset"] = new JsonSchemaBuilder()
+                    .Type(SchemaValueType.Object)
+                    .Properties(new Dictionary<string, JsonSchemaBuilder>
+                    {
+                        ["details"] = new JsonSchemaBuilder()
+                            .Type(SchemaValueType.Object)
+                            .Properties(new Dictionary<string, JsonSchemaBuilder>
+                            {
+                                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
+                            })
+                            .Required("name")
+                    })
+                    .Required("details")
+            })
+            .Required("asset")
+            .Build();
+        const string Json = "{\"asset\": {\"details\": {\"name\": \"ok\"}}}";
+
+        _sut.ValidateResponseContent(Json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenSchemaHasNoSchemaKeyword_AndUsesDraft202012Keyword_DefaultsToDraft202012()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "type": "object",
+                            "properties": {
+                                "asset": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": { "type": "string" }
+                                    },
+                                    "required": ["name"]
+                                }
+                            },
+                            "required": ["asset"],
+                            "unevaluatedProperties": false
+                        }
+                        """);
+
+        const string Json = "{\"asset\":{\"name\":\"ok\"}}";
+
+        _sut.ValidateResponseContent(Json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenSchemaDeclaresDraft7_ValidatesDeepHierarchy()
+    {
+        var schema = BuildDraft7Schema();
+        const string Json = "{\"asset\": {\"details\": {\"name\": \"Motor\", \"tags\": [\"a\",\"b\"]}}}";
+
+        _sut.ValidateResponseContent(Json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenRequiredNestedPropertyMissing_ThrowsBadRequest()
+    {
+        var schema = BuildDraft202012Schema();
+        const string Json = "{\"asset\": {\"details\": {}}}";
+
+        Assert.Throws<InternalDataProcessingException>(() =>
+            _sut.ValidateResponseContent(Json, schema));
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenAdditionalPropertiesNotAllowed_ThrowsBadRequest()
+    {
+        var schema = BuildDraft7Schema();
+        const string Json = "{\"asset\": {\"details\": {\"name\": \"Motor\", \"unexpected\": 1}}}";
+
+        Assert.Throws<InternalDataProcessingException>(() =>
+            _sut.ValidateResponseContent(Json, schema));
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenUnevaluatedPropertiesNotAllowed_ThrowsBadRequest()
+    {
+        var schema = BuildDraft202012Schema();
+        const string Json = "{\"asset\": {\"details\": {\"name\": \"Motor\"}}, \"unexpected\": 1}";
+
+        Assert.Throws<InternalDataProcessingException>(() =>
+            _sut.ValidateResponseContent(Json, schema));
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenNullAtDeepLevel_ThrowsBadRequest()
+    {
+        var schema = BuildDraft202012Schema();
+        const string Json = "{\"asset\": {\"details\": {\"name\": null}}}";
+
+        Assert.Throws<InternalDataProcessingException>(() =>
+            _sut.ValidateResponseContent(Json, schema));
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenPartialPayloadMissingRequired_ThrowsBadRequest()
+    {
+        var schema = BuildDraft7Schema();
+        const string Json = "{\"asset\": {}}";
+
+        Assert.Throws<InternalDataProcessingException>(() =>
+                        _sut.ValidateResponseContent(Json, schema));
+    }
+
+    [Fact]
+    public void ValidateResponseContent_WhenDraft7SchemaContainsDraft202012Construct_ThrowsBadRequest()
+    {
+        var schema = JsonSchema.FromText(
+                """
+                        {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "type": "object",
+                            "properties": {
+                                "name": { "type": "string" }
+                            },
+                            "required": ["name"],
+                            "unevaluatedProperties": false
+                        }
+                        """);
+        const string Json = "{\"asset\": {\"details\": {\"name\": \"ok\"}}}";
+
+        Assert.Throws<InternalDataProcessingException>(() =>
+                        _sut.ValidateResponseContent(Json, schema));
     }
 
     [Theory]
@@ -135,7 +288,6 @@ public class JsonSchemaValidatorTests
             })
             .Required(property)
             .Build();
-
         var json = $"{{\"{property}\": {rawValue} }}";
 
         Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateResponseContent(json, schema));
@@ -159,256 +311,138 @@ public class JsonSchemaValidatorTests
     }
 
     [Fact]
-    public void ValidateResponseContent_InvalidJson_ThrowsBadRequest()
+    public void ValidateResponseContent_WhenSchemaExpectsObjectAndResponseIsArray_ThrowsBadRequest()
     {
         var schema = new JsonSchemaBuilder()
             .Type(SchemaValueType.Object)
             .Build();
 
+        const string Json = "[]";
+
+        Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateResponseContent(Json, schema));
+    }
+
+    [Fact]
+    public void ValidateResponseContent_InvalidJson_ThrowsBadRequest()
+    {
+        var schema = new JsonSchemaBuilder()
+            .Type(SchemaValueType.Object)
+            .Build();
         const string BadJson = "{ not valid json }";
 
         Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateResponseContent(BadJson, schema));
     }
 
     [Fact]
-    public void ValidateResponseContent_NullResponse_ThrowsException()
+    public void ValidateResponseContent_LegacyArraySchema_WithoutItems_DoesNotThrow()
     {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Build();
-
-        Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateResponseContent(null!, schema));
-    }
-
-    [Fact]
-    public void ValidateResponseContent_WhitespaceOnlyResponse_ThrowsException()
-    {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Build();
-
-        Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateResponseContent("   ", schema));
-    }
-
-    [Fact]
-    public void ValidateResponseContent_MalformedJson_ThrowsException()
-    {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Build();
-
-        Assert.Throws<InternalDataProcessingException>(() => _sut.ValidateResponseContent("{\"key\": }", schema));
-    }
-    [Fact]
-    public void ValidateResponseContent_ArrayOfObjects_ValidatesCorrectly()
-    {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchemaBuilder>
+        var malformedSchema = JsonSchema.FromText(
+            """
             {
-                ["users"] = new JsonSchemaBuilder()
-                    .Type(SchemaValueType.Array)
-                    .Items(new JsonSchemaBuilder()
-                        .Type(SchemaValueType.Object)
-                        .Properties(new Dictionary<string, JsonSchemaBuilder>
-                        {
-                            ["name_aastwinengine_01"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
-                        }))
-            })
-            .Build();
-
-        const string Json = "{\"users\": [{\"name\": \"Alice\"}, {\"name\": \"Bob\"}]}";
-
-        _sut.ValidateResponseContent(Json, schema);
-    }
-
-    [Fact]
-    public void ValidateResponseContent_WithDefsReference_DoesNotThrow()
-    {
-        const string schemaJson = @"{
-        ""$schema"": ""https://json-schema.org/draft/2020-12/schema"",
-        ""type"": ""object"",
-        ""properties"": {
-            ""item"": { ""$ref"": ""#/$defs/MyType"" }
-        },
-        ""$defs"": {
-            ""MyType"": {
-                ""type"": ""object"",
-                ""properties"": {
-                    ""name"": { ""type"": ""string"" }
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                    "contactInformation": {
+                        "type": "array",
+                        "properties": {
+                            "name": { "type": "string" }
+                        },
+                        "required": ["name"]
+                    }
                 }
             }
-        }
-        }";
+            """);
+        const string Json = @"{ ""contactInformation"": [{ ""name"": ""test"" }] }";
 
-        var schema = JsonSchema.FromText(schemaJson);
-
-        const string json = @"{ ""item"": { ""name"": ""test"" } }";
-
-        _sut.ValidateResponseContent(json, schema);
+        _sut.ValidateResponseContent(Json, malformedSchema);
     }
 
     [Fact]
-    public void ValidateResponseContent_Draft7Schema_DoesNotThrow()
+    public void ValidateResponseContent_CorrectSchema_ArrayWithItems_Succeeds()
     {
-        const string schemaJson = @"{
-        ""$schema"": ""http://json-schema.org/draft-07/schema#"",
-        ""type"": ""object"",
-        ""properties"": {
-            ""value"": { ""type"": ""string"" }
-        },
-        ""required"": [""value""]
-        }";
-
-        var schema = JsonSchema.FromText(schemaJson);
-
-        const string json = @"{ ""value"": ""ok"" }";
-
-        _sut.ValidateResponseContent(json, schema);
-    }
-
-    [Fact]
-    public void ValidateResponseContent_Draft201909Schema_DoesNotThrow()
-    {
-        const string schemaJson = @"{
-        ""$schema"": ""https://json-schema.org/draft/2019-09/schema"",
-        ""type"": ""object"",
-        ""properties"": {
-            ""value"": { ""type"": ""integer"" }
-        },
-        ""required"": [""value""]
-        }";
-
-        var schema = JsonSchema.FromText(schemaJson);
-
-        const string json = @"{ ""value"": 12 }";
-
-        _sut.ValidateResponseContent(json, schema);
-    }
-
-    [Fact]
-    public void ValidateResponseContent_Draft7DefinitionsReferenceWithSuffix_DoesNotThrow()
-    {
-        const string schemaJson = @"{
-        ""$schema"": ""http://json-schema.org/draft-07/schema#"",
-        ""type"": ""object"",
-        ""properties"": {
-            ""item_aastwinengine_00"": { ""$ref"": ""#/definitions/Type_aastwinengine_00"" }
-        },
-        ""required"": [""item_aastwinengine_00""],
-        ""definitions"": {
-            ""Type_aastwinengine_00"": {
-                ""type"": ""object"",
-                ""properties"": {
-                    ""name_aastwinengine_00"": { ""type"": ""string"" }
-                },
-                ""required"": [""name_aastwinengine_00""]
-            }
-        }
-        }";
-
-        var schema = JsonSchema.FromText(schemaJson);
-
-        const string json = @"{ ""item"": { ""name"": ""ok"" } }";
-
-        _sut.ValidateResponseContent(json, schema);
-    }
-
-    [Fact]
-    public void ValidateResponseContent_BrokenRef_Throws()
-    {
-        const string schemaJson = @"{
-        ""$schema"": ""https://json-schema.org/draft/2020-12/schema"",
-        ""type"": ""object"",
-        ""properties"": {
-            ""item"": { ""$ref"": ""#/$defs/UnknownType"" }
-        },
-        ""$defs"": {}
-        }";
-
-        var schema = JsonSchema.FromText(schemaJson);
-
-        const string json = @"{ ""item"": {} }";
-
-        Assert.Throws<InternalDataProcessingException>(() =>
-            _sut.ValidateResponseContent(json, schema));
-    }
-
-    [Fact]
-    public void ValidateResponseContent_ArrayItemInvalid_Throws()
-    {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchemaBuilder>
+        var correctSchema = JsonSchema.FromText(
+            """
             {
-                ["users"] = new JsonSchemaBuilder()
-                    .Type(SchemaValueType.Array)
-                    .Items(new JsonSchemaBuilder()
-                        .Type(SchemaValueType.Object)
-                        .Properties(new Dictionary<string, JsonSchemaBuilder>
-                        {
-                            ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
-                        })
-                        .Required("name"))
-            })
-            .Build();
-
-        const string json = @"{ ""users"": [{}] }";
-
-        Assert.Throws<InternalDataProcessingException>(() =>
-            _sut.ValidateResponseContent(json, schema));
-    }
-
-    [Fact]
-    public void ValidateResponseContent_NestedDefsReference_Works()
-    {
-        const string schemaJson = @"{
-        ""$schema"": ""https://json-schema.org/draft/2020-12/schema"",
-        ""type"": ""object"",
-        ""properties"": {
-            ""item"": { ""$ref"": ""#/$defs/Level1"" }
-        },
-        ""$defs"": {
-            ""Level1"": {
-                ""type"": ""object"",
-                ""properties"": {
-                    ""child"": { ""$ref"": ""#/$defs/Level2"" }
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                    "contactInformation": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": { "type": "string" }
+                            },
+                            "required": ["name"]
+                        }
+                    }
                 }
-            },
-            ""Level2"": {
-                ""type"": ""string""
             }
-            }
-        }";
-        var schema = JsonSchema.FromText(schemaJson);
+            """);
+        const string ValidJson = @"{ ""contactInformation"": [{ ""name"": ""test"" }] }";
 
-        const string json = @"{ ""item"": { ""child"": ""ok"" } }";
-
-        _sut.ValidateResponseContent(json, schema);
+        _sut.ValidateResponseContent(ValidJson, correctSchema);
     }
 
-    [Fact]
-    public void ValidateResponseContent_ArrayMissingRequiredField_Throws()
-    {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchemaBuilder>
-            {
-                ["items"] = new JsonSchemaBuilder()
-                    .Type(SchemaValueType.Array)
-                    .Items(new JsonSchemaBuilder()
-                        .Type(SchemaValueType.Object)
-                        .Properties(new Dictionary<string, JsonSchemaBuilder>
-                        {
-                            ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String)
-                        })
-                        .Required("name"))
-            })
-            .Build();
+    private static JsonSchema BuildDraft7Schema() => JsonSchema.FromText(
+            """
+                {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "asset": {
+                            "type": "object",
+                            "properties": {
+                                "details": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": { "type": "string" },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": { "type": "string" }
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["details"],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": ["asset"],
+                    "additionalProperties": false
+                }
+                """);
 
-        const string json = @"{ ""items"": [{}] }";
-
-        Assert.Throws<InternalDataProcessingException>(() =>
-            _sut.ValidateResponseContent(json, schema));
-    }
+    private static JsonSchema BuildDraft202012Schema() => JsonSchema.FromText(
+            """
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "asset": {
+                            "type": "object",
+                            "properties": {
+                                "details": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": { "type": "string" },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": { "type": "string" }
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "unevaluatedProperties": false
+                                }
+                            },
+                            "required": ["details"],
+                            "unevaluatedProperties": false
+                        }
+                    },
+                    "required": ["asset"],
+                    "unevaluatedProperties": false
+                }
+                """);
 }

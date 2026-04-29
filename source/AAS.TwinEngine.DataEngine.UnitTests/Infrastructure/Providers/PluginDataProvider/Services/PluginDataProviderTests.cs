@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -344,8 +344,10 @@ public class PluginDataProviderTests
             _sut.GetDataForSemanticIdsAsync(pluginRequests, "asdf", CancellationToken.None));
     }
 
-    [Fact]
-    public async Task GetDataForSemanticIdsAsync_WhenUnexpectedStatusCode_ThrowsResponseParsingException()
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    public async Task GetDataForSemanticIdsAsync_WhenSchemaRejected_ThrowsPluginSchemaRejectionException(HttpStatusCode statusCode)
     {
         using var simpleRequestSchema = ConvertToJsonContent(SimpleRequestSchema);
         var pluginRequest = new PluginRequestSubmodel($"{HttpClientNames.PluginDataProviderPrefix}PluginName", simpleRequestSchema);
@@ -354,14 +356,14 @@ public class PluginDataProviderTests
         using var messageHandler = new FakeHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.InternalServerError,
+                StatusCode = statusCode,
                 Content = new StringContent("Server error")
             }));
 
         using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
         _httpClientFactory.CreateClient(pluginRequest.HttpClientName).Returns(httpClient);
 
-        await Assert.ThrowsAsync<ResponseParsingException>(() =>
+        await Assert.ThrowsAsync<PluginSchemaRejectionException>(() =>
             _sut.GetDataForSemanticIdsAsync(pluginRequests, "asdf", CancellationToken.None));
     }
 

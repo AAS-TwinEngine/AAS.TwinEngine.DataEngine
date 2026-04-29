@@ -3,6 +3,7 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using System.Net;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -115,14 +116,22 @@ public class PluginDataProvider(
 
         switch (response.StatusCode)
         {
-            case System.Net.HttpStatusCode.NotFound:
+            case HttpStatusCode.NotFound:
                 logger.LogError("Requested resource could not be found. Endpoint: {Url}", url);
                 throw new ResourceNotFoundException();
 
-            case System.Net.HttpStatusCode.Unauthorized:
-            case System.Net.HttpStatusCode.Forbidden:
+            case HttpStatusCode.Unauthorized:
+            case HttpStatusCode.Forbidden:
                 logger.LogError("Unauthorized access. Endpoint: {Url}", url);
                 throw new UnauthorizedAccessException();
+
+            case HttpStatusCode.BadRequest:
+                logger.LogWarning("Plugin rejected request schema (HTTP 400). Endpoint: {Url}", url);
+                throw new PluginSchemaRejectionException();
+
+            case HttpStatusCode.InternalServerError:
+                logger.LogWarning("Plugin failed to process request schema (HTTP 500). Endpoint: {Url}", url);
+                throw new PluginSchemaRejectionException();
 
             default:
                 logger.LogError("Invalid response format. Endpoint: {Url}", url);

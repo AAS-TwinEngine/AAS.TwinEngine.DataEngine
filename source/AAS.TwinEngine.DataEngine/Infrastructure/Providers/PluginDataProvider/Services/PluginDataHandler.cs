@@ -6,11 +6,11 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -24,6 +24,8 @@ public class PluginDataHandler(
     IPluginRequestBuilder pluginRequestBuilder,
     IPluginDataProvider pluginDataProvider,
     IJsonSchemaValidator jsonSchemaValidator,
+    IJsonSchemaGenerator jsonSchemaGenerator,
+    ILegacySchemaRetryHandler legacySchemaRetryHandler,
     IMultiPluginDataHandler multiPluginDataHandler,
     ILogger<PluginDataHandler> logger,
     IOptions<GeneralConfig> generalConfig) : IPluginDataHandler
@@ -40,14 +42,23 @@ public class PluginDataHandler(
 
         foreach (var (key, value) in dicSemanticTreeNode)
         {
-            var jsonSchema = JsonSchemaGenerator.ConvertToJsonSchema(value);
+            var jsonSchema = jsonSchemaGenerator.Generate(value);
             jsonSchemas.Add(key, jsonSchema);
             jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
         }
 
         var pluginRequests = pluginRequestBuilder.Build(jsonSchemas);
 
-        var response = await pluginDataProvider.GetDataForSemanticIdsAsync(pluginRequests, submodelId, cancellationToken).ConfigureAwait(false);
+        IList<HttpContent> response;
+        try
+        {
+            response = await pluginDataProvider.GetDataForSemanticIdsAsync(pluginRequests, submodelId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (PluginSchemaRejectionException)
+        {
+            logger.LogWarning("Plugin rejected Draft 2020-12 schema. Falling back to Draft-07 compatibility mode.");
+            response = await legacySchemaRetryHandler.RetryWithDraft7Async(dicSemanticTreeNode, submodelId, cancellationToken).ConfigureAwait(false);
+        }
 
         var result = new List<SemanticTreeNode>();
 
@@ -55,8 +66,8 @@ public class PluginDataHandler(
         {
             var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-            var schema = jsonSchemas.ElementAt(i).Value;
-            jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
+            var schemaEntry = jsonSchemas.ElementAt(i);
+            jsonSchemaValidator.ValidateResponseContent(responseContent, schemaEntry.Value);
 
             var semanticTreeNode = JsonSchemaParser.ParseJsonSchema(responseContent);
             result.Add(semanticTreeNode);

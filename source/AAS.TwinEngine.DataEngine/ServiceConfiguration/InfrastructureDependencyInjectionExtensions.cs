@@ -11,6 +11,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
@@ -121,6 +122,10 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<ICreateClient, HttpClientFactory>();
         _ = services.AddScoped<IPluginDataProvider, PluginDataProvider>();
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
+        _ = services.AddScoped<IJsonSchemaGenerator, JsonSchemaDraft202012Generator>();
+#pragma warning disable CS0618 // Obsolete — intentional legacy Draft-07 fallback registration
+        _ = services.AddScoped<ILegacySchemaRetryHandler, LegacySchemaRetryHandler>();
+#pragma warning restore CS0618
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();
         _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
         _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();

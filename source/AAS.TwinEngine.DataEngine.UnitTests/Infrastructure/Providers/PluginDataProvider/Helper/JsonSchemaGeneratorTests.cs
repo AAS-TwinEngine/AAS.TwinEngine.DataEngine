@@ -1,330 +1,314 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper.LegacyV1;
 
 using Json.Schema;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Helper;
 
-public class JsonSchemaGeneratorTests
+public class JsonSchemaDraft202012GeneratorTests
 {
+    private readonly IJsonSchemaGenerator _sut = new JsonSchemaDraft202012Generator();
+
     [Fact]
-    public void ConvertToJsonSchema_LeafNode_ReturnSchema()
+    public void Generate_WhenLeafNode_ReturnsDraft202012Schema()
     {
         const string SemanticId = "http://example.com/idta/digital-nameplate/contact-list/Name";
         var leaf = new SemanticLeafNode(SemanticId, "", DataType.String, Cardinality.One);
 
-        var result = JsonSchemaGenerator.ConvertToJsonSchema(leaf);
+        var schema = _sut.Generate(leaf);
 
-        var json = ToJson(result);
-        Assert.Equal("object", json["type"]!.ToString());
-        var props = json["properties"]!;
-        Assert.NotNull(props[SemanticId]);
-        var leafSchema = props[SemanticId];
-        Assert.Equal("string", leafSchema!["type"]!.ToString());
+        var el = ToElement(schema);
+        Assert.Equal("https://json-schema.org/draft/2020-12/schema", el.GetProperty("$schema").GetString());
+        Assert.Equal("object", el.GetProperty("type").GetString());
+        Assert.True(el.GetProperty("properties").TryGetProperty(SemanticId, out var leafEl));
+        Assert.Equal("string", leafEl.GetProperty("type").GetString());
     }
 
     [Fact]
-    public void ConvertToJsonSchema_OptionalLeafNode_IsNotRequired()
+    public void Generate_WhenNestedBranches_UsesDollarDefsAndDraft202012Refs()
+    {
+        const string RootId = "http://example.com/idta/root";
+        const string BranchId = "http://example.com/idta/branch";
+        const string NameId = "http://example.com/idta/name";
+        var root = new SemanticBranchNode(RootId, Cardinality.One);
+        var branch = new SemanticBranchNode(BranchId, Cardinality.One);
+        branch.AddChild(new SemanticLeafNode(NameId, "", DataType.String, Cardinality.One));
+        root.AddChild(branch);
+
+        var schema = _sut.Generate(root);
+
+        var el = ToElement(schema);
+        var branchRefEl = el.GetProperty("properties").GetProperty(RootId)
+                            .GetProperty("properties").GetProperty(BranchId);
+        Assert.Equal($"#/$defs/{BranchId}", branchRefEl.GetProperty("$ref").GetString());
+        Assert.True(el.TryGetProperty("$defs", out var defsEl));
+        Assert.False(el.TryGetProperty("definitions", out _));
+        Assert.True(defsEl.TryGetProperty(BranchId, out var branchDef));
+        Assert.Equal("object", branchDef.GetProperty("type").GetString());
+        Assert.Equal("string", branchDef.GetProperty("properties").GetProperty(NameId).GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void Generate_WhenBranchWithZeroToManyCardinality_WrapsChildrenInItems()
+    {
+        const string BranchId = "http://example.com/list";
+        const string ChildId = "http://example.com/list/item";
+        var branch = new SemanticBranchNode(BranchId, Cardinality.ZeroToMany);
+        branch.AddChild(new SemanticLeafNode(ChildId, "", DataType.String, Cardinality.One));
+
+        var schema = _sut.Generate(branch);
+
+        var el = ToElement(schema);
+        var branchEl = el.GetProperty("properties").GetProperty(BranchId);
+        Assert.Equal("array", branchEl.GetProperty("type").GetString());
+        Assert.True(branchEl.TryGetProperty("items", out var itemsEl));
+        Assert.Equal("object", itemsEl.GetProperty("type").GetString());
+        Assert.True(itemsEl.TryGetProperty("properties", out var itemPropsEl));
+        Assert.True(itemPropsEl.TryGetProperty(ChildId, out _));
+        Assert.False(branchEl.TryGetProperty("properties", out _));
+    }
+
+    [Fact]
+    public void Generate_WhenLeafNodeIsOptional_DoesNotMarkPropertyAsRequired()
     {
         const string SemanticId = "http://example.com/optional";
-
         var leaf = new SemanticLeafNode(SemanticId, "", DataType.String, Cardinality.ZeroToOne);
 
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(leaf);
-        var json = ToJson(schema);
+        var schema = _sut.Generate(leaf);
+        var el = ToElement(schema);
 
-        var props = json["properties"]!;
-        Assert.NotNull(props[SemanticId]);
-        Assert.Null(json["required"]);
+        Assert.True(el.GetProperty("properties").TryGetProperty(SemanticId, out _));
+        Assert.False(el.TryGetProperty("required", out _));
     }
 
     [Fact]
-    public void ConvertToJsonSchema_BranchNodeWithOneCardinality_ReturnsObjectSchema()
+    public void Generate_WhenBranchHasMixedCardinality_SetsRequiredOnlyForMandatoryChildren()
     {
-        const string SemanticId = "http://example.com/idta/digital-nameplate/contact-list";
-        const string NameId = "http://example.com/idta/digital-nameplate/contact-list/Name";
-        const string WeightId = "http://example.com/idta/digital-nameplate/contact-list/Weight";
-        var branch = new SemanticBranchNode(SemanticId, Cardinality.One);
-        branch.AddChild(new SemanticLeafNode(NameId, "", DataType.String, Cardinality.One));
-        branch.AddChild(new SemanticLeafNode(WeightId, null!, DataType.Integer, Cardinality.ZeroToOne));
+        const string BranchId = "http://example.com/branch";
+        const string RequiredChildId = "http://example.com/branch/required";
+        const string OptionalChildId = "http://example.com/branch/optional";
+        var branch = new SemanticBranchNode(BranchId, Cardinality.One);
+        branch.AddChild(new SemanticLeafNode(RequiredChildId, "", DataType.String, Cardinality.One));
+        branch.AddChild(new SemanticLeafNode(OptionalChildId, "", DataType.String, Cardinality.ZeroToOne));
 
-        var result = JsonSchemaGenerator.ConvertToJsonSchema(branch);
+        var schema = _sut.Generate(branch);
 
-        var json = ToJson(result);
-        Assert.Equal("object", json["type"]!.ToString());
-        var rootProps = json["properties"]!;
-        var branchSchema = rootProps[SemanticId]!;
-        Assert.Equal("object", branchSchema["type"]!.ToString());
-        var branchProps = branchSchema["properties"]!;
-        Assert.NotNull(branchProps[NameId]);
-        Assert.NotNull(branchProps[WeightId]);
-        Assert.Equal("string", branchProps[NameId]!["type"]!.ToString());
-        Assert.Equal("integer", branchProps[WeightId]!["type"]!.ToString());
-        var required = branchSchema["required"]!.AsArray();
-        Assert.Contains(NameId, required.Select(x => x!.ToString()));
-        Assert.DoesNotContain(WeightId, required.Select(x => x!.ToString()));
+        var branchEl = ToElement(schema).GetProperty("properties").GetProperty(BranchId);
+        var required = branchEl.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Contains(RequiredChildId, required);
+        Assert.DoesNotContain(OptionalChildId, required);
     }
 
-    [Fact]
-    public void ConvertToJsonSchema_BranchNodeWithZeroToManyCardinality_ReturnsArraySchema()
+    [Theory]
+    [InlineData(DataType.String, "string")]
+    [InlineData(DataType.Integer, "integer")]
+    [InlineData(DataType.Number, "number")]
+    [InlineData(DataType.Boolean, "boolean")]
+    [InlineData(DataType.Unknown, "string")]
+    public void Generate_WhenLeafWithDataType_MapsToCorrectJsonType(DataType dataType, string expectedJsonType)
     {
-        const string SemanticId = "http://example.com/idta/digital-nameplate/contact-list";
-        const string NameId = "http://example.com/idta/digital-nameplate/contact-list/Name";
-        var branchNode = new SemanticBranchNode(SemanticId, Cardinality.ZeroToMany);
-        branchNode.AddChild(new SemanticLeafNode(NameId, "", DataType.String, Cardinality.One));
+        const string SemanticId = "http://example.com/leaf";
+        var leaf = new SemanticLeafNode(SemanticId, null!, dataType, Cardinality.One);
 
-        var result = JsonSchemaGenerator.ConvertToJsonSchema(branchNode);
+        var schema = _sut.Generate(leaf);
 
-        var json = ToJson(result);
-        Assert.Equal("object", json["type"]!.ToString());
-        var rootProps = json["properties"]!;
-        var arraySchema = rootProps[SemanticId]!;
-        Assert.Equal("array", arraySchema["type"]!.ToString());
-        var items = arraySchema["items"]!;
-        var props = items["properties"]!;
-        Assert.True(props[NameId] != null);
-        Assert.Equal("string", props[NameId]!["type"]!.ToString());
-        var required = items["required"]!.AsArray();
-        Assert.Contains(NameId, required.Select(x => x!.ToString()));
+        var leafEl = ToElement(schema).GetProperty("properties").GetProperty(SemanticId);
+        Assert.Equal(expectedJsonType, leafEl.GetProperty("type").GetString());
     }
 
     [Fact]
-    public void ConvertToJsonSchema_NestedBranchNode_UsesDefs()
-    {
-        const string RootSemanticId = "http://example.com/idta/digital-nameplate";
-        const string BranchSemanticId = "http://example.com/idta/digital-nameplate/contact-list";
-        const string NameId = "http://example.com/idta/digital-nameplate/contact-list/Name";
-        var root = new SemanticBranchNode(RootSemanticId, Cardinality.Unknown);
-        var childBranch = new SemanticBranchNode(BranchSemanticId, Cardinality.One);
-        childBranch.AddChild(new SemanticLeafNode(NameId, "", DataType.String, Cardinality.One));
-        root.AddChild(childBranch);
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(root);
-        var json = ToJson(schema);
-
-        Assert.Equal("object", json["type"]!.ToString());
-        var rootProps = json["properties"]![RootSemanticId]!["properties"]!;
-        Assert.Equal($"#/$defs/{BranchSemanticId}", rootProps[BranchSemanticId]!["$ref"]!.ToString());
-        var defs = json["$defs"]!;
-        var branchDef = defs[BranchSemanticId]!;
-        Assert.Equal("object", branchDef["type"]!.ToString());
-        var branchProps = branchDef["properties"]!;
-        Assert.NotNull(branchProps[NameId]);
-        var required = branchDef["required"]!.AsArray();
-        Assert.Contains(NameId, required.Select(x => x!.ToString()));
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_DataTypeMapping_ConvertsCorrectly()
-    {
-        var branch = new SemanticBranchNode("http://example.com/schema/data-types", Cardinality.One);
-
-        branch.AddChild(new SemanticLeafNode("string", "", DataType.String, Cardinality.One));
-        branch.AddChild(new SemanticLeafNode("integer", null!, DataType.Integer, Cardinality.One));
-        branch.AddChild(new SemanticLeafNode("number", null!, DataType.Number, Cardinality.One));
-        branch.AddChild(new SemanticLeafNode("boolean", null!, DataType.Boolean, Cardinality.One));
-        branch.AddChild(new SemanticLeafNode("unknown", null!, DataType.Unknown, Cardinality.One));
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
-        var json = ToJson(schema);
-
-        var rootProps = json["properties"]!["http://example.com/schema/data-types"]!["properties"]!;
-
-        Assert.Equal("string", rootProps["string"]!["type"]!.ToString());
-        Assert.Equal("integer", rootProps["integer"]!["type"]!.ToString());
-        Assert.Equal("number", rootProps["number"]!["type"]!.ToString());
-        Assert.Equal("boolean", rootProps["boolean"]!["type"]!.ToString());
-        Assert.Equal("string", rootProps["unknown"]!["type"]!.ToString());
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_ArraySchema_UsesItemsKeyword()
-    {
-        var branch = new SemanticBranchNode("root", Cardinality.ZeroToMany);
-        branch.AddChild(new SemanticLeafNode("child", "", DataType.String, Cardinality.One));
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
-        var json = ToJson(schema);
-
-        var rootProps = json["properties"]!["root"]!;
-
-        Assert.Equal("array", rootProps["type"]!.ToString());
-        Assert.NotNull(rootProps["items"]);
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_LeafWithOneToManyCardinality_UsesPrimitiveType()
-    {
-        var branch = new SemanticBranchNode("root", Cardinality.One);
-        branch.AddChild(new SemanticLeafNode("tags", "", DataType.String, Cardinality.OneToMany));
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
-        var json = ToJson(schema);
-
-        var leaf = json["properties"]!["root"]!["properties"]!["tags"]!;
-        Assert.Equal("string", leaf["type"]!.ToString());
-        Assert.Null(leaf["items"]);
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_UnsupportedNode_ThrowsException()
+    public void Generate_WhenUnsupportedNode_ThrowsInternalDataProcessingException()
     {
         var unsupportedNode = new UnsupportedSemanticNode("unsupported", Cardinality.One);
 
-        Assert.Throws<InternalDataProcessingException>(() =>
-            JsonSchemaGenerator.ConvertToJsonSchema(unsupportedNode));
+        Assert.Throws<InternalDataProcessingException>(() => _sut.Generate(unsupportedNode));
     }
 
-    [Fact]
-    public void ConvertToJsonSchema_EmptyBranchNode_ReturnsEmptyObjectSchema()
+    private static JsonElement ToElement(JsonSchema schema)
     {
-        var branch = new SemanticBranchNode("root", Cardinality.One);
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
-        var json = ToJson(schema);
-
-        var rootProps = json["properties"]!["root"]!;
-        Assert.Equal("object", rootProps["type"]!.ToString());
-        Assert.NotNull(rootProps["properties"]);
-        Assert.Empty(rootProps["properties"]!.AsObject());
+        var json = JsonSerializer.Serialize(schema);
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.Clone();
     }
 
-    [Fact]
-    public void ConvertToJsonSchema_ArrayWithOptionalChildren_DoesNotContainRequired()
-    {
-        var branch = new SemanticBranchNode("root", Cardinality.ZeroToMany);
-        branch.AddChild(new SemanticLeafNode("child", "", DataType.String, Cardinality.ZeroToOne));
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
-        var json = ToJson(schema);
-
-        var items = json["properties"]!["root"]!["items"]!;
-        Assert.Null(items["required"]);
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_ReusedBranch_UsesSingleDefinition()
-    {
-        var shared = new SemanticBranchNode("shared", Cardinality.One);
-        shared.AddChild(new SemanticLeafNode("name", "", DataType.String, Cardinality.One));
-        var root = new SemanticBranchNode("root", Cardinality.One);
-        root.AddChild(shared);
-        root.AddChild(shared);
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(root);
-
-        var json = ToJson(schema);
-        var defs = json["$defs"]!;
-        Assert.Single(defs.AsObject());
-        var rootProps = json["properties"]!["root"]!["properties"]!;
-        Assert.Equal("#/$defs/shared", rootProps["shared"]!["$ref"]!.ToString());
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_DeepNestedStructure_WorksCorrectly()
-    {
-        var level3 = new SemanticBranchNode("level3", Cardinality.One);
-        level3.AddChild(new SemanticLeafNode("leaf", "", DataType.String, Cardinality.One));
-        var level2 = new SemanticBranchNode("level2", Cardinality.One);
-        level2.AddChild(level3);
-        var level1 = new SemanticBranchNode("level1", Cardinality.One);
-        level1.AddChild(level2);
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(level1);
-
-        var json = ToJson(schema);
-        var defs = json["$defs"]!;
-        Assert.Equal("#/$defs/level2", json["properties"]!["level1"]!["properties"]!["level2"]!["$ref"]!.ToString());
-        var level2Schema = defs["level2"]!;
-        Assert.Equal("object", level2Schema["type"]!.ToString());
-        Assert.Equal("#/$defs/level3", level2Schema["properties"]!["level3"]!["$ref"]!.ToString());
-        var level3Schema = defs["level3"]!;
-        Assert.Equal("object", level3Schema["type"]!.ToString());
-        Assert.Equal("string", level3Schema["properties"]!["leaf"]!["type"]!.ToString());
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_MixedCardinality_WorksCorrectly()
-    {
-        var root = new SemanticBranchNode("root", Cardinality.One);
-        var objectChild = new SemanticBranchNode("objectChild", Cardinality.One);
-        objectChild.AddChild(new SemanticLeafNode("name", "", DataType.String, Cardinality.One));
-        var arrayChild = new SemanticBranchNode("arrayChild", Cardinality.ZeroToMany);
-        arrayChild.AddChild(new SemanticLeafNode("value", "", DataType.Number, Cardinality.One));
-        root.AddChild(objectChild);
-        root.AddChild(arrayChild);
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(root);
-
-        var json = ToJson(schema);
-        var props = json["properties"]!["root"]!["properties"]!;
-        Assert.Equal("#/$defs/objectChild", props["objectChild"]!["$ref"]!.ToString());
-        Assert.Equal("#/$defs/arrayChild", props["arrayChild"]!["$ref"]!.ToString());
-        var defs = json["$defs"]!;
-        Assert.Equal("object", defs["objectChild"]!["type"]!.ToString());
-        Assert.Equal("array", defs["arrayChild"]!["type"]!.ToString());
-        Assert.NotNull(defs["arrayChild"]!["items"]);
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_SingleNestedBranch_UsesDefs()
-    {
-        var root = new SemanticBranchNode("root", Cardinality.One);
-        var child = new SemanticBranchNode("child", Cardinality.One);
-        child.AddChild(new SemanticLeafNode("name", "", DataType.String, Cardinality.One));
-        root.AddChild(child);
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(root);
-        var json = ToJson(schema);
-
-        Assert.Equal("#/$defs/child", json["properties"]!["root"]!["properties"]!["child"]!["$ref"]!.ToString());
-        var childDef = json["$defs"]!["child"]!;
-        Assert.Equal("object", childDef["type"]!.ToString());
-        Assert.NotNull(childDef["properties"]!["name"]);
-        var required = childDef["required"]!.AsArray();
-        Assert.Contains("name", required.Select(x => x!.ToString()));
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_UnknownCardinality_TreatedAsObject()
-    {
-        var branch = new SemanticBranchNode("root", Cardinality.Unknown);
-        branch.AddChild(new SemanticLeafNode("name", "", DataType.String, Cardinality.One));
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
-
-        var json = ToJson(schema);
-        var root = json["properties"]!["root"]!;
-        Assert.Equal("object", root["type"]!.ToString());
-    }
-
-    [Fact]
-    public void ConvertToJsonSchema_MultipleRequiredFields_AllIncluded()
-    {
-        var branch = new SemanticBranchNode("root", Cardinality.One);
-        branch.AddChild(new SemanticLeafNode("a", "", DataType.String, Cardinality.One));
-        branch.AddChild(new SemanticLeafNode("b", "", DataType.String, Cardinality.One));
-
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(branch);
-
-        var json = ToJson(schema);
-        var required = json["properties"]!["root"]!["required"]!.AsArray();
-        Assert.Contains("a", required.Select(x => x!.ToString()));
-        Assert.Contains("b", required.Select(x => x!.ToString()));
-    }
-
-    private sealed class UnsupportedSemanticNode(string semanticId, Cardinality cardinality)
-        : SemanticTreeNode(semanticId, cardinality);
-
-    private static readonly JsonSerializerOptions SerializerOption = new()
-    {
-        WriteIndented = false
-    };
-
-    private static JsonNode ToJson(JsonSchema schema)
-        => JsonSerializer.SerializeToNode(schema, SerializerOption)!;
+    private sealed class UnsupportedSemanticNode(string semanticId, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality);
 }
+
+#pragma warning disable CS0618
+public class LegacyDraft7JsonSchemaGeneratorTests
+{
+    private readonly IJsonSchemaGenerator _sut = new LegacyDraft7JsonSchemaGenerator();
+
+    [Fact]
+    public void Generate_WhenLeafNode_ReturnsDraft7Schema()
+    {
+        const string SemanticId = "http://example.com/idta/digital-nameplate/contact-list/Name";
+        var leaf = new SemanticLeafNode(SemanticId, "", DataType.String, Cardinality.One);
+
+        var schema = _sut.Generate(leaf);
+
+        var el = ToElement(schema);
+        Assert.Equal("http://json-schema.org/draft-07/schema#", el.GetProperty("$schema").GetString());
+        Assert.Equal("object", el.GetProperty("type").GetString());
+        Assert.True(el.GetProperty("properties").TryGetProperty(SemanticId, out var leafEl));
+        Assert.Equal("string", leafEl.GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void Generate_WhenNestedBranches_UsesDefinitionsAndDraft7Refs()
+    {
+        const string RootId = "http://example.com/idta/root";
+        const string BranchId = "http://example.com/idta/branch";
+        const string NameId = "http://example.com/idta/name";
+        var root = new SemanticBranchNode(RootId, Cardinality.One);
+        var branch = new SemanticBranchNode(BranchId, Cardinality.One);
+        branch.AddChild(new SemanticLeafNode(NameId, "", DataType.String, Cardinality.One));
+        root.AddChild(branch);
+
+        var schema = _sut.Generate(root);
+
+        var el = ToElement(schema);
+        var branchRefEl = el.GetProperty("properties").GetProperty(RootId)
+                            .GetProperty("properties").GetProperty(BranchId);
+        Assert.Equal($"#/definitions/{BranchId}", branchRefEl.GetProperty("$ref").GetString());
+        Assert.True(el.TryGetProperty("definitions", out var defsEl));
+        Assert.False(el.TryGetProperty("$defs", out _));
+        Assert.True(defsEl.TryGetProperty(BranchId, out var branchDef));
+        Assert.Equal("object", branchDef.GetProperty("type").GetString());
+        Assert.Equal("string", branchDef.GetProperty("properties").GetProperty(NameId).GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void Generate_WhenBranchWithZeroToManyCardinality_ReturnsArrayWithDirectProperties()
+    {
+        const string BranchId = "http://example.com/list";
+        const string ChildId = "http://example.com/list/item";
+        var branch = new SemanticBranchNode(BranchId, Cardinality.ZeroToMany);
+        branch.AddChild(new SemanticLeafNode(ChildId, "", DataType.String, Cardinality.One));
+
+        var schema = _sut.Generate(branch);
+
+        var el = ToElement(schema);
+        var branchEl = el.GetProperty("properties").GetProperty(BranchId);
+        Assert.Equal("array", branchEl.GetProperty("type").GetString());
+        Assert.False(branchEl.TryGetProperty("items", out _));
+        Assert.True(branchEl.TryGetProperty("properties", out var directPropsEl));
+        Assert.True(directPropsEl.TryGetProperty(ChildId, out _));
+    }
+
+    [Fact]
+    public void Generate_WhenLeafNodeIsOptional_DoesNotMarkPropertyAsRequired()
+    {
+        const string SemanticId = "http://example.com/optional";
+        var leaf = new SemanticLeafNode(SemanticId, "", DataType.String, Cardinality.ZeroToOne);
+
+        var schema = _sut.Generate(leaf);
+        var el = ToElement(schema);
+
+        Assert.True(el.GetProperty("properties").TryGetProperty(SemanticId, out _));
+        Assert.False(el.TryGetProperty("required", out _));
+    }
+
+    [Fact]
+    public void Generate_WhenBranchHasMixedCardinality_SetsRequiredOnlyForMandatoryChildren()
+    {
+        const string BranchId = "http://example.com/branch";
+        const string RequiredChildId = "http://example.com/branch/required";
+        const string OptionalChildId = "http://example.com/branch/optional";
+        var branch = new SemanticBranchNode(BranchId, Cardinality.One);
+        branch.AddChild(new SemanticLeafNode(RequiredChildId, "", DataType.String, Cardinality.One));
+        branch.AddChild(new SemanticLeafNode(OptionalChildId, "", DataType.String, Cardinality.ZeroToOne));
+
+        var schema = _sut.Generate(branch);
+
+        var branchEl = ToElement(schema).GetProperty("properties").GetProperty(BranchId);
+        var required = branchEl.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Contains(RequiredChildId, required);
+        Assert.DoesNotContain(OptionalChildId, required);
+    }
+
+    [Theory]
+    [InlineData(DataType.String, "string")]
+    [InlineData(DataType.Integer, "integer")]
+    [InlineData(DataType.Number, "number")]
+    [InlineData(DataType.Boolean, "boolean")]
+    [InlineData(DataType.Unknown, "string")]
+    public void Generate_WhenLeafWithDataType_MapsToCorrectJsonType(DataType dataType, string expectedJsonType)
+    {
+        const string SemanticId = "http://example.com/leaf";
+        var leaf = new SemanticLeafNode(SemanticId, null!, dataType, Cardinality.One);
+
+        var schema = _sut.Generate(leaf);
+
+        var leafEl = ToElement(schema).GetProperty("properties").GetProperty(SemanticId);
+        Assert.Equal(expectedJsonType, leafEl.GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void Generate_WhenUnsupportedNode_ThrowsInternalDataProcessingException()
+    {
+        var unsupportedNode = new UnsupportedSemanticNode("unsupported", Cardinality.One);
+
+        Assert.Throws<InternalDataProcessingException>(() => _sut.Generate(unsupportedNode));
+    }
+
+    [Fact]
+    public void Generate_WhenBranchContainsUnsupportedChild_ThrowsInternalDataProcessingException()
+    {
+        var root = new SemanticBranchNode("http://example.com/root", Cardinality.One);
+        root.AddChild(new UnsupportedSemanticNode("http://example.com/unsupported", Cardinality.One));
+
+        Assert.Throws<InternalDataProcessingException>(() => _sut.Generate(root));
+    }
+
+    [Fact]
+    public void Generate_WhenNestedBranchesReuseSemanticId_CreatesSingleDefinitionAndSharedRefs()
+    {
+        const string RootId = "http://example.com/root";
+        const string ParentOneId = "http://example.com/parent/one";
+        const string ParentTwoId = "http://example.com/parent/two";
+        const string SharedBranchId = "http://example.com/shared";
+        const string LeafId = "http://example.com/shared/leaf";
+        var root = new SemanticBranchNode(RootId, Cardinality.One);
+        var parentOne = new SemanticBranchNode(ParentOneId, Cardinality.One);
+        var parentTwo = new SemanticBranchNode(ParentTwoId, Cardinality.One);
+        var sharedBranchTemplate = new SemanticBranchNode(SharedBranchId, Cardinality.One);
+        sharedBranchTemplate.AddChild(new SemanticLeafNode(LeafId, string.Empty, DataType.String, Cardinality.One));
+
+        parentOne.AddChild(sharedBranchTemplate);
+
+        var sharedBranchReuse = new SemanticBranchNode(SharedBranchId, Cardinality.One);
+        sharedBranchReuse.AddChild(new SemanticLeafNode(LeafId, string.Empty, DataType.String, Cardinality.One));
+        parentTwo.AddChild(sharedBranchReuse);
+
+        root.AddChild(parentOne);
+        root.AddChild(parentTwo);
+
+        var schema = _sut.Generate(root);
+
+        var rootElement = ToElement(schema);
+        var definitions = rootElement.GetProperty("definitions");
+        var parentOneShared = definitions.GetProperty(ParentOneId).GetProperty("properties").GetProperty(SharedBranchId);
+        var parentTwoShared = definitions.GetProperty(ParentTwoId).GetProperty("properties").GetProperty(SharedBranchId);
+
+        Assert.Equal($"#/definitions/{SharedBranchId}", parentOneShared.GetProperty("$ref").GetString());
+        Assert.Equal($"#/definitions/{SharedBranchId}", parentTwoShared.GetProperty("$ref").GetString());
+        Assert.True(definitions.TryGetProperty(SharedBranchId, out var sharedDefinition));
+        Assert.Equal("string", sharedDefinition.GetProperty("properties").GetProperty(LeafId).GetProperty("type").GetString());
+    }
+
+    private static JsonElement ToElement(JsonSchema schema)
+    {
+        var json = JsonSerializer.Serialize(schema);
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.Clone();
+    }
+
+    private sealed class UnsupportedSemanticNode(string semanticId, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality);
+}
+#pragma warning restore CS0618

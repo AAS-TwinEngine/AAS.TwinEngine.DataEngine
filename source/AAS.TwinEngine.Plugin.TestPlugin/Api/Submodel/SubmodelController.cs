@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;

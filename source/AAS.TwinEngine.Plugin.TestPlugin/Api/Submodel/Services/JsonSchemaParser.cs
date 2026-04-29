@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
@@ -11,15 +10,6 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 
 public class JsonSchemaParser(ILogger<JsonSchemaParser> logger) : IJsonSchemaParser
 {
-    private const string Draft7Schema = "http://json-schema.org/draft-07/schema#";
-    private const string Draft7SchemaHttps = "https://json-schema.org/draft-07/schema#";
-    private const string Draft201909Schema = "https://json-schema.org/draft/2019-09/schema";
-    private const string Draft202012Schema = "https://json-schema.org/draft/2020-12/schema";
-    private const string DefsRefPrefix = "#/$defs/";
-    private const string DefinitionsRefPrefix = "#/definitions/";
-
-    private enum SchemaDraft { Draft7, Draft201909, Draft202012 }
-
     public SemanticTreeNode ParseJsonSchema(JsonSchema jsonSchema)
     {
         ValidateRequest(jsonSchema);
@@ -30,249 +20,147 @@ public class JsonSchemaParser(ILogger<JsonSchemaParser> logger) : IJsonSchemaPar
     {
         try
         {
-            var json = JsonSerializer.SerializeToNode(jsonSchema);
-            var schema = json?.AsObject() ?? throw new JsonException();
-            var draftUri = GetSchemaDraftUri(schema);
-            var element = JsonDocument.Parse(schema.ToJsonString()).RootElement;
-
-            var result = ResolveMetaSchema(draftUri).Evaluate(element, new EvaluationOptions
-            {
-                OutputFormat = OutputFormat.List
-            });
-
+            var node = JsonSerializer.SerializeToNode(jsonSchema);
+            var result = MetaSchemas.Draft7.Evaluate(node, new EvaluationOptions { OutputFormat = OutputFormat.List });
             if (!result.IsValid)
             {
-                logger.LogError("Requested schema is not valid");
+                logger.LogError("Requested schema is not validate");
                 throw new BadRequestException(ExceptionMessages.RequestBodyInvalid);
             }
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
-            logger.LogError(ex, "Requested schema is not valid");
+            logger.LogError("Requested schema is not validate");
             throw new BadRequestException(ExceptionMessages.FailedParsingJsonSchema);
         }
     }
 
     private SemanticTreeNode CreateSemanticTree(JsonSchema jsonSchema)
     {
-        var json = JsonSerializer.SerializeToNode(jsonSchema)!.AsObject();
-        var draft = GetSchemaDraft(json);
-
-        if (!json.TryGetPropertyValue("properties", out var propsNode) ||
-            propsNode is not JsonObject props ||
-            props.Count == 0)
+        var propertiesKeyword = jsonSchema.GetKeyword<PropertiesKeyword>();
+        if (propertiesKeyword == null || !propertiesKeyword.Properties.Any())
         {
             throw new BadRequestException(ExceptionMessages.InvalidJsonSchemaRootElement);
         }
 
-        var rootProperty = ((IList<KeyValuePair<string, JsonNode?>>)props)[0];
-        return ProcessProperty(rootProperty.Key, rootProperty.Value!, json, draft);
+        var rootProperty = propertiesKeyword.Properties.First();
+        return ProcessProperty(rootProperty.Key, rootProperty.Value, jsonSchema.GetKeyword<DefinitionsKeyword>());
     }
 
-    private SemanticTreeNode ProcessProperty(string name, JsonNode propertyNode, JsonObject root, SchemaDraft draft)
+    private SemanticTreeNode ProcessProperty(string schemaPropertyName, JsonSchema property, DefinitionsKeyword definitions)
     {
-        var property = propertyNode.AsObject();
-
-        if (property.TryGetPropertyValue("$ref", out var refNode))
+        var refKeyword = property.GetKeyword<RefKeyword>();
+        if (refKeyword != null)
         {
-            return HandleReference(name, refNode!.GetValue<string>(), root, draft);
+            return HandleReference(schemaPropertyName, property, definitions);
         }
 
-        var type = GetType(property);
-
-        return type switch
+        var typeKeyword = property.GetKeyword<TypeKeyword>();
+        if (typeKeyword == null)
         {
-            DataType.Object => BuildObjectBranch(name, propertyNode, root, draft),
-            DataType.Array => BuildArrayBranch(name, propertyNode, root, draft),
-            _ => new SemanticLeafNode(name, type, "")
-        };
-    }
-
-    private SemanticTreeNode HandleReference(string name, string reference, JsonObject root, SchemaDraft draft)
-    {
-        if (TryResolveReference(reference, root, draft, out var referenceNode))
-        {
-            return ProcessProperty(name, referenceNode!, root, draft);
+            return new SemanticLeafNode(schemaPropertyName, DataType.String, "");
         }
 
-        return new SemanticLeafNode(name, DataType.Unknown, "");
-    }
-
-    private static bool TryResolveReference(string reference, JsonObject root, SchemaDraft draft, out JsonNode? referenceNode)
-    {
-        referenceNode = null;
-
-        if (!TryGetReferenceKey(reference, out var key))
+        var schemaType = GetSchemaType(typeKeyword);
+        if (schemaType is DataType.Object or DataType.Array)
         {
-            return false;
+            return BuildObjectNode(schemaPropertyName, schemaType, property, definitions);
         }
 
-        var preferred = GetPreferredDefinitionsProperty(draft);
-        var fallback = preferred == "$defs" ? "definitions" : "$defs";
+        return new SemanticLeafNode(schemaPropertyName, schemaType, "");
+    }
 
-        if (TryGetDefinition(root, preferred, key, out referenceNode))
+    private SemanticTreeNode HandleReference(string schemaPropertyName, JsonSchema property, DefinitionsKeyword definitions)
+    {
+        var refKeyword = property.GetKeyword<RefKeyword>();
+        if (refKeyword == null)
         {
-            return true;
+            return new SemanticLeafNode(schemaPropertyName, DataType.String, "");
         }
 
-        return TryGetDefinition(root, fallback, key, out referenceNode);
-    }
-
-    private static bool TryGetReferenceKey(string reference, out string key)
-    {
-        key = string.Empty;
-        var prefix = GetReferencePrefix(reference);
-        if (prefix == null) return false;
-        key = DecodeJsonPointerToken(reference[prefix.Length..]);
-        return !string.IsNullOrWhiteSpace(key);
-    }
-
-    private static string? GetReferencePrefix(string reference)
-    {
-        if (reference.StartsWith(DefsRefPrefix, StringComparison.OrdinalIgnoreCase)) return DefsRefPrefix;
-        if (reference.StartsWith(DefinitionsRefPrefix, StringComparison.OrdinalIgnoreCase)) return DefinitionsRefPrefix;
-        return null;
-    }
-
-    private static bool TryGetDefinition(JsonObject root, string definitionsProperty, string key, out JsonNode? defNode)
-    {
-        defNode = null;
-        if (!root.TryGetPropertyValue(definitionsProperty, out var defsNode) || defsNode is not JsonObject defs)
-            return false;
-        return defs.TryGetPropertyValue(key, out defNode);
-    }
-
-    private SemanticBranchNode BuildObjectBranch(string name, JsonNode node, JsonObject root, SchemaDraft draft)
-    {
-        var obj = node.AsObject();
-        var branch = new SemanticBranchNode(name, DataType.Object);
-
-        if (obj.TryGetPropertyValue("properties", out var propsNode) &&
-            propsNode is JsonObject props)
+        var definitionKey = refKeyword.Reference.ToString().Replace("#/definitions/", "");
+        if (definitions == null || !definitions.Definitions.TryGetValue(definitionKey, out var def))
         {
-            foreach (var prop in props)
-            {
-                branch.AddChild(ProcessProperty(prop.Key, prop.Value!, root, draft));
-            }
+            return new SemanticLeafNode(schemaPropertyName, DataType.Unknown, "");
         }
 
-        return branch;
+        var defTypeKeyword = def.GetKeyword<TypeKeyword>();
+        if (defTypeKeyword == null)
+        {
+            return new SemanticLeafNode(schemaPropertyName, DataType.String, "");
+        }
+
+        var schemaType = GetSchemaType(defTypeKeyword);
+        if (schemaType is DataType.Object or DataType.Array)
+        {
+            return BuildObjectNode(schemaPropertyName, schemaType, def, definitions);
+        }
+
+        return new SemanticLeafNode(schemaPropertyName, schemaType, "");
     }
 
-    private SemanticBranchNode BuildArrayBranch(string name, JsonNode node, JsonObject root, SchemaDraft draft)
+    private SemanticBranchNode BuildObjectNode(string schemaPropertyName, DataType dataType, JsonSchema schema, DefinitionsKeyword definitions)
     {
-        var obj = node.AsObject();
-        var branch = new SemanticBranchNode(name, DataType.Array);
+        var branchNode = new SemanticBranchNode(schemaPropertyName, dataType);
 
-        if (!obj.TryGetPropertyValue("items", out var itemsNode) ||
-            itemsNode is not JsonObject itemObj)
+        switch (dataType)
         {
-            return branch;
-        }
-
-        var itemType = GetType(itemObj);
-
-        if (itemType == DataType.Object &&
-            itemObj.TryGetPropertyValue("properties", out var propsNode) &&
-            propsNode is JsonObject props)
-        {
-            foreach (var prop in props)
-            {
-                branch.AddChild(ProcessProperty(prop.Key, prop.Value!, root, draft));
-            }
-
-            return branch;
-        }
-
-        if (itemObj.TryGetPropertyValue("$ref", out var refNode))
-        {
-            var resolved = HandleReference(name, refNode!.GetValue<string>(), root, draft);
-
-            if (resolved is SemanticBranchNode refBranch)
-            {
-                foreach (var child in refBranch.Children)
+            case DataType.Object:
                 {
-                    branch.AddChild(child);
-                }
-            }
-            else
-            {
-                branch.AddChild(resolved);
-            }
+                    var propertiesKeyword = schema.GetKeyword<PropertiesKeyword>();
+                    if (propertiesKeyword != null)
+                    {
+                        foreach (var prop in propertiesKeyword.Properties)
+                        {
+                            branchNode.AddChild(ProcessProperty(prop.Key, prop.Value, definitions));
+                        }
+                    }
 
-            return branch;
+                    break;
+                }
+            case DataType.Array:
+                {
+                    var itemsKeyword = schema.GetKeyword<ItemsKeyword>();
+                    if (itemsKeyword == null)
+                    {
+                        var propertiesKeyword = schema.GetKeyword<PropertiesKeyword>();
+                        if (propertiesKeyword != null)
+                        {
+                            foreach (var prop in propertiesKeyword.Properties)
+                            {
+                                branchNode.AddChild(ProcessProperty(prop.Key, prop.Value, definitions));
+                            }
+                        }
+
+                        break;
+                    }
+
+                    if (itemsKeyword is { SingleSchema: not null })
+                    {
+                        branchNode.AddChild(ProcessProperty("item", itemsKeyword.SingleSchema, definitions));
+                    }
+
+                    break;
+                }
         }
 
-        branch.AddChild(new SemanticLeafNode(name, itemType, ""));
-        return branch;
+        return branchNode;
     }
 
-    private static DataType GetType(JsonObject obj)
+    private static DataType GetSchemaType(TypeKeyword typeKeyword)
     {
-        if (!obj.TryGetPropertyValue("type", out var typeNode))
-        {
-            return DataType.String;
-        }
+        var t = typeKeyword.Type;
 
-        return typeNode!.ToString() switch
+        return t switch
         {
-            "object" => DataType.Object,
-            "array" => DataType.Array,
-            "string" => DataType.String,
-            "integer" => DataType.Integer,
-            "number" => DataType.Number,
-            "boolean" => DataType.Boolean,
+            _ when t.HasFlag(SchemaValueType.Object) => DataType.Object,
+            _ when t.HasFlag(SchemaValueType.Array) => DataType.Array,
+            _ when t.HasFlag(SchemaValueType.String) => DataType.String,
+            _ when t.HasFlag(SchemaValueType.Integer) => DataType.Integer,
+            _ when t.HasFlag(SchemaValueType.Number) => DataType.Number,
+            _ when t.HasFlag(SchemaValueType.Boolean) => DataType.Boolean,
             _ => DataType.String
         };
     }
 
-    private static SchemaDraft GetSchemaDraft(JsonObject schema)
-    {
-        return GetSchemaDraftUri(schema) switch
-        {
-            Draft7Schema or Draft7SchemaHttps => SchemaDraft.Draft7,
-            Draft201909Schema => SchemaDraft.Draft201909,
-            _ => SchemaDraft.Draft202012
-        };
-    }
-
-    private static string GetPreferredDefinitionsProperty(SchemaDraft draft)
-    {
-        return draft == SchemaDraft.Draft7 ? "definitions" : "$defs";
-    }
-
-    private static string GetSchemaDraftUri(JsonObject schema)
-    {
-        if (!schema.TryGetPropertyValue("$schema", out var schemaNode) || schemaNode == null)
-        {
-            return Draft202012Schema;
-        }
-
-        var raw = schemaNode.GetValue<string>().Trim();
-
-        return raw switch
-        {
-            Draft7Schema or Draft7SchemaHttps => Draft7Schema,
-            Draft201909Schema => Draft201909Schema,
-            Draft202012Schema => Draft202012Schema,
-            _ => Draft202012Schema
-        };
-    }
-
-    private static JsonSchema ResolveMetaSchema(string draftUri)
-    {
-        return draftUri switch
-        {
-            Draft7Schema => MetaSchemas.Draft7,
-            Draft201909Schema => MetaSchemas.Draft201909,
-            _ => MetaSchemas.Draft202012
-        };
-    }
-
-    private static string DecodeJsonPointerToken(string token)
-    {
-        return token
-            .Replace("~1", "/", StringComparison.OrdinalIgnoreCase)
-            .Replace("~0", "~", StringComparison.OrdinalIgnoreCase);
-    }
 }
