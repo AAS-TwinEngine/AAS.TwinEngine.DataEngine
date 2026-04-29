@@ -44,7 +44,7 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
         try
         {
             var metaSchema = ResolveMetaSchema(schemaNode);
-            using var schemaDoc = JsonDocument.Parse(schemaNode.ToJsonString());
+            using var schemaDoc = JsonDocument.Parse(schemaNode!.ToJsonString());
             var result = metaSchema.Evaluate(schemaDoc.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
             if (!result.IsValid)
             {
