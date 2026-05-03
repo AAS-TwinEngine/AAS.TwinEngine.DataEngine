@@ -26,7 +26,6 @@ public static class LegacyV1ConfigurationExtensions
         _ = services.AddSingleton<IConfigureOptions<GeneralConfig>, LegacyGeneralConfigAdapter>();
         _ = services.AddSingleton<IConfigureOptions<PluginsConfig>, LegacyPluginsConfigAdapter>();
         _ = services.AddSingleton<IConfigureOptions<TemplateManagementConfig>, LegacyTemplateManagementConfigAdapter>();
-        _ = services.AddSingleton<IConfigureOptions<RegistrySettingsConfig>, LegacyRegistrySettingsConfigAdapter>();
 
         return services;
     }

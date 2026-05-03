@@ -68,17 +68,6 @@ public class ConfigurationBackwardCompatibilityE2ETests
         Assert.NotEmpty(tmConfig.TemplateMappingRules.SubmodelTemplateMappings);
     }
 
-    [Fact]
-    public void V1Config_ThroughDIPipeline_ProducesCorrectRegistrySettings()
-    {
-        var provider = BuildServiceProvider(BuildV1Config());
-
-        var registry = provider.GetRequiredService<IOptions<RegistrySettingsConfig>>().Value;
-
-        Assert.True(registry.PreComputed.Enabled);
-        Assert.Equal("0 */3 * * * *", registry.PreComputed.Schedule);
-    }
-
     /// <summary>
     /// Verifies that V2 config → direct section binding → V2 POCOs works end-to-end.
     /// Legacy adapters are registered but should be no-ops.
@@ -129,24 +118,6 @@ public class ConfigurationBackwardCompatibilityE2ETests
         Assert.Equal(new Uri("http://localhost:8082"), tmConfig.AasTemplateRegistry.BaseUrl);
         Assert.Equal(new Uri("http://localhost:8083"), tmConfig.SubmodelTemplateRegistry.BaseUrl);
         Assert.NotEmpty(tmConfig.TemplateMappingRules.SubmodelTemplateMappings);
-    }
-
-    [Fact]
-    public void V2Config_ThroughDIPipeline_RegistrySettingsCorrectSpelling_Works()
-    {
-        var config = BuildConfig(MergeConfigs(
-            GetV2CoreConfig(),
-            new Dictionary<string, string?>
-            {
-                ["RegistrySettings:PreComputed:Enabled"] = "false",
-                ["RegistrySettings:PreComputed:Schedule"] = "0 */10 * * * *"
-            }));
-
-        var provider = BuildServiceProvider(config);
-        var registry = provider.GetRequiredService<IOptions<RegistrySettingsConfig>>().Value;
-
-        Assert.False(registry.PreComputed.Enabled);
-        Assert.Equal("0 */10 * * * *", registry.PreComputed.Schedule);
     }
 
     /// <summary>
@@ -257,21 +228,6 @@ public class ConfigurationBackwardCompatibilityE2ETests
         Assert.Equal(new Uri("http://localhost:8083"), tmConfig.SubmodelTemplateRegistry.BaseUrl);
     }
 
-    /// <summary>
-    /// Verifies that V1 AasRegistryPreComputed section maps to V2 RegistrySettings
-    /// with property renames: IsPreComputed → Enabled, ShellDescriptorCron → Schedule.
-    /// </summary>
-    [Fact]
-    public void V1Config_AasRegistryPreComputed_MapsWithPropertyRenames()
-    {
-        var provider = BuildServiceProvider(BuildV1Config());
-
-        var registry = provider.GetRequiredService<IOptions<RegistrySettingsConfig>>().Value;
-
-        Assert.True(registry.PreComputed.Enabled);
-        Assert.Equal("0 */3 * * * *", registry.PreComputed.Schedule);
-    }
-
     // ────────────────────── Helpers ──────────────────────
 
     private static ServiceProvider BuildServiceProvider(IConfiguration configuration)
@@ -286,7 +242,6 @@ public class ConfigurationBackwardCompatibilityE2ETests
         services.Configure<GeneralConfig>(configuration.GetSection(GeneralConfig.Section));
         services.Configure<PluginsConfig>(configuration.GetSection(PluginsConfig.Section));
         services.Configure<TemplateManagementConfig>(configuration.GetSection(TemplateManagementConfig.Section));
-        services.Configure<RegistrySettingsConfig>(configuration.GetSection(RegistrySettingsConfig.Section));
 
         return services.BuildServiceProvider();
     }
@@ -430,10 +385,6 @@ public class ConfigurationBackwardCompatibilityE2ETests
             ["TemplateMappingRules:AasIdExtractionRules:0:Index"] = "6",
             ["TemplateMappingRules:AasIdExtractionRules:0:Separator"] = "/",
 
-            // AasRegistryPreComputed
-            ["AasRegistryPreComputed:ShellDescriptorCron"] = "0 */3 * * * *",
-            ["AasRegistryPreComputed:IsPreComputed"] = "true",
-
             // AllowedHosts
             ["AllowedHosts"] = "*",
 
@@ -447,12 +398,7 @@ public class ConfigurationBackwardCompatibilityE2ETests
     private static IConfiguration BuildV2Config()
     {
         return BuildConfig(MergeConfigs(
-            GetV2CoreConfig(),
-            new Dictionary<string, string?>
-            {
-                ["RegistrySettings:PreComputed:Enabled"] = "true",
-                ["RegistrySettings:PreComputed:Schedule"] = "0 */3 * * * *"
-            }));
+            GetV2CoreConfig()));
     }
 
     private static IConfiguration BuildConfig(Dictionary<string, string?> values)
