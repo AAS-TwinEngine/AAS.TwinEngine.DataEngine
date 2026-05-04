@@ -45,42 +45,28 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
     }
 
-    public async Task<ShellDescriptor> GetShellDescriptorsTemplateAsync(CancellationToken cancellationToken)
+    public async Task<ShellDescriptor> GetShellDescriptorTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
-        var url = $"{AasRegistryPath}";
+        var encodedTemplateId = templateId.EncodeBase64Url(logger);
+        var url = $"{AasRegistryPath}/{encodedTemplateId}";
 
         var response = await SendGetRequestAsync(url, HttpClientNames.AasRegistry, cancellationToken).ConfigureAwait(false);
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
-            using var document = JsonDocument.Parse(content);
-
-            if (!document.RootElement.TryGetProperty("result", out var resultArray))
-            {
-                logger.LogWarning("Shell-descriptor JSON does not contain a valid 'result' array.");
-                throw new ResourceNotFoundException();
-            }
-
-            if (resultArray.GetArrayLength() == 0)
-            {
-                logger.LogInformation("No shell descriptors found. Returning a manually created template.");
-                return ShellDescriptor.CreateDefault();
-            }
-
-            var shellDescriptorJson = resultArray[0].GetRawText();
-            var descriptor = JsonSerializer.Deserialize<ShellDescriptor>(shellDescriptorJson);
+            var descriptor = JsonSerializer.Deserialize<ShellDescriptor>(content);
             if (descriptor != null)
             {
                 return descriptor;
             }
 
-            logger.LogError("Failed to deserialize the shell descriptor.");
+            logger.LogError("Failed to deserialize shell descriptor template. TemplateId: {TemplateId}", templateId);
             throw new ResponseParsingException();
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to parse or deserialize shell descriptor JSON.");
+            logger.LogError(ex, "Failed to parse or deserialize shell descriptor template JSON. TemplateId: {TemplateId}", templateId);
             throw new ResponseParsingException();
         }
     }

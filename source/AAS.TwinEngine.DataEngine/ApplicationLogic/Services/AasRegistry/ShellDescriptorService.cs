@@ -10,6 +10,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 
 public class ShellDescriptorService(
     ITemplateProvider templateProvider,
+    IShellTemplateMappingProvider shellTemplateMappingProvider,
     IShellDescriptorDataHandler shellDescriptorDataHandler,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IShellDescriptorService
@@ -18,13 +19,16 @@ public class ShellDescriptorService(
     {
         try
         {
-            var shellDescriptorsTemplate = await templateProvider.GetShellDescriptorsTemplateAsync(cancellationToken).ConfigureAwait(false);
-
             var pluginManifests = pluginManifestConflictHandler.Manifests;
 
             var metaData = await pluginDataHandler.GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken).ConfigureAwait(false);
 
-            var shellDescriptors = shellDescriptorDataHandler.FillOut(shellDescriptorsTemplate, metaData.ShellDescriptors);
+            var shellDescriptors = new List<ShellDescriptor>(metaData.ShellDescriptors.Count);
+            foreach (var shellDescriptorMetaData in metaData.ShellDescriptors)
+            {
+                var filledShellDescriptor = await BuildShellDescriptorAsync(shellDescriptorMetaData, cancellationToken).ConfigureAwait(false);
+                shellDescriptors.Add(filledShellDescriptor);
+            }
 
             return new ShellDescriptors()
             {
@@ -54,13 +58,11 @@ public class ShellDescriptorService(
     {
         try
         {
-            var shellDescriptorTemplate = await templateProvider.GetShellDescriptorsTemplateAsync(cancellationToken).ConfigureAwait(false);
-
             var pluginManifests = pluginManifestConflictHandler.Manifests;
 
             var metaData = await pluginDataHandler.GetDataForShellDescriptorAsync(pluginManifests, id, cancellationToken).ConfigureAwait(false);
 
-            return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, metaData);
+            return await BuildShellDescriptorAsync(metaData, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
         {
@@ -78,5 +80,18 @@ public class ShellDescriptorService(
         {
             throw new InvalidUserInputException(ex);
         }
+    }
+
+    private async Task<ShellDescriptor> BuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetaData, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(shellDescriptorMetaData.Id))
+        {
+            throw new InternalDataProcessingException();
+        }
+
+        var templateId = shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetaData.Id);
+        var shellDescriptorTemplate = await templateProvider.GetShellDescriptorTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
+
+        return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetaData);
     }
 }
