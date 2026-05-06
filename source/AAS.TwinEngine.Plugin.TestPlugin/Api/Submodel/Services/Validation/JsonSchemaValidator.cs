@@ -13,13 +13,10 @@ public class JsonSchemaValidator(
     IJsonSchemaNormalizer schemaNormalizer,
     ILogger<JsonSchemaValidator> logger) : IJsonSchemaValidator
 {
+    private const string LogMessageTemplate = "{LogMessage}";
+
     public void ValidateRequestSchema(JsonSchema schema)
     {
-        if (schema == null)
-        {
-            LogAndThrowRequestException("Requested schema is null.");
-        }
-
         if (!TrySerializeSchema(schema, out var schemaText, out var serializationError))
         {
             LogAndThrowRequestException($"Schema serialization failed: {serializationError}");
@@ -135,11 +132,11 @@ public class JsonSchemaValidator(
     {
         if (ex != null)
         {
-            logger.LogError(ex, "{LogMessage}", logMessage);
+            logger.LogError(ex, LogMessageTemplate, logMessage);
         }
         else
         {
-            logger.LogError("{LogMessage}", logMessage);
+            logger.LogError(LogMessageTemplate, logMessage);
         }
 
         throw new BadRequestException(logMessage);
@@ -150,11 +147,11 @@ public class JsonSchemaValidator(
     {
         if (ex != null)
         {
-            logger.LogError(ex, "{LogMessage}", logMessage);
+            logger.LogError(ex, LogMessageTemplate, logMessage);
         }
         else
         {
-            logger.LogError("{LogMessage}", logMessage);
+            logger.LogError(LogMessageTemplate, logMessage);
         }
 
         throw new NotFoundException(logMessage);
