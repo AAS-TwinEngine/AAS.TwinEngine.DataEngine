@@ -17,8 +17,6 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
 using Microsoft.Extensions.Options;
 
-using Serilog;
-
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration;
 
 public static class InfrastructureDependencyInjectionExtensions
@@ -34,9 +32,9 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<ISubmodelTemplateMappingProvider, SubmodelTemplateMappingProvider>();
         _ = services.AddScoped<IShellTemplateMappingProvider, ShellTemplateMappingProvider>();
 
-        WarnIfPreComputedConfigurationDetected(configuration);
         // ── V1 → V2 legacy adapters (IConfigureOptions<T>), no-op when V2 config is present ──
 #pragma warning disable CS0618 // Obsolete — intentional V1 backward-compat registration
+        LegacyConfigurationDetector.WarnIfPreComputedConfigurationDetected(configuration);
         _ = services.AddLegacyV1ConfigurationAdapters();
 #pragma warning restore CS0618
 
@@ -119,19 +117,5 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
         _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
-    }
-
-    private static void WarnIfPreComputedConfigurationDetected(IConfiguration configuration)
-    {
-        var v2Section = configuration.GetSection("RegistrySettings:PreComputed");
-        var v1Section = configuration.GetSection("AasRegistryPreComputed");
-
-        if (v2Section.Exists() || v1Section.Exists())
-        {
-            Log.Warning(
-                "Detected a precomputed configuration section ('RegistrySettings:PreComputed' or 'AasRegistryPreComputed') " +
-                "in your settings. The precomputed flow has been removed from DataEngine. " +
-                "Please remove the precomputed section from your configuration to suppress this warning.");
-        }
     }
 }
