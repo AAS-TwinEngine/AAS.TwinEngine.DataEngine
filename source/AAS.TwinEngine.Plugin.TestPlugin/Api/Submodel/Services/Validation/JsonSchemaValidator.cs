@@ -108,7 +108,7 @@ public class JsonSchemaValidator(
             return null;
         }
 
-        return schemaNode?["$schema"]?.GetValue<string>();
+        return schemaNode["$schema"]?.GetValue<string>();
     }
 
     private static string TrySerializeEvaluationResult(EvaluationResults result)
