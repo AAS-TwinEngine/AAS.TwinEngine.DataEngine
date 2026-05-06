@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
@@ -284,6 +284,245 @@ public class PluginAvailabilityHealthCheckTests
 
         clientFactory.Received(1).CreateClient($"{HttpClientNames.PluginHealthCheckPrefix}Plugin1");
         clientFactory.DidNotReceive().CreateClient($"{HttpClientNames.PluginDataProviderPrefix}Plugin1");
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_Uses_Custom_HealthEndpoint_When_Configured()
+    {
+        string? requestedPath = null;
+
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(_ =>
+            {
+                var handler = new StubHttpMessageHandler((request, _) =>
+                {
+                    requestedPath = request.RequestUri!.ToString();
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                });
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("http://localhost")
+                };
+            });
+
+        var pluginConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
+            {
+                Name = "Plugin1",
+                BaseUrl = new Uri("http://localhost"),
+                HealthEndpoint = "custom-health"
+            }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        Assert.Contains("custom-health", requestedPath);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_Uses_Default_HealthEndpoint_When_Not_Configured()
+    {
+        string? requestedPath = null;
+
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(_ =>
+            {
+                var handler = new StubHttpMessageHandler((request, _) =>
+                {
+                    requestedPath = request.RequestUri!.ToString();
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                });
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("http://localhost")
+                };
+            });
+
+        var pluginConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
+            {
+                Name = "Plugin1",
+                BaseUrl = new Uri("http://localhost"),
+                HealthEndpoint = string.Empty
+            }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        Assert.Contains("healthz", requestedPath);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_Uses_Default_When_HealthEndpoint_Is_Empty()
+    {
+        string? requestedPath = null;
+
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(_ =>
+            {
+                var handler = new StubHttpMessageHandler((request, _) =>
+                {
+                    requestedPath = request.RequestUri!.ToString();
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                });
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("http://localhost")
+                };
+            });
+
+        var pluginConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
+            {
+                Name = "Plugin1",
+                BaseUrl = new Uri("http://localhost"),
+                HealthEndpoint = ""
+            }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        Assert.Contains("healthz", requestedPath);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_LogsWarning_When_HealthEndpoint_Is_Blank()
+    {
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(_ =>
+            {
+                var handler = new StubHttpMessageHandler((_, _) =>
+                    Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("http://localhost")
+                };
+            });
+
+        var pluginConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
+                {
+                    Name = "Plugin1",
+                    BaseUrl = new Uri("http://localhost"),
+                    HealthEndpoint = ""
+                }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        logger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception, string>>());
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WhenMultiplePlugins_OneUsesCustomAndOneUsesDefaultEndpoint()
+    {
+        // Arrange
+        var requestedPaths = new List<string>();
+
+        var clientFactory = Substitute.For<ICreateClient>();
+
+        clientFactory
+            .CreateClient(Arg.Any<string>())
+            .Returns(_ =>
+            {
+                var handler = new StubHttpMessageHandler((request, _) =>
+                {
+                    requestedPaths.Add(request.RequestUri!.ToString());
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                });
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("http://localhost")
+                };
+            });
+
+        var pluginConfig = Options.Create(new PluginsConfig
+        {
+            Instances =
+            [
+                new ServiceInstance
+            {
+                Name = "Plugin1",
+                BaseUrl = new Uri("http://localhost"),
+                HealthEndpoint = "custom-health"
+            },
+            new ServiceInstance
+            {
+                Name = "Plugin2",
+                BaseUrl = new Uri("http://localhost"),
+                HealthEndpoint = null
+            }
+            ]
+        });
+
+        var logger = Substitute.For<ILogger<PluginAvailabilityHealthCheck>>();
+
+        var sut = new PluginAvailabilityHealthCheck(clientFactory, pluginConfig, logger);
+
+        // Act
+        var result = await sut.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(HealthStatus.Healthy, result.Status);
+
+        Assert.Equal(2, requestedPaths.Count);
+
+        Assert.Contains(requestedPaths, p => p.Contains("custom-health"));
+        Assert.Contains(requestedPaths, p => p.Contains("healthz"));
     }
 
     private static HttpClient CreateHttpClient(HttpStatusCode statusCode)
