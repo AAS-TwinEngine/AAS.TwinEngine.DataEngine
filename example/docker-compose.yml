@@ -34,6 +34,7 @@ services:
       - General__CustomerDomainUrl=https://mm-software.com
       - Plugins__Instances__0__Name=RelationalDatabasePlugin
       - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
+      - Plugins__Instances__0__healthEndpoint=/healthz
       - Plugins__Instances__0__headerMappings__0__source=Authorization
       - Plugins__Instances__0__headerMappings__0__target=X-Auth-Token
       - Plugins__Instances__0__headerMappings__0__required=false
@@ -60,26 +61,31 @@ services:
       - TemplateManagement__AasTemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__AasTemplateRepository__headerMappings__0__target=Authorization
       - TemplateManagement__AasTemplateRepository__headerMappings__0__required=false
+      - TemplateManagement__AasTemplateRepository__healthEndpoint=/actuator/health
       - TemplateManagement__SubmodelTemplateRepository__Name=SubmodelTemplateRepository
       - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository:8081
       - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__target=Authorization
       - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__required=false
+      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/actuator/health
       - TemplateManagement__ConceptDescriptionTemplateRepository__Name=ConceptDescriptionTemplateRepository
       - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://template-repository:8081
       - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__target=Authorization
       - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__required=false
+      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/actuator/health
       - TemplateManagement__AasTemplateRegistry__Name=AasTemplateRegistry
       - TemplateManagement__AasTemplateRegistry__baseUrl=http://aas-template-registry:8080
       - TemplateManagement__AasTemplateRegistry__headerMappings__0__source=Authorization
       - TemplateManagement__AasTemplateRegistry__headerMappings__0__target=Authorization
       - TemplateManagement__AasTemplateRegistry__headerMappings__0__required=false
+      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/actuator/health
       - TemplateManagement__SubmodelTemplateRegistry__Name=SubmodelTemplateRegistry
       - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://sm-template-registry:8080
       - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__source=Authorization
       - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__target=Authorization
       - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__required=false
+      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/actuator/health
     networks:
       - twinengine-network
 

@@ -38,4 +38,5 @@ public class ServiceInstance
     public string Name { get; set; } = string.Empty;
     public Uri? BaseUrl { get; set; }
     public IList<HeaderMappingRule> HeaderMappings { get; init; } = [];
+    public string HealthEndpoint { get; set; } = string.Empty;
 }

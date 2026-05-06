@@ -2,19 +2,22 @@
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
 public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
+                                                IOptions<TemplateManagementConfig> templateManagementConfig,
                                                 ILogger<TemplateRegistryHealthCheck> logger) : IHealthCheck
 {
     private const string AasRegistryPath = ApiPaths.ShellDescriptors;
     private const string SubModelRegistryPath = ApiPaths.SubmodelDescriptors;
+    private const string DefaultHealthEndpoint = "/actuator/health";
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasTask = CheckEndpointAsync(HttpClientNames.AasRegistryHealthCheck, AasRegistryPath, "aas-registry", cancellationToken);
-        var submodelTask = CheckEndpointAsync(HttpClientNames.SubmodelRegistryHealthCheck, SubModelRegistryPath, "submodel-registry", cancellationToken);
+        var aasTask = CheckEndpointAsync(HttpClientNames.AasRegistryHealthCheck, AasRegistryPath, "aas-registry", templateManagementConfig.Value.AasTemplateRegistry.HealthEndpoint, cancellationToken);
+        var submodelTask = CheckEndpointAsync(HttpClientNames.SubmodelRegistryHealthCheck, SubModelRegistryPath, "submodel-registry", templateManagementConfig.Value.SubmodelTemplateRegistry.HealthEndpoint, cancellationToken);
 
         var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
 
@@ -33,7 +36,7 @@ public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
             : HealthCheckResult.Unhealthy();
     }
 
-    private async Task<bool> CheckEndpointAsync(string clientName, string path, string endpointKey, CancellationToken cancellationToken)
+    private async Task<bool> CheckEndpointAsync(string clientName, string path, string endpointKey, string healthEndpoint, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -41,7 +44,14 @@ public sealed class TemplateRegistryHealthCheck(ICreateClient clientFactory,
             return false;
         }
 
-        var requestPath = $"{path}?limit=1";
+        var requestPath = string.IsNullOrWhiteSpace(healthEndpoint)
+                             ? DefaultHealthEndpoint
+                             : healthEndpoint;
+
+        if (string.IsNullOrWhiteSpace(healthEndpoint))
+        {
+            logger.LogWarning("HealthEndpoint is not configured for {EndpointKey}. Falling back to default endpoint. Configure a dedicated health endpoint to avoid relying on defaults.", endpointKey);
+        }
 
         try
         {
