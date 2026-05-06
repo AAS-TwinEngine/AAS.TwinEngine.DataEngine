@@ -2,6 +2,9 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper.Legacy;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper.LegacyV1;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper.Validation;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
@@ -12,6 +15,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper.LegacyV1;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper.Validation;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
@@ -121,6 +125,12 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IAasRegistryProvider, AasRegistryProvider>();
         _ = services.AddScoped<ICreateClient, HttpClientFactory>();
         _ = services.AddScoped<IPluginDataProvider, PluginDataProvider>();
+        _ = services.AddScoped<IJsonSchemaNormalizer, JsonSchemaNormalizer>();
+        _ = services.AddScoped<JsonSchemaDraftSelector>();
+        _ = services.AddScoped<IJsonSchemaDraftHandler, JsonSchemaDraft202012Handler>();
+    #pragma warning disable CS0618 // Obsolete — intentional legacy Draft-07 validator registration
+        _ = services.AddScoped<IJsonSchemaDraftHandler, LegacyDraft7JsonSchemaValidatorHandler>();
+    #pragma warning restore CS0618
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
         _ = services.AddScoped<IJsonSchemaGenerator, JsonSchemaDraft202012Generator>();
 #pragma warning disable CS0618 // Obsolete — intentional legacy Draft-07 fallback registration

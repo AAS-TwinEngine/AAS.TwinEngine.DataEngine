@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
-namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
+namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper.Legacy;
 
 /// <summary>
 /// Retries a plugin data request using a Draft-07 JSON Schema when the plugin

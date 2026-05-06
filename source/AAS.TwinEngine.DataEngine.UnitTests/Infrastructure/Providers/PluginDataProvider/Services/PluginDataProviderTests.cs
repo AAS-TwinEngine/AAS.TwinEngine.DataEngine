@@ -19,6 +19,7 @@ using PluginDataProviderRepo = AAS.TwinEngine.DataEngine.Infrastructure.Provider
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.LegacyV1;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 

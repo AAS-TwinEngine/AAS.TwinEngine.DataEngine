@@ -1,4 +1,4 @@
-﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.LegacyV1;
 
 /// <summary>
 /// Thrown when a plugin indicates the request schema is rejected or incompatible,

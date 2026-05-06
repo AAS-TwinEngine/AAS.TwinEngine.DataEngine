@@ -2,7 +2,7 @@
 
 using Json.Schema;
 
-namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
+namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper.LegacyV1;
 
 public interface IPluginSchemaCompatibilityHandler
 {

@@ -1,4 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper.Legacy;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper.LegacyV1;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using Json.Schema;

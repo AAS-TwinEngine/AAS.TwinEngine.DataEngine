@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper.LegacyV1;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper.Validation;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Json.Schema;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Helper;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Helper.Validation;
 
 public class JsonSchemaValidatorTests
 {
@@ -34,7 +35,15 @@ public class JsonSchemaValidatorTests
             SubmodelElementIndexContextPrefix = "_aastwinengine_"
         });
         var logger = Substitute.For<ILogger<JsonSchemaValidator>>();
-        _sut = new JsonSchemaValidator(pluginsConfig, logger);
+        var normalizerLogger = Substitute.For<ILogger<JsonSchemaNormalizer>>();
+#pragma warning disable CS0618
+        var draftSelector = new JsonSchemaDraftSelector([
+            new JsonSchemaDraft202012Handler(),
+            new LegacyDraft7JsonSchemaValidatorHandler()
+        ]);
+#pragma warning restore CS0618
+        var schemaNormalizer = new JsonSchemaNormalizer(pluginsConfig, draftSelector, normalizerLogger);
+        _sut = new JsonSchemaValidator(draftSelector, schemaNormalizer, logger);
     }
 
     [Fact]
