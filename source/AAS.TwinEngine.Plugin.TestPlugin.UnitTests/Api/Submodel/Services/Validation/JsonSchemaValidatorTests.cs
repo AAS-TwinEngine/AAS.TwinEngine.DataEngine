@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services.Legacy;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services.Validation;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel.Config;
 
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel.Services;
+namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.Submodel.Services.Validation;
 
 public class JsonSchemaValidatorTests
 {
@@ -34,8 +35,17 @@ public class JsonSchemaValidatorTests
         {
             IndexContextPrefix = "_aastwinengine_"
         });
+
+        var draftSelector = new JsonSchemaDraftSelector([
+            new JsonSchemaDraft202012Handler(),
+#pragma warning disable CS0618
+            new LegacyDraft7JsonSchemaValidatorHandler()
+#pragma warning restore CS0618
+        ]);
+
+        var normalizer = new JsonSchemaNormalizer(semantics, draftSelector);
         _logger = Substitute.For<ILogger<JsonSchemaValidator>>();
-        _sut = new JsonSchemaValidator(semantics, _logger);
+        _sut = new JsonSchemaValidator(draftSelector, normalizer, _logger);
     }
 
     [Fact]

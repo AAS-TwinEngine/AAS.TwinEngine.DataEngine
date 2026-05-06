@@ -1,7 +1,9 @@
 ﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services.Legacy;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services.Validation;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Manifest;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
@@ -18,6 +20,12 @@ public static class ApplicationDependencyInjectionExtensions
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
+        services.AddScoped<IJsonSchemaNormalizer, JsonSchemaNormalizer>();
+        services.AddScoped<JsonSchemaDraftSelector>();
+        services.AddScoped<IJsonSchemaDraftHandler, JsonSchemaDraft202012Handler>();
+#pragma warning disable CS0618
+        services.AddScoped<IJsonSchemaDraftHandler, LegacyDraft7JsonSchemaValidatorHandler>();
+#pragma warning restore CS0618
         services.AddScoped<IJsonSchemaParser, JsonSchemaParser>();
         services.AddScoped<ISemanticTreeHandler, SemanticTreeHandler>();
         services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
