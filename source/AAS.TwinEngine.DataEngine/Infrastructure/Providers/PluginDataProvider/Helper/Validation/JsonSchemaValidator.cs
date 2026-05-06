@@ -34,13 +34,11 @@ public class JsonSchemaValidator(JsonSchemaDraftSelector draftSelector, IJsonSch
             LogAndThrowException("Serialized schema resulted in null JsonNode.");
         }
 
-        var nonNullSchemaNode = schemaNode!;
-
         try
         {
-            var declaredSchema = (nonNullSchemaNode as JsonObject)?["$schema"]?.GetValue<string>();
+            var declaredSchema = (schemaNode as JsonObject)?["$schema"]?.GetValue<string>();
             var draftHandler = draftSelector.Resolve(declaredSchema);
-            using var schemaDoc = JsonDocument.Parse(nonNullSchemaNode.ToJsonString());
+            using var schemaDoc = JsonDocument.Parse(schemaNode!.ToJsonString());
             var result = draftHandler.MetaSchema.Evaluate(schemaDoc.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
             if (!result.IsValid)
             {
