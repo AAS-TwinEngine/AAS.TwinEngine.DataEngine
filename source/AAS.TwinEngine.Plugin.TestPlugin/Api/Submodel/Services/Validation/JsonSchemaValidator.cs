@@ -30,11 +30,6 @@ public class JsonSchemaValidator(
             LogAndThrowRequestException($"Schema JSON is invalid: {parseError}");
         }
 
-        if (schemaNode == null)
-        {
-            LogAndThrowRequestException("Serialized schema resulted in null JsonNode.");
-        }
-
         try
         {
             var declaredSchema = (schemaNode as JsonObject)?["$schema"]?.GetValue<string>();
@@ -71,11 +66,6 @@ public class JsonSchemaValidator(
         if (!TryParseJson(responseJson, out var responseDoc, out var parseError))
         {
             LogAndThrowResponseException($"Failed to parse response JSON: {parseError}");
-        }
-
-        if (responseDoc == null)
-        {
-            LogAndThrowResponseException("Parsed response JSON resulted in null JsonDocument.");
         }
 
         var declaredSchema = TryGetDeclaredSchema(requestSchema);
