@@ -12,8 +12,6 @@ using AasCore.Aas3_0;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using MongoDB.Bson;
-
 using NSubstitute;
 
 using static Xunit.Assert;
@@ -611,7 +609,7 @@ public class SemanticIdHandlerTests
         Single(result!.SubmodelElements!);
         IsType<RelationshipElement>(result!.SubmodelElements![0]);
         var relationShipElement = result.SubmodelElements[0] as RelationshipElement;
-        Equal(TestData.CreateRelationshipElementWithBothExternalReference().ToJson(), relationShipElement!.ToJson());
+        AssertElementsJsonEquivalent(TestData.CreateRelationshipElementWithBothExternalReference(), relationShipElement!);
     }
 
     [Fact]
@@ -628,7 +626,7 @@ public class SemanticIdHandlerTests
         Single(result!.SubmodelElements!);
         IsType<RelationshipElement>(result!.SubmodelElements![0]);
         var relationShipElement = result.SubmodelElements[0] as RelationshipElement;
-        Equal(TestData.CreateFilledRelationshipElementWithOneExternalReferenceAndOneModelReference().ToJson(), relationShipElement!.ToJson());
+        AssertElementsJsonEquivalent(TestData.CreateFilledRelationshipElementWithOneExternalReferenceAndOneModelReference(), relationShipElement!);
     }
 
     [Fact]
@@ -645,7 +643,7 @@ public class SemanticIdHandlerTests
         Single(result!.SubmodelElements!);
         IsType<RelationshipElement>(result!.SubmodelElements![0]);
         var relationShipElement = result.SubmodelElements[0] as RelationshipElement;
-        Equal(TestData.CreateFilledRelationshipElementWithBothModelReference().ToJson(), relationShipElement!.ToJson());
+        AssertElementsJsonEquivalent(TestData.CreateFilledRelationshipElementWithBothModelReference(), relationShipElement!);
     }
 
     [Fact]
@@ -804,6 +802,13 @@ public class SemanticIdHandlerTests
         var modelType = complexData.Value![elementIndex] as Property;
         NotNull(modelType);
         Equal(expectedValue, modelType.Value);
+    }
+
+    private static void AssertElementsJsonEquivalent(IClass expected, IClass actual)
+    {
+        var expectedJson = Jsonization.Serialize.ToJsonObject(expected).ToJsonString();
+        var actualJson = Jsonization.Serialize.ToJsonObject(actual).ToJsonString();
+        Equal(expectedJson, actualJson);
     }
 
     private static void AssertContactInfo(SubmodelElementCollection complexData, int elementIndex, string expectedName)
