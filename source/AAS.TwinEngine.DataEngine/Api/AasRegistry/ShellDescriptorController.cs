@@ -23,7 +23,7 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ShellDescriptorsDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync(int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get All ShellDescriptors");
         var request = new GetShellDescriptorsRequest(limit, cursor);

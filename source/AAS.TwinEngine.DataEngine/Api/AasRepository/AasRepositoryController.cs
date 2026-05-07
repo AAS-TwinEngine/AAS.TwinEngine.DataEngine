@@ -52,7 +52,7 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetSubmodelRefByIdAsync([FromRoute] string aasIdentifier, int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetSubmodelRefByIdAsync([FromRoute] string aasIdentifier, [FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get submodel-refs for shell");
         var request = new GetSubmodelRefRequest(aasIdentifier, limit, cursor);
