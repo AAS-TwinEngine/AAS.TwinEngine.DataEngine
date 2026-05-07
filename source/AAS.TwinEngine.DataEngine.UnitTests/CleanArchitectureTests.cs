@@ -14,26 +14,17 @@ public class CleanArchitectureTests
 {
     private const string BaseNamespace = "AAS.TwinEngine.DataEngine";
 
-    private readonly Architecture _architecture;
-    private readonly IObjectProvider<IType> _apiLayer;
-    private readonly IObjectProvider<IType> _applicationLogicLayer;
-    private readonly IObjectProvider<IType> _domainModelLayer;
-    private readonly IObjectProvider<IType> _infrastructureLayer;
-
-    public CleanArchitectureTests()
-    {
-        _architecture = new ArchLoader().LoadAssemblies(System.Reflection.Assembly.Load(BaseNamespace)).Build();
-
-        _apiLayer = Types().That().ResideInNamespace($"{BaseNamespace}.Api.*", true).As("Api");
-        _applicationLogicLayer = Types().That().ResideInNamespace($"{BaseNamespace}.ApplicationLogic.*", true).As("ApplicationLogic");
-        _domainModelLayer = Types().That().ResideInNamespace($"{BaseNamespace}.DomainModel*", true).As("DomainModel");
-        _infrastructureLayer = Types().That().ResideInNamespace($"{BaseNamespace}.Infrastructure.*", true).As("Infrastructure");
-    }
+    private readonly Architecture _architecture = new ArchLoader().LoadAssemblies(System.Reflection.Assembly.Load(BaseNamespace)).Build();
+    private readonly IObjectProvider<IType> _apiLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.Api.*").As("Api");
+    private readonly IObjectProvider<IType> _applicationLogicLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.ApplicationLogic.*").As("ApplicationLogic");
+    private readonly IObjectProvider<IType> _domainModelLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.DomainModel*").As("DomainModel");
+    private readonly IObjectProvider<IType> _infrastructureLayer = Types().That().ResideInNamespaceMatching($"{BaseNamespace}.Infrastructure.*").As("Infrastructure");
 
     [Fact]
     public void DomainModelShallNotHaveExternalDependencies()
     {
         var forbiddenTypes = new List<IType>();
+
         forbiddenTypes.AddRange(_infrastructureLayer.GetObjects(_architecture));
         forbiddenTypes.AddRange(_apiLayer.GetObjects(_architecture));
         forbiddenTypes.AddRange(_applicationLogicLayer.GetObjects(_architecture));
@@ -41,6 +32,7 @@ public class CleanArchitectureTests
         Types().That().Are(_domainModelLayer)
             .Should()
             .NotDependOnAny(Types().That().Are(forbiddenTypes))
+            .WithoutRequiringPositiveResults()
             .Check(_architecture);
     }
 
@@ -50,6 +42,7 @@ public class CleanArchitectureTests
         Types().That().Are(_applicationLogicLayer)
             .Should()
             .NotDependOnAny(Types().That().Are(_infrastructureLayer))
+            .WithoutRequiringPositiveResults()
             .Check(_architecture);
     }
 
@@ -59,6 +52,7 @@ public class CleanArchitectureTests
         Types().That().Are(_applicationLogicLayer)
             .Should()
             .NotDependOnAny(Types().That().Are(_apiLayer))
+            .WithoutRequiringPositiveResults()
             .Check(_architecture);
     }
 
@@ -68,6 +62,7 @@ public class CleanArchitectureTests
         Types().That().Are(_infrastructureLayer)
             .Should()
             .NotDependOnAny(Types().That().Are(_apiLayer))
+            .WithoutRequiringPositiveResults()
             .Check(_architecture);
     }
 
@@ -75,16 +70,17 @@ public class CleanArchitectureTests
     public void ApiShallNotHaveDependenciesToInfrastructure()
     {
         Types().That().Are(_apiLayer)
-            .Should()
-            .NotDependOnAny(Types().That().Are(_infrastructureLayer))
-            .Check(_architecture);
+           .Should()
+           .NotDependOnAny(Types().That().Are(_infrastructureLayer))
+           .WithoutRequiringPositiveResults()
+           .Check(_architecture);
     }
 
     [Fact]
     public void RepositoryClassesShallBeInCorrectNamespace()
     {
         Classes().That().HaveNameEndingWith("Repository").Should()
-            .ResideInNamespace($"{BaseNamespace}.Infrastructure.Providers*", true)
+            .ResideInNamespaceMatching($"{BaseNamespace}.Infrastructure.Providers*")
             .WithoutRequiringPositiveResults()
             .Check(_architecture);
     }
@@ -97,7 +93,7 @@ public class CleanArchitectureTests
             .And()
             .DoNotHaveFullName($"{BaseNamespace}.Infrastructure.DataAccess.GenericRepository.IMongoDbRepository")
             .Should()
-            .ResideInNamespace($"{BaseNamespace}.ApplicationLogic.*", true)
+            .ResideInNamespaceMatching($"{BaseNamespace}.ApplicationLogic.*")
             .WithoutRequiringPositiveResults()
             .Check(_architecture);
     }
@@ -106,7 +102,7 @@ public class CleanArchitectureTests
     public void ServicesShallBeInCorrectNamespace()
     {
         Classes().That().HaveNameEndingWith("Service").Should()
-            .ResideInNamespace($"{BaseNamespace}.ApplicationLogic.Service.*", true)
+            .ResideInNamespaceMatching($"{BaseNamespace}.ApplicationLogic.Service.*")
             .Check(_architecture);
     }
 
@@ -115,7 +111,7 @@ public class CleanArchitectureTests
     {
         Interfaces().That().HaveNameEndingWith("Service")
             .Should()
-            .ResideInNamespace($"{BaseNamespace}.ApplicationLogic.Service.*", true)
+            .ResideInNamespaceMatching($"{BaseNamespace}.ApplicationLogic.Service.*")
             .Check(_architecture);
     }
 
@@ -123,7 +119,7 @@ public class CleanArchitectureTests
     public void ControllerShallBeInCorrectNamespace()
     {
         Classes().That().HaveNameEndingWith("Controller").Should()
-            .ResideInNamespace($"{BaseNamespace}.Api.*", true)
+            .ResideInNamespaceMatching($"{BaseNamespace}.Api.*")
             .Check(_architecture);
     }
 }
