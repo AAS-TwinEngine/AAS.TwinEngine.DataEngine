@@ -236,7 +236,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockTemplate);
 
         // Act
-        var response = await _client.GetAsync("/shells/{AasIdentifier}/submodel-refs?limit=5&cursor=bmV4dDEyMw==");
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5&cursor=bmV4dDEyMw==");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -248,10 +248,9 @@ public abstract class AasRepositoryControllerTests : IDisposable
     public async Task GetSubmodelRefByIdAsync_WithInternalServerError_Returns500Async()
     {
         const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
-
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
 
-        var response = await _client.GetAsync("/shells/{AasIdentifier}/submodel-refs?limit=5&cursor=bmV4dDEyMw==");
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
