@@ -22,38 +22,25 @@ public class ShellDescriptorService(
         try
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
+            var metadata = await pluginDataHandler
+                .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken)
+                .ConfigureAwait(false);
 
-            var metaData = await pluginDataHandler.GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken).ConfigureAwait(false);
-            var shellDescriptorMetaDataList = metaData.ShellDescriptors ?? [];
+            var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
+            var shellDescriptors = new List<ShellDescriptor>(shellDescriptorMetadataList.Count);
 
-            var shellDescriptors = new List<ShellDescriptor>(shellDescriptorMetaDataList.Count);
-            foreach (var shellDescriptorMetaData in shellDescriptorMetaDataList)
+            foreach (var shellDescriptorMetadata in shellDescriptorMetadataList)
             {
-                string? templateId = null;
-
-                try
+                var shellDescriptor = await TryBuildShellDescriptorAsync(shellDescriptorMetadata, cancellationToken).ConfigureAwait(false);
+                if (shellDescriptor is not null)
                 {
-                    templateId = ResolveTemplateId(shellDescriptorMetaData);
-                    var filledShellDescriptor = await BuildShellDescriptorAsync(shellDescriptorMetaData, templateId, cancellationToken).ConfigureAwait(false);
-                    shellDescriptors.Add(filledShellDescriptor);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (ResourceNotFoundException ex)
-                {
-                    logger.LogError(
-                        ex,
-                        "Failed to process ShellDescriptor. DescriptorId: {DescriptorId}, TemplateId: {TemplateId}. Continuing with remaining descriptors.",
-                        shellDescriptorMetaData.Id,
-                        templateId);
+                    shellDescriptors.Add(shellDescriptor);
                 }
             }
 
-            return new ShellDescriptors()
+            return new ShellDescriptors
             {
-                PagingMetaData = metaData.PagingMetaData,
+                PagingMetaData = metadata.PagingMetaData,
                 Result = shellDescriptors
             };
         }
@@ -80,11 +67,12 @@ public class ShellDescriptorService(
         try
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
+            var metadata = await pluginDataHandler
+                .GetDataForShellDescriptorAsync(pluginManifests, id, cancellationToken)
+                .ConfigureAwait(false);
 
-            var metaData = await pluginDataHandler.GetDataForShellDescriptorAsync(pluginManifests, id, cancellationToken).ConfigureAwait(false);
-            var templateId = ResolveTemplateId(metaData);
-
-            return await BuildShellDescriptorAsync(metaData, templateId, cancellationToken).ConfigureAwait(false);
+            var templateId = ResolveTemplateId(metadata);
+            return await BuildShellDescriptorAsync(metadata, templateId, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
         {
@@ -104,20 +92,46 @@ public class ShellDescriptorService(
         }
     }
 
-    private string ResolveTemplateId(ShellDescriptorMetaData shellDescriptorMetaData)
+    private async Task<ShellDescriptor?> TryBuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetadata, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(shellDescriptorMetaData.Id))
+        try
+        {
+            var templateId = ResolveTemplateId(shellDescriptorMetadata);
+            return await BuildShellDescriptorAsync(shellDescriptorMetadata, templateId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to process ShellDescriptor. DescriptorId: {DescriptorId}. Continuing with remaining descriptors.",
+                shellDescriptorMetadata.Id);
+            return null;
+        }
+    }
+
+    private string ResolveTemplateId(ShellDescriptorMetaData shellDescriptorMetadata)
+    {
+        if (string.IsNullOrWhiteSpace(shellDescriptorMetadata.Id))
         {
             throw new InternalDataProcessingException();
         }
 
-        return shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetaData.Id)!;
+        return shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetadata.Id)!;
     }
 
-    private async Task<ShellDescriptor> BuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetaData, string templateId, CancellationToken cancellationToken)
+    private async Task<ShellDescriptor> BuildShellDescriptorAsync(
+        ShellDescriptorMetaData shellDescriptorMetadata,
+        string templateId,
+        CancellationToken cancellationToken)
     {
-        var shellDescriptorTemplate = await templateProvider.GetShellDescriptorTemplateAsync(templateId, cancellationToken).ConfigureAwait(false);
+        var shellDescriptorTemplate = await templateProvider
+            .GetShellDescriptorTemplateAsync(templateId, cancellationToken)
+            .ConfigureAwait(false);
 
-        return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetaData);
+        return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
     }
 }
