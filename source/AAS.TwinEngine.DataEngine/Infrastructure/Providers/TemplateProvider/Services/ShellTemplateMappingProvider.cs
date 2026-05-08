@@ -23,13 +23,13 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
                                               .Any(pattern => Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
             ?.TemplateId;
 
-        if (templateId is not null)
+        if (templateId == null || string.IsNullOrWhiteSpace(templateId))
         {
-            return templateId;
+            _logger.LogError("No matching template found for shell: {AasIdentifier}", aasIdentifier);
+            throw new ResourceNotFoundException();
         }
 
-        _logger.LogError("No matching template found for shell: {AasIdentifier}", aasIdentifier);
-        throw new ResourceNotFoundException();
+        return templateId;
     }
 
     public string GetProductIdFromRule(string aasIdentifier)

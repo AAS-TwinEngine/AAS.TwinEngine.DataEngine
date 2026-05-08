@@ -9,6 +9,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_0;
 
+using Microsoft.Extensions.Logging;
+
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -21,9 +23,10 @@ public class ShellDescriptorServiceTests
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IShellDescriptorDataHandler _dataHandler = Substitute.For<IShellDescriptorDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+    private readonly ILogger<ShellDescriptorService> _logger = Substitute.For<ILogger<ShellDescriptorService>>();
     private readonly ShellDescriptorService _sut;
 
-    public ShellDescriptorServiceTests() => _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler);
+    public ShellDescriptorServiceTests() => _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger);
 
     [Fact]
     public async Task GetAllShellDescriptorsAsync_ReturnsFilledShellDescriptors()
@@ -46,7 +49,7 @@ public class ShellDescriptorServiceTests
          {
             PluginName = "TestPlugin",
             PluginUrl = new Uri("http://test-plugin"),
-            SupportedSemanticIds = new List<string>(),
+                SupportedSemanticIds = [],
             Capabilities = new Capabilities { HasShellDescriptor = true }
          }
         };
@@ -60,7 +63,7 @@ public class ShellDescriptorServiceTests
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
-        Assert.Equal(1, result.Result.Count);
+        Assert.Single(result.Result);
         Assert.False(string.IsNullOrWhiteSpace(result.PagingMetaData?.Cursor));
     }
 
@@ -171,7 +174,7 @@ public class ShellDescriptorServiceTests
             {
                 PluginName = "TestPlugin",
                 PluginUrl = new Uri("http://test-plugin"),
-                SupportedSemanticIds = new List<string>(),
+                SupportedSemanticIds = [],
                 Capabilities = new Capabilities { HasShellDescriptor = true }
             }
         };
@@ -208,7 +211,7 @@ public class ShellDescriptorServiceTests
     }
 
     [Fact]
-    public async Task GetAllShellDescriptorsAsync_ShouldThrowInternalDataProcessingException_WhenMetadataIdMissing()
+    public async Task GetAllShellDescriptorsAsync_ShouldSkipDescriptor_WhenMetadataIdMissing()
     {
         var manifests = new List<PluginManifest>();
         var metaData = new ShellDescriptorsMetaData
@@ -224,11 +227,15 @@ public class ShellDescriptorServiceTests
         _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, manifests, Arg.Any<CancellationToken>())
             .Returns(metaData);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Result);
+        Assert.Empty(result.Result);
     }
 
     [Fact]
-    public async Task GetAllShellDescriptorsAsync_ShouldThrowShellDescriptorNotFoundException_WhenTemplateMappingFails()
+    public async Task GetAllShellDescriptorsAsync_ShouldSkipDescriptor_WhenTemplateMappingFails()
     {
         var manifests = new List<PluginManifest>();
         var metaData = new ShellDescriptorsMetaData
@@ -245,7 +252,11 @@ public class ShellDescriptorServiceTests
             .Returns(metaData);
         _shellTemplateMappingProvider.GetTemplateId("id1").Throws(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<ShellDescriptorNotFoundException>(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Result);
+        Assert.Empty(result.Result);
     }
 
     [Fact]

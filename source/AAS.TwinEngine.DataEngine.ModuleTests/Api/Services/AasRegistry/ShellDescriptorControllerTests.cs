@@ -89,6 +89,50 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAllShellDescriptorsAsync_WhenOneDescriptorFails_ReturnsRemainingDescriptorsAsync()
+    {
+        using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptors())
+        }));
+        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin2ResponseForShellDescriptors())
+        }));
+
+        using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
+        httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
+
+        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
+        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
+
+        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
+
+        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
+
+        var invalidTemplate = TestData.CreateShellDescriptorsTemplate();
+        invalidTemplate.Endpoints = null;
+        var validTemplate = TestData.CreateShellDescriptorsTemplate();
+
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(invalidTemplate, validTemplate);
+
+        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=next123");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        _ = Assert.Single(result);
+    }
+
+    [Fact]
     public async Task GetAllShellDescriptorsAsync_WithNagetiveLimit_Returns400Async()
     {
         _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
