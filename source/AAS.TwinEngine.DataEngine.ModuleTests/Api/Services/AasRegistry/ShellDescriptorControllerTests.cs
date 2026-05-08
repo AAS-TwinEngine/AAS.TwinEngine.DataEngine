@@ -56,7 +56,6 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     [Fact]
     public async Task GetAllShellDescriptorsAsync_ReturnsOkAsync()
     {
-        var template = TestData.CreateShellDescriptorsTemplate();
         using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
@@ -114,12 +113,12 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
 
-        var invalidTemplate = TestData.CreateShellDescriptorsTemplate();
-        invalidTemplate.Endpoints = null;
         var validTemplate = TestData.CreateShellDescriptorsTemplate();
 
         _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(invalidTemplate, validTemplate);
+            .Returns(
+                _ => throw new ResourceNotFoundException(),
+                _ => validTemplate);
 
         var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=next123");
 
@@ -157,13 +156,11 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     {
         using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptors())
+            StatusCode = HttpStatusCode.NotFound
         }));
         using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(TestData.CreatePlugin2ResponseForShellDescriptors())
+            StatusCode = HttpStatusCode.NotFound
         }));
         using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
         httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
@@ -173,7 +170,6 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
         const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
-        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
         var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=next123");
 
@@ -212,7 +208,6 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     public async Task GetShellDescriptorByIdAsync_ReturnsOkAsync()
     {
         const string AasId = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
-        var template = TestData.CreateShellDescriptorsTemplate();
         using var messageHandler1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
