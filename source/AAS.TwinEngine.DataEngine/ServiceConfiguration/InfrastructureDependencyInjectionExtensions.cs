@@ -34,6 +34,7 @@ public static class InfrastructureDependencyInjectionExtensions
 
         // ── V1 → V2 legacy adapters (IConfigureOptions<T>), no-op when V2 config is present ──
 #pragma warning disable CS0618 // Obsolete — intentional V1 backward-compat registration
+        LegacyConfigurationDetector.WarnIfPreComputedConfigurationDetected(configuration);
         _ = services.AddLegacyV1ConfigurationAdapters();
 #pragma warning restore CS0618
 

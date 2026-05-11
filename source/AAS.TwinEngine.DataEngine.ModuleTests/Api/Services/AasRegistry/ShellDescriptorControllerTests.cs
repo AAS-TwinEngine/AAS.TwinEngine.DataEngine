@@ -9,14 +9,13 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRegistry;
 
@@ -77,7 +76,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                      .Returns(_ => TestData.CreateShellDescriptorsTemplate());
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
@@ -120,7 +119,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
                 _ => throw new ResourceNotFoundException(),
                 _ => validTemplate);
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
@@ -136,7 +135,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     {
         _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=-1&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=-1&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -171,7 +170,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -199,7 +198,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
         _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }

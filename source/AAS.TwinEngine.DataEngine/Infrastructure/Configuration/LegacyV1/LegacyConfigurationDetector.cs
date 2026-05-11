@@ -1,6 +1,8 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using Serilog;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 /// <summary>
@@ -24,5 +26,19 @@ public static class LegacyConfigurationDetector
                 || configuration.GetSection(TemplateManagementConfig.Section).Exists();
 
         return !isV2;
+    }
+
+    public static void WarnIfPreComputedConfigurationDetected(IConfiguration configuration)
+    {
+        var v2Section = configuration.GetSection("RegistrySettings:PreComputed");
+        var v1Section = configuration.GetSection("AasRegistryPreComputed");
+
+        if (v2Section.Exists() || v1Section.Exists())
+        {
+            Log.Warning(
+                "Detected a precomputed configuration section ('RegistrySettings:PreComputed' or 'AasRegistryPreComputed') " +
+                "in your settings. The precomputed flow has been removed from DataEngine. " +
+                "Please remove the precomputed section from your configuration to suppress this warning.");
+        }
     }
 }
