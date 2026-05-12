@@ -97,6 +97,36 @@ public abstract class AasRepositoryControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task GetShellByIdAsync_ReturnsNotFoundAsync_WhenErrorWhileExtractionOfProductIdAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFz";
+        var mockShellTemplate = TestData.CreateShellTemplate();
+        var mockAssetInformationTemplate = TestData.CreateAssetInformationTemplate();
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePluginResponseForAssetinformation())
+        }));
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        var httpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(httpClientName).Returns(httpClient);
+
+        _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockShellTemplate);
+
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task GetAssetInformationByIdAsync_ReturnsOkAsync()
     {
         // Arrange
