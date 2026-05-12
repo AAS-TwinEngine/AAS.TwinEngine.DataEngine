@@ -10,7 +10,6 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
@@ -61,9 +60,7 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.TemplateProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.TemplateProvider}"));
         _ = services.Configure<HttpRetryPolicyOptions>(HttpRetryPolicyOptions.SubmodelDescriptorProvider, configuration.GetSection($"{HttpRetryPolicyOptions.Section}:{HttpRetryPolicyOptions.SubmodelDescriptorProvider}"));
         _ = services.Configure<HttpRetryPolicyOptions>(configuration.GetSection(HttpRetryPolicyOptions.Section));
-        _ = services.Configure<AasRegistryPreComputed>(configuration.GetSection(AasRegistryPreComputed.Section));
         _ = services.Configure<MultiPluginConflictOptions>(configuration.GetSection(MultiPluginConflictOptions.Section));
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
-        _ = services.AddHostedService<ShellDescriptorSyncHosted>();
     }
 }

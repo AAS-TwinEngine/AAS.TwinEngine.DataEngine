@@ -47,6 +47,8 @@ public class Program
 
         var app = builder.Build();
 
+        ConfigurationWarningLogger.LogDeprecatedSections(app.Configuration, app.Logger);
+
         _ = app.MapHealthChecks("/healthz");
 
         using (var scope = app.Services.CreateScope())
