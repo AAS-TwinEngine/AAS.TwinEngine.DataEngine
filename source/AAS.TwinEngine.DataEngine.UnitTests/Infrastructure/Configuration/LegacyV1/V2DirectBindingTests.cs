@@ -155,22 +155,6 @@ public class V2DirectBindingTests
         Assert.Single(tmConfig.AasTemplateRegistry.HeaderMappings);
     }
 
-    [Fact]
-    public void RegistrySettingsConfig_BindsFromV2Json()
-    {
-        var config = BuildConfig(new Dictionary<string, string?>
-        {
-            ["RegistrySettings:PreComputed:Enabled"] = "true",
-            ["RegistrySettings:PreComputed:Schedule"] = "0 */5 * * * *"
-        });
-
-        var registrySettings = new RegistrySettingsConfig();
-        config.GetSection(RegistrySettingsConfig.Section).Bind(registrySettings);
-
-        Assert.True(registrySettings.PreComputed.Enabled);
-        Assert.Equal("0 */5 * * * *", registrySettings.PreComputed.Schedule);
-    }
-
     private static IConfiguration BuildV2Config()
     {
         return BuildConfig(new Dictionary<string, string?>

@@ -2,15 +2,12 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_0;
-
-using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -22,12 +19,10 @@ public class ShellDescriptorServiceTests
     private readonly ITemplateProvider _templateProvider = Substitute.For<ITemplateProvider>();
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IShellDescriptorDataHandler _dataHandler = Substitute.For<IShellDescriptorDataHandler>();
-    private readonly IAasRegistryProvider _aasRegistryProvider = Substitute.For<IAasRegistryProvider>();
-    private readonly ILogger<ShellDescriptorService> _logger = Substitute.For<ILogger<ShellDescriptorService>>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly ShellDescriptorService _sut;
 
-    public ShellDescriptorServiceTests() => _sut = new ShellDescriptorService(_templateProvider, _dataHandler, _pluginDataHandler, _aasRegistryProvider, _logger, _pluginManifestConflictHandler);
+    public ShellDescriptorServiceTests() => _sut = new ShellDescriptorService(_templateProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler);
 
     [Fact]
     public async Task GetAllShellDescriptorsAsync_ReturnsFilledShellDescriptors()
@@ -123,225 +118,6 @@ public class ShellDescriptorServiceTests
 
         Assert.Equal(expected, result);
     }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_ShouldUpdate_ExistingDescriptors()
-    {
-        var filled = new List<ShellDescriptor>
-        {
-            new() { Id = "1" }
-        };
-        var existing = new ShellDescriptor { Id = "1" };
-        var metaData = new ShellDescriptorsMetaData
-        {
-            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
-            ShellDescriptors = [new ShellDescriptorMetaData { Id = "1" }]
-        };
-
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Returns([existing]);
-        var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "TestPlugin",
-                PluginUrl = new Uri("http://test-plugin"),
-                SupportedSemanticIds = new List<string>(),
-                Capabilities = new Capabilities { HasShellDescriptor = true }
-            }
-        };
-        _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, manifests, Arg.Any<CancellationToken>()).Returns(metaData);
-        _dataHandler.FillOut(existing, metaData.ShellDescriptors).Returns(filled);
-
-        await _sut.SyncShellDescriptorsAsync(CancellationToken.None);
-
-        await _aasRegistryProvider.Received(1).PutAsync("1", null, Arg.Any<CancellationToken>());
-        await _aasRegistryProvider.DidNotReceive().CreateAsync(Arg.Any<ShellDescriptor>(), Arg.Any<CancellationToken>());
-        await _aasRegistryProvider.DidNotReceive().DeleteByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_ShouldCreate_NewDescriptors()
-    {
-        // Arrange
-        var metaData = new ShellDescriptorsMetaData
-        {
-            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
-            ShellDescriptors = [new ShellDescriptorMetaData { Id = "2" }]
-        };
-        var template = new ShellDescriptor { Id = "template" };
-        var filled = new List<ShellDescriptor>
-        {
-            new() { Id = "2" }
-        };
-
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Returns([]);
-        var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "TestPlugin",
-                PluginUrl = new Uri("http://test-plugin"),
-                SupportedSemanticIds = new List<string>(),
-                Capabilities = new Capabilities { HasShellDescriptor = true }
-            }
-        };
-        _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, manifests, Arg.Any<CancellationToken>()).Returns(metaData);
-        _templateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Returns(template);
-        _dataHandler.FillOut(template, metaData.ShellDescriptors).Returns(filled);
-
-        // Act
-        await _sut.SyncShellDescriptorsAsync(CancellationToken.None);
-
-        // Assert
-        await _aasRegistryProvider.Received(1).CreateAsync(Arg.Any<ShellDescriptor>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_ShouldDelete_MissingDescriptors()
-    {
-        // Arrange
-        var existing = new ShellDescriptor { Id = "1" };
-        var metaData = new ShellDescriptorsMetaData
-        {
-            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
-            ShellDescriptors = []
-        };
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>()).Returns([existing]);
-        var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "TestPlugin",
-                PluginUrl = new Uri("http://test-plugin"),
-                SupportedSemanticIds = new List<string>(),
-                Capabilities = new Capabilities { HasShellDescriptor = true }
-            }
-        };
-        _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, manifests, Arg.Any<CancellationToken>()).Returns(metaData);
-
-        // Act
-        await _sut.SyncShellDescriptorsAsync(CancellationToken.None);
-
-        // Assert
-        await _aasRegistryProvider.Received(1).DeleteByIdAsync("1", Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_ShouldHandle_EmptyListsGracefully()
-    {
-        // Arrange
-        var metaData = new ShellDescriptorsMetaData
-        {
-            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
-            ShellDescriptors = []
-        };
-        _aasRegistryProvider.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns([]);
-
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>()).Returns(metaData);
-
-        // Act
-        var ex = await Record.ExceptionAsync(() => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
-
-        // Assert
-        Assert.Null(ex);
-        await _aasRegistryProvider.DidNotReceive().CreateAsync(Arg.Any<ShellDescriptor>(), Arg.Any<CancellationToken>());
-        await _aasRegistryProvider.DidNotReceive().DeleteByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
-        await _aasRegistryProvider.DidNotReceive().PutAsync(Arg.Any<string>(), Arg.Any<ShellDescriptor>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenRegistryDescriptorHasNoId_ShouldLogAndReturn()
-    {
-        var metaData = new ShellDescriptorsMetaData
-        {
-            PagingMetaData = new PagingMetaData(),
-            ShellDescriptors = [new ShellDescriptorMetaData { Id = "valid" }]
-        };
-
-        _aasRegistryProvider
-            .GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns([new ShellDescriptor { Id = "" }]);
-
-        _pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
-            .Returns(metaData);
-
-        var exception = await Record.ExceptionAsync(
-            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
-
-        Assert.Null(exception);
-
-        await _aasRegistryProvider
-            .DidNotReceive()
-            .CreateAsync(Arg.Any<ShellDescriptor>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsResourceNotFoundException_ShouldNotThrow()
-    {
-        _aasRegistryProvider
-            .GetAllAsync(Arg.Any<CancellationToken>())
-            .Throws(new ResourceNotFoundException());
-
-        var exception = await Record.ExceptionAsync(
-            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
-
-        Assert.Null(exception);
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsResponseParsingException_ShouldNotThrow()
-    {
-        _aasRegistryProvider
-            .GetAllAsync(Arg.Any<CancellationToken>())
-            .Throws(new ResponseParsingException());
-
-        var exception = await Record.ExceptionAsync(
-            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
-
-        Assert.Null(exception);
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenRegistryThrowsRequestTimeoutException_ShouldNotThrow()
-    {
-        _aasRegistryProvider
-            .GetAllAsync(Arg.Any<CancellationToken>())
-            .Throws(new RequestTimeoutException());
-
-        var exception = await Record.ExceptionAsync(
-            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
-
-        Assert.Null(exception);
-    }
-
-    [Fact]
-    public async Task SyncShellDescriptorsAsync_WhenPluginMetadataHasNoId_ShouldLogAndReturn()
-    {
-        var metaData = new ShellDescriptorsMetaData
-        {
-            PagingMetaData = new PagingMetaData(),
-            ShellDescriptors = [new ShellDescriptorMetaData { Id = "" }]
-        };
-
-        _aasRegistryProvider
-            .GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns([new ShellDescriptor { Id = "1" }]);
-
-        _pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
-            .Returns(metaData);
-
-        var exception = await Record.ExceptionAsync(
-            () => _sut.SyncShellDescriptorsAsync(CancellationToken.None));
-
-        Assert.Null(exception);
-    }
-
     [Fact]
     public async Task GetShellDescriptorByIdAsync_ShouldThrowException_WhenManifestConflict()
     {

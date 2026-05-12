@@ -52,8 +52,8 @@ public abstract class SerializationControllerTests : IDisposable
     public async Task SerializeAasxAsync_ReturnsOkAsync()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
         var mockSubmodel = TestData.CreateSubmodel();
@@ -74,8 +74,8 @@ public abstract class SerializationControllerTests : IDisposable
     public async Task SerializeAasxAsync_ReturnsOkAsync_WhenConceptDescriptionsIsTrueAsync()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=true";
         var mockSubmodel = TestData.CreateSubmodel();
@@ -98,8 +98,8 @@ public abstract class SerializationControllerTests : IDisposable
     public async Task SerializeAasxAsync_WithNotFound_Returns404Async()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
 
@@ -116,8 +116,8 @@ public abstract class SerializationControllerTests : IDisposable
     public async Task SerializeAasxAsync_WithInternalServerError_Returns500Async()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
 
@@ -134,7 +134,7 @@ public abstract class SerializationControllerTests : IDisposable
     public async Task SerializeAasxAsync_WhenIdentifierIsInValid_Returns400Async()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
         var submodelIds = new[] { "in valid" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";

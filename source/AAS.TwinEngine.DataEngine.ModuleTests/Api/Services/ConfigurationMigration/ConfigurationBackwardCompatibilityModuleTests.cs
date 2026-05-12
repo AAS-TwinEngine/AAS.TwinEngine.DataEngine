@@ -85,8 +85,8 @@ public class ConfigurationBackwardCompatibilityModuleTests
         Assert.NotNull(plugins.MultiLanguageProperty.DefaultLanguages);
         Assert.Contains("de", plugins.MultiLanguageProperty.DefaultLanguages);
         Assert.Contains("en", plugins.MultiLanguageProperty.DefaultLanguages);
-        Assert.Equal(3, plugins.ResiliencePolicies.Retry.MaxRetryAttempts);
-        Assert.Equal(10, plugins.ResiliencePolicies.Retry.DelayInSeconds);
+        Assert.Equal(2, plugins.ResiliencePolicies.Retry.MaxRetryAttempts);
+        Assert.Equal(4, plugins.ResiliencePolicies.Retry.DelayInSeconds);
         _ = Assert.Single(plugins.Instances);
         Assert.Equal("Plugin1", plugins.Instances[0].Name);
         Assert.Equal(new Uri("http://localhost:8086"), plugins.Instances[0].BaseUrl);
@@ -118,8 +118,8 @@ public class ConfigurationBackwardCompatibilityModuleTests
         var tmConfig = scope.ServiceProvider.GetRequiredService<IOptions<TemplateManagementConfig>>().Value;
 
         Assert.Equal("InternalSemanticId", tmConfig.Semantics.InternalSemanticId);
-        Assert.Equal(3, tmConfig.ResiliencePolicies.Retry.MaxRetryAttempts);
-        Assert.Equal(10, tmConfig.ResiliencePolicies.Retry.DelayInSeconds);
+        Assert.Equal(2, tmConfig.ResiliencePolicies.Retry.MaxRetryAttempts);
+        Assert.Equal(4, tmConfig.ResiliencePolicies.Retry.DelayInSeconds);
         Assert.Equal(new Uri("http://localhost:8081"), tmConfig.AasTemplateRepository.BaseUrl);
         Assert.Equal(new Uri("http://localhost:8082"), tmConfig.AasTemplateRegistry.BaseUrl);
         Assert.Equal(new Uri("http://localhost:8083"), tmConfig.SubmodelTemplateRegistry.BaseUrl);
@@ -145,22 +145,6 @@ public class ConfigurationBackwardCompatibilityModuleTests
         _ = Assert.Single(tmConfig.AasTemplateRegistry.HeaderMappings);
         Assert.Equal("Authorization", tmConfig.AasTemplateRegistry.HeaderMappings[0].Source);
     }
-
-    [Fact]
-    public void V1Config_ResolvesRegistrySettings_WithPropertyRenames()
-    {
-        using var appFactory = new ConfigTestFactory("v1-config");
-        using var scope = appFactory.Services.CreateScope();
-
-        var registry = scope.ServiceProvider.GetRequiredService<IOptions<RegistrySettingsConfig>>().Value;
-
-        // V1: IsPreComputed → V2: Enabled
-        Assert.True(registry.PreComputed.Enabled);
-        // V1: ShellDescriptorCron → V2: Schedule
-        Assert.Equal("0 */3 * * * *", registry.PreComputed.Schedule);
-    }
-
-    // ────────────────────── V2 (New Config) Tests ──────────────────────
 
     [Fact]
     public void V2Config_ResolvesGeneralConfig_WithCorrectValues()
@@ -190,8 +174,8 @@ public class ConfigurationBackwardCompatibilityModuleTests
         Assert.NotNull(plugins.MultiLanguageProperty.DefaultLanguages);
         Assert.Contains("de", plugins.MultiLanguageProperty.DefaultLanguages);
         Assert.Contains("en", plugins.MultiLanguageProperty.DefaultLanguages);
-        Assert.Equal(3, plugins.ResiliencePolicies.Retry.MaxRetryAttempts);
-        Assert.Equal(10, plugins.ResiliencePolicies.Retry.DelayInSeconds);
+        Assert.Equal(2, plugins.ResiliencePolicies.Retry.MaxRetryAttempts);
+        Assert.Equal(4, plugins.ResiliencePolicies.Retry.DelayInSeconds);
         Assert.Equal(2.0, plugins.ResiliencePolicies.Retry.BackoffMultiplier);
         _ = Assert.Single(plugins.Instances);
         Assert.Equal("Plugin1", plugins.Instances[0].Name);
@@ -223,8 +207,8 @@ public class ConfigurationBackwardCompatibilityModuleTests
         var tmConfig = scope.ServiceProvider.GetRequiredService<IOptions<TemplateManagementConfig>>().Value;
 
         Assert.Equal("InternalSemanticId", tmConfig.Semantics.InternalSemanticId);
-        Assert.Equal(3, tmConfig.ResiliencePolicies.Retry.MaxRetryAttempts);
-        Assert.Equal(10, tmConfig.ResiliencePolicies.Retry.DelayInSeconds);
+        Assert.Equal(2, tmConfig.ResiliencePolicies.Retry.MaxRetryAttempts);
+        Assert.Equal(4, tmConfig.ResiliencePolicies.Retry.DelayInSeconds);
         Assert.Equal(new Uri("http://localhost:8081"), tmConfig.AasTemplateRepository.BaseUrl);
         Assert.Equal(new Uri("http://localhost:8082"), tmConfig.AasTemplateRegistry.BaseUrl);
         Assert.Equal(new Uri("http://localhost:8083"), tmConfig.SubmodelTemplateRegistry.BaseUrl);
@@ -245,20 +229,6 @@ public class ConfigurationBackwardCompatibilityModuleTests
         Assert.Equal("Authorization", tmConfig.AasTemplateRepository.HeaderMappings[0].Source);
         _ = Assert.Single(tmConfig.AasTemplateRegistry.HeaderMappings);
     }
-
-    [Fact]
-    public void V2Config_ResolvesRegistrySettings_Directly()
-    {
-        using var appFactory = new ConfigTestFactory("v2-config");
-        using var scope = appFactory.Services.CreateScope();
-
-        var registry = scope.ServiceProvider.GetRequiredService<IOptions<RegistrySettingsConfig>>().Value;
-
-        Assert.True(registry.PreComputed.Enabled);
-        Assert.Equal("0 */3 * * * *", registry.PreComputed.Schedule);
-    }
-
-    // ────────────────────── Cross-Format Equivalence Tests ──────────────────────
 
     [Theory]
     [InlineData("v1-config")]
@@ -324,20 +294,6 @@ public class ConfigurationBackwardCompatibilityModuleTests
     [Theory]
     [InlineData("v1-config")]
     [InlineData("v2-config")]
-    public void BothConfigs_ResolveRegistryPreComputed_ToSameValues(string configFile)
-    {
-        using var appFactory = new ConfigTestFactory(configFile);
-        using var scope = appFactory.Services.CreateScope();
-
-        var registry = scope.ServiceProvider.GetRequiredService<IOptions<RegistrySettingsConfig>>().Value;
-
-        Assert.True(registry.PreComputed.Enabled);
-        Assert.Equal("0 */3 * * * *", registry.PreComputed.Schedule);
-    }
-
-    [Theory]
-    [InlineData("v1-config")]
-    [InlineData("v2-config")]
     public void BothConfigs_ResolveCustomerDomainUrl_ToSameValue(string configFile)
     {
         using var appFactory = new ConfigTestFactory(configFile);
@@ -360,23 +316,6 @@ public class ConfigurationBackwardCompatibilityModuleTests
 
         Assert.Equal(8192, general.HeaderSanitization.MaxHeaderSize);
         Assert.Equal(256, general.HeaderSanitization.MaxHeaderNameSize);
-    }
-
-    [Theory]
-    [InlineData("v1-config")]
-    [InlineData("v2-config")]
-    public void BothConfigs_ResolveRetryPolicies_ToSameValues(string configFile)
-    {
-        using var appFactory = new ConfigTestFactory(configFile);
-        using var scope = appFactory.Services.CreateScope();
-
-        var plugins = scope.ServiceProvider.GetRequiredService<IOptions<PluginsConfig>>().Value;
-        var tmConfig = scope.ServiceProvider.GetRequiredService<IOptions<TemplateManagementConfig>>().Value;
-
-        Assert.Equal(3, plugins.ResiliencePolicies.Retry.MaxRetryAttempts);
-        Assert.Equal(10, plugins.ResiliencePolicies.Retry.DelayInSeconds);
-        Assert.Equal(3, tmConfig.ResiliencePolicies.Retry.MaxRetryAttempts);
-        Assert.Equal(10, tmConfig.ResiliencePolicies.Retry.DelayInSeconds);
     }
 
     [Theory]

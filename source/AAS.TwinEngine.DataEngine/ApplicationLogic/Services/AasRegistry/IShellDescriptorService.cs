@@ -7,6 +7,4 @@ public interface IShellDescriptorService
     Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken);
 
     Task<ShellDescriptor?> GetShellDescriptorByIdAsync(string id, CancellationToken cancellationToken);
-
-    Task SyncShellDescriptorsAsync(CancellationToken cancellationToken);
 }

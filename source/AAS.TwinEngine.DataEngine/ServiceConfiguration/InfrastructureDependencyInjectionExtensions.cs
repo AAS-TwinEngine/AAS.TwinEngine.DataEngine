@@ -1,5 +1,4 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -9,7 +8,6 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
@@ -36,6 +34,7 @@ public static class InfrastructureDependencyInjectionExtensions
 
         // ── V1 → V2 legacy adapters (IConfigureOptions<T>), no-op when V2 config is present ──
 #pragma warning disable CS0618 // Obsolete — intentional V1 backward-compat registration
+        LegacyConfigurationDetector.WarnIfPreComputedConfigurationDetected(configuration);
         _ = services.AddLegacyV1ConfigurationAdapters();
 #pragma warning restore CS0618
 
@@ -49,9 +48,6 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.Configure<MultiPluginConflictOptions>(configuration.GetSection(MultiPluginConflictOptions.Section));
         _ = services.AddOptions<TemplateManagementConfig>()
             .Bind(configuration.GetSection(TemplateManagementConfig.Section))
-            .ValidateOnStart();
-        _ = services.AddOptions<RegistrySettingsConfig>()
-            .Bind(configuration.GetSection(RegistrySettingsConfig.Section))
             .ValidateOnStart();
 
         // PluginsConfig: single registration via AddOptions to avoid double-binding of list properties
@@ -67,14 +63,11 @@ public static class InfrastructureDependencyInjectionExtensions
             LegacyGeneralConfigAdapter.ApplyV1Overrides(configuration, options));
         _ = services.PostConfigure<TemplateManagementConfig>(options =>
             LegacyTemplateManagementConfigAdapter.ApplyV1Overrides(configuration, options));
-        _ = services.PostConfigure<RegistrySettingsConfig>(options =>
-            LegacyRegistrySettingsConfigAdapter.ApplyV1Overrides(configuration, options));
 #pragma warning restore CS0618
 
         // Validators
         _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateManagementConfigValidator>();
         _ = services.AddSingleton<IValidateOptions<TemplateManagementConfig>, TemplateMappingRulesValidator>();
-        _ = services.AddSingleton<IValidateOptions<RegistrySettingsConfig>, RegistrySettingsConfigValidator>();
 
         // ── Resolve config for HttpClient registration (no BuildServiceProvider) ──
         // Bind V2 sections, apply V1 adapter + normalizer manually.
@@ -117,7 +110,6 @@ public static class InfrastructureDependencyInjectionExtensions
         }
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();
-        _ = services.AddScoped<IAasRegistryProvider, AasRegistryProvider>();
         _ = services.AddScoped<ICreateClient, HttpClientFactory>();
         _ = services.AddScoped<IPluginDataProvider, PluginDataProvider>();
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
@@ -125,6 +117,5 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
         _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
-        _ = services.AddHostedService<ShellDescriptorSyncHosted>();
     }
 }
