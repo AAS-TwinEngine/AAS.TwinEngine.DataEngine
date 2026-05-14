@@ -73,7 +73,23 @@ public class MetaDataProviderTests
     }
 
     [Fact]
-    public void BuildDictionaries_LogsError_WhenMetadataContainsEmptyId() => Assert.True(HasLogged(_logger.ReceivedCalls(), LogLevel.Error, "Mock entity with null/empty Id excluded"));
+    public void BuildDictionaries_LogsError_WhenMetadataContainsEmptyId()
+    {
+        var originalMetaData = MockData.MetaData.RootElement.GetRawText();
+        var logger = Substitute.For<ILogger<Provider>>();
+
+        try
+        {
+            SetMetaData("""[{ "Id": "" }]""");
+            _ = new Provider(logger);
+
+            Assert.True(HasLogged(logger.ReceivedCalls(), LogLevel.Error, "Mock entity with null/empty Id excluded"));
+        }
+        finally
+        {
+            SetMetaData(originalMetaData);
+        }
+    }
 
     [Fact]
     public async Task GetShellDescriptorsAsync_ReturnsEmptyList_WhenNoShellsExist()

@@ -234,13 +234,13 @@ public class ShellDescriptorServiceTests
     }
 
     [Fact]
-    public async Task GetAllShellDescriptorsAsync_ShouldThrowShellDescriptorNotFoundException_WhenResponseParsingFails()
+    public async Task GetAllShellDescriptorsAsync_ShouldThrowInternalDataProcessingException_WhenValidationFailedException()
     {
         _pluginDataHandler
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
-            .Throws(new ResponseParsingException());
+            .Throws(new ValidationFailedException());
 
-        await Assert.ThrowsAsync<ShellDescriptorNotFoundException>(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
     }
 
     [Fact]

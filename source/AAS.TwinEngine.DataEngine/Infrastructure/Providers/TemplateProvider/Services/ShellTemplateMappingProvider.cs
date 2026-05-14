@@ -23,7 +23,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
                                               .Any(pattern => Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
             ?.TemplateId;
 
-        if (templateId == null || string.IsNullOrWhiteSpace(templateId))
+        if (string.IsNullOrWhiteSpace(templateId))
         {
             _logger.LogError("No matching template found for shell: {AasIdentifier}", aasIdentifier);
             throw new ResourceNotFoundException();
