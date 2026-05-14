@@ -55,6 +55,10 @@ public class ShellDescriptorService(
         {
             throw new InvalidUserInputException(ex);
         }
+        catch (ValidationFailedException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
         catch (UnauthorizedAccessException)
         {
             throw new ServiceUnAuthorizedException();
@@ -70,7 +74,7 @@ public class ShellDescriptorService(
                 .GetDataForShellDescriptorAsync(pluginManifests, id, cancellationToken)
                 .ConfigureAwait(false);
 
-            var templateId = ResolveTemplateId(metadata);
+            var templateId = shellTemplateMappingProvider.GetTemplateId(metadata.Id)!;
             return await BuildShellDescriptorAsync(metadata, templateId, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
@@ -89,40 +93,30 @@ public class ShellDescriptorService(
         {
             throw new InvalidUserInputException(ex);
         }
+        catch (ValidationFailedException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
     }
 
     private async Task<ShellDescriptor?> TryBuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetadata, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(shellDescriptorMetadata.Id))
         {
-            logger.LogError(
-                "Failed to process ShellDescriptor. DescriptorId is missing. Continuing with remaining descriptors.");
+            logger.LogError("Failed to process ShellDescriptor. DescriptorId is missing. Continuing with remaining descriptors.");
             return null;
         }
 
         try
         {
-            var templateId = ResolveTemplateId(shellDescriptorMetadata);
+            var templateId = shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetadata.Id)!;
             return await BuildShellDescriptorAsync(shellDescriptorMetadata, templateId, cancellationToken).ConfigureAwait(false);
         }
         catch (ResourceNotFoundException ex)
         {
-            logger.LogError(
-                ex,
-                "Failed to process ShellDescriptor. DescriptorId: {DescriptorId}. Continuing with remaining descriptors.",
-                shellDescriptorMetadata.Id);
+            logger.LogError(ex, "Failed to process ShellDescriptor. DescriptorId: {DescriptorId}. Reason: {Reason}. Continuing with remaining descriptors.", shellDescriptorMetadata.Id, ex.Message);
             return null;
         }
-    }
-
-    private string ResolveTemplateId(ShellDescriptorMetaData shellDescriptorMetadata)
-    {
-        if (string.IsNullOrWhiteSpace(shellDescriptorMetadata.Id))
-        {
-            throw new InternalDataProcessingException();
-        }
-
-        return shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetadata.Id)!;
     }
 
     private async Task<ShellDescriptor> BuildShellDescriptorAsync(

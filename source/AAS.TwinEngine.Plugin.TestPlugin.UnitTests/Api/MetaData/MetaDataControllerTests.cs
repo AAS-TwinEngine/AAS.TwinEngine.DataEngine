@@ -66,7 +66,7 @@ public class MetaDataControllerTests
     [Fact]
     public async Task GetShellDescriptorAsync_ReturnsOk_WithShell()
     {
-        var expectedShell = new ShellDescriptorDto();
+        var expectedShell = new ShellDescriptorDto { Id = "test-id" };
         _handler.GetShellDescriptor(Arg.Any<GetShellDescriptorRequest>(), Arg.Any<CancellationToken>())
         .Returns(expectedShell);
 

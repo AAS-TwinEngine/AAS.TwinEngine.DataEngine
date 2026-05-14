@@ -31,7 +31,7 @@ public class AasRepositoryTemplateService(
         }
         catch (ResourceNotFoundException ex)
         {
-            throw new ShellDescriptorNotFoundException(ex);
+            throw new ShellNotFoundException(ex);
         }
 
         foreach (var key in from submodel in shellTemplate?.Submodels

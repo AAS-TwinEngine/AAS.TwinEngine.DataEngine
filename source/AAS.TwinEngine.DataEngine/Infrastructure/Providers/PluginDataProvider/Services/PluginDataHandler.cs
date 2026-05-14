@@ -92,11 +92,19 @@ public class PluginDataHandler(
                     throw new ResponseParsingException();
                 }
 
-                SetHref(shellDescriptorData.ShellDescriptors);
+                var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
+                if (shellDescriptors.Any(x => string.IsNullOrWhiteSpace(x.Id)))
+                {
+                    var invalidCount = shellDescriptors.Count(x => string.IsNullOrWhiteSpace(x.Id));
+                    logger.LogError("Invalid shell descriptor metadata response. {InvalidCount} descriptor(s) contain null or empty id.", invalidCount);
+                    throw new ValidationFailedException();
+                }
+
+                SetHref(shellDescriptors);
 
                 result.PagingMetaData = shellDescriptorData.PagingMetaData;
 
-                result.ShellDescriptors.AddRange(shellDescriptorData.ShellDescriptors);
+                result.ShellDescriptors?.AddRange(shellDescriptors);
             }
             catch (JsonException)
             {
@@ -124,9 +132,15 @@ public class PluginDataHandler(
 
             try
             {
-                var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorMetaData>(responseContent);
+                var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
                 if (shellDescriptorData != null)
                 {
+                    if (string.IsNullOrWhiteSpace(shellDescriptorData.Id))
+                    {
+                        logger.LogError("Invalid shell descriptor metadata response. Descriptor id is null or empty.");
+                        throw new ValidationFailedException();
+                    }
+
                     SetHref(shellDescriptorData);
                     return shellDescriptorData;
                 }
@@ -185,7 +199,7 @@ public class PluginDataHandler(
 
     private void SetHref(ShellDescriptorMetaData value)
     {
-        var encodedId = value.Id!.EncodeBase64Url();
+        var encodedId = value.Id.EncodeBase64Url();
         value.Href = $"{_baseUrl}{ShellsBasePath}/{encodedId}";
     }
 }

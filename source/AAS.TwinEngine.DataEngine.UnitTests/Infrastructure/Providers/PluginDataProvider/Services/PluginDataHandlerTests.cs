@@ -220,6 +220,87 @@ public class PluginDataHandlerTests
     }
 
     [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_Throws_WhenAnyDescriptorIdIsEmpty()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true }
+            }
+        };
+
+        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(new List<string> { "PluginA" });
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
+
+        var invalid = new ShellDescriptorsMetaData
+        {
+            PagingMetaData = new PagingMetaData { Cursor = null },
+            ShellDescriptors = [
+                new ShellDescriptorMetaData { Id = "" },
+                new ShellDescriptorMetaData { Id = "valid-id" }
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(invalid, _jsonoptions);
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<HttpContent> { httpResponse.Content });
+
+        await Assert.ThrowsAsync<ValidationFailedException>(() =>
+            _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorAsync_WhenIdIsEmpty_ThrowsValidationFailedException()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true }
+            }
+        };
+
+        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
+            .Returns(returnThis: [new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+                {
+                  "id": "",
+                  "idShort": "test"
+                }
+                """, Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([httpResponse.Content]);
+
+        await Assert.ThrowsAsync<ValidationFailedException>(() =>
+            _sut.GetDataForShellDescriptorAsync(manifests, "id", CancellationToken.None));
+    }
+
+    [Fact]
     public async Task GetDataForShellDescriptorAsync_ReturnsSingleWithHrefSet()
     {
         var single = new ShellDescriptorMetaData { Id = "ContactInformation" };
@@ -255,6 +336,44 @@ public class PluginDataHandlerTests
 
         Assert.Equal("ContactInformation", result.Id);
         Assert.StartsWith("https://www.mm-software.com/shells/", result.Href);
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorAsync_WhenIdIsNull_ThrowsValidationFailedException()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true }
+            }
+        };
+
+        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
+            .Returns(returnThis: [new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+                {
+                  "id": null,
+                  "idShort": "test"
+                }
+                """, Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([httpResponse.Content]);
+
+        await Assert.ThrowsAsync<ValidationFailedException>(() =>
+            _sut.GetDataForShellDescriptorAsync(manifests, "id", CancellationToken.None));
     }
 
     [Fact]

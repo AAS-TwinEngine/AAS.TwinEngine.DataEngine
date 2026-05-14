@@ -13,7 +13,7 @@ public class ShellDescriptorMetaData
     public string? IdShort { get; set; }
 
     [JsonPropertyName("id")]
-    public string? Id { get; set; }
+    public required string Id { get; set; }
 
     [JsonPropertyName("specificAssetIds")]
     public IList<SpecificAssetId>? SpecificAssetIds { get; init; }

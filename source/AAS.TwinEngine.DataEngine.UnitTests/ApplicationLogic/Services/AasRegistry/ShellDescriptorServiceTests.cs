@@ -49,7 +49,7 @@ public class ShellDescriptorServiceTests
          {
             PluginName = "TestPlugin",
             PluginUrl = new Uri("http://test-plugin"),
-                SupportedSemanticIds = [],
+            SupportedSemanticIds = [],
             Capabilities = new Capabilities { HasShellDescriptor = true }
          }
         };
@@ -104,6 +104,29 @@ public class ShellDescriptorServiceTests
         Assert.NotNull(result.Result);
         Assert.Equal(3, result.Result.Count);
         Assert.Null(result.PagingMetaData?.Cursor);
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_ReturnsEmptyResult_WhenShellDescriptorsMetadataIsNull()
+    {
+        var cancellationToken = CancellationToken.None;
+        var manifests = new List<PluginManifest>();
+        var metaData = new ShellDescriptorsMetaData
+        {
+            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
+            ShellDescriptors = null
+        };
+
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, manifests, cancellationToken)
+            .Returns(metaData);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Result);
+        Assert.Empty(result.Result);
+        Assert.Equal("nextCursor", result.PagingMetaData?.Cursor);
     }
 
     [Fact]
@@ -208,6 +231,16 @@ public class ShellDescriptorServiceTests
     {
         _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>()).Throws(new MultiPluginConflictException());
         await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_ShouldThrowShellDescriptorNotFoundException_WhenResponseParsingFails()
+    {
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
+            .Throws(new ResponseParsingException());
+
+        await Assert.ThrowsAsync<ShellDescriptorNotFoundException>(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
     }
 
     [Fact]
