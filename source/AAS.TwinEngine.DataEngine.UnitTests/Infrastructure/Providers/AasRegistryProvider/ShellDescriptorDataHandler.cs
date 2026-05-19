@@ -85,7 +85,7 @@ public class ShellDescriptorDataHandlerTests
     public void FillOut_ThrowsIfTemplateHasNoEndpoints()
     {
         var descriptor = new ShellDescriptor { Endpoints = null };
-        var metaData = new ShellDescriptorMetaData { Href = "http://localhost" };
+        var metaData = new ShellDescriptorMetaData { Id = "testId", Href = "http://localhost" };
 
         Assert.Throws<InternalDataProcessingException>(() => _sut.FillOut(descriptor, metaData));
     }
@@ -94,7 +94,7 @@ public class ShellDescriptorDataHandlerTests
     public void FillOut_ThrowsIfTemplateHasEmptyEndpoints()
     {
         var descriptor = new ShellDescriptor { Endpoints = [] };
-        var metaData = new ShellDescriptorMetaData { Href = "http://localhost" };
+        var metaData = new ShellDescriptorMetaData { Id = "testId", Href = "http://localhost" };
 
         Assert.Throws<InternalDataProcessingException>(() => _sut.FillOut(descriptor, metaData));
     }
@@ -106,7 +106,7 @@ public class ShellDescriptorDataHandlerTests
         {
             Endpoints = [new EndpointData { ProtocolInformation = null }]
         };
-        var metaData = new ShellDescriptorMetaData { Href = "http://localhost" };
+        var metaData = new ShellDescriptorMetaData { Id = "testId", Href = "http://localhost" };
 
         Assert.Throws<InternalDataProcessingException>(() => _sut.FillOut(descriptor, metaData));
     }

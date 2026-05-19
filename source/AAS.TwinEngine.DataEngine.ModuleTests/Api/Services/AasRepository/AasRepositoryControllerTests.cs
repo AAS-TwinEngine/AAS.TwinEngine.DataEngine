@@ -97,7 +97,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task GetShellByIdAsync_ReturnsNotFoundAsync_WhenErrorWhileExtractionOfProductIdAsync()
+    public async Task GetShellByIdAsync_ReturnsInternalServerErrorAsync_WhenErrorWhileExtractionOfProductIdAsync()
     {
         // Arrange
         const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFz";
@@ -123,7 +123,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         var response = await _client.GetAsync($"/shells/{AasIdentifier}");
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
