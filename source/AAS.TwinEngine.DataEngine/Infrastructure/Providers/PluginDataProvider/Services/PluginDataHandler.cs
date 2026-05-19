@@ -92,11 +92,28 @@ public class PluginDataHandler(
                     throw new ResponseParsingException();
                 }
 
-                SetHref(shellDescriptorData.ShellDescriptors);
+                var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
+
+                var invalidDescriptors = shellDescriptors
+                    .Where(x => string.IsNullOrWhiteSpace(x.Id))
+                    .Select(x => new
+                    {
+                        IdShort = x.IdShort ?? "<null>",
+                        GlobalAssetId = x.GlobalAssetId ?? "<null>"
+                    })
+                    .ToList();
+
+                if (invalidDescriptors.Count > 0)
+                {
+                    logger.LogError("Invalid shell descriptor metadata response. {InvalidCount} descriptor(s) contain null or empty id. Invalid descriptors (IdShort/GlobalAssetId): {@InvalidDescriptors}", invalidDescriptors.Count, invalidDescriptors);
+                    throw new ValidationFailedException();
+                }
+
+                SetHref(shellDescriptors);
 
                 result.PagingMetaData = shellDescriptorData.PagingMetaData;
 
-                result.ShellDescriptors.AddRange(shellDescriptorData.ShellDescriptors);
+                result.ShellDescriptors?.AddRange(shellDescriptors);
             }
             catch (JsonException)
             {
@@ -124,9 +141,15 @@ public class PluginDataHandler(
 
             try
             {
-                var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorMetaData>(responseContent);
+                var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
                 if (shellDescriptorData != null)
                 {
+                    if (string.IsNullOrWhiteSpace(shellDescriptorData.Id))
+                    {
+                        logger.LogError("Invalid shell descriptor metadata response for requested id {RequestedId}. Descriptor id is null or empty in response.", id);
+                        throw new ValidationFailedException();
+                    }
+
                     SetHref(shellDescriptorData);
                     return shellDescriptorData;
                 }
@@ -185,7 +208,7 @@ public class PluginDataHandler(
 
     private void SetHref(ShellDescriptorMetaData value)
     {
-        var encodedId = value.Id!.EncodeBase64Url();
+        var encodedId = value.Id.EncodeBase64Url();
         value.Href = $"{_baseUrl}{ShellsBasePath}/{encodedId}";
     }
 }

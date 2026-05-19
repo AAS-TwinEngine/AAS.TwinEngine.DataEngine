@@ -438,6 +438,55 @@ public class ShellTemplateMappingProviderTests
     }
 
     [Fact]
+    public void GetTemplateId_MatchesOnAasIdentifier_EvenWhenExtractionRulesDoNotMatch()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Regex,
+                    Pattern = "^urn:([^:]+)$",
+                    Index = 1
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Pattern = ["A:B:shell1:D"], TemplateId = "template-direct" }
+            ]);
+
+        var result = sut.GetTemplateId("A:B:shell1:D");
+
+        Assert.Equal("template-direct", result);
+    }
+
+    [Fact]
+    public void GetTemplateId_MultipleWildcardMappings_ReturnsFirstMatchingTemplateId()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Split,
+                    Pattern = ":",
+                    Index = 2
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Pattern = [".*"], TemplateId = "template-1" },
+                new ShellTemplateMappings { Pattern = [".*"], TemplateId = "template-2" },
+                new ShellTemplateMappings { Pattern = [".*"], TemplateId = "template-3" },
+                new ShellTemplateMappings { Pattern = [".*"], TemplateId = "template-4" }
+            ]);
+
+        var result = sut.GetTemplateId("A:B:shell1:D");
+
+        Assert.Equal("template-1", result);
+    }
+
+    [Fact]
     public void Constructor_NullLogger_ThrowsInvalidDependencyException()
     {
         var options = Substitute.For<IOptions<TemplateManagementConfig>>();

@@ -7,6 +7,7 @@ using AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers;
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
+using NSubstitute.Core;
 
 using Provider = AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.Providers.MetaDataProvider.MetaDataProvider;
 
@@ -69,6 +70,25 @@ public class MetaDataProviderTests
 
         Assert.NotNull(result);
         Assert.All(result.Result!, shell => Assert.False(string.IsNullOrWhiteSpace(shell.Id), "Shell with empty or null Id found."));
+    }
+
+    [Fact]
+    public void BuildDictionaries_LogsError_WhenMetadataContainsEmptyId()
+    {
+        var originalMetaData = MockData.MetaData.RootElement.GetRawText();
+        var logger = Substitute.For<ILogger<Provider>>();
+
+        try
+        {
+            SetMetaData("""[{ "Id": "" }]""");
+            _ = new Provider(logger);
+
+            Assert.True(HasLogged(logger.ReceivedCalls(), LogLevel.Error, "Mock entity with null/empty Id excluded"));
+        }
+        finally
+        {
+            SetMetaData(originalMetaData);
+        }
     }
 
     [Fact]
@@ -146,4 +166,21 @@ public class MetaDataProviderTests
             _sut.GetAssetAsync(InvalidAssetId, CancellationToken.None));
         Assert.Contains(ExceptionMessages.AssetNotFound, exception.Message, StringComparison.CurrentCulture);
     }
+
+    private static bool HasLogged(IEnumerable<ICall> calls, LogLevel level, string messageFragment)
+        => calls.Any(call =>
+        {
+            if (call.GetMethodInfo().Name != "Log")
+            {
+                return false;
+            }
+
+            var args = call.GetArguments();
+            if (args.Length < 3 || args[0] is not LogLevel actualLevel || actualLevel != level)
+            {
+                return false;
+            }
+
+            return args[2]?.ToString()?.Contains(messageFragment, StringComparison.Ordinal) == true;
+        });
 }

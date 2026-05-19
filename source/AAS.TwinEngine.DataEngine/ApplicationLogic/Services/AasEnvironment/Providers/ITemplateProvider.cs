@@ -8,7 +8,7 @@ public interface ITemplateProvider
 {
     Task<ISubmodel> GetSubmodelTemplateAsync(string templateId, CancellationToken cancellationToken);
 
-    Task<ShellDescriptor> GetShellDescriptorsTemplateAsync(CancellationToken cancellationToken);
+    Task<ShellDescriptor> GetShellDescriptorTemplateAsync(string templateId, CancellationToken cancellationToken);
 
     Task<IAssetAdministrationShell> GetShellTemplateAsync(string templateId, CancellationToken cancellationToken);
 

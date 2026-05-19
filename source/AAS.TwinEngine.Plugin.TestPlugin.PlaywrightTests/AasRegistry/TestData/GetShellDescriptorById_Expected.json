@@ -3,8 +3,8 @@
   "displayName": null,
   "extensions": null,
   "administration": null,
-  "assetKind": "Type",
-  "assetType": "Type",
+  "assetKind": "Instance",
+  "assetType": null,
   "endpoints": [
     {
       "interface": "AAS-3.0",

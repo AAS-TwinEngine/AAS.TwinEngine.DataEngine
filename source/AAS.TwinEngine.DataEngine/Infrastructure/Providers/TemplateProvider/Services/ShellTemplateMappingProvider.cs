@@ -18,20 +18,18 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
 
     public string? GetTemplateId(string aasIdentifier)
     {
-        var productId = GetProductIdFromRule(aasIdentifier);
-
         var templateId = _shellTemplateMappings
             .FirstOrDefault(mapping => mapping.Pattern
-                                              .Any(pattern => Regex.IsMatch(productId, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
+                                              .Any(pattern => Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
             ?.TemplateId;
 
-        if (templateId is not null)
+        if (string.IsNullOrWhiteSpace(templateId))
         {
-            return templateId;
+            _logger.LogError("No matching template found for shell: {AasIdentifier}", aasIdentifier);
+            throw new ResourceNotFoundException();
         }
 
-        _logger.LogError("No matching template found for shell: {AasIdentifier}", aasIdentifier);
-        throw new ResourceNotFoundException();
+        return templateId;
     }
 
     public string GetProductIdFromRule(string aasIdentifier)
