@@ -1,4 +1,5 @@
-using System.Net;
+﻿using System.Net;
+using System.Text;
 using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -85,16 +86,35 @@ public class TemplateProviderTests
     }
 
     [Fact]
-    public async Task GetShellDescriptorsTemplateAsync_ReturnsShellDescriptor_WhenValidResponse()
+    public async Task GetShellDescriptorTemplateAsync_ReturnsShellDescriptor_WhenValidResponse()
     {
+        const string JsonResponse = """
+                                    {
+                                      "assetKind": "Type",
+                                      "assetType": "Type",
+                                      "endpoints": [
+                                        {
+                                          "interface": "AAS-3.0",
+                                          "protocolInformation": {
+                                            "href": "http://localhost:8081/shells/test",
+                                            "endpointProtocol": "http"
+                                          }
+                                        }
+                                      ],
+                                      "globalAssetId": "https://admin-shell.io/idta/asset/ContactInformation/1/0",
+                                      "idShort": "ContactInformationAAS",
+                                      "id": "https://admin-shell.io/idta/aas/ContactInformation/1/0"
+                                    }
+                                    """;
+
         using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
-        mockHttpResponse.Content = new StringContent(ProviderTestData.ValidateShellDescriptorResponse);
+        mockHttpResponse.Content = new StringContent(JsonResponse);
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
 
-        var result = await _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None);
+        var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal("https://admin-shell.io/idta/aas/ContactInformation/1/0", result.Id);
@@ -103,7 +123,7 @@ public class TemplateProviderTests
     }
 
     [Fact]
-    public async Task GetShellDescriptorsTemplateAsync_ThrowsResponseParsingException_WhenInvalidJsonResponse()
+    public async Task GetShellDescriptorTemplateAsync_ThrowsResponseParsingException_WhenInvalidJsonResponse()
     {
         using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
         mockHttpResponse.Content = new StringContent("{ invalid json }");
@@ -112,61 +132,24 @@ public class TemplateProviderTests
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
 
-        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None));
     }
 
     [Fact]
-    public async Task GetShellDescriptorsTemplateAsync_ThrowsResourceNotFoundException_WhenResultArrayIsMissing()
+    public async Task GetShellDescriptorTemplateAsync_ThrowsResponseParsingException_WhenDeserializationReturnsNull()
     {
-        const string JsonResponse = "{}";
-
         using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
-        mockHttpResponse.Content = new StringContent(JsonResponse);
+        mockHttpResponse.Content = new StringContent("null");
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
 
-        await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
-            _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None));
     }
 
     [Fact]
-    public async Task GetShellDescriptorsTemplateAsync_ReturnsDefaultShellDescriptor_WhenResultArrayIsEmpty()
-    {
-        const string JsonResponse = "{ \"result\": [] }";
-
-        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
-        mockHttpResponse.Content = new StringContent(JsonResponse);
-        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
-        using var httpClient = new HttpClient(mockHttpMessageHandler);
-        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
-
-        var result = await _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None);
-
-        Assert.NotNull(result);
-        Assert.Equal(ShellDescriptor.CreateDefault().Id, result.Id);
-        Assert.Equal(ShellDescriptor.CreateDefault().IdShort, result.IdShort);
-        Assert.Equal(ShellDescriptor.CreateDefault().GlobalAssetId, result.GlobalAssetId);
-    }
-
-    [Fact]
-    public async Task GetShellDescriptorsTemplateAsync_ThrowsResponseParsingException_WhenDeserializationFails()
-    {
-        const string JsonWithInvalidDescriptor = "{ \"result\": [ null ] }";
-        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
-        mockHttpResponse.Content = new StringContent(JsonWithInvalidDescriptor);
-        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
-        using var httpClient = new HttpClient(mockHttpMessageHandler);
-        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
-        _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
-
-        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task GetShellDescriptorsTemplateAsync_ThrowsResourceNotFoundException_WhenNotFoundResponse()
+    public async Task GetShellDescriptorTemplateAsync_ThrowsResourceNotFoundException_WhenNotFoundResponse()
     {
         using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
         mockHttpResponse.Content = new StringContent("Not found");
@@ -175,19 +158,46 @@ public class TemplateProviderTests
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
 
-        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None));
     }
 
     [Fact]
-    public async Task GetShellDescriptorsTemplateAsync_ThrowsException_WhenHttpClientFails()
+    public async Task GetShellDescriptorTemplateAsync_ThrowsException_WhenHttpClientFails()
     {
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(new HttpRequestException("Network error"));
         using var httpClient = new HttpClient(mockHttpMessageHandler);
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(() => _sut.GetShellDescriptorsTemplateAsync(CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() => _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None));
         Assert.Equal("Network error", exception.Message);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorTemplateAsync_UsesBase64UrlEncodedTemplateIdInRequestPath()
+    {
+        var templateId = "https://admin-shell.io/idta/asset/shell-descriptor-template";
+        var requestPath = string.Empty;
+        const string JsonResponse = """
+                                    {
+                                      "assetKind": "Type",
+                                      "assetType": "Type",
+                                      "idShort": "ContactInformationAAS",
+                                      "id": "https://admin-shell.io/idta/aas/ContactInformation/1/0"
+                                    }
+                                    """;
+
+        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        mockHttpResponse.Content = new StringContent(JsonResponse);
+        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse, request => requestPath = request.RequestUri?.ToString() ?? string.Empty);
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
+        _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
+
+        _ = await _sut.GetShellDescriptorTemplateAsync(templateId, CancellationToken.None);
+
+        var expectedEncodedTemplateId = Convert.ToBase64String(Encoding.UTF8.GetBytes(templateId)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        Assert.EndsWith($"/shell-descriptors/{expectedEncodedTemplateId}", requestPath, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -479,8 +489,20 @@ public class FakeHttpMessageHandler : HttpMessageHandler
 {
     private readonly HttpResponseMessage _response = null!;
     private readonly Exception? _exceptionToThrow;
-    public FakeHttpMessageHandler(HttpResponseMessage response) => _response = response;
+    private readonly Action<HttpRequestMessage>? _onRequest;
+
+    public FakeHttpMessageHandler(HttpResponseMessage response, Action<HttpRequestMessage>? onRequest = null)
+    {
+        _response = response;
+        _onRequest = onRequest;
+    }
+
     public FakeHttpMessageHandler(Exception exception) => _exceptionToThrow = exception;
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => _exceptionToThrow != null ? throw _exceptionToThrow : Task.FromResult(_response);
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        _onRequest?.Invoke(request);
+        return _exceptionToThrow != null ? throw _exceptionToThrow : Task.FromResult(_response);
+    }
+
 }

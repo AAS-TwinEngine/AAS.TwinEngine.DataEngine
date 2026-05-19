@@ -24,7 +24,16 @@ public class AasRepositoryTemplateService(
     {
         var shellTemplate = await GetTemplateAsync(aasIdentifier, _templateProvider.GetShellTemplateAsync, cancellationToken).ConfigureAwait(false);
 
-        var productId = _shellTemplateMappingProvider.GetProductIdFromRule(aasIdentifier);
+        string productId;
+        try
+        {
+            productId = _shellTemplateMappingProvider.GetProductIdFromRule(aasIdentifier);
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            logger.LogError(ex, "No product ID found for AAS identifier {AasIdentifier}", aasIdentifier);
+            throw new InternalDataProcessingException();
+        }
 
         foreach (var key in from submodel in shellTemplate?.Submodels
                             let key = submodel.Keys.FirstOrDefault()
