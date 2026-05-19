@@ -93,10 +93,19 @@ public class PluginDataHandler(
                 }
 
                 var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
-                if (shellDescriptors.Any(x => string.IsNullOrWhiteSpace(x.Id)))
+
+                var invalidDescriptors = shellDescriptors
+                    .Where(x => string.IsNullOrWhiteSpace(x.Id))
+                    .Select(x => new
+                    {
+                        IdShort = x.IdShort ?? "<null>",
+                        GlobalAssetId = x.GlobalAssetId ?? "<null>"
+                    })
+                    .ToList();
+
+                if (invalidDescriptors.Count > 0)
                 {
-                    var invalidCount = shellDescriptors.Count(x => string.IsNullOrWhiteSpace(x.Id));
-                    logger.LogError("Invalid shell descriptor metadata response. {InvalidCount} descriptor(s) contain null or empty id.", invalidCount);
+                    logger.LogError("Invalid shell descriptor metadata response. {InvalidCount} descriptor(s) contain null or empty id. Invalid descriptors (IdShort/GlobalAssetId): {@InvalidDescriptors}", invalidDescriptors.Count, invalidDescriptors);
                     throw new ValidationFailedException();
                 }
 
@@ -137,7 +146,7 @@ public class PluginDataHandler(
                 {
                     if (string.IsNullOrWhiteSpace(shellDescriptorData.Id))
                     {
-                        logger.LogError("Invalid shell descriptor metadata response. Descriptor id is null or empty.");
+                        logger.LogError("Invalid shell descriptor metadata response for requested id {RequestedId}. Descriptor id is null or empty in response.", id);
                         throw new ValidationFailedException();
                     }
 

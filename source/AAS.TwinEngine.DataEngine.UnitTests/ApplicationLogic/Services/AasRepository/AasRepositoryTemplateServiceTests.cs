@@ -112,7 +112,7 @@ public class AasRepositoryTemplateServiceTests
     }
 
     [Fact]
-    public async Task GetShellTemplateAsync_ShouldThrowShellNotFound_WhenProductIdCannotBeResolved()
+    public async Task GetShellTemplateAsync_ShouldThrowInternalDataProcessingException_WhenProductIdCannotBeResolved()
     {
         var shell = CreateShell("urn:uuid:submodel-123");
 
@@ -120,7 +120,7 @@ public class AasRepositoryTemplateServiceTests
         _templateProvider.GetShellTemplateAsync(TemplateId, Arg.Any<CancellationToken>()).Returns(shell);
         _shellTemplateMappingProvider.GetProductIdFromRule(AasIdentifier).Throws(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<ShellNotFoundException>(
+        await Assert.ThrowsAsync<InternalDataProcessingException>(
             () => _sut.GetShellTemplateAsync(AasIdentifier, CancellationToken.None));
     }
 

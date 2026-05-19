@@ -31,7 +31,8 @@ public class AasRepositoryTemplateService(
         }
         catch (ResourceNotFoundException ex)
         {
-            throw new ShellNotFoundException(ex);
+            logger.LogError(ex, "No product ID found for AAS identifier {AasIdentifier}", aasIdentifier);
+            throw new InternalDataProcessingException();
         }
 
         foreach (var key in from submodel in shellTemplate?.Submodels
