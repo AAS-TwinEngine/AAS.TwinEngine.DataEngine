@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk@sha256:dc8430e6024d454edadad1e160e1973be3cabbb7125998ef190d9e5c6adf7dbb AS build 
+FROM mcr.microsoft.com/dotnet/sdk@sha256:dc8430e6024d454edadad1e160e1973be3cabbb7125998ef190d9e5c6adf7dbb AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /App
 COPY ["AAS.TwinEngine.Plugin.TestPlugin/", "AAS.TwinEngine.Plugin.TestPlugin/"]
