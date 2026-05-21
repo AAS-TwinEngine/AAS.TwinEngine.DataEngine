@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
@@ -8,19 +8,20 @@
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <NoWarn>IDE1006, IDE0058</NoWarn>
     <!--IDE1006 - Naming rule violation: Missing suffix: 'Async'-->
     <!--IDE0058 - Expression value is never used-->
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="10.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-		<PackageReference Include="NSubstitute" Version="5.3.0" />
-		<PackageReference Include="TngTech.ArchUnitNET.xUnit" Version="0.13.3" />
-		<PackageReference Include="xunit" Version="2.9.3" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+		<PackageReference Include="coverlet.collector" Version="[10.0.1]" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[10.0.8]" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="[18.5.1]" />
+		<PackageReference Include="NSubstitute" Version="[5.3.0]" />
+		<PackageReference Include="TngTech.ArchUnitNET.xUnit" Version="[0.13.3]" />
+		<PackageReference Include="xunit" Version="[2.9.3]" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="[3.1.5]" />
 	</ItemGroup>
 
 	<ItemGroup>
