@@ -1,5 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.Config.Helper;
 
@@ -123,8 +123,8 @@ public class MultiLanguagePropertySettingsValidatorTests
     }
 
     [Fact]
-    public void Validate_NullOptions_ThrowsArgumentNullException()
+    public void Validate_NullOptions_ThrowsInValidDependencyException()
     {
-        Assert.Throws<ArgumentNullException>(() => _validator.Validate(null, null!));
+        Assert.Throws<InvalidDependencyException>(() => _validator.Validate(null, null!));
     }
 }

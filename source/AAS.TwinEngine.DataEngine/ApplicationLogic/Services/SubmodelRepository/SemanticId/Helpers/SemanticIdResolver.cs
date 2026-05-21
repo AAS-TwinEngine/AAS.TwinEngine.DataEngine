@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_0;
 
@@ -13,18 +13,18 @@ using Range = AasCore.Aas3_0.Range;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
-public partial class SemanticIdResolver(IOptions<Semantics> semantics) : ISemanticIdResolver
+public partial class SemanticIdResolver(IOptions<PluginsConfig> pluginsConfig, IOptions<TemplateManagementConfig> templateManagementConfig) : ISemanticIdResolver
 {
     public const string RangeMinimumPostFixSeparator = "_min";
     public const string RangeMaximumPostFixSeparator = "_max";
     public const string EntityGlobalAssetIdPostFix = "_globalAssetId";
     public const string RelationshipElementFirstPostFixSeparator = "_first";
     public const string RelationshipElementSecondPostFixSeparator = "_second";
-    private readonly string _submodelElementIndexContextPrefix = semantics.Value.SubmodelElementIndexContextPrefix;
+    private readonly string _submodelElementIndexContextPrefix = pluginsConfig.Value.SubmodelElementIndexContextPrefix;
 
-    public string MlpPostFixSeparator { get; } = semantics.Value.MultiLanguageSemanticPostfixSeparator;
+    public string MlpPostFixSeparator { get; } = pluginsConfig.Value.MultiLanguageProperty.SemanticPostfixSeparator;
 
-    public string InternalSemanticIdType { get; } = semantics.Value.InternalSemanticId;
+    public string InternalSemanticIdType { get; } = templateManagementConfig.Value.Semantics.InternalSemanticId;
 
     private static readonly HashSet<DataTypeDefXsd> StringTypes =
     [

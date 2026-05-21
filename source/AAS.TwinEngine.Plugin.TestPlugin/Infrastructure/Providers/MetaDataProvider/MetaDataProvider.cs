@@ -28,8 +28,14 @@ public class MetaDataProvider : IMetaDataProvider
     {
         var entities = jsonData.Deserialize<List<MetaDataEntity>>(_jsonSerializerOptions) ?? [];
 
-        foreach (var entity in entities.Where(e => !string.IsNullOrEmpty(e.Id)))
+        foreach (var entity in entities)
         {
+            if (string.IsNullOrWhiteSpace(entity.Id))
+            {
+                _logger.LogError("Mock entity with null/empty Id excluded. GlobalAssetId: {GlobalAssetId}", entity.GlobalAssetId);
+                continue;
+            }
+
             _shellDescriptorLookup[entity.Id] = entity;
 
             if (entity.AssetInformationData is not null)

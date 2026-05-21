@@ -1,22 +1,25 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Config;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 
-public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, IOptions<AasEnvironmentConfig> aasEnvironment, ILogger<TemplateRepositoryHealthCheck> logger) : IHealthCheck
+public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, IOptions<TemplateManagementConfig> templateManagementConfig, ILogger<TemplateRepositoryHealthCheck> logger) : IHealthCheck
 {
-    private readonly string _aasRepositoryPath = aasEnvironment.Value.AasRepositoryPath;
-    private readonly string _subModelRepositoryPath = aasEnvironment.Value.SubModelRepositoryPath;
+    private const string AasRepositoryPath = ApiPaths.Shells;
+    private const string SubModelRepositoryPath = ApiPaths.Submodels;
+    private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
+    private const string DefaultHealthEndpoint = "/actuator/health";
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var aasTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _aasRepositoryPath, "aas-repository", cancellationToken);
-        var submodelTask = CheckHealthEndpointAsync(AasEnvironmentConfig.AasEnvironmentRepoHealthCheckHttpClientName, _subModelRepositoryPath, "submodel-repository", cancellationToken);
+        var aasTask = CheckHealthEndpointAsync(HttpClientNames.AasTemplateRepositoryHealthCheck, AasRepositoryPath, "aas-template-repository", templateManagementConfig.Value.AasTemplateRepository.HealthEndpoint, cancellationToken);
+        var submodelTask = CheckHealthEndpointAsync(HttpClientNames.SubmodelTemplateRepositoryHealthCheck, SubModelRepositoryPath, "submodel-template-repository", templateManagementConfig.Value.SubmodelTemplateRepository.HealthEndpoint, cancellationToken);
+        var conceptDiscriptorTask = CheckHealthEndpointAsync(HttpClientNames.ConceptDescriptorTemplateRepositoryHealthCheck, ConceptDescriptionPath, "concept-descriptor-template-repository", templateManagementConfig.Value.ConceptDescriptionTemplateRepository.HealthEndpoint, cancellationToken);
 
-        var results = await Task.WhenAll(aasTask, submodelTask).ConfigureAwait(false);
+        var results = await Task.WhenAll(aasTask, submodelTask, conceptDiscriptorTask).ConfigureAwait(false);
 
         if (!results[0])
         {
@@ -28,12 +31,17 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
             logger.LogWarning("Submodel Repository health status is unhealthy");
         }
 
-        return results[0] && results[1]
+        if (!results[2])
+        {
+            logger.LogWarning("Concept Discriptor Repository health status is unhealthy");
+        }
+
+        return results[0] && results[1] && results[2]
             ? HealthCheckResult.Healthy()
             : HealthCheckResult.Unhealthy();
     }
 
-    private async Task<bool> CheckHealthEndpointAsync(string clientName, string path, string endpointKey, CancellationToken cancellationToken)
+    private async Task<bool> CheckHealthEndpointAsync(string clientName, string path, string endpointKey, string healthEndpoint, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -41,7 +49,14 @@ public sealed class TemplateRepositoryHealthCheck(ICreateClient clientFactory, I
             return false;
         }
 
-        var requestPath = $"{path}?limit=1";
+        var requestPath = string.IsNullOrWhiteSpace(healthEndpoint)
+                             ? DefaultHealthEndpoint
+                             : healthEndpoint;
+
+        if (string.IsNullOrWhiteSpace(healthEndpoint))
+        {
+            logger.LogWarning("HealthEndpoint is not configured for {EndpointKey}. Falling back to default endpoint. Configure a dedicated health endpoint to avoid relying on defaults.", endpointKey);
+        }
 
         try
         {

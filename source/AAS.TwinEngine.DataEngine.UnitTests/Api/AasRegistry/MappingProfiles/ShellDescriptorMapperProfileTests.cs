@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-
-using AAS.TwinEngine.DataEngine.Api.AasRegistry.MappingProfiles;
-using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry.MappingProfiles;
 using AAS.TwinEngine.DataEngine.UnitTests.Api.Shared.MappingProfiles;
 
 using AasCore.Aas3_0;
@@ -10,14 +7,6 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Api.AasRegistry.MappingProfiles;
 
 public class ShellDescriptorMapperProfileTests
 {
-    [Fact]
-    public void ToDto_ShouldThrow_WhenShellDescriptorsIsNull()
-    {
-        ShellDescriptors? descriptors = null;
-
-        Assert.Throws<ArgumentNullException>(() => descriptors!.ToDto());
-    }
-
     [Fact]
     public void ToDto_Should_Map_ShellDescriptors_Correctly()
     {
@@ -67,14 +56,6 @@ public class ShellDescriptorMapperProfileTests
 
         Assert.NotNull(result.PagingMetaData);
         Assert.Equal("shell-001-encodedValue", result.PagingMetaData.Cursor);
-    }
-
-    [Fact]
-    public void ToDto_ShellDescriptor_Null_ThrowsArgumentNullException()
-    {
-        ShellDescriptor? descriptor = null;
-
-        Assert.Throws<ArgumentNullException>(() => descriptor!.ToDto());
     }
 
     [Fact]

@@ -8,9 +8,9 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Provide
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Config;
+using AAS.TwinEngine.DataEngine.ModuleTests.Common;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,45 +19,81 @@ using NSubstitute.ExceptionExtensions;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRegistry;
 
-public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public abstract class ShellDescriptorControllerTests : IDisposable
 {
+    private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
-    public ShellDescriptorControllerTests(WebApplicationFactory<Program> factory)
+    protected ShellDescriptorControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
 
-        var factory1 = factory.WithWebHostBuilder(builder =>
+        _factory = new ConfigTestFactory(configDir, services =>
         {
-            _ = builder.ConfigureServices(services =>
-            {
-                _ = services.AddSingleton(_httpClientFactory);
-                _ = services.AddSingleton(mockPluginManifestProvider);
-                _ = services.AddSingleton(_mockTemplateProvider);
-                _ = services.AddSingleton(mockPluginManifestConflictHandler);
-            });
+            _ = services.AddSingleton(_httpClientFactory);
+            _ = services.AddSingleton(mockPluginManifestProvider);
+            _ = services.AddSingleton(_mockTemplateProvider);
+            _ = services.AddSingleton(mockPluginManifestConflictHandler);
         });
 
-        _client = factory1.CreateClient();
+        _client = _factory.CreateClient();
         _ = mockPluginManifestConflictHandler.Manifests.Returns(TestData.CreatePluginManifests());
+    }
+
+    public void Dispose()
+    {
+        _client.Dispose();
+        _factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
     public async Task GetAllShellDescriptorsAsync_ReturnsOkAsync()
     {
-        // Arrange
-        var template = TestData.CreateShellDescriptorsTemplate();
         using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptors())
         }));
+        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin2ResponseForShellDescriptors())
+        }));
+        using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
+        httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
+        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
+        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
+        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
+        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                     .Returns(_ => TestData.CreateShellDescriptorsTemplate());
 
+        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=bmV4dDEyMw==");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var shellDescriptorsResponse = json.ToString();
+        var expectedShellDescriptors = TestData.CreateShellDescriptors();
+        Assert.Equal(shellDescriptorsResponse, expectedShellDescriptors);
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WhenOneDescriptorFails_ReturnsRemainingDescriptorsAsync()
+    {
+        using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptors())
+        }));
         using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
@@ -70,32 +106,36 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
         using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
         httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
 
-        const string HttpClientNamePlugin1 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
-        _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
+        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
 
-        const string HttpClientNamePlugin2 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin2";
-        _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
+        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
 
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Returns(template);
+        var validTemplate = TestData.CreateShellDescriptorsTemplate();
 
-        // Act
-        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=next123");
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(
+                _ => throw new ResourceNotFoundException(),
+                _ => validTemplate);
 
-        // Assert
+        var response = await _client.GetAsync("/shell-descriptors?limit=2&cursor=bmV4dDEyMw==");
+
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
         Assert.NotNull(json);
-        var shellDescriptorsResponse = json.ToString();
-        var expectedShellDescriptors = TestData.CreateShellDescriptors();
-        Assert.Equal(shellDescriptorsResponse, expectedShellDescriptors);
+
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        _ = Assert.Single(result);
     }
 
     [Fact]
     public async Task GetAllShellDescriptorsAsync_WithNagetiveLimit_Returns400Async()
     {
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=-1&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=-1&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -103,7 +143,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [Fact]
     public async Task GetAllShellDescriptorsAsync_WithInValidCursor_Returns400Async()
     {
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
         var response = await _client.GetAsync("/shell-descriptors?limit=4&cursor=invalid cursor");
 
@@ -113,9 +153,24 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [Fact]
     public async Task GetAllShellDescriptorsAsync_WithNotFound_Returns404Async()
     {
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
+        using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.NotFound
+        }));
+        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.NotFound
+        }));
+        using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
+        httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
+        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
+        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
+        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
+        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -123,9 +178,27 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [Fact]
     public async Task GetAllShellDescriptorsAsync_WithInternalServerError_Returns500Async()
     {
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
+        using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptors())
+        }));
+        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin2ResponseForShellDescriptors())
+        }));
+        using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
+        httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
+        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
+        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
+        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
+        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
 
-        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=next123");
+        var response = await _client.GetAsync("/shell-descriptors?limit=5&cursor=bmV4dDEyMw==");
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
@@ -133,39 +206,29 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [Fact]
     public async Task GetShellDescriptorByIdAsync_ReturnsOkAsync()
     {
-        // Arrange
         const string AasId = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
-        var template = TestData.CreateShellDescriptorsTemplate();
-
         using var messageHandler1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptor())
         }));
-
         using var messageHandler2 = new FakeHttpMessageHandler((request, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.NotFound
         }));
-
         using var httpClient1 = new HttpClient(messageHandler1);
         httpClient1.BaseAddress = new Uri("https://testendpoint1.com");
-
         using var httpClient2 = new HttpClient(messageHandler2);
         httpClient2.BaseAddress = new Uri("https://testendpoint2.com");
+        const string HttpClientName1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName1).Returns(httpClient1);
+        const string HttpClientName2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientName2).Returns(httpClient2);
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                     .Returns(_ => TestData.CreateShellDescriptorsTemplate());
 
-        const string HttpClientName1 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin1";
-        _httpClientFactory.CreateClient(HttpClientName1).Returns(httpClient1);
-
-        const string HttpClientName2 = $"{PluginConfig.HttpClientNamePrefix}TestPlugin2";
-        _httpClientFactory.CreateClient(HttpClientName2).Returns(httpClient2);
-
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Returns(template);
-
-        // Act
         var response = await _client.GetAsync($"/shell-descriptors/{AasId}");
 
-        // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
         Assert.NotNull(json);
@@ -179,7 +242,30 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     {
         const string AasId = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
 
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
+        using var messageHandler1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptor())
+        }));
+
+        using var messageHandler2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.NotFound
+        }));
+
+        using var httpClient1 = new HttpClient(messageHandler1);
+        httpClient1.BaseAddress = new Uri("https://testendpoint1.com");
+
+        using var httpClient2 = new HttpClient(messageHandler2);
+        httpClient2.BaseAddress = new Uri("https://testendpoint2.com");
+
+        const string HttpClientName1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName1).Returns(httpClient1);
+
+        const string HttpClientName2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientName2).Returns(httpClient2);
+
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
         var response = await _client.GetAsync($"/shell-descriptors/{AasId}");
 
@@ -191,7 +277,30 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     {
         const string AasId = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
 
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
+        using var messageHandler1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptor())
+        }));
+
+        using var messageHandler2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.NotFound
+        }));
+
+        using var httpClient1 = new HttpClient(messageHandler1);
+        httpClient1.BaseAddress = new Uri("https://testendpoint1.com");
+
+        using var httpClient2 = new HttpClient(messageHandler2);
+        httpClient2.BaseAddress = new Uri("https://testendpoint2.com");
+
+        const string HttpClientName1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName1).Returns(httpClient1);
+
+        const string HttpClientName2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientName2).Returns(httpClient2);
+
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
 
         var response = await _client.GetAsync($"/shell-descriptors/{AasId}");
 
@@ -213,7 +322,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [Theory]
     [InlineData("not-valid-base64!!!")]
     [InlineData("invalid!!base64")]
-    public async Task GetShellDescriptorById_InvalidBase64_Returns400BadRequest(string invalidBase64)
+    public async Task GetShellDescriptorById_InvalidBase64_Returns400BadRequestAsync(string invalidBase64)
     {
         var response = await _client.GetAsync($"/shell-descriptors/{invalidBase64}");
 
@@ -227,7 +336,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [InlineData("<script>alert('xss')</script>")]
     [InlineData("<img onerror=alert('xss')>")]
     [InlineData("<svg/onload=alert('xss')>")]
-    public async Task GetShellDescriptorById_XssInDecodedId_Returns400BadRequest(string maliciousContent)
+    public async Task GetShellDescriptorById_XssInDecodedId_Returns400BadRequestAsync(string maliciousContent)
     {
         var encoded = EncodeBase64Url(maliciousContent);
 
@@ -243,7 +352,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [InlineData("'; DROP TABLE shells--")]
     [InlineData("1 UNION SELECT * FROM descriptors")]
     [InlineData("admin'; DELETE FROM shells--")]
-    public async Task GetShellDescriptorById_SqlInjectionInDecodedId_Returns400BadRequest(string maliciousContent)
+    public async Task GetShellDescriptorById_SqlInjectionInDecodedId_Returns400BadRequestAsync(string maliciousContent)
     {
         var encoded = EncodeBase64Url(maliciousContent);
 
@@ -259,7 +368,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [InlineData("..\\..\\..\\windows\\system32")]
     [InlineData("%2e%2e/config")]
     [InlineData("..%2fconfig")]
-    public async Task GetShellDescriptorById_PathTraversalInDecodedId_Returns400BadRequest(string maliciousContent)
+    public async Task GetShellDescriptorById_PathTraversalInDecodedId_Returns400BadRequestAsync(string maliciousContent)
     {
         var encoded = EncodeBase64Url(maliciousContent);
 
@@ -275,7 +384,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [InlineData("data:text/html,<script>")]
     [InlineData("vbscript:msgbox('xss')")]
     [InlineData("file:///etc/passwd")]
-    public async Task GetShellDescriptorById_DangerousProtocolInDecodedId_Returns400BadRequest(string maliciousContent)
+    public async Task GetShellDescriptorById_DangerousProtocolInDecodedId_Returns400BadRequestAsync(string maliciousContent)
     {
         var encoded = EncodeBase64Url(maliciousContent);
 
@@ -288,7 +397,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
 
     [Theory]
     [InlineData("test\0value")]
-    public async Task GetShellDescriptorById_NullByteInDecodedId_Returns400BadRequest(string contentWithNullByte)
+    public async Task GetShellDescriptorById_NullByteInDecodedId_Returns400BadRequestAsync(string contentWithNullByte)
     {
         var encoded = EncodeBase64Url(contentWithNullByte);
 
@@ -300,7 +409,7 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     }
 
     [Fact]
-    public async Task GetShellDescriptorById_IdentifierExceedsMaxLength_Returns400BadRequest()
+    public async Task GetShellDescriptorById_IdentifierExceedsMaxLength_Returns400BadRequestAsync()
     {
         var longIdentifier = "https://example.com/" + new string('a', 2050);
         var encoded = EncodeBase64Url(longIdentifier);
@@ -315,13 +424,13 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
     [InlineData("https://admin-shell.io/idta/aas/ContactInformation/1/0")]
     [InlineData("urn:uuid:123e4567-e89b-12d3-a456-426614174000")]
     [InlineData("https://mm-software.com/submodel/test/Nameplate")]
-    public async Task GetShellDescriptorById_ValidAasIdentifiers_DoesNotReturn400(string validIdentifier)
+    public async Task GetShellDescriptorById_ValidAasIdentifiers_DoesNotReturn400Async(string validIdentifier)
     {
         var encoded = EncodeBase64Url(validIdentifier);
-        _ = _mockTemplateProvider.GetShellDescriptorsTemplateAsync(Arg.Any<CancellationToken>())
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                                  .Throws(new ResourceNotFoundException());
 
-        var response = await _client.GetAsync($"/shell-descriptors/{encoded}").ConfigureAwait(false);
+        var response = await _client.GetAsync($"/shell-descriptors/{encoded}");
 
         Assert.NotEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -339,6 +448,10 @@ public class ShellDescriptorControllerTests : IClassFixture<WebApplicationFactor
         return WebEncoders.Base64UrlEncode(bytes);
     }
 }
+
+public class ShellDescriptorControllerTestsV1Config() : ShellDescriptorControllerTests("v1-config");
+
+public class ShellDescriptorControllerTestsV2Config() : ShellDescriptorControllerTests("v2-config");
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
 {

@@ -5,8 +5,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,40 +15,45 @@ using NSubstitute.ExceptionExtensions;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRepository;
 
-public class SerializationControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public abstract class SerializationControllerTests : IDisposable
 {
+    private readonly ConfigTestFactory _factory;
     private readonly IAasRepositoryService _mockAasRepositoryService;
     private readonly ISubmodelRepositoryService _mockSubmodelRepositoryService;
     private readonly IConceptDescriptionService _mockConceptDescriptionService;
     private readonly HttpClient _client;
 
-    public SerializationControllerTests(WebApplicationFactory<Program> factory)
+    protected SerializationControllerTests(string configDir)
     {
         _mockAasRepositoryService = Substitute.For<IAasRepositoryService>();
         _mockSubmodelRepositoryService = Substitute.For<ISubmodelRepositoryService>();
         _mockConceptDescriptionService = Substitute.For<IConceptDescriptionService>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
 
-        var factory1 = factory.WithWebHostBuilder(builder =>
+        _factory = new ConfigTestFactory(configDir, services =>
         {
-            _ = builder.ConfigureServices(services =>
-            {
-                _ = services.AddSingleton(mockPluginManifestProvider);
-                _ = services.AddSingleton(_mockAasRepositoryService);
-                _ = services.AddSingleton(_mockSubmodelRepositoryService);
-                _ = services.AddSingleton(_mockConceptDescriptionService);
-            });
+            _ = services.AddSingleton(mockPluginManifestProvider);
+            _ = services.AddSingleton(_mockAasRepositoryService);
+            _ = services.AddSingleton(_mockSubmodelRepositoryService);
+            _ = services.AddSingleton(_mockConceptDescriptionService);
         });
 
-        _client = factory1.CreateClient();
+        _client = _factory.CreateClient();
+    }
+
+    public void Dispose()
+    {
+        _client.Dispose();
+        _factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
     public async Task SerializeAasxAsync_ReturnsOkAsync()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
         var mockSubmodel = TestData.CreateSubmodel();
@@ -66,11 +71,11 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
-    public async Task SerializeAasxAsync_ReturnsOkAsync_WhenConceptDescriptionsIsTrue()
+    public async Task SerializeAasxAsync_ReturnsOkAsync_WhenConceptDescriptionsIsTrueAsync()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=true";
         var mockSubmodel = TestData.CreateSubmodel();
@@ -93,8 +98,8 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     public async Task SerializeAasxAsync_WithNotFound_Returns404Async()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
 
@@ -111,8 +116,8 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     public async Task SerializeAasxAsync_WithInternalServerError_Returns500Async()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
-        var submodelIds = new[] { "submodel-456" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
 
@@ -129,7 +134,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     public async Task SerializeAasxAsync_WhenIdentifierIsInValid_Returns400Async()
     {
         // Arrange
-        var aasIds = new[] { "aas-123" };
+        var aasIds = new[] { "YWFzLTEyMw==" };
         var submodelIds = new[] { "in valid" };
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
@@ -142,7 +147,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
-    public async Task SerializeAasx_InvalidBase64InAasIds_Returns400BadRequest()
+    public async Task SerializeAasx_InvalidBase64InAasIds_Returns400BadRequestAsync()
     {
         var invalidAasId = "invalid!!base64";
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test");
@@ -155,7 +160,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
-    public async Task SerializeAasx_MaliciousPatternInDecodedAasId_Returns400BadRequest()
+    public async Task SerializeAasx_MaliciousPatternInDecodedAasId_Returns400BadRequestAsync()
     {
         var maliciousEncoded = EncodeBase64Url("javascript:alert('xss')");
         var validEncoded = EncodeBase64Url("https://example.com/submodels/test");
@@ -168,7 +173,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
-    public async Task SerializeAasx_InvalidBase64InSubmodelIds_Returns400BadRequest()
+    public async Task SerializeAasx_InvalidBase64InSubmodelIds_Returns400BadRequestAsync()
     {
         var validEncoded = EncodeBase64Url("https://example.com/aas/test");
         var invalidSubmodelId = "not!!valid!!base64";
@@ -181,7 +186,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
-    public async Task SerializeAasx_MaliciousPatternInDecodedSubmodelId_Returns400BadRequest()
+    public async Task SerializeAasx_MaliciousPatternInDecodedSubmodelId_Returns400BadRequestAsync()
     {
         var validEncoded = EncodeBase64Url("https://example.com/aas/test");
         var maliciousEncoded = EncodeBase64Url("<script>alert('xss')</script>");
@@ -197,7 +202,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     [InlineData("' OR '1'='1")]
     [InlineData("../../../etc/passwd")]
     [InlineData("1 UNION SELECT *")]
-    public async Task SerializeAasx_SqlInjectionOrPathTraversalInAasId_Returns400BadRequest(string maliciousContent)
+    public async Task SerializeAasx_SqlInjectionOrPathTraversalInAasId_Returns400BadRequestAsync(string maliciousContent)
     {
         var maliciousEncoded = EncodeBase64Url(maliciousContent);
         var validEncoded = EncodeBase64Url("https://example.com/submodels/test");
@@ -210,7 +215,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
-    public async Task SerializeAasx_ValidIdentifiers_DoesNotReturn400()
+    public async Task SerializeAasx_ValidIdentifiers_DoesNotReturn400Async()
     {
         var validAasId = EncodeBase64Url("https://example.com/aas/test123");
         var validSubmodelId = EncodeBase64Url("https://example.com/submodels/test456");
@@ -236,3 +241,7 @@ public class SerializationControllerTests : IClassFixture<WebApplicationFactory<
         return WebEncoders.Base64UrlEncode(bytes);
     }
 }
+
+public class SerializationControllerTestsV1Config() : SerializationControllerTests("v1-config");
+
+public class SerializationControllerTestsV2Config() : SerializationControllerTests("v2-config");

@@ -1,7 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 
@@ -11,27 +10,36 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 
 public class ShellDescriptorService(
     ITemplateProvider templateProvider,
+    IShellTemplateMappingProvider shellTemplateMappingProvider,
     IShellDescriptorDataHandler shellDescriptorDataHandler,
     IPluginDataHandler pluginDataHandler,
-    IAasRegistryProvider aasRegistryProvider,
-    ILogger<ShellDescriptorService> logger,
-    IPluginManifestConflictHandler pluginManifestConflictHandler) : IShellDescriptorService
+    IPluginManifestConflictHandler pluginManifestConflictHandler,
+    ILogger<ShellDescriptorService> logger) : IShellDescriptorService
 {
     public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
-            var shellDescriptorsTemplate = await templateProvider.GetShellDescriptorsTemplateAsync(cancellationToken).ConfigureAwait(false);
-
             var pluginManifests = pluginManifestConflictHandler.Manifests;
+            var metadata = await pluginDataHandler
+                .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken)
+                .ConfigureAwait(false);
 
-            var metaData = await pluginDataHandler.GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken).ConfigureAwait(false);
+            var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
+            var shellDescriptors = new List<ShellDescriptor>(shellDescriptorMetadataList.Count);
 
-            var shellDescriptors = shellDescriptorDataHandler.FillOut(shellDescriptorsTemplate, metaData.ShellDescriptors);
-
-            return new ShellDescriptors()
+            foreach (var shellDescriptorMetadata in shellDescriptorMetadataList)
             {
-                PagingMetaData = metaData.PagingMetaData,
+                var shellDescriptor = await TryBuildShellDescriptorAsync(shellDescriptorMetadata, cancellationToken).ConfigureAwait(false);
+                if (shellDescriptor is not null)
+                {
+                    shellDescriptors.Add(shellDescriptor);
+                }
+            }
+
+            return new ShellDescriptors
+            {
+                PagingMetaData = metadata.PagingMetaData,
                 Result = shellDescriptors
             };
         }
@@ -47,6 +55,10 @@ public class ShellDescriptorService(
         {
             throw new InvalidUserInputException(ex);
         }
+        catch (ValidationFailedException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
         catch (UnauthorizedAccessException)
         {
             throw new ServiceUnAuthorizedException();
@@ -57,13 +69,13 @@ public class ShellDescriptorService(
     {
         try
         {
-            var shellDescriptorTemplate = await templateProvider.GetShellDescriptorsTemplateAsync(cancellationToken).ConfigureAwait(false);
-
             var pluginManifests = pluginManifestConflictHandler.Manifests;
+            var metadata = await pluginDataHandler
+                .GetDataForShellDescriptorAsync(pluginManifests, id, cancellationToken)
+                .ConfigureAwait(false);
 
-            var metaData = await pluginDataHandler.GetDataForShellDescriptorAsync(pluginManifests, id, cancellationToken).ConfigureAwait(false);
-
-            return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, metaData);
+            var templateId = shellTemplateMappingProvider.GetTemplateId(metadata.Id)!;
+            return await BuildShellDescriptorAsync(metadata, templateId, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
         {
@@ -81,107 +93,41 @@ public class ShellDescriptorService(
         {
             throw new InvalidUserInputException(ex);
         }
+        catch (ValidationFailedException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
     }
 
-    public async Task SyncShellDescriptorsAsync(CancellationToken cancellationToken)
+    private async Task<ShellDescriptor?> TryBuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetadata, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(shellDescriptorMetadata.Id))
+        {
+            logger.LogError("Failed to process ShellDescriptor. DescriptorId is missing. Continuing with remaining descriptors.");
+            return null;
+        }
+
         try
         {
-            var existingDescriptors = await aasRegistryProvider.GetAllAsync(cancellationToken).ConfigureAwait(false);
-            if (existingDescriptors == null)
-            {
-                logger.LogError("AAS Registry returned null. Sync skipped.");
-                return;
-            }
-
-            var pluginManifests = pluginManifestConflictHandler.Manifests;
-
-            var pluginMetadata = await pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, pluginManifests, cancellationToken).ConfigureAwait(false);
-            if (pluginMetadata == null)
-            {
-                logger.LogError("Plugin metadata unavailable. Sync skipped.");
-                return;
-            }
-
-            if (existingDescriptors.Any(d => string.IsNullOrWhiteSpace(d.Id)))
-            {
-                logger.LogError("One or more registry descriptors have missing IDs: {@Descriptors}", existingDescriptors);
-                return;
-            }
-
-            if (pluginMetadata.ShellDescriptors.Any(m => string.IsNullOrWhiteSpace(m.Id)))
-            {
-                logger.LogError("One or more plugin metadata entries have missing IDs: {@Metadata}", pluginMetadata);
-                return;
-            }
-
-            var existingDescriptorsMap = existingDescriptors.ToDictionary(d => d.Id!);
-            var pluginMetadataMap = pluginMetadata.ShellDescriptors.ToDictionary(m => m.Id!);
-
-            await CreateOrUpdateShellDescriptorsAsync(existingDescriptorsMap!, pluginMetadata.ShellDescriptors, cancellationToken).ConfigureAwait(false);
-            await DeleteMissingShellDescriptorsAsync(existingDescriptors, pluginMetadataMap!, cancellationToken).ConfigureAwait(false);
+            var templateId = shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetadata.Id)!;
+            return await BuildShellDescriptorAsync(shellDescriptorMetadata, templateId, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (ResourceNotFoundException ex)
         {
-            logger.LogError(ex, "Unexpected error during ShellDescriptor synchronization.");
+            logger.LogError(ex, "Failed to process ShellDescriptor. DescriptorId: {DescriptorId}. Reason: {Reason}. Continuing with remaining descriptors.", shellDescriptorMetadata.Id, ex.Message);
+            return null;
         }
     }
 
-    private async Task CreateOrUpdateShellDescriptorsAsync(
-        Dictionary<string, ShellDescriptor> existingDescriptorsMap,
-        IList<ShellDescriptorMetaData> pluginMetadata,
+    private async Task<ShellDescriptor> BuildShellDescriptorAsync(
+        ShellDescriptorMetaData shellDescriptorMetadata,
+        string templateId,
         CancellationToken cancellationToken)
     {
-        foreach (var metadata in pluginMetadata)
-        {
-            try
-            {
-                if (existingDescriptorsMap.TryGetValue(metadata.Id!, out var existingDescriptor))
-                {
-                    var updatedDescriptor = shellDescriptorDataHandler.FillOut(existingDescriptor, metadata);
-                    await aasRegistryProvider.PutAsync(existingDescriptor.Id!, updatedDescriptor, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    var template = await templateProvider.GetShellDescriptorsTemplateAsync(cancellationToken).ConfigureAwait(false);
-                    var newDescriptor = shellDescriptorDataHandler.FillOut(template, metadata);
-                    await aasRegistryProvider.CreateAsync(newDescriptor, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Unhandled error while processing descriptor with ID '{Id}'", metadata.Id);
-                continue;
-            }
-        }
-    }
+        var shellDescriptorTemplate = await templateProvider
+            .GetShellDescriptorTemplateAsync(templateId, cancellationToken)
+            .ConfigureAwait(false);
 
-    private async Task DeleteMissingShellDescriptorsAsync(
-        List<ShellDescriptor> existingDescriptors,
-        Dictionary<string, ShellDescriptorMetaData> pluginMetadataMap,
-        CancellationToken cancellationToken)
-    {
-        var missingShellDescriptorsIds = existingDescriptors
-                                        .Select(descriptor => descriptor.Id)
-                                        .Where(id => !string.IsNullOrWhiteSpace(id) && !pluginMetadataMap.ContainsKey(id)).ToList();
-
-        if (missingShellDescriptorsIds.Count == 0)
-        {
-            logger.LogInformation("No missing shell descriptors found to delete.");
-            return;
-        }
-
-        foreach (var descriptorId in missingShellDescriptorsIds)
-        {
-            try
-            {
-                await aasRegistryProvider.DeleteByIdAsync(descriptorId!, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Unexpected error while deleting descriptor with ID '{Id}'", descriptorId);
-                continue;
-            }
-        }
+        return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
     }
 }

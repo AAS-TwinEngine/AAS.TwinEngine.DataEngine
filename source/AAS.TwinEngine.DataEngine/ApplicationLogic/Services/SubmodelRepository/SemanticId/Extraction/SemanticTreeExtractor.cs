@@ -10,11 +10,15 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository
 public class SemanticTreeExtractor(
     ISemanticIdResolver semanticIdResolver,
     ISubmodelElementHelper elementHelper,
-    IEnumerable<ISubmodelElementTypeHandler> handlers) : ISemanticTreeExtractor
+    IEnumerable<ISubmodelElementTypeHandler> handlers,
+    ILogger<SemanticTreeExtractor> logger) : ISemanticTreeExtractor
 {
     public SemanticTreeNode Extract(ISubmodel submodelTemplate)
     {
-        ArgumentNullException.ThrowIfNull(submodelTemplate);
+        if (submodelTemplate == null)
+        {
+            throw new InvalidDependencyException(nameof(submodelTemplate), logger);
+        }
 
         var rootNode = new SemanticBranchNode(semanticIdResolver.ResolveSemanticId(submodelTemplate, submodelTemplate.IdShort!), Cardinality.Unknown);
         var childNodes = submodelTemplate.SubmodelElements!
@@ -32,8 +36,15 @@ public class SemanticTreeExtractor(
 
     public ISubmodelElement Extract(ISubmodel submodelTemplate, string idShortPath)
     {
-        ArgumentNullException.ThrowIfNull(submodelTemplate);
-        ArgumentNullException.ThrowIfNull(idShortPath);
+        if (submodelTemplate == null)
+        {
+            throw new InvalidDependencyException(nameof(submodelTemplate), logger);
+        }
+
+        if (idShortPath == null)
+        {
+            throw new InvalidDependencyException(nameof(idShortPath), logger);
+        }
 
         var currentSubmodelElements = submodelTemplate.SubmodelElements;
         var idShortPathSegments = idShortPath.Split('.');
@@ -58,7 +69,10 @@ public class SemanticTreeExtractor(
 
     public SemanticTreeNode? ExtractElement(ISubmodelElement element)
     {
-        ArgumentNullException.ThrowIfNull(element);
+        if (element == null)
+        {
+            throw new InvalidDependencyException(nameof(element), logger);
+        }
 
         var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
         return handler != null

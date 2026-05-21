@@ -6,6 +6,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_0;
 
+using Microsoft.Extensions.Logging;
+
 using NSubstitute;
 
 using static Xunit.Assert;
@@ -17,18 +19,20 @@ public class SemanticTreeExtractorTests
     private readonly SemanticTreeExtractor _sut;
     private readonly ISemanticIdResolver _resolver;
     private readonly ISubmodelElementHelper _elementHelper;
+    private readonly ILogger<SemanticTreeExtractor> _logger;
     private readonly List<ISubmodelElementTypeHandler> _handlers;
 
     public SemanticTreeExtractorTests()
     {
         _resolver = Substitute.For<ISemanticIdResolver>();
+        _logger = Substitute.For<ILogger<SemanticTreeExtractor>>();
         _elementHelper = Substitute.For<ISubmodelElementHelper>();
         _handlers = [];
-        _sut = new SemanticTreeExtractor(_resolver, _elementHelper, _handlers);
+        _sut = new SemanticTreeExtractor(_resolver, _elementHelper, _handlers, _logger);
     }
 
     [Fact]
-    public void Extract_NullSubmodel_ThrowsArgumentNullException() => Throws<ArgumentNullException>(() => _sut.Extract(null!));
+    public void Extract_NullSubmodel_ThrowsInvalidDependencyException() => Throws<InvalidDependencyException>(() => _sut.Extract(null!));
 
     [Fact]
     public void Extract_SubmodelWithNoElements_ReturnsRootNodeWithNoChildren()
@@ -90,13 +94,13 @@ public class SemanticTreeExtractorTests
     }
 
     [Fact]
-    public void Extract_ByIdShortPath_NullSubmodel_ThrowsArgumentNullException() => Throws<ArgumentNullException>(() => _sut.Extract(null!, "path"));
+    public void Extract_ByIdShortPath_NullSubmodel_ThrowsInvalidDependencyException() => Throws<InvalidDependencyException>(() => _sut.Extract(null!, "path"));
 
     [Fact]
-    public void Extract_ByIdShortPath_NullPath_ThrowsArgumentNullException()
+    public void Extract_ByIdShortPath_NullPath_ThrowsInvalidDependencyException()
     {
         var submodel = Substitute.For<ISubmodel>();
-        Throws<ArgumentNullException>(() => _sut.Extract(submodel, null!));
+        Throws<InvalidDependencyException>(() => _sut.Extract(submodel, null!));
     }
 
     [Fact]

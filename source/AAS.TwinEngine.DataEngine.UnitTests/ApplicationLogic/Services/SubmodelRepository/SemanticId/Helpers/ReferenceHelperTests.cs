@@ -1,7 +1,7 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_0;
 
@@ -22,12 +22,13 @@ public class ReferenceHelperTests
 
     public ReferenceHelperTests()
     {
-        var semantics = Options.Create(new Semantics
+        var pluginsConfig = Options.Create(new PluginsConfig
         {
-            MultiLanguageSemanticPostfixSeparator = "_",
+            MultiLanguageProperty = new PluginMultiLanguagePropertyConfig { SemanticPostfixSeparator = "_" },
             SubmodelElementIndexContextPrefix = "_aastwinengineindex_"
         });
-        _resolver = new SemanticIdResolver(semantics);
+        var templateManagementConfig = Options.Create(new TemplateManagementConfig());
+        _resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig);
         _logger = Substitute.For<ILogger<ReferenceHelper>>();
         _sut = new ReferenceHelper(_resolver, _logger);
     }

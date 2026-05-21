@@ -1,9 +1,9 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,10 +19,10 @@ public class MultiPluginDataHandlerTests
 
     public MultiPluginDataHandlerTests()
     {
-        var semantics = Substitute.For<IOptions<Semantics>>();
+        var pluginsConfig = Substitute.For<IOptions<PluginsConfig>>();
         _logger = Substitute.For<ILogger<MultiPluginDataHandler>>();
-        semantics.Value.Returns(new Semantics { SubmodelElementIndexContextPrefix = "_index_" });
-        _sut = new MultiPluginDataHandler(semantics, _logger);
+        pluginsConfig.Value.Returns(new PluginsConfig { SubmodelElementIndexContextPrefix = "_index_" });
+        _sut = new MultiPluginDataHandler(pluginsConfig, _logger);
     }
 
     [Fact]

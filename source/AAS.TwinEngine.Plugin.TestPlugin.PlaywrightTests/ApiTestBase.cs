@@ -1,7 +1,7 @@
-﻿using Microsoft.Playwright;
-
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
+
+using Microsoft.Playwright;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests;
 
@@ -74,7 +74,6 @@ public abstract class ApiTestBase : IAsyncLifetime
 
         var expectedDoc = JsonDocument.Parse(expectedJson);
         Assert.NotNull(expectedDoc);
-
 
         // Compare JSON content (normalize formatting for comparison)
         var expectedNormalized = JsonSerializer.Serialize(expectedDoc, JsonSerializerOptions);

@@ -3,8 +3,8 @@ using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Json.Schema;
 
@@ -12,9 +12,9 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 
-public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSchemaValidator> logger) : IJsonSchemaValidator
+public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<JsonSchemaValidator> logger) : IJsonSchemaValidator
 {
-    private readonly string _contextPrefix = semantics.Value.SubmodelElementIndexContextPrefix;
+    private readonly string _contextPrefix = pluginsConfig.Value.SubmodelElementIndexContextPrefix;
     private const string DefinitionsPrefix = "#/definitions/";
 
     public void ValidateRequestSchema(JsonSchema schema)
@@ -163,10 +163,14 @@ public class JsonSchemaValidator(IOptions<Semantics> semantics, ILogger<JsonSche
         {
             var json = JsonSerializer.Serialize(schema, JsonSerializationOptions.SerializationWithEnum);
 
-            normalized = JsonNode.Parse(json)?.AsObject()
-            ?? throw new ArgumentException("Failed to parse schema JSON.");
+            normalized = JsonNode.Parse(json)?.AsObject();
 
             EscapeJsonReferencePointers(normalized);
+            if (normalized == null)
+            {
+                throw new InvalidDependencyException(nameof(normalized), logger);
+            }
+
             normalized["$id"] = normalized["$id"]?.GetValue<string>() ?? $"urn:uuid:{Guid.NewGuid():D}";
 
             return true;
