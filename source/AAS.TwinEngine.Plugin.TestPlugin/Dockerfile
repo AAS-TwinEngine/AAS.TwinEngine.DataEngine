@@ -3,7 +3,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /App
 COPY ["AAS.TwinEngine.Plugin.TestPlugin/", "AAS.TwinEngine.Plugin.TestPlugin/"]
 RUN dotnet restore "AAS.TwinEngine.Plugin.TestPlugin/AAS.TwinEngine.Plugin.TestPlugin.csproj" --locked-mode
-RUN dotnet publish "AAS.TwinEngine.Plugin.TestPlugin/AAS.TwinEngine.Plugin.TestPlugin.csproj" -c "$BUILD_CONFIGURATION" -o out --no-restore
+RUN dotnet publish "AAS.TwinEngine.Plugin.TestPlugin/AAS.TwinEngine.Plugin.TestPlugin.csproj" \
+    -c "$BUILD_CONFIGURATION" \
+    -o out \
+    --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet@sha256:9b5222b0ff8e9eb991a7c1a64b25f0f771d21ccc05dfa1c834f5668ffd9cd73f
 WORKDIR /App
