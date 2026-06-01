@@ -5,7 +5,7 @@ using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Services;
 
-public class AssetIdsFilterHeaderParser(ILogger<AssetIdsFilterHeaderParser> logger) : IAssetIdsFilterHeaderParser
+public class AssetIdsFilterHeaderValidation(ILogger<AssetIdsFilterHeaderValidation> logger) : IAssetIdsFilterHeaderParser
 {
     public AssetIdFilterHeader? ParseToDomainModel(string? headerValue)
     {
@@ -65,14 +65,14 @@ public class AssetIdsFilterHeaderParser(ILogger<AssetIdsFilterHeaderParser> logg
 
             return true;
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
-            error = $"Invalid JSON in header: {ex.Message}";
+            error = "Invalid JSON in header";
             return false;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            error = $"Unexpected error parsing header: {ex.Message}";
+            error = "Unexpected error parsing header";
             return false;
         }
     }
@@ -81,14 +81,15 @@ public class AssetIdsFilterHeaderParser(ILogger<AssetIdsFilterHeaderParser> logg
     {
         error = null;
 
-        foreach (var property in element.EnumerateObject())
+        var unsupportedProperty = element.EnumerateObject()
+           .FirstOrDefault(property =>
+           !string.Equals(property.Name, "name", StringComparison.Ordinal) &&
+           !string.Equals(property.Name, "value", StringComparison.Ordinal));
+
+        if (unsupportedProperty.Value.ValueKind != JsonValueKind.Undefined)
         {
-            if (!string.Equals(property.Name, "name", StringComparison.Ordinal) &&
-                !string.Equals(property.Name, "value", StringComparison.Ordinal))
-            {
-                error = $"Unsupported property '{property.Name}'. Only 'name' and 'value' are allowed";
-                return null;
-            }
+            error = $"Unsupported property '{unsupportedProperty.Name}'. Only 'name' and 'value' are allowed";
+            return null;
         }
 
         if (!element.TryGetProperty("name", out var nameElement) || nameElement.ValueKind != JsonValueKind.String)

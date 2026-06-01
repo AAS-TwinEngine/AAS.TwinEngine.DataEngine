@@ -26,7 +26,7 @@ public static class ApplicationDependencyInjectionExtensions
         services.AddScoped<ISubmodelHandler, SubmodelHandler>();
 
         services.AddScoped<IMetaDataService, MetaDataService>();
-        services.AddScoped<IAssetIdsFilterHeaderParser, AssetIdsFilterHeaderParser>();
+        services.AddScoped<IAssetIdsFilterHeaderParser, AssetIdsFilterHeaderValidation>();
         services.AddScoped<IMetaDataHandler, MetaDataHandler>();
 
         services.AddScoped<IManifestService, ManifestService>();

@@ -9,10 +9,10 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData.Services;
 
 public class AssetIdsFilterHeaderParserTests
 {
-    private readonly ILogger<AssetIdsFilterHeaderParser> _logger = Substitute.For<ILogger<AssetIdsFilterHeaderParser>>();
-    private readonly AssetIdsFilterHeaderParser _sut;
+    private readonly ILogger<AssetIdsFilterHeaderValidation> _logger = Substitute.For<ILogger<AssetIdsFilterHeaderValidation>>();
+    private readonly AssetIdsFilterHeaderValidation _sut;
 
-    public AssetIdsFilterHeaderParserTests() => _sut = new AssetIdsFilterHeaderParser(_logger);
+    public AssetIdsFilterHeaderParserTests() => _sut = new AssetIdsFilterHeaderValidation(_logger);
 
     [Theory]
     [InlineData(null)]
