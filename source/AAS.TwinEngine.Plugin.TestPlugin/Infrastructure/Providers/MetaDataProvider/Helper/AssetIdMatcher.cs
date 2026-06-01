@@ -11,15 +11,7 @@ public static class AssetIdMatcher
             return true;
         }
 
-        foreach (var identifier in filter.Identifiers)
-        {
-            if (!MatchesSingleIdentifier(shellDescriptor, identifier))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return filter.Identifiers.All(identifier => MatchesSingleIdentifier(shellDescriptor, identifier));
     }
 
     private static bool MatchesSingleIdentifier(ShellDescriptorData shellDescriptor, SpecificAssetIdsData identifier)
@@ -49,15 +41,7 @@ public static class AssetIdMatcher
             return false;
         }
 
-        foreach (var shellAsset in shellAssets)
-        {
-            if (MatchesNameAndValue(shellAsset, identifier))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return shellAssets.Any(shellAsset => MatchesNameAndValue(shellAsset, identifier));
     }
 
     private static bool MatchesNameAndValue(SpecificAssetIdsData shellAsset, SpecificAssetIdsData identifier)
