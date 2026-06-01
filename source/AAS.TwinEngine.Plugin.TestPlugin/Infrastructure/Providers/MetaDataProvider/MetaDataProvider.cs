@@ -60,11 +60,16 @@ public class MetaDataProvider : IMetaDataProvider
                                                          );
     }
 
-    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, CancellationToken cancellationToken)
     {
         var domainModels = _shellDescriptorLookup.Values.ToList();
 
         var shellDescriptors = domainModels.ToDomainModelList();
+
+        if (filter != null)
+        {
+            shellDescriptors = shellDescriptors.Where(item => AssetIdMatcher.MatchesAllIdentifiers(item, filter)).ToList();
+        }
 
         if (cursor == null || _shellDescriptorLookup.TryGetValue(cursor.DecodeBase64(), out _))
         {

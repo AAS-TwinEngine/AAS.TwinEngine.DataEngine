@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.Manifest.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Services;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
@@ -25,6 +26,7 @@ public static class ApplicationDependencyInjectionExtensions
         services.AddScoped<ISubmodelHandler, SubmodelHandler>();
 
         services.AddScoped<IMetaDataService, MetaDataService>();
+        services.AddScoped<IAssetIdsFilterHeaderParser, AssetIdsFilterHeaderParser>();
         services.AddScoped<IMetaDataHandler, MetaDataHandler>();
 
         services.AddScoped<IManifestService, ManifestService>();

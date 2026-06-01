@@ -12,7 +12,8 @@ public static class ManifestMappingProfile
             Capabilities = new CapabilitiesDto()
             {
                 HasAssetInformation = data.Capabilities.HasAssetInformation,
-                HasShellDescriptor = data.Capabilities.HasShellDescriptor
+                HasShellDescriptor = data.Capabilities.HasShellDescriptor,
+                HasAssetIdSearch = data.Capabilities.HasAssetIdSearch
             },
             SupportedSemanticIds = data.SupportedSemanticIds
         };

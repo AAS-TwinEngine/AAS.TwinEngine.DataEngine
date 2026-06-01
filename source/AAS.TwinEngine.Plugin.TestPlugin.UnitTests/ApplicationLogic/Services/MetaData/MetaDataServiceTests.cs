@@ -20,9 +20,27 @@ public class MetaDataServiceTests
     public async Task GetShellsAsync_ReturnsShells()
     {
         var expectedShells = new ShellDescriptorsData();
-        _repository.GetShellDescriptorsAsync(null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
+        _repository.GetShellDescriptorsAsync(null, null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_ReturnsShells_WithFilter()
+    {
+        var filter = new AssetIdFilterHeader
+        {
+            Identifiers =
+            [
+                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" }
+            ]
+        };
+        var expectedShells = new ShellDescriptorsData();
+        _repository.GetShellDescriptorsAsync(null, null, filter, Arg.Any<CancellationToken>()).Returns(expectedShells);
+
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, CancellationToken.None);
 
         Assert.NotNull(result);
     }
