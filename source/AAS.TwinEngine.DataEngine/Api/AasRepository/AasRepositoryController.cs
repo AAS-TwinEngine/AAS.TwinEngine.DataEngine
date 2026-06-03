@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
 using AasCore.Aas3_0;
@@ -19,8 +20,25 @@ namespace AAS.TwinEngine.DataEngine.Api.AasRepository;
 [ApiVersion(1)]
 public class AasRepositoryController(
     ILogger<AasRepositoryController> logger,
-    IAasRepositoryHandler aasRepositoryHandler) : ControllerBase
+    IAasRepositoryHandler aasRepositoryHandler,
+    IDiscoveryHandler discoveryHandler) : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult> GetShellsByAssetIdAsync(
+        [FromQuery] string[]? assetIds,
+        [FromQuery] string? idShort,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Start request to get shells by asset identifiers");
+        var response = await discoveryHandler.GetShellsByAssetIdsAsync(assetIds, idShort, limit, cursor, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
     [HttpGet("{aasIdentifier}")]
     [ProducesResponseType(typeof(IAssetAdministrationShell), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]

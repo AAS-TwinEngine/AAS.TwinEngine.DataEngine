@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
@@ -98,7 +99,7 @@ public class PluginDataHandlerTests
         {
             PluginName = "TestPlugin",
             PluginUrl = new Uri("http://localhost"),
-            SupportedSemanticIds = new List<string> { "Contact" },
+            SupportedSemanticIds = ["Contact"],
             Capabilities = new Capabilities { HasShellDescriptor = true }
         }
         };
@@ -119,15 +120,17 @@ public class PluginDataHandlerTests
             .Build(Arg.Any<IDictionary<string, JsonSchema>>())
             .Returns(requestList);
 
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK);
-        httpResponse.Content = new StringContent(ExpectedJsonResponse, Encoding.UTF8, "application/json");
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(ExpectedJsonResponse, Encoding.UTF8, "application/json")
+        };
 
         _pluginDataProvider
             .GetDataForSemanticIdsAsync(
                 Arg.Any<IList<PluginRequestSubmodel>>(),
                 Arg.Any<string>(),
                 Arg.Any<CancellationToken>())
-           .Returns(_ => Task.FromResult<IList<HttpContent>>(new List<HttpContent> { httpResponse.Content }));
+           .Returns(_ => Task.FromResult<IList<HttpContent>>([httpResponse.Content]));
 
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
@@ -174,14 +177,14 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
-            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         var result = await _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None);
 
@@ -204,7 +207,7 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -213,7 +216,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
@@ -234,10 +237,10 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
-            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
         var invalid = new ShellDescriptorsMetaData
         {
@@ -256,7 +259,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
@@ -287,10 +290,10 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
-            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
         var invalid = new ShellDescriptorsMetaData
         {
@@ -308,7 +311,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
@@ -396,14 +399,14 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
-            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         var result = await _sut.GetDataForShellDescriptorAsync(manifests, "ContactInformation", CancellationToken.None);
 
@@ -464,7 +467,7 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -473,7 +476,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForShellDescriptorAsync(manifests, "id", CancellationToken.None));
@@ -499,14 +502,14 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
-            .Returns(new List<PluginRequestMetaData> { new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "") });
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         var result = await _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None);
 
@@ -529,7 +532,7 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -538,7 +541,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None));
@@ -559,7 +562,7 @@ public class PluginDataHandlerTests
         };
 
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns(new List<string> { "PluginA" });
+            .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -568,7 +571,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None));
@@ -582,6 +585,150 @@ public class PluginDataHandlerTests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = false
         });
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorsByAssetIdsAsync_ReturnsShellDescriptors()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { }
+            }
+        };
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var responseJson = """
+        {
+            "result": [
+                { "id": "urn:aas:001", "idShort": "Motor001", "globalAssetId": "urn:asset:001" }
+            ],
+            "paging_metadata": { "cursor": null }
+        }
+        """;
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new List<HttpContent> { httpResponse.Content });
+
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, """[{"name":"sn","value":"123"}]""", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Single(result.ShellDescriptors);
+        Assert.Equal("urn:aas:001", result.ShellDescriptors[0].Id);
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorsByAssetIdsAsync_WhenNullDeserialization_ThrowsResponseParsingException()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { }
+            }
+        };
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("null", Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([httpResponse.Content]);
+
+        await Assert.ThrowsAsync<ResponseParsingException>(() =>
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, "[]", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorsByAssetIdsAsync_WhenInvalidJson_ThrowsResponseParsingException()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { }
+            }
+        };
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("invalid json!", Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([httpResponse.Content]);
+
+        await Assert.ThrowsAsync<ResponseParsingException>(() =>
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, "[]", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorsByAssetIdsAsync_SetsHrefOnResults()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { }
+            }
+        };
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var responseJson = """
+        {
+            "result": [
+                { "id": "urn:aas:001", "idShort": "Motor001" },
+                { "id": "urn:aas:002", "idShort": "Motor002" }
+            ],
+            "paging_metadata": { "cursor": null }
+        }
+        """;
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+        };
+
+        _pluginDataProvider
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([httpResponse.Content]);
+
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, "[]", CancellationToken.None);
+
+        Assert.Equal(2, result.ShellDescriptors.Count);
+        Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));
     }
 
     private const string AssetData = """

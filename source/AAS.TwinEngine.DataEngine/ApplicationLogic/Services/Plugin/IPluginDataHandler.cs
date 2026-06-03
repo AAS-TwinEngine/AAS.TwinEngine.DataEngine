@@ -18,4 +18,6 @@ public interface IPluginDataHandler
     Task<ShellDescriptorMetaData> GetDataForShellDescriptorAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken);
 
     Task<AssetData> GetDataForAssetInformationByIdAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken);
+
+    Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, string assetIdsHeaderValue, CancellationToken cancellationToken);
 }

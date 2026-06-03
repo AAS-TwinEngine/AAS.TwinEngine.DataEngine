@@ -198,6 +198,44 @@ public class PluginDataHandler(
         throw new ResponseParsingException();
     }
 
+    public async Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, string assetIdsHeaderValue, CancellationToken cancellationToken)
+    {
+        var availablePlugins = pluginManifests.Select(m => m.PluginName).ToList();
+
+        var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
+
+        var response = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, cancellationToken).ConfigureAwait(false);
+
+        var result = new ShellDescriptorsMetaData();
+
+        for (var i = 0; i < response.Count; i++)
+        {
+            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorsMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
+                if (shellDescriptorData == null)
+                {
+                    logger.LogError("Failed to deserialize ShellDescriptorData from asset ID search. Response content: {Content}", responseContent);
+                    throw new ResponseParsingException();
+                }
+
+                var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
+                SetHref(shellDescriptors);
+                result.PagingMetaData = shellDescriptorData.PagingMetaData;
+                result.ShellDescriptors?.AddRange(shellDescriptors);
+            }
+            catch (JsonException)
+            {
+                logger.LogError("Invalid response format from asset ID search.");
+                throw new ResponseParsingException();
+            }
+        }
+
+        return result;
+    }
+
     private void SetHref(IList<ShellDescriptorMetaData> values)
     {
         foreach (var value in values)

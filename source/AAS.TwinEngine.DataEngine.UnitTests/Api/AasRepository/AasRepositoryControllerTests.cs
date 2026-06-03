@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 using AasCore.Aas3_0;
@@ -41,7 +42,8 @@ public class AasRepositoryControllerTests
     {
         var logger = Substitute.For<ILogger<AasRepositoryController>>();
         _handler = Substitute.For<IAasRepositoryHandler>();
-        _sut = new AasRepositoryController(logger, _handler);
+        var discoveryHandler = Substitute.For<IDiscoveryHandler>();
+        _sut = new AasRepositoryController(logger, _handler, discoveryHandler);
         _expectedShell = CreateShell();
         _expectedAssetInformation = CreateAssetInformation();
         _expectedShellResponse = Jsonization.Serialize.ToJsonObject(_expectedShell);
