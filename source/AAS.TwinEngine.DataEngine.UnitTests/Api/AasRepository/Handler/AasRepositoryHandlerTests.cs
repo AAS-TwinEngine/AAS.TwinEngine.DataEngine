@@ -5,7 +5,10 @@ using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_0;
@@ -19,10 +22,76 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Api.AasRepository.Handler;
 public class AasRepositoryHandlerTests
 {
     private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
+    private readonly IAssetIdSearchService _assetIdSearchService = Substitute.For<IAssetIdSearchService>();
+    private readonly IAasRepositoryTemplateService _templateService = Substitute.For<IAasRepositoryTemplateService>();
     private readonly ILogger<AasRepositoryHandler> _logger = Substitute.For<ILogger<AasRepositoryHandler>>();
     private readonly AasRepositoryHandler _sut;
 
-    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService);
+    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService, _assetIdSearchService, _templateService);
+
+    [Fact]
+    public async Task GetShellsByAssetIdsAsync_WithNullAssetIds_ThrowsInvalidUserInputException()
+    {
+        await Assert.ThrowsAsync<InvalidUserInputException>(
+            () => _sut.GetShellsByAssetIdsAsync(null, null, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetShellsByAssetIdsAsync_WithEmptyAssetIds_ThrowsInvalidUserInputException()
+    {
+        await Assert.ThrowsAsync<InvalidUserInputException>(
+            () => _sut.GetShellsByAssetIdsAsync([], null, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetShellsByAssetIdsAsync_WithInvalidBase64Url_ThrowsInvalidUserInputException()
+    {
+        var assetIds = new[] { "not-valid-base64!!!" };
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(
+            () => _sut.GetShellsByAssetIdsAsync(assetIds, null, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetShellsByAssetIdsAsync_WithValidInput_ReturnsShells()
+    {
+        var json = """{"name":"serialNumber","value":"SN-4711"}""";
+        var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+        var assetIds = new[] { encoded };
+
+        var metadata = new List<ShellDescriptorMetaData>
+        {
+            new() { Id = "urn:example:aas:001", IdShort = "Motor001", GlobalAssetId = "urn:example:asset:001" }
+        };
+        var pagingMetaData = new PagingMetaData { Cursor = null };
+
+        _ = _assetIdSearchService.GetShellMetadataByAssetIdsAsync(
+            Arg.Any<IList<SpecificAssetIdFilter>>(), null, null, Arg.Any<CancellationToken>())
+            .Returns((metadata, pagingMetaData));
+
+        var shell = new AssetAdministrationShell(
+            "urn:example:aas:001",
+            new AssetInformation(AssetKind.Instance));
+        _ = _templateService.GetShellTemplateAsync("urn:example:aas:001", Arg.Any<CancellationToken>())
+            .Returns(shell);
+
+        var result = await _sut.GetShellsByAssetIdsAsync(assetIds, null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task GetShellsByAssetIdsAsync_WithNegativeLimit_ThrowsInvalidUserInputException()
+    {
+        var json = """{"name":"serialNumber","value":"SN-4711"}""";
+        var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+        var assetIds = new[] { encoded };
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(
+            () => _sut.GetShellsByAssetIdsAsync(assetIds, -1, null, CancellationToken.None));
+    }
 
     [Fact]
     public async Task GetShellByIdAsync_ReturnShell_WhenExists()

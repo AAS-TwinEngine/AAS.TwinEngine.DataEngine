@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
@@ -6,6 +7,7 @@ using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 
 using AasCore.Aas3_0;
 
@@ -13,8 +15,52 @@ namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 
 public class AasRepositoryHandler(
     ILogger<AasRepositoryHandler> logger,
-    IAasRepositoryService aasRepositoryService) : IAasRepositoryHandler
+    IAasRepositoryService aasRepositoryService,
+    IAssetIdSearchService assetIdSearchService,
+    IAasRepositoryTemplateService templateService) : IAasRepositoryHandler
 {
+    public async Task<object> GetShellsByAssetIdsAsync(
+        string[]? assetIds, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        limit.ValidateLimit(logger);
+        cursor?.ValidateCursor(logger);
+
+        if (assetIds is null || assetIds.Length == 0)
+        {
+            logger.LogError("assetIds query parameter is required.");
+            throw new InvalidUserInputException();
+        }
+
+        var specificAssetIdFilters = AssetIdHelper.DecodeAssetIds(assetIds, logger);
+
+        var (metadata, pagingMetaData) = await assetIdSearchService
+            .GetShellMetadataByAssetIdsAsync(specificAssetIdFilters, limit, cursor, cancellationToken)
+            .ConfigureAwait(false);
+
+        var shells = new List<JsonObject>();
+        foreach (var metadataItem in metadata)
+        {
+            try
+            {
+                var shell = await templateService.GetShellTemplateAsync(metadataItem.Id, cancellationToken).ConfigureAwait(false);
+
+                AssetIdHelper.FillShellFromMetadata(shell, metadataItem);
+
+                shells.Add(Jsonization.Serialize.ToJsonObject(shell));
+            }
+            catch (Exception ex) when (ex is TemplateNotFoundException or InternalDataProcessingException)
+            {
+                logger.LogWarning(ex, "Failed to build AAS for id {AasId}. Skipping.", metadataItem.Id);
+            }
+        }
+
+        return new
+        {
+            paging_metadata = new { cursor = pagingMetaData.Cursor },
+            result = shells
+        };
+    }
+
     public Task<IAssetAdministrationShell> GetShellByIdAsync(GetShellRequest request, CancellationToken cancellationToken)
         => GetResourceByIdAsync(
             request?.AasIdentifier,

@@ -7,7 +7,4 @@ public interface IDiscoveryHandler
 {
     Task<ShellsByAssetLinkResponseDto> SearchShellsByAssetLinkAsync(
         AssetLink[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken);
-
-    Task<object> GetShellsByAssetIdsAsync(
-        string[]? assetIds, string? idShort, int? limit, string? cursor, CancellationToken cancellationToken);
 }

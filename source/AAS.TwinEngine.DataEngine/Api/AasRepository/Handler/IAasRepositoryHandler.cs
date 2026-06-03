@@ -8,6 +8,8 @@ namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 
 public interface IAasRepositoryHandler
 {
+    Task<object> GetShellsByAssetIdsAsync(string[]? assetIds, int? limit, string? cursor, CancellationToken cancellationToken);
+
     Task<IAssetAdministrationShell> GetShellByIdAsync(GetShellRequest request, CancellationToken cancellationToken);
 
     Task<IAssetInformation> GetAssetInformationByIdAsync(GetAssetInformationRequest request, CancellationToken cancellationToken);

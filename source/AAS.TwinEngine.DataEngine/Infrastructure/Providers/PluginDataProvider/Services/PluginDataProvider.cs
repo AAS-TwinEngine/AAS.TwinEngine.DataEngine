@@ -134,9 +134,9 @@ public class PluginDataProvider(
 
                 exceptions.Add(HandleFailureResponse(response.StatusCode));
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException ex)
             {
-                logger.LogError("Request timed out. Endpoint: {Url}", url);
+                logger.LogError(ex, "Request timed out. Endpoint: {Url}", url);
                 exceptions.Add(new RequestTimeoutException());
             }
         }

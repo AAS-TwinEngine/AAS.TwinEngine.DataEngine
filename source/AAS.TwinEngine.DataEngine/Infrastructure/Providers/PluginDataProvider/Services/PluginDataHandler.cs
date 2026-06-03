@@ -200,7 +200,7 @@ public class PluginDataHandler(
 
     public async Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, string assetIdsHeaderValue, CancellationToken cancellationToken)
     {
-        var availablePlugins = pluginManifests.Select(m => m.PluginName).ToList();
+        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 
@@ -226,9 +226,9 @@ public class PluginDataHandler(
                 result.PagingMetaData = shellDescriptorData.PagingMetaData;
                 result.ShellDescriptors?.AddRange(shellDescriptors);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                logger.LogError("Invalid response format from asset ID search.");
+                logger.LogError(ex, "Invalid response format from asset ID search.");
                 throw new ResponseParsingException();
             }
         }
