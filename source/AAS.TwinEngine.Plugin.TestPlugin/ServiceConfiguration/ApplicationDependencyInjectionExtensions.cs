@@ -20,13 +20,14 @@ public static class ApplicationDependencyInjectionExtensions
         services.AddProblemDetails();
 
         services.AddScoped<IJsonSchemaParser, JsonSchemaParser>();
+        services.AddScoped<IJsonSchemaSecurityValidator, JsonSchemaSecurityValidator>();
         services.AddScoped<ISemanticTreeHandler, SemanticTreeHandler>();
         services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
         services.AddScoped<ISubmodelService, SubmodelService>();
         services.AddScoped<ISubmodelHandler, SubmodelHandler>();
 
         services.AddScoped<IMetaDataService, MetaDataService>();
-        services.AddScoped<IAssetIdsFilterHeaderParser, AssetIdsFilterHeaderValidation>();
+        services.AddScoped<IAssetIdsFilterHeaderValidation, AssetIdsFilterHeaderValidation>();
         services.AddScoped<IMetaDataHandler, MetaDataHandler>();
 
         services.AddScoped<IManifestService, ManifestService>();

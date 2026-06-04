@@ -11,7 +11,7 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 
 public class MetaDataHandler(
     ILogger<MetaDataHandler> logger,
-    IAssetIdsFilterHeaderParser assetIdsFilterHeaderParser,
+    IAssetIdsFilterHeaderValidation assetIdsFilterHeaderParser,
     IMetaDataService metaDataService) : IMetaDataHandler
 {
     public async Task<ShellDescriptorsDto> GetShellDescriptors(GetShellDescriptorsRequest request, CancellationToken cancellationToken)

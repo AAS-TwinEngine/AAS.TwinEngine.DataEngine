@@ -15,7 +15,7 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.Api.MetaData.Handler;
 public class MetaDataHandlerTests
 {
     private readonly ILogger<MetaDataHandler> _logger = Substitute.For<ILogger<MetaDataHandler>>();
-    private readonly IAssetIdsFilterHeaderParser _assetIdsFilterHeaderParser = Substitute.For<IAssetIdsFilterHeaderParser>();
+    private readonly IAssetIdsFilterHeaderValidation _assetIdsFilterHeaderParser = Substitute.For<IAssetIdsFilterHeaderValidation>();
     private readonly IMetaDataService _shellDescriptorService = Substitute.For<IMetaDataService>();
     private readonly MetaDataHandler _sut;
 

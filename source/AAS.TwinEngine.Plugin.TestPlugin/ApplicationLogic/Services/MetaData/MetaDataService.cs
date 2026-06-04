@@ -2,9 +2,7 @@
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
 
-public class MetaDataService(
-    ILogger<MetaDataService> logger,
-    IMetaDataProvider metaDataProvider) : IMetaDataService
+public class MetaDataService(IMetaDataProvider metaDataProvider) : IMetaDataService
 {
     public async Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, CancellationToken cancellationToken) => await metaDataProvider.GetShellDescriptorsAsync(limit, cursor, filter, cancellationToken);
 

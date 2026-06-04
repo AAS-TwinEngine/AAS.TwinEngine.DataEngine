@@ -2,7 +2,7 @@
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Services;
 
-public interface IAssetIdsFilterHeaderParser
+public interface IAssetIdsFilterHeaderValidation
 {
     AssetIdFilterHeader? ParseToDomainModel(string? headerValue);
 }

@@ -9,12 +9,11 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.UnitTests.ApplicationLogic.Services.M
 
 public class MetaDataServiceTests
 {
-    private readonly ILogger<MetaDataService> _logger = Substitute.For<ILogger<MetaDataService>>();
     private readonly IMetaDataProvider _repository = Substitute.For<IMetaDataProvider>();
     private readonly MetaDataService _sut;
     private const string AasIdentifier = "ContactInformation";
 
-    public MetaDataServiceTests() => _sut = new MetaDataService(_logger, _repository);
+    public MetaDataServiceTests() => _sut = new MetaDataService(_repository);
 
     [Fact]
     public async Task GetShellsAsync_ReturnsShells()
