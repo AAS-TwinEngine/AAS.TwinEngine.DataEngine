@@ -21,7 +21,7 @@
           <keys>
             <key>
               <type>Submodel</type>
-              <value>ContactInformation</value>
+              <value>MaintenanceInstructions</value>
             </key>
           </keys>
         </reference>

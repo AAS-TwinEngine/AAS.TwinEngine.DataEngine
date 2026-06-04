@@ -23,8 +23,9 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:v1.0.0
+    image: ghcr.io/aas-twinengine/dataengine:develop
     container_name: twinengine-dataengine
+    pull_policy: always
     depends_on:
       dpp-plugin:
         condition: service_started
@@ -45,8 +46,8 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=TechnicalData
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=Nameplate
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=ContactInformation
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=MaintenanceInstructions
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__templateId=https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__pattern__0=CarbonFootprint
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
@@ -90,8 +91,9 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:v1.0.0
+    image: ghcr.io/aas-twinengine/plugindpp:develop
     container_name: dpp-plugin
+    pull_policy: always
     depends_on:
       postgres:
         condition: service_healthy
