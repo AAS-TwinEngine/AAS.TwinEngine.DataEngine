@@ -1,9 +1,9 @@
 ﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
+using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 
 using Asp.Versioning;
 
@@ -23,7 +23,7 @@ public class DiscoveryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<ShellsByAssetLinkResponseDto>> SearchShellsByAssetLinkAsync(
-        [FromBody] AssetLink[] assetLinks,
+        [FromBody] AssetLinkDto[] assetLinks,
         [FromQuery] int? limit,
         [FromQuery] string? cursor,
         CancellationToken cancellationToken = default)

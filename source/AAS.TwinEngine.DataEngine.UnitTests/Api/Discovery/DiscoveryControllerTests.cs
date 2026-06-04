@@ -1,5 +1,6 @@
 using AAS.TwinEngine.DataEngine.Api.Discovery;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
+using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
@@ -28,7 +29,7 @@ public class DiscoveryControllerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
         };
         var expectedResponse = new ShellsByAssetLinkResponseDto
         {
@@ -51,7 +52,7 @@ public class DiscoveryControllerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
         };
         var expectedResponse = new ShellsByAssetLinkResponseDto
         {

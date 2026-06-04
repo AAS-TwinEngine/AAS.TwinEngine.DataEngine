@@ -1,8 +1,13 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Text.Json;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_0;
 
@@ -11,10 +16,93 @@ using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.E
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 public class AasRepositoryService(
+    ILogger<AasRepositoryService> logger,
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IAasRepositoryService
 {
+    public async Task<Shells> GetShellsByFiltersAsync(
+        IList<SpecificAssetIdFilter>? filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var pluginManifests = pluginManifestConflictHandler.Manifests;
+            IList<ShellDescriptorMetaData> shellDescriptorMetadataList;
+            PagingMetaData pagingMetaData;
+
+            if (filters is null || filters.Count == 0)
+            {
+                var metadata = await pluginDataHandler
+                    .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken)
+                    .ConfigureAwait(false);
+
+                shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
+                pagingMetaData = metadata.PagingMetaData ?? new PagingMetaData();
+            }
+            else
+            {
+                var headerValue = SerializeFiltersHeader(filters);
+                var metadata = await pluginDataHandler
+                    .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifests, headerValue, cancellationToken)
+                    .ConfigureAwait(false);
+
+                var allMetadata = metadata.ShellDescriptors?
+                    .Where(m => !string.IsNullOrWhiteSpace(m.Id))
+                    .ToList() ?? [];
+
+                var (pagedItems, paged) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id, limit, cursor);
+                shellDescriptorMetadataList = pagedItems;
+                pagingMetaData = paged;
+            }
+
+            var shells = new List<IAssetAdministrationShell>();
+            foreach (var metadataItem in shellDescriptorMetadataList)
+            {
+                if (string.IsNullOrWhiteSpace(metadataItem.Id))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var shell = await templateService.GetShellTemplateAsync(metadataItem.Id, cancellationToken).ConfigureAwait(false);
+                    FillShellFromMetadata(shell, metadataItem);
+                    shells.Add(shell);
+                }
+                catch (Exception ex) when (ex is TemplateNotFoundException or InternalDataProcessingException)
+                {
+                    logger.LogWarning(ex, "Failed to build AAS for id {AasId}. Skipping.", metadataItem.Id);
+                }
+            }
+
+            return new Shells
+            {
+                PagingMetaData = pagingMetaData,
+                Result = shells
+            };
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
+        catch (ValidationFailedException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw new ServiceUnAuthorizedException();
+        }
+    }
+
     public async Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
     {
         var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
@@ -127,5 +215,36 @@ public class AasRepositoryService(
                                                               value: assetId.Value ?? string.Empty
                                                              ));
         }
+    }
+
+    private static void FillShellFromMetadata(IAssetAdministrationShell shell, ShellDescriptorMetaData metadata)
+    {
+        shell.Id = metadata.Id;
+
+        if (!string.IsNullOrWhiteSpace(metadata.IdShort))
+        {
+            shell.IdShort = metadata.IdShort;
+        }
+
+        shell.AssetInformation ??= new AssetInformation(AssetKind.Instance);
+        shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
+
+        if (metadata.SpecificAssetIds is not null)
+        {
+            shell.AssetInformation.SpecificAssetIds = [];
+            foreach (var assetId in metadata.SpecificAssetIds)
+            {
+                shell.AssetInformation.SpecificAssetIds.Add(assetId);
+            }
+        }
+    }
+
+    private static string SerializeFiltersHeader(IList<SpecificAssetIdFilter> filters)
+    {
+        return JsonSerializer.Serialize(filters, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        });
     }
 }

@@ -1,4 +1,5 @@
-using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
+﻿using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
+using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
@@ -24,14 +25,14 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
         };
         var expectedIds = new List<string> { "urn:example:aas:001" };
         var pagingMetaData = new PagingMetaData { Cursor = null };
 
         _ = _assetIdSearchService.SearchShellsByAssetLinkAsync(
             Arg.Any<IList<AssetLink>>(), null, null, Arg.Any<CancellationToken>())
-            .Returns((expectedIds, pagingMetaData));
+            .Returns(new ShellsByAssetLink { PagingMetaData = pagingMetaData, Result = expectedIds });
 
         var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
 
@@ -44,7 +45,7 @@ public class DiscoveryHandlerTests
     [Fact]
     public async Task SearchShellsByAssetLinkAsync_WithEmptyArray_ThrowsInvalidUserInputException()
     {
-        var assetLinks = Array.Empty<AssetLink>();
+        var assetLinks = Array.Empty<AssetLinkDto>();
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
             () => _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None));
@@ -55,7 +56,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "", Value = "SN-4711" }
+            new AssetLinkDto { Name = "", Value = "SN-4711" }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -67,7 +68,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "" }
+            new AssetLinkDto { Name = "serialNumber", Value = "" }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -79,7 +80,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = new string('a', 65), Value = "SN-4711" }
+            new AssetLinkDto { Name = new string('a', 65), Value = "SN-4711" }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -91,7 +92,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = new string('x', 2049) }
+            new AssetLinkDto { Name = "serialNumber", Value = new string('x', 2049) }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -103,7 +104,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -115,14 +116,14 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = new string('a', 64), Value = "SN-4711" }
+            new AssetLinkDto { Name = new string('a', 64), Value = "SN-4711" }
         };
         var expectedIds = new List<string> { "urn:example:aas:001" };
         var pagingMetaData = new PagingMetaData { Cursor = null };
 
         _ = _assetIdSearchService.SearchShellsByAssetLinkAsync(
             Arg.Any<IList<AssetLink>>(), null, null, Arg.Any<CancellationToken>())
-            .Returns((expectedIds, pagingMetaData));
+            .Returns(new ShellsByAssetLink { PagingMetaData = pagingMetaData, Result = expectedIds });
 
         var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
 
@@ -134,15 +135,15 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" },
-            new AssetLink { Name = "batchId", Value = "B-001" }
+            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" },
+            new AssetLinkDto { Name = "batchId", Value = "B-001" }
         };
         var expectedIds = new List<string> { "urn:example:aas:001" };
         var pagingMetaData = new PagingMetaData { Cursor = null };
 
         _ = _assetIdSearchService.SearchShellsByAssetLinkAsync(
             Arg.Any<IList<AssetLink>>(), null, null, Arg.Any<CancellationToken>())
-            .Returns((expectedIds, pagingMetaData));
+            .Returns(new ShellsByAssetLink { PagingMetaData = pagingMetaData, Result = expectedIds });
 
         var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
 
@@ -155,14 +156,14 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
         };
         var expectedIds = new List<string> { "urn:example:aas:001", "urn:example:aas:002" };
         var pagingMetaData = new PagingMetaData { Cursor = "nextCursorValue" };
 
         _ = _assetIdSearchService.SearchShellsByAssetLinkAsync(
             Arg.Any<IList<AssetLink>>(), 1, null, Arg.Any<CancellationToken>())
-            .Returns((expectedIds, pagingMetaData));
+            .Returns(new ShellsByAssetLink { PagingMetaData = pagingMetaData, Result = expectedIds });
 
         var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, 1, null, CancellationToken.None);
 

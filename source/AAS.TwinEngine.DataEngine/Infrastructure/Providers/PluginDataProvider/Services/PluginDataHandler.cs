@@ -200,7 +200,7 @@ public class PluginDataHandler(
 
     public async Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, string assetIdsHeaderValue, CancellationToken cancellationToken)
     {
-        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 

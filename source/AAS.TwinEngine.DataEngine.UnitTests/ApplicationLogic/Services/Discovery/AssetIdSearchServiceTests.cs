@@ -50,12 +50,12 @@ public class AssetIdSearchServiceTests
             Arg.Any<CancellationToken>())
             .Returns(metadata);
 
-        var (aasIds, pagingMetaData) = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
+        var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
 
-        Assert.Equal(2, aasIds.Count);
-        Assert.Equal("urn:example:aas:001", aasIds[0]);
-        Assert.Equal("urn:example:aas:002", aasIds[1]);
-        Assert.Null(pagingMetaData.Cursor);
+        Assert.Equal(2, result.Result!.Count);
+        Assert.Equal("urn:example:aas:001", result.Result![0]);
+        Assert.Equal("urn:example:aas:002", result.Result![1]);
+        Assert.Null(result.PagingMetaData?.Cursor);
     }
 
     [Fact]
@@ -82,9 +82,9 @@ public class AssetIdSearchServiceTests
             Arg.Any<CancellationToken>())
             .Returns(metadata);
 
-        var (aasIds, pagingMetaData) = await _sut.SearchShellsByAssetLinkAsync(assetLinks, 2, null, CancellationToken.None);
+        var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, 2, null, CancellationToken.None);
 
-        Assert.Equal(2, aasIds.Count);
+        Assert.Equal(2, result.Result!.Count);
     }
 
     [Fact]
@@ -322,11 +322,11 @@ public class AssetIdSearchServiceTests
             Arg.Any<CancellationToken>())
             .Returns(metadata);
 
-        var (aasIds, _) = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
+        var result3 = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
 
-        Assert.Equal(2, aasIds.Count);
-        Assert.Equal("urn:example:aas:001", aasIds[0]);
-        Assert.Equal("urn:example:aas:002", aasIds[1]);
+        Assert.Equal(2, result3.Result!.Count);
+        Assert.Equal("urn:example:aas:001", result3.Result![0]);
+        Assert.Equal("urn:example:aas:002", result3.Result![1]);
     }
 
     private static IReadOnlyList<PluginManifest> CreatePluginManifests()

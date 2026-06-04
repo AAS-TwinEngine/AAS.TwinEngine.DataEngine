@@ -1,5 +1,6 @@
+using AAS.TwinEngine.DataEngine.Api.Discovery.MappingProfiles;
+using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Responses;
-using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
@@ -12,25 +13,25 @@ public class DiscoveryHandler(
     IAssetIdSearchService assetIdSearchService) : IDiscoveryHandler
 {
     public async Task<ShellsByAssetLinkResponseDto> SearchShellsByAssetLinkAsync(
-        AssetLink[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
+        AssetLinkDto[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         limit.ValidateLimit(logger);
         cursor?.ValidateCursor(logger);
 
         ValidateAssetLinks(assetLinks);
 
-        var (aasIds, pagingMetaData) = await assetIdSearchService
-            .SearchShellsByAssetLinkAsync(assetLinks, limit, cursor, cancellationToken)
+        var domainAssetLinks = assetLinks
+            .Select(l => new AssetLink { Name = l.Name, Value = l.Value })
+            .ToList();
+
+        var result = await assetIdSearchService
+            .SearchShellsByAssetLinkAsync(domainAssetLinks, limit, cursor, cancellationToken)
             .ConfigureAwait(false);
 
-        return new ShellsByAssetLinkResponseDto
-        {
-            PagingMetaData = new PagingMetaDataDto { Cursor = pagingMetaData.Cursor },
-            Result = [.. aasIds]
-        };
+        return result.ToDto();
     }
 
-    private void ValidateAssetLinks(AssetLink[] assetLinks)
+    private void ValidateAssetLinks(AssetLinkDto[] assetLinks)
     {
         if (assetLinks is null || assetLinks.Length == 0)
         {

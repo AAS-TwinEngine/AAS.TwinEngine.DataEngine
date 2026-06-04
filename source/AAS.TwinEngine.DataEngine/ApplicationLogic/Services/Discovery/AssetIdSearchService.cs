@@ -16,7 +16,7 @@ public class AssetIdSearchService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IAssetIdSearchService
 {
-    public async Task<(IList<string> AasIds, PagingMetaData PagingMetaData)> SearchShellsByAssetLinkAsync(
+    public async Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(
         IList<AssetLink> assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var specificAssetIds = assetLinks.Select(link => new SpecificAssetIdFilter
@@ -37,7 +37,11 @@ public class AssetIdSearchService(
         var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(
             allIds, id => id, limit, cursor);
 
-        return (pagedItems, pagingMetaData);
+        return new ShellsByAssetLink
+        {
+            PagingMetaData = pagingMetaData,
+            Result = pagedItems
+        };
     }
 
     public async Task<(IList<ShellDescriptorMetaData> Metadata, PagingMetaData PagingMetaData)> GetShellMetadataByAssetIdsAsync(

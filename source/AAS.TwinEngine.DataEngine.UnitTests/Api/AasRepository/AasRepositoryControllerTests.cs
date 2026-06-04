@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 using AasCore.Aas3_0;
@@ -52,13 +53,13 @@ public class AasRepositoryControllerTests
     [Fact]
     public async Task GetShellsByAssetIdAsync_ReturnsOkResult()
     {
-        var expectedResponse = new { paging_metadata = new { cursor = (string?)null }, result = new List<object>() };
+        var expectedResponse = new ShellsDto { PagingMetaData = new PagingMetaDataDto { Cursor = null }, Result = [] };
         _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
         var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, CancellationToken.None);
 
-        Assert.IsType<OkObjectResult>(result);
+        Assert.IsType<ActionResult<ShellsDto>>(result);
     }
 
     [Fact]
@@ -255,7 +256,7 @@ public class AasRepositoryControllerTests
         return new SubmodelRefDto
         {
             PagingMetaData = null,
-            Result = new List<IReference> { submodelRef }
+            Result = [submodelRef]
         };
     }
 

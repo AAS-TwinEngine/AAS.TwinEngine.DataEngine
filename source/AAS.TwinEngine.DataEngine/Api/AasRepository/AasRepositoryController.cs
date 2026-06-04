@@ -22,10 +22,10 @@ public class AasRepositoryController(
     IAasRepositoryHandler aasRepositoryHandler) : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ShellsDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult> GetShellsByAssetIdAsync(
+    public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync(
         [FromQuery] string[]? assetIds,
         [FromQuery] int? limit,
         [FromQuery] string? cursor,

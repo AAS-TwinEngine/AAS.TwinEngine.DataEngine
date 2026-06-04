@@ -33,7 +33,7 @@ public class SubmodelProviderTests
     [Fact]
     public void EnrichWithData_LeafNode_SetsValueFromJson()
     {
-        var leaf = new SemanticLeafNode("Email", DataType.String, null);
+        var leaf = new SemanticLeafNode("Email", DataType.String, null!);
         var root = new SemanticBranchNode("root", DataType.Object);
         root.AddChild(leaf);
 

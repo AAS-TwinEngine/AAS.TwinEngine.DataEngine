@@ -5,7 +5,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 
 public interface IAssetIdSearchService
 {
-    Task<(IList<string> AasIds, DomainModel.Shared.PagingMetaData PagingMetaData)> SearchShellsByAssetLinkAsync(
+    Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(
         IList<AssetLink> assetLinks, int? limit, string? cursor, CancellationToken cancellationToken);
 
     Task<(IList<ShellDescriptorMetaData> Metadata, DomainModel.Shared.PagingMetaData PagingMetaData)> GetShellMetadataByAssetIdsAsync(

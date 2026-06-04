@@ -1,10 +1,10 @@
-﻿using AAS.TwinEngine.DataEngine.Api.Discovery.Responses;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
+﻿using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
+using AAS.TwinEngine.DataEngine.Api.Discovery.Responses;
 
 namespace AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 
 public interface IDiscoveryHandler
 {
     Task<ShellsByAssetLinkResponseDto> SearchShellsByAssetLinkAsync(
-        AssetLink[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken);
+        AssetLinkDto[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken);
 }

@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 
 using AasCore.Aas3_0;
 
+using Microsoft.Extensions.Logging;
+
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -18,10 +20,11 @@ public class AasRepositoryServiceTests
     private readonly IAasRepositoryTemplateService _templateService = Substitute.For<IAasRepositoryTemplateService>();
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+    private readonly ILogger<AasRepositoryService> _logger = Substitute.For<ILogger<AasRepositoryService>>();
     private readonly AasRepositoryService _sut;
     private const string AasIdentifier = "test-id";
 
-    public AasRepositoryServiceTests() => _sut = new AasRepositoryService(_templateService, _pluginDataHandler, _pluginManifestConflictHandler);
+    public AasRepositoryServiceTests() => _sut = new AasRepositoryService(_logger, _templateService, _pluginDataHandler, _pluginManifestConflictHandler);
 
     [Fact]
     public async Task GetShellByIdAsync_ShouldReturnShellWithAssetInformation()

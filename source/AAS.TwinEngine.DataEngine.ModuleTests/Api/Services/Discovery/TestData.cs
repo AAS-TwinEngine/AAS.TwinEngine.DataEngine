@@ -20,6 +20,7 @@ internal static class TestData
                 {
                     HasShellDescriptor = true,
                     HasAssetInformation = true,
+                    HasAssetIdSearch = true,
                 }
             }
         };

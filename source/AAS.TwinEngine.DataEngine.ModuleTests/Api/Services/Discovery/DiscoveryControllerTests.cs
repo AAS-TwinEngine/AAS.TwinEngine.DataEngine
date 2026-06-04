@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
+using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -62,7 +63,7 @@ public abstract class DiscoveryControllerTests : IDisposable
 
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
         };
 
         var response = await _client.PostAsJsonAsync("/lookup/shellsByAssetLink", assetLinks);
@@ -153,92 +154,13 @@ public abstract class DiscoveryControllerTests : IDisposable
         Assert.NotNull(json);
         var result = json["result"]?.AsArray();
         Assert.NotNull(result);
-        Assert.Single(result);
-    }
-
-    [Fact]
-    public async Task GetShellsByAssetIds_ReturnsOkWithShellsAsync()
-    {
-        SetupPluginHttpClient(TestData.CreatePluginResponseForAssetIdSearch());
-        SetupTemplateProvider();
-
-        var specificAssetId = """{"name":"serialNumber","value":"SN-4711"}""";
-        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
-
-        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
-        Assert.NotNull(json);
-        var result = json["result"]?.AsArray();
-        Assert.NotNull(result);
-        Assert.True(result.Count > 0);
+        _ = Assert.Single(result);
     }
 
     [Fact]
     public async Task GetShellsByAssetIds_WithInvalidBase64_Returns400Async()
     {
         var response = await _client.GetAsync("/shells?assetIds=not-valid-base64!!!");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task GetShellsByAssetIds_WithInvalidJson_Returns400Async()
-    {
-        var invalidJson = "not json at all";
-        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(invalidJson));
-
-        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task GetShellsByAssetIds_WithMissingName_Returns400Async()
-    {
-        var json = """{"value":"SN-4711"}""";
-        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(json));
-
-        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task GetShellsByAssetIds_WithMissingValue_Returns400Async()
-    {
-        var json = """{"name":"serialNumber"}""";
-        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(json));
-
-        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task GetShellsByAssetIds_WithNoResults_ReturnsEmptyResultAsync()
-    {
-        SetupPluginHttpClient(TestData.CreatePluginResponseForAssetIdSearchEmpty());
-        SetupTemplateProvider();
-
-        var specificAssetId = """{"name":"serialNumber","value":"non-existent"}""";
-        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
-
-        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
-        Assert.NotNull(json);
-        var result = json["result"]?.AsArray();
-        Assert.NotNull(result);
-        Assert.Empty(result);
-    }
-
-    [Fact]
-    public async Task GetShellsByAssetIds_WithoutAssetIdsParam_Returns400Async()
-    {
-        var response = await _client.GetAsync("/shells");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -269,13 +191,13 @@ public abstract class DiscoveryControllerTests : IDisposable
                 callInfo.ArgAt<string>(0),
                 new AssetInformation(AssetKind.Instance))
             {
-                Submodels = new List<IReference>
-                {
-                    new Reference(ReferenceTypes.ModelReference, new List<IKey>
-                    {
+                Submodels =
+                [
+                    new Reference(ReferenceTypes.ModelReference,
+                    [
                         new Key(KeyTypes.Submodel, "urn:example:sm:nameplate:001")
-                    })
-                }
+                    ])
+                ]
             });
     }
 }

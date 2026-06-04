@@ -5,7 +5,6 @@ using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
@@ -22,25 +21,33 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Api.AasRepository.Handler;
 public class AasRepositoryHandlerTests
 {
     private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
-    private readonly IAssetIdSearchService _assetIdSearchService = Substitute.For<IAssetIdSearchService>();
-    private readonly IAasRepositoryTemplateService _templateService = Substitute.For<IAasRepositoryTemplateService>();
     private readonly ILogger<AasRepositoryHandler> _logger = Substitute.For<ILogger<AasRepositoryHandler>>();
     private readonly AasRepositoryHandler _sut;
 
-    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService, _assetIdSearchService, _templateService);
+    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService);
 
     [Fact]
-    public async Task GetShellsByAssetIdsAsync_WithNullAssetIds_ThrowsInvalidUserInputException()
+    public async Task GetShellsByAssetIdsAsync_WithNullAssetIds_ReturnsAllShells()
     {
-        await Assert.ThrowsAsync<InvalidUserInputException>(
-            () => _sut.GetShellsByAssetIdsAsync(null, null, null, CancellationToken.None));
+        _ = _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+            .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
+
+        var result = await _sut.GetShellsByAssetIdsAsync(null, null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        await _aasRepositoryService.Received().GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task GetShellsByAssetIdsAsync_WithEmptyAssetIds_ThrowsInvalidUserInputException()
+    public async Task GetShellsByAssetIdsAsync_WithEmptyAssetIds_ReturnsAllShells()
     {
-        await Assert.ThrowsAsync<InvalidUserInputException>(
-            () => _sut.GetShellsByAssetIdsAsync([], null, null, CancellationToken.None));
+        _ = _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+            .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
+
+        var result = await _sut.GetShellsByAssetIdsAsync([], null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        await _aasRepositoryService.Received().GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -60,25 +67,18 @@ public class AasRepositoryHandlerTests
             .Replace('+', '-').Replace('/', '_').TrimEnd('=');
         var assetIds = new[] { encoded };
 
-        var metadata = new List<ShellDescriptorMetaData>
-        {
-            new() { Id = "urn:example:aas:001", IdShort = "Motor001", GlobalAssetId = "urn:example:asset:001" }
-        };
-        var pagingMetaData = new PagingMetaData { Cursor = null };
-
-        _ = _assetIdSearchService.GetShellMetadataByAssetIdsAsync(
-            Arg.Any<IList<SpecificAssetIdFilter>>(), null, null, Arg.Any<CancellationToken>())
-            .Returns((metadata, pagingMetaData));
-
         var shell = new AssetAdministrationShell(
             "urn:example:aas:001",
             new AssetInformation(AssetKind.Instance));
-        _ = _templateService.GetShellTemplateAsync("urn:example:aas:001", Arg.Any<CancellationToken>())
-            .Returns(shell);
+
+        _ = _aasRepositoryService.GetShellsByFiltersAsync(
+            Arg.Any<IList<SpecificAssetIdFilter>?>(), null, null, Arg.Any<CancellationToken>())
+            .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [shell] });
 
         var result = await _sut.GetShellsByAssetIdsAsync(assetIds, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
+        Assert.Single(result.Result!);
     }
 
     [Fact]

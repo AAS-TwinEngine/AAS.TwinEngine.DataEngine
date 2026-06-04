@@ -208,4 +208,41 @@ internal static class TestData
 
         return parts[index - 1];
     }
+
+    public static string CreatePluginResponseForShellDescriptors()
+        => """
+           {
+             "paging_metadata": {
+               "cursor": null
+             },
+             "result": [
+               {
+                 "globalAssetId": "urn:example:asset:001",
+                 "idShort": "Motor001",
+                 "id": "urn:example:aas:001",
+                 "specificAssetIds": [
+                   { "name": "serialNumber", "value": "SN-4711" }
+                 ]
+               },
+               {
+                 "globalAssetId": "urn:example:asset:002",
+                 "idShort": "Motor002",
+                 "id": "urn:example:aas:002",
+                 "specificAssetIds": [
+                   { "name": "serialNumber", "value": "SN-4712" }
+                 ]
+               }
+             ]
+           }
+           """;
+
+    public static string CreatePluginResponseForShellDescriptorsEmpty()
+        => """
+           {
+             "paging_metadata": {
+               "cursor": null
+             },
+             "result": []
+           }
+           """;
 }
