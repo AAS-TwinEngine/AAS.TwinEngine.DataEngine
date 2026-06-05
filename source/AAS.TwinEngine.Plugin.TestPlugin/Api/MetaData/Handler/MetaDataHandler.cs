@@ -1,6 +1,7 @@
 ﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Services;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
@@ -10,15 +11,17 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 
 public class MetaDataHandler(
     ILogger<MetaDataHandler> logger,
+    IAssetIdsFilterHeaderValidation assetIdsFilterHeaderParser,
     IMetaDataService metaDataService) : IMetaDataHandler
 {
     public async Task<ShellDescriptorsDto> GetShellDescriptors(GetShellDescriptorsRequest request, CancellationToken cancellationToken)
     {
         request?.Limit.ValidateLimit(logger);
+        var filter = assetIdsFilterHeaderParser.ParseToDomainModel(request?.AssetIdsFilter);
 
         logger.LogDebug("Start executing get request for shell-descriptors metadata");
 
-        var shellDescriptors = await metaDataService.GetShellDescriptorsAsync(request?.Limit, request?.Cursor, cancellationToken);
+        var shellDescriptors = await metaDataService.GetShellDescriptorsAsync(request?.Limit, request?.Cursor, filter, cancellationToken);
 
         return shellDescriptors.ToDto();
     }

@@ -4,7 +4,7 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
 
 public interface IMetaDataProvider
 {
-    Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken);
+    Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, CancellationToken cancellationToken);
 
     Task<ShellDescriptorData> GetShellDescriptorAsync(string aasIdentifier, CancellationToken cancellationToken);
 
