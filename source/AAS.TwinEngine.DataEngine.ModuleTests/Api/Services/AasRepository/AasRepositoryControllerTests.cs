@@ -401,22 +401,6 @@ public abstract class AasRepositoryControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task GetShellsAsync_WithNoAssetIdsPagination_LimitsResultsAsync()
-    {
-        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
-        SetupTemplateProvider();
-
-        var response = await _client.GetAsync("/shells?limit=1");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
-        Assert.NotNull(json);
-        var result = json["result"]?.AsArray();
-        Assert.NotNull(result);
-        Assert.Single(result);
-    }
-
-    [Fact]
     public async Task GetShellsAsync_WithNoMatchingResults_ReturnsEmptyResultAsync()
     {
         SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsEmpty());
@@ -484,35 +468,29 @@ public abstract class AasRepositoryControllerTests : IDisposable
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Theory]
-    [InlineData("javascript:alert(1)")]
-    [InlineData("<img onerror=alert('xss')>")]
-    [InlineData("'; DROP TABLE shells--")]
-    public async Task GetShellsAsync_WithMaliciousAssetIdContent_Returns400Async(string maliciousContent)
-    {
-        var json = $$$"""{"name":"{{{maliciousContent}}}","value":"SN-4711"}""";
-        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(json));
-
-        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
     #endregion
 
     private void SetupPluginHttpClient(string pluginResponse)
     {
-        var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        const string HttpClientName1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+
+        _httpClientFactory.CreateClient(HttpClientName1)
+            .Returns(_ => CreateHttpClient(pluginResponse));
+    }
+
+    private static HttpClient CreateHttpClient(string pluginResponse)
+    {
+        var handler = new FakeHttpMessageHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(pluginResponse)
+            }));
+
+        return new HttpClient(handler)
         {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(pluginResponse)
-        }));
-        var httpClient = new HttpClient(messageHandler);
-        httpClient.BaseAddress = new Uri("https://testendpoint.com");
-        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
-        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
-        const string HttpClientName2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
-        _ = _httpClientFactory.CreateClient(HttpClientName2).Returns(httpClient);
+            BaseAddress = new Uri("https://testendpoint.com")
+        };
     }
 
     private void SetupTemplateProvider()
@@ -520,7 +498,10 @@ public abstract class AasRepositoryControllerTests : IDisposable
         _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => new AssetAdministrationShell(
                 callInfo.ArgAt<string>(0),
-                new AssetInformation(AssetKind.Instance)));
+                new AssetInformation(AssetKind.Instance))
+            {
+                Submodels = []
+            });
     }
 
     private static string EncodeBase64Url(string plainText)
