@@ -22,11 +22,11 @@ public class MetaDataControllerTests
     [Fact]
     public async Task GetShellDescriptorsAsync_ReturnsOk_WithShellList()
     {
-        var request = new GetShellDescriptorsRequest(null, null);
+        var request = new GetShellDescriptorsRequest(null, null, null);
         var expectedShells = new ShellDescriptorsDto();
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>()).Returns(expectedShells);
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var actualShells = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -36,31 +36,47 @@ public class MetaDataControllerTests
     [Fact]
     public async Task GetShellDescriptorsAsync_ThrowsNotFoundException_Returns404()
     {
-        var request = new GetShellDescriptorsRequest(null, null);
+        var request = new GetShellDescriptorsRequest(null, null, null);
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>())
         .Throws(new NotFoundException("Shell not found"));
 
-        await Assert.ThrowsAsync<NotFoundException>(() => _sut.GetShellDescriptorsAsync(null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<NotFoundException>(() => _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None));
     }
 
     [Fact]
     public async Task GetShellDescriptorsAsync_ThrowsBadRequestException_Returns400()
     {
-        var request = new GetShellDescriptorsRequest(null, null);
+        var request = new GetShellDescriptorsRequest(null, null, null);
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>())
                 .Throws(new BadRequestException("Invalid request"));
 
-        await Assert.ThrowsAsync<BadRequestException>(() => _sut.GetShellDescriptorsAsync(null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<BadRequestException>(() => _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None));
     }
 
     [Fact]
     public async Task GetShellDescriptorsAsync_ThrowsException_Returns500()
     {
-        var request = new GetShellDescriptorsRequest(null, null);
+        var request = new GetShellDescriptorsRequest(null, null, null);
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>())
                 .Throws(new Exception("Unexpected error"));
 
-        await Assert.ThrowsAsync<Exception>(() => _sut.GetShellDescriptorsAsync(null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<Exception>(() => _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorsAsync_WithHeaderForwardsHeaderToRequest()
+    {
+        const string header = "[{\"name\":\"serialNumber\",\"value\":\"SN-4711\"}]";
+        var expectedShells = new ShellDescriptorsDto();
+        _handler.GetShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(request => request.AssetIdsFilter == header),
+            Arg.Any<CancellationToken>())
+            .Returns(expectedShells);
+
+        var result = await _sut.GetShellDescriptorsAsync(null, null, header, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(expectedShells, okResult.Value);
     }
 
     [Fact]

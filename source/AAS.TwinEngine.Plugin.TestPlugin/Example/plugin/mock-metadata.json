@@ -3,7 +3,16 @@
     "globalAssetId": "https://mm-software.com/ids/assets/000-001",
     "idShort": "M&M01",
     "id": "https://mm-software.com/ids/aas/000-001",
-    "specificAssetIds": [],
+    "specificAssetIds": [
+      {
+        "name": "serialNumber",
+        "value": "SN-4711"
+      },
+      {
+        "name": "batchId",
+        "value": "B-2026-03"
+      }
+    ],
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
@@ -15,7 +24,17 @@
     "globalAssetId": "https://mm-software.com/ids/assets/000-002",
     "idShort": "M&M02",
     "id": "https://mm-software.com/ids/aas/000-002",
-    "specificAssetIds": [],
+    "specificAssetIds": [
+      {
+        "name": "serialNumber",
+        "value": "SN-9999"
+      },
+      {
+        "name": "batchId",
+        "value": "B-2026-03"
+      }
+
+    ],
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
@@ -27,7 +46,12 @@
     "globalAssetId": "https://mm-software.com/ids/assets/000-003",
     "idShort": "M&M03",
     "id": "https://mm-software.com/ids/aas/000-003",
-    "specificAssetIds": [],
+    "specificAssetIds": [
+      {
+        "name": "serialNumber",
+        "value": "SN-1111"
+      }
+    ],
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",

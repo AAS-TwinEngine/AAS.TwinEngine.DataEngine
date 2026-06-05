@@ -80,6 +80,7 @@ public class SubmodelHandlerTests
     private readonly ILogger<SubmodelHandler> _logger = Substitute.For<ILogger<SubmodelHandler>>();
     private readonly ISubmodelService _pluginService = Substitute.For<ISubmodelService>();
     private readonly IJsonSchemaParser _jsonSchemaParser = Substitute.For<IJsonSchemaParser>();
+    private readonly IJsonSchemaValidator _jsonSchemaValidator = Substitute.For<IJsonSchemaValidator>();
     private readonly SubmodelHandler _sut;
     private readonly GetSubmodelDataRequest _request;
     private readonly SemanticBranchNode _semanticTree;
@@ -104,7 +105,7 @@ public class SubmodelHandlerTests
 
         _expectedResponse = JsonNode.Parse(JsonResponse)!.AsObject();
         JsonSchemaRequest = JsonSerializer.Deserialize<JsonSchema>(JsonSchemaString, _options);
-        _sut = new SubmodelHandler(_logger, _pluginService, _jsonSchemaParser, _semanticTreeHandler);
+        _sut = new SubmodelHandler(_logger, _pluginService, _jsonSchemaValidator, _jsonSchemaParser, _semanticTreeHandler);
         _request = new GetSubmodelDataRequest("ContactInformation", JsonSchemaRequest);
     }
 

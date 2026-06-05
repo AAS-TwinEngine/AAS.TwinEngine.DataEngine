@@ -18,4 +18,7 @@ public class CapabilitiesDto
 
     [JsonPropertyName("hasAssetInformation")]
     public bool HasAssetInformation { get; set; }
+
+    [JsonPropertyName("hasAssetIdSearch")]
+    public bool HasAssetIdSearch { get; set; }
 }

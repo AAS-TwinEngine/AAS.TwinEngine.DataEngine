@@ -20,9 +20,13 @@ public class MetaDataController(IMetaDataHandler metaDataHandler) : ControllerBa
     [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetShellDescriptorsAsync([FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetShellDescriptorsAsync(
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
+        [FromHeader(Name = "aastwinengine-assetids")] string? assetIdsFilter = null,
+        CancellationToken cancellationToken = default)
     {
-        var request = new GetShellDescriptorsRequest(limit, cursor);
+        var request = new GetShellDescriptorsRequest(limit, cursor, assetIdsFilter);
 
         var response = await metaDataHandler.GetShellDescriptors(request, cancellationToken);
 

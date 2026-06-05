@@ -11,4 +11,7 @@ public class Capabilities
 
     [Required]
     public bool HasAssetInformation { get; set; }
+
+    [Required]
+    public bool HasAssetIdSearch { get; set; }
 }

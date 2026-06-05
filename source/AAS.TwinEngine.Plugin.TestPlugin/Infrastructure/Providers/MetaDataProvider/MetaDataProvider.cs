@@ -60,25 +60,26 @@ public class MetaDataProvider : IMetaDataProvider
                                                          );
     }
 
-    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, CancellationToken cancellationToken)
     {
         var domainModels = _shellDescriptorLookup.Values.ToList();
 
         var shellDescriptors = domainModels.ToDomainModelList();
 
-        if (cursor == null || _shellDescriptorLookup.TryGetValue(cursor.DecodeBase64(), out _))
+        if (filter != null)
         {
-            var (pagedItems, pagingMeta) = Paginator.GetPagedResult(shellDescriptors, s => s.Id!, limit, cursor);
-
-            return Task.FromResult(new ShellDescriptorsData()
-            {
-                PagingMetaData = pagingMeta,
-                Result = pagedItems
-            });
+            shellDescriptors = [.. shellDescriptors.Where(item => AssetIdMatcher.MatchesAllIdentifiers(item, filter))];
         }
 
-        _logger.LogWarning("Invalid cursor provided.");
-        throw new NotFoundException(ExceptionMessages.ShellDescriptorDataNotFound);
+        ValidateCursor(cursor, shellDescriptors);
+
+        var (pagedItems, pagingMeta) = Paginator.GetPagedResult(shellDescriptors, s => s.Id!, limit, cursor);
+
+        return Task.FromResult(new ShellDescriptorsData()
+        {
+            PagingMetaData = pagingMeta,
+            Result = pagedItems
+        });
     }
 
     public Task<ShellDescriptorData> GetShellDescriptorAsync(string aasIdentifier, CancellationToken cancellationToken)
@@ -101,5 +102,25 @@ public class MetaDataProvider : IMetaDataProvider
 
         _logger.LogWarning("Asset not found for ID: {ShellIdentifier}", shellIdentifier);
         throw new NotFoundException(ExceptionMessages.AssetNotFound);
+    }
+
+    private void ValidateCursor(string? cursor, IList<ShellDescriptorData> shellDescriptors)
+    {
+        if (string.IsNullOrWhiteSpace(cursor))
+        {
+            return;
+        }
+
+        var decodedCursor = cursor.DecodeBase64();
+        var cursorExists = shellDescriptors.Any(item => string.Equals(item.Id, decodedCursor, StringComparison.Ordinal));
+
+        if (cursorExists)
+        {
+            return;
+        }
+
+        _logger.LogWarning("Invalid cursor provided. Cursor '{Cursor}' does not exist in filtered result set.", decodedCursor);
+
+        throw new NotFoundException(ExceptionMessages.ShellDescriptorDataNotFound);
     }
 }
