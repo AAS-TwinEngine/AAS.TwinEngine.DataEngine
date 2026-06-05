@@ -21,59 +21,13 @@ public class AasRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IAasRepositoryService
 {
-    public async Task<Shells> GetShellsByFiltersAsync(
-        IList<SpecificAssetIdFilter>? filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetIdFilter>? filters, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
-            var pluginManifests = pluginManifestConflictHandler.Manifests;
-            IList<ShellDescriptorMetaData> shellDescriptorMetadataList;
-            PagingMetaData pagingMetaData;
+            var (metadata, pagingMetaData) = await GetShellMetadataAsync(filters, limit, cursor, cancellationToken).ConfigureAwait(false);
 
-            if (filters is null || filters.Count == 0)
-            {
-                var metadata = await pluginDataHandler
-                    .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken)
-                    .ConfigureAwait(false);
-
-                shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
-                pagingMetaData = metadata.PagingMetaData ?? new PagingMetaData();
-            }
-            else
-            {
-                var headerValue = SerializeFiltersHeader(filters);
-                var metadata = await pluginDataHandler
-                    .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifests, headerValue, cancellationToken)
-                    .ConfigureAwait(false);
-
-                var allMetadata = metadata.ShellDescriptors?
-                    .Where(m => !string.IsNullOrWhiteSpace(m.Id))
-                    .ToList() ?? [];
-
-                var (pagedItems, paged) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id, limit, cursor);
-                shellDescriptorMetadataList = pagedItems;
-                pagingMetaData = paged;
-            }
-
-            var shells = new List<IAssetAdministrationShell>();
-            foreach (var metadataItem in shellDescriptorMetadataList)
-            {
-                if (string.IsNullOrWhiteSpace(metadataItem.Id))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var shell = await templateService.GetShellTemplateAsync(metadataItem.Id, cancellationToken).ConfigureAwait(false);
-                    FillShellFromMetadata(shell, metadataItem);
-                    shells.Add(shell);
-                }
-                catch (Exception ex) when (ex is TemplateNotFoundException or InternalDataProcessingException)
-                {
-                    logger.LogWarning(ex, "Failed to build AAS for id {AasId}. Skipping.", metadataItem.Id);
-                }
-            }
+            var shells = await BuildShellsAsync(metadata, cancellationToken).ConfigureAwait(false);
 
             return new Shells
             {
@@ -246,5 +200,77 @@ public class AasRepositoryService(
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
+    }
+
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
+    IList<SpecificAssetIdFilter>? filters,
+    int? limit,
+    string? cursor,
+    CancellationToken cancellationToken)
+    {
+        return filters is null || filters.Count == 0
+            ? await GetAllShellMetadataAsync(limit, cursor, cancellationToken).ConfigureAwait(false)
+            : await GetFilteredShellMetadataAsync(filters, limit, cursor, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        var metadata = await pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
+            .ConfigureAwait(false);
+
+        return (
+            metadata.ShellDescriptors ?? [],
+            metadata.PagingMetaData ?? new PagingMetaData());
+    }
+
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(IList<SpecificAssetIdFilter> filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        var metadata = await pluginDataHandler
+            .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, SerializeFiltersHeader(filters), cancellationToken)
+            .ConfigureAwait(false);
+
+        var allMetadata = metadata.ShellDescriptors?
+            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
+            .ToList() ?? [];
+
+        var (pagedItems, pagingMetaData) =
+            PagingExtensions.GetPagedResult(
+                allMetadata,
+                m => m.Id!,
+                limit,
+                cursor);
+
+        return (pagedItems, pagingMetaData);
+    }
+
+    private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)
+    {
+        var shells = new List<IAssetAdministrationShell>();
+
+        foreach (var metadata in metadataItems)
+        {
+            if (string.IsNullOrWhiteSpace(metadata.Id))
+            {
+                continue;
+            }
+
+            try
+            {
+                var shell = await templateService
+                    .GetShellTemplateAsync(metadata.Id, cancellationToken)
+                    .ConfigureAwait(false);
+
+                FillShellFromMetadata(shell, metadata);
+
+                shells.Add(shell);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to build AAS for id {AasId}. Skipping.", metadata.Id);
+            }
+        }
+
+        return shells;
     }
 }

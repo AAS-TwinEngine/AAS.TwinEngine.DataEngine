@@ -1,6 +1,7 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 
@@ -18,31 +19,17 @@ public static class AssetIdHelper
 
         foreach (var encodedAssetId in assetIds)
         {
-            if (string.IsNullOrWhiteSpace(encodedAssetId))
-            {
-                logger.LogError("Empty assetIds value encountered.");
-                throw new InvalidUserInputException();
-            }
-
-            string decodedJson;
-            try
-            {
-                var bytes = WebEncoders.Base64UrlDecode(encodedAssetId);
-                decodedJson = System.Text.Encoding.UTF8.GetString(bytes);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to decode base64url assetIds value: {Value}", encodedAssetId);
-                throw new InvalidUserInputException();
-            }
+            var decodedJson = encodedAssetId.DecodeBase64Url(logger);
 
             SpecificAssetIdFilter? filter;
             try
             {
-                filter = JsonSerializer.Deserialize<SpecificAssetIdFilter>(decodedJson, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                filter = JsonSerializer.Deserialize<SpecificAssetIdFilter>(
+                    decodedJson,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
             }
             catch (JsonException ex)
             {
@@ -50,7 +37,9 @@ public static class AssetIdHelper
                 throw new InvalidUserInputException();
             }
 
-            if (filter is null || string.IsNullOrWhiteSpace(filter.Name) || string.IsNullOrWhiteSpace(filter.Value))
+            if (filter is null ||
+                string.IsNullOrWhiteSpace(filter.Name) ||
+                string.IsNullOrWhiteSpace(filter.Value))
             {
                 logger.LogError("Invalid SpecificAssetId: name and value are required.");
                 throw new InvalidUserInputException();

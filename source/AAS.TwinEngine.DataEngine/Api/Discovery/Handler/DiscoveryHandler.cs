@@ -1,3 +1,5 @@
+﻿using System.Text.RegularExpressions;
+
 using AAS.TwinEngine.DataEngine.Api.Discovery.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Responses;
@@ -12,6 +14,8 @@ public class DiscoveryHandler(
     ILogger<DiscoveryHandler> logger,
     IAssetIdSearchService assetIdSearchService) : IDiscoveryHandler
 {
+    private static readonly Regex ValidAssetLinkPattern = new(@"^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]*$", RegexOptions.Compiled);
+
     public async Task<ShellsByAssetLinkResponseDto> SearchShellsByAssetLinkAsync(
         AssetLinkDto[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
     {
@@ -41,15 +45,34 @@ public class DiscoveryHandler(
 
         foreach (var link in assetLinks)
         {
-            if (string.IsNullOrWhiteSpace(link.Name) || string.IsNullOrWhiteSpace(link.Value))
+            if (string.IsNullOrWhiteSpace(link.Name) ||
+                string.IsNullOrWhiteSpace(link.Value))
             {
                 logger.LogError("AssetLink name and value are required.");
                 throw new InvalidUserInputException();
             }
 
-            if (link.Name.Length > 64 || link.Value.Length > 2048)
+            if (link.Name.Length > 64)
             {
-                logger.LogError("AssetLink name or value exceeds maximum length.");
+                logger.LogError("AssetLink name exceeds maximum length of 64 characters.");
+                throw new InvalidUserInputException();
+            }
+
+            if (link.Value.Length > 2048)
+            {
+                logger.LogError("AssetLink value exceeds maximum length of 2048 characters.");
+                throw new InvalidUserInputException();
+            }
+
+            if (!ValidAssetLinkPattern.IsMatch(link.Name))
+            {
+                logger.LogError("AssetLink name contains invalid characters.");
+                throw new InvalidUserInputException();
+            }
+
+            if (!ValidAssetLinkPattern.IsMatch(link.Value))
+            {
+                logger.LogError("AssetLink value contains invalid characters.");
                 throw new InvalidUserInputException();
             }
         }
