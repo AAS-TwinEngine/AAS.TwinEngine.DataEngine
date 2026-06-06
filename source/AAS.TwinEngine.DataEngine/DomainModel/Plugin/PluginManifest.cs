@@ -26,5 +26,5 @@ public class Capabilities
     public bool HasAssetInformation { get; set; }
 
     [JsonPropertyName("hasAssetIdSearch")]
-    public bool HasAssetIdSearch { get; set; }
+    public bool? HasAssetIdSearch { get; set; }
 }

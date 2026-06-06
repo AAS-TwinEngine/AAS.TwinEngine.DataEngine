@@ -29,6 +29,8 @@ public class AasRepositoryService(
 
             var shells = await BuildShellsAsync(metadata, cancellationToken).ConfigureAwait(false);
 
+            shells = [.. FilterByExternalSubjectId(shells, filters)];
+
             return new Shells
             {
                 PagingMetaData = pagingMetaData,
@@ -234,12 +236,7 @@ public class AasRepositoryService(
             .Where(m => !string.IsNullOrWhiteSpace(m.Id))
             .ToList() ?? [];
 
-        var (pagedItems, pagingMetaData) =
-            PagingExtensions.GetPagedResult(
-                allMetadata,
-                m => m.Id!,
-                limit,
-                cursor);
+        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id!, limit, cursor);
 
         return (pagedItems, pagingMetaData);
     }
@@ -257,9 +254,7 @@ public class AasRepositoryService(
 
             try
             {
-                var shell = await templateService
-                    .GetShellTemplateAsync(metadata.Id, cancellationToken)
-                    .ConfigureAwait(false);
+                var shell = await templateService.GetShellTemplateAsync(metadata.Id, cancellationToken).ConfigureAwait(false);
 
                 FillShellFromMetadata(shell, metadata);
 
@@ -272,5 +267,48 @@ public class AasRepositoryService(
         }
 
         return shells;
+    }
+
+    private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetIdFilter>? filters)
+    {
+        var filtersWithExternalId = filters?.Where(f => f.ExternalSubjectId is not null).ToList();
+
+        if (filtersWithExternalId is null || filtersWithExternalId.Count == 0)
+        {
+            return shells;
+        }
+
+        return [.. shells
+            .Where(shell =>
+                shell.AssetInformation?.SpecificAssetIds?.Any(assetId =>
+                    filtersWithExternalId.Any(filter =>
+                        assetId.Name == filter.Name &&
+                        assetId.Value == filter.Value &&
+                        AreReferencesEqual(
+                            assetId.ExternalSubjectId,
+                            filter.ExternalSubjectId))) == true)];
+    }
+
+    private static bool AreReferencesEqual(IReference? first, IReference? second)
+    {
+        if (first is null || second is null)
+        {
+            return false;
+        }
+
+        if (first.Type != second.Type)
+        {
+            return false;
+        }
+
+        if (first.Keys.Count != second.Keys.Count)
+        {
+            return false;
+        }
+
+        return first.Keys.Zip(second.Keys)
+            .All(pair =>
+                pair.First.Type == pair.Second.Type &&
+                pair.First.Value == pair.Second.Value);
     }
 }

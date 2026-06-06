@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
@@ -12,5 +12,5 @@ public class Shells
     public PagingMetaData? PagingMetaData { get; set; }
 
     [JsonPropertyName("result")]
-    public IList<IAssetAdministrationShell>? Result { get; set; }
+    public IList<IAssetAdministrationShell>? Result { get; init; }
 }

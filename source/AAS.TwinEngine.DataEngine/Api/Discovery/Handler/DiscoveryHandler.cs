@@ -10,11 +10,9 @@ using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 
 namespace AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 
-public class DiscoveryHandler(
-    ILogger<DiscoveryHandler> logger,
-    IAssetIdSearchService assetIdSearchService) : IDiscoveryHandler
+public class DiscoveryHandler(ILogger<DiscoveryHandler> logger, IAssetIdSearchService assetIdSearchService) : IDiscoveryHandler
 {
-    private static readonly Regex ValidAssetLinkPattern = new(@"^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]*$", RegexOptions.Compiled);
+    private static readonly Regex ValidAssetLinkPattern = new(@"^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]*$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public async Task<ShellsByAssetLinkResponseDto> SearchShellsByAssetLinkAsync(
         AssetLinkDto[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
