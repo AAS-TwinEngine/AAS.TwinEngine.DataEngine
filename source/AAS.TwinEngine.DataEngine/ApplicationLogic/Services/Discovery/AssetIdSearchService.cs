@@ -6,7 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
-using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -16,8 +16,7 @@ public class AssetIdSearchService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IAssetIdSearchService
 {
-    public async Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(
-        IList<AssetLink> assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(IList<AssetLink> assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var specificAssetIds = assetLinks.Select(link => new SpecificAssetIdFilter
         {
@@ -25,9 +24,7 @@ public class AssetIdSearchService(
             Value = link.Value
         }).ToList();
 
-        var headerValue = SerializeAssetIdsHeader(specificAssetIds);
-
-        var metadata = await GetFilteredMetadataAsync(headerValue, cancellationToken).ConfigureAwait(false);
+        var metadata = await GetFilteredMetadataAsync(specificAssetIds, cancellationToken).ConfigureAwait(false);
 
         var allIds = metadata.ShellDescriptors?
             .Where(m => !string.IsNullOrWhiteSpace(m.Id))
@@ -44,32 +41,13 @@ public class AssetIdSearchService(
         };
     }
 
-    public async Task<(IList<ShellDescriptorMetaData> Metadata, PagingMetaData PagingMetaData)> GetShellMetadataByAssetIdsAsync(
-        IList<SpecificAssetIdFilter> assetIds, int? limit, string? cursor, CancellationToken cancellationToken)
-    {
-        var headerValue = SerializeAssetIdsHeader(assetIds);
-
-        var metadata = await GetFilteredMetadataAsync(headerValue, cancellationToken).ConfigureAwait(false);
-
-        var allMetadata = metadata.ShellDescriptors?
-            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
-            .ToList() ?? [];
-
-        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(
-            allMetadata, m => m.Id, limit, cursor);
-
-        return (pagedItems, pagingMetaData);
-    }
-
-    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(string headerValue, CancellationToken cancellationToken)
+    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetIdFilter> specificAssetIds, CancellationToken cancellationToken)
     {
         try
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
 
-            return await pluginDataHandler
-                .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifests, headerValue, cancellationToken)
-                .ConfigureAwait(false);
+            return await pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(pluginManifests, specificAssetIds, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
         {
@@ -91,14 +69,5 @@ public class AssetIdSearchService(
         {
             throw new PluginNotAvailableException(ex);
         }
-    }
-
-    private static string SerializeAssetIdsHeader(IList<SpecificAssetIdFilter> assetIds)
-    {
-        return JsonSerializer.Serialize(assetIds, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
     }
 }

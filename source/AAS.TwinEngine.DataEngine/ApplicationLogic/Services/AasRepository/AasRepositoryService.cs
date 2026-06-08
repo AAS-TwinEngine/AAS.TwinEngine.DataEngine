@@ -195,15 +195,6 @@ public class AasRepositoryService(
         }
     }
 
-    private static string SerializeFiltersHeader(IList<SpecificAssetIdFilter> filters)
-    {
-        return JsonSerializer.Serialize(filters, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
-    }
-
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
     IList<SpecificAssetIdFilter>? filters,
     int? limit,
@@ -229,7 +220,7 @@ public class AasRepositoryService(
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(IList<SpecificAssetIdFilter> filters, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, SerializeFiltersHeader(filters), cancellationToken)
+            .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filters, cancellationToken)
             .ConfigureAwait(false);
 
         var allMetadata = metadata.ShellDescriptors?

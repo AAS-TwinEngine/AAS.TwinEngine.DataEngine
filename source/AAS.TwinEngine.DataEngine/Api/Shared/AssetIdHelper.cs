@@ -1,18 +1,18 @@
 ﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
-
-using AasCore.Aas3_0;
-
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace AAS.TwinEngine.DataEngine.Api.Shared;
 
 public static class AssetIdHelper
 {
+    private static readonly Regex ValidAssetLinkPattern = new(@"^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]*$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private const int MaxNameLength = 64;
+    private const int MaxValueLength = 2048;
+
     public static IList<SpecificAssetIdFilter> DecodeAssetIds(string[] assetIds, ILogger logger)
     {
         var result = new List<SpecificAssetIdFilter>();
@@ -37,19 +37,7 @@ public static class AssetIdHelper
                 throw new InvalidUserInputException();
             }
 
-            if (filter is null ||
-                string.IsNullOrWhiteSpace(filter.Name) ||
-                string.IsNullOrWhiteSpace(filter.Value))
-            {
-                logger.LogError("Invalid SpecificAssetId: name and value are required.");
-                throw new InvalidUserInputException();
-            }
-
-            if (filter.Name.Length > 64 || filter.Value.Length > 2048)
-            {
-                logger.LogError("SpecificAssetId name or value exceeds maximum length.");
-                throw new InvalidUserInputException();
-            }
+            ValidateAssetLinks(filter.Name, filter.Value, logger, "SpecificAssetId");
 
             result.Add(filter);
         }
@@ -57,25 +45,36 @@ public static class AssetIdHelper
         return result;
     }
 
-    public static void FillShellFromMetadata(IAssetAdministrationShell shell, ShellDescriptorMetaData metadata)
+    public static void ValidateAssetLinks(string name, string value, ILogger logger, string entityName)
     {
-        shell.Id = metadata.Id;
-
-        if (!string.IsNullOrWhiteSpace(metadata.IdShort))
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(value))
         {
-            shell.IdShort = metadata.IdShort;
+            logger.LogError("{EntityName} name and value are required.", entityName);
+            throw new InvalidUserInputException();
         }
 
-        shell.AssetInformation ??= new AssetInformation(AssetKind.Instance);
-        shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
-
-        if (metadata.SpecificAssetIds is not null)
+        if (name.Length > MaxNameLength)
         {
-            shell.AssetInformation.SpecificAssetIds = [];
-            foreach (var assetId in metadata.SpecificAssetIds)
-            {
-                shell.AssetInformation.SpecificAssetIds.Add(assetId);
-            }
+            logger.LogError("{EntityName} name exceeds maximum length of 64 characters.", entityName);
+            throw new InvalidUserInputException();
+        }
+
+        if (value.Length > MaxValueLength)
+        {
+            logger.LogError("{EntityName} value exceeds maximum length of 2048 characters.", entityName);
+            throw new InvalidUserInputException();
+        }
+
+        if (!ValidAssetLinkPattern.IsMatch(name))
+        {
+            logger.LogError("{EntityName} name contains invalid characters.", entityName);
+            throw new InvalidUserInputException();
+        }
+
+        if (!ValidAssetLinkPattern.IsMatch(value))
+        {
+            logger.LogError("{EntityName} value contains invalid characters.", entityName);
+            throw new InvalidUserInputException();
         }
     }
 }
