@@ -4,19 +4,19 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_0;
 
 using Json.Schema;
 
@@ -624,7 +624,7 @@ public class PluginDataHandlerTests
 
         const string Json = """[{"name":"sn","value":"123"}]""";
 
-        var assetIds = JsonSerializer.Deserialize<List<SpecificAssetIdFilter>>(Json)!;
+        var assetIds = JsonSerializer.Deserialize<List<SpecificAssetId>>(Json)!;
         var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, assetIds, CancellationToken.None);
 
         Assert.NotNull(result);
@@ -659,7 +659,7 @@ public class PluginDataHandlerTests
             .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetIdFilter>(), CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetId>(), CancellationToken.None));
     }
 
     [Fact]
@@ -689,7 +689,7 @@ public class PluginDataHandlerTests
             .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetIdFilter>(), CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetId>(), CancellationToken.None));
     }
 
     [Fact]
@@ -728,7 +728,7 @@ public class PluginDataHandlerTests
             .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([httpResponse.Content]);
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetIdFilter>(), CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetId>(), CancellationToken.None);
 
         Assert.Equal(2, result.ShellDescriptors.Count);
         Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));

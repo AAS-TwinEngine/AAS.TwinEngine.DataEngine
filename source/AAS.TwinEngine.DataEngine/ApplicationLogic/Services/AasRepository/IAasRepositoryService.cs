@@ -8,7 +8,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 public interface IAasRepositoryService
 {
-    Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetIdFilter>? filters, int? limit, string? cursor, CancellationToken cancellationToken);
+    Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetId>? filters, int? limit, string? cursor, CancellationToken cancellationToken);
 
     Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken);
 

@@ -6,7 +6,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_0;
@@ -21,7 +20,7 @@ public class AasRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IAasRepositoryService
 {
-    public async Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetIdFilter>? filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetId>? filters, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
@@ -196,7 +195,7 @@ public class AasRepositoryService(
     }
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
-    IList<SpecificAssetIdFilter>? filters,
+    IList<SpecificAssetId>? filters,
     int? limit,
     string? cursor,
     CancellationToken cancellationToken)
@@ -217,7 +216,7 @@ public class AasRepositoryService(
             metadata.PagingMetaData ?? new PagingMetaData());
     }
 
-    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(IList<SpecificAssetIdFilter> filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(IList<SpecificAssetId> filters, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
             .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filters, cancellationToken)
@@ -260,7 +259,7 @@ public class AasRepositoryService(
         return shells;
     }
 
-    private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetIdFilter>? filters)
+    private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetId>? filters)
     {
         var filtersWithExternalId = filters?.Where(f => f.ExternalSubjectId is not null).ToList();
 

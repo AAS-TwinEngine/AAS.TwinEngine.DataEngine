@@ -1,12 +1,11 @@
-﻿using System.Text.Json;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
-using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+
+using AasCore.Aas3_0;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -18,11 +17,11 @@ public class AssetIdSearchService(
 {
     public async Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(IList<AssetLink> assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
     {
-        var specificAssetIds = assetLinks.Select(link => new SpecificAssetIdFilter
-        {
-            Name = link.Name,
-            Value = link.Value
-        }).ToList();
+        var specificAssetIds = assetLinks.Select(link => new SpecificAssetId
+        (
+            link.Name,
+            link.Value
+        )).ToList();
 
         var metadata = await GetFilteredMetadataAsync(specificAssetIds, cancellationToken).ConfigureAwait(false);
 
@@ -41,7 +40,7 @@ public class AssetIdSearchService(
         };
     }
 
-    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetIdFilter> specificAssetIds, CancellationToken cancellationToken)
+    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken)
     {
         try
         {

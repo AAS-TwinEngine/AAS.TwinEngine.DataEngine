@@ -72,7 +72,7 @@ public class AasRepositoryHandlerTests
             new AssetInformation(AssetKind.Instance));
 
         _ = _aasRepositoryService.GetShellsByFiltersAsync(
-            Arg.Any<IList<SpecificAssetIdFilter>?>(), null, null, Arg.Any<CancellationToken>())
+            Arg.Any<IList<SpecificAssetId>?>(), null, null, Arg.Any<CancellationToken>())
             .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [shell] });
 
         var result = await _sut.GetShellsByAssetIdsAsync(assetIds, null, null, CancellationToken.None);

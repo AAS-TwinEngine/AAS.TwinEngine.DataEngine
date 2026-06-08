@@ -8,12 +8,13 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_0;
 
 using Json.Schema;
 
@@ -80,9 +81,9 @@ public class PluginDataHandler(
 
         const string Url = $"{ShellsBasePath}";
 
-        for (var i = 0; i < response.Count; i++)
+        foreach (var shellDiscriptor in response)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await shellDiscriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -96,13 +97,13 @@ public class PluginDataHandler(
                 var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
 
                 var invalidDescriptors = shellDescriptors
-                    .Where(x => string.IsNullOrWhiteSpace(x.Id))
-                    .Select(x => new
-                    {
-                        IdShort = x.IdShort ?? "<null>",
-                        GlobalAssetId = x.GlobalAssetId ?? "<null>"
-                    })
-                    .ToList();
+                                         .Where(x => string.IsNullOrWhiteSpace(x.Id))
+                                         .Select(x => new
+                                         {
+                                             IdShort = x.IdShort ?? "<null>",
+                                             GlobalAssetId = x.GlobalAssetId ?? "<null>"
+                                         })
+                                         .ToList();
 
                 if (invalidDescriptors.Count > 0)
                 {
@@ -136,9 +137,9 @@ public class PluginDataHandler(
 
         var url = $"{ShellsBasePath}/{id.EncodeBase64Url()}";
 
-        for (var i = 0; i < response.Count; i++)
+        foreach (var shellDescriptor in response)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await shellDescriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -176,9 +177,9 @@ public class PluginDataHandler(
 
         var url = $"assets/{id.EncodeBase64Url()}";
 
-        for (var i = 0; i < response.Count; i++)
+        foreach (var assetInfo in response)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await assetInfo.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -199,13 +200,18 @@ public class PluginDataHandler(
         throw new ResponseParsingException();
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, IList<SpecificAssetIdFilter> specificAssetIds, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, IList<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken)
     {
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 
-        var assetIdsHeaderValue = SerializeAssetIdsHeader(specificAssetIds);
+        var assetIdsHeaderValue = JsonSerializer.Serialize(
+                                                           specificAssetIds.Select(x => new
+                                                           {
+                                                               name = x.Name,
+                                                               value = x.Value
+                                                           }));
 
         var response = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, cancellationToken).ConfigureAwait(false);
 
@@ -252,6 +258,4 @@ public class PluginDataHandler(
         var encodedId = value.Id.EncodeBase64Url();
         value.Href = $"{_baseUrl}{ShellsBasePath}/{encodedId}";
     }
-
-    private static string SerializeAssetIdsHeader(IList<SpecificAssetIdFilter> assetIds) => JsonSerializer.Serialize(assetIds, JsonSerializationOptions.Serialization);
 }

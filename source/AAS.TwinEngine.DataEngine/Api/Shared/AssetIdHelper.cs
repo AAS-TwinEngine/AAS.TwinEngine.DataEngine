@@ -3,7 +3,8 @@ using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
+
+using AasCore.Aas3_0;
 
 namespace AAS.TwinEngine.DataEngine.Api.Shared;
 
@@ -13,23 +14,18 @@ public static class AssetIdHelper
     private const int MaxNameLength = 64;
     private const int MaxValueLength = 2048;
 
-    public static IList<SpecificAssetIdFilter> DecodeAssetIds(string[] assetIds, ILogger logger)
+    public static IList<SpecificAssetId> DecodeAssetIds(string[] assetIds, ILogger logger)
     {
-        var result = new List<SpecificAssetIdFilter>();
+        var result = new List<SpecificAssetId>();
 
         foreach (var encodedAssetId in assetIds)
         {
             var decodedJson = encodedAssetId.DecodeBase64Url(logger);
 
-            SpecificAssetIdFilter? filter;
+            SpecificAssetId? filter;
             try
             {
-                filter = JsonSerializer.Deserialize<SpecificAssetIdFilter>(
-                    decodedJson,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                    });
+                filter = JsonSerializer.Deserialize<SpecificAssetId>(decodedJson, JsonSerializationOptions.Serialize);
             }
             catch (JsonException ex)
             {
@@ -65,16 +61,21 @@ public static class AssetIdHelper
             throw new InvalidUserInputException();
         }
 
+        name.ValidateIdentifier($"{entityName}.Name", logger);
+        value.ValidateIdentifier($"{entityName}.Value", logger);
+
         if (!ValidAssetLinkPattern.IsMatch(name))
         {
             logger.LogError("{EntityName} name contains invalid characters.", entityName);
             throw new InvalidUserInputException();
         }
 
-        if (!ValidAssetLinkPattern.IsMatch(value))
+        if (ValidAssetLinkPattern.IsMatch(value))
         {
-            logger.LogError("{EntityName} value contains invalid characters.", entityName);
-            throw new InvalidUserInputException();
+            return;
         }
+
+        logger.LogError("{EntityName} value contains invalid characters.", entityName);
+        throw new InvalidUserInputException();
     }
 }

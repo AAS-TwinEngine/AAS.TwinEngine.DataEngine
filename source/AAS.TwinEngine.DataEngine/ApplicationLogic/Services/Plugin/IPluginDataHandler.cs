@@ -4,6 +4,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
+using AasCore.Aas3_0;
+
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 
 /// <summary>
@@ -20,5 +22,5 @@ public interface IPluginDataHandler
 
     Task<AssetData> GetDataForAssetInformationByIdAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken);
 
-    Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, IList<SpecificAssetIdFilter> specificAssetIds, CancellationToken cancellationToken);
+    Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, IList<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken);
 }
