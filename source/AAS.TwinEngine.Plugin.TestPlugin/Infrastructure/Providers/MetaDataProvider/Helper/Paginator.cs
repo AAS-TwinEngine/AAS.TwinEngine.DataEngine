@@ -29,7 +29,7 @@ public static class Paginator
         }
 
         var lastItem = pagedItems.LastOrDefault();
-        if (lastItem != null)
+        if (!Equals(lastItem, default(T)))
         {
             nextCursor = getId(lastItem).EncodeToBase64();
         }
