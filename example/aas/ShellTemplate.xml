@@ -9,17 +9,44 @@
         <specificAssetIds>
           <specificAssetId>
             <name>SerialNumber</name>
-            <value>Test</value>
+            <value>SN-9429</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/serial-number</value>
+                </key>
+              </keys>
+            </externalSubjectId>
           </specificAssetId>
 
           <specificAssetId>
             <name>BatchId</name>
-            <value>Test</value>
+            <value>B-2026-02</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/batch-id</value>
+                </key>
+              </keys>
+            </externalSubjectId>
           </specificAssetId>
 
           <specificAssetId>
             <name>LotNumber</name>
-            <value>Test</value>
+            <value>LOT-DE-84572</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/lot-number</value>
+                </key>
+              </keys>
+            </externalSubjectId>
           </specificAssetId>
         </specificAssetIds>
       </assetInformation>

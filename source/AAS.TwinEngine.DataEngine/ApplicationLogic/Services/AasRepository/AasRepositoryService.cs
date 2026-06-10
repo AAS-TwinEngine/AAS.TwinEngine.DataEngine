@@ -160,7 +160,7 @@ public class AasRepositoryService(
         {
             foreach (var assetId in pluginData.SpecificAssetIds)
             {
-                var existingAssetId = template.SpecificAssetIds.FirstOrDefault(x => x.Name == assetId.Name);
+                var existingAssetId = template.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
 
                 if (existingAssetId != null)
                 {
@@ -184,7 +184,7 @@ public class AasRepositoryService(
 
         foreach (var assetId in metadata.SpecificAssetIds)
         {
-            var existingAssetId = shell.AssetInformation.SpecificAssetIds.FirstOrDefault(x => x.Name == assetId.Name);
+            var existingAssetId = shell.AssetInformation.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
 
             if (existingAssetId != null)
             {
@@ -218,7 +218,7 @@ public class AasRepositoryService(
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(IList<SpecificAssetId> filters, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForShellDescriptorsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filters, cancellationToken)
+            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filters, cancellationToken)
             .ConfigureAwait(false);
 
         var allMetadata = metadata.ShellDescriptors?

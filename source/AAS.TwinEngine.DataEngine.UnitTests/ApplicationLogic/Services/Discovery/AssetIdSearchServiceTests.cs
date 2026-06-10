@@ -44,7 +44,7 @@ public class AssetIdSearchServiceTests
             ]
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())
@@ -76,7 +76,7 @@ public class AssetIdSearchServiceTests
             ShellDescriptors = allDescriptors
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())
@@ -95,7 +95,7 @@ public class AssetIdSearchServiceTests
             new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())
@@ -112,7 +112,7 @@ public class AssetIdSearchServiceTests
             new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())
@@ -129,7 +129,7 @@ public class AssetIdSearchServiceTests
             new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())
@@ -147,7 +147,7 @@ public class AssetIdSearchServiceTests
             new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())
@@ -164,7 +164,7 @@ public class AssetIdSearchServiceTests
             new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())
@@ -193,7 +193,7 @@ public class AssetIdSearchServiceTests
             ]
         };
 
-        _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
+        _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<IList<SpecificAssetId>>(),
             Arg.Any<CancellationToken>())

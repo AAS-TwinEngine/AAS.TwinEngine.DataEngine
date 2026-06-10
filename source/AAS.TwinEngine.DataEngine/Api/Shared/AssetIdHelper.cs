@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -13,9 +14,17 @@ public static class AssetIdHelper
     private static readonly Regex ValidAssetLinkPattern = new(@"^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]*$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private const int MaxNameLength = 64;
     private const int MaxValueLength = 2048;
+    private const int MaxAssetIdsCount = 10;
 
     public static IList<SpecificAssetId> DecodeAssetIds(string[] assetIds, ILogger logger)
     {
+        if (assetIds?.Length > MaxAssetIdsCount)
+        {
+            logger.LogWarning("Maximum allowed number of asset IDs exceeded. Count: {Count}, Max: {MaxCount}", assetIds.Length, MaxAssetIdsCount);
+
+            throw new InvalidUserInputException();
+        }
+
         var result = new List<SpecificAssetId>();
 
         foreach (var encodedAssetId in assetIds)
@@ -25,7 +34,8 @@ public static class AssetIdHelper
             SpecificAssetId? filter;
             try
             {
-                filter = JsonSerializer.Deserialize<SpecificAssetId>(decodedJson, JsonSerializationOptions.Serialize);
+                var node = JsonNode.Parse(decodedJson);
+                filter = Jsonization.Deserialize.SpecificAssetIdFrom(node);
             }
             catch (JsonException ex)
             {

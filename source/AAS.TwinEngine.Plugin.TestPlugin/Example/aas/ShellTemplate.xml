@@ -6,20 +6,47 @@
       <assetInformation>
         <assetKind>Instance</assetKind>
         <!-- Optional specific asset identifiers -->
-        <specificAssetIds>
+                <specificAssetIds>
           <specificAssetId>
             <name>SerialNumber</name>
-            <value>Test</value>
+            <value>SN-8080</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/serial-number</value>
+                </key>
+              </keys>
+            </externalSubjectId>
           </specificAssetId>
 
           <specificAssetId>
             <name>BatchId</name>
-            <value>Test</value>
+            <value>B-2026-08</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/batch-id</value>
+                </key>
+              </keys>
+            </externalSubjectId>
           </specificAssetId>
 
           <specificAssetId>
             <name>LotNumber</name>
-            <value>Test</value>
+            <value>LOT-DE-71848</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/lot-number</value>
+                </key>
+              </keys>
+            </externalSubjectId>
           </specificAssetId>
         </specificAssetIds>
       </assetInformation>

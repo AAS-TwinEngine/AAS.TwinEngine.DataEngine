@@ -46,7 +46,7 @@ public class AssetIdSearchService(
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
 
-            return await pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(pluginManifests, specificAssetIds, cancellationToken).ConfigureAwait(false);
+            return await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifests, specificAssetIds, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
         {

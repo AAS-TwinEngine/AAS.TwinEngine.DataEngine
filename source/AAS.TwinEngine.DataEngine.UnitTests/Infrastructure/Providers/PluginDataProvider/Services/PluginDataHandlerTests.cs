@@ -633,7 +633,7 @@ public class PluginDataHandlerTests
         const string Json = """[{"name":"sn","value":"123"}]""";
 
         var assetIds = JsonSerializer.Deserialize<List<SpecificAssetId>>(Json)!;
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, assetIds, CancellationToken.None);
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, assetIds, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result.ShellDescriptors);
@@ -673,7 +673,7 @@ public class PluginDataHandlerTests
             .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetId>(), CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None));
     }
 
     [Fact]
@@ -709,7 +709,7 @@ public class PluginDataHandlerTests
             .Returns([httpResponse.Content]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetId>(), CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None));
     }
 
     [Fact]
@@ -754,7 +754,7 @@ public class PluginDataHandlerTests
             .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([httpResponse.Content]);
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, new List<SpecificAssetId>(), CancellationToken.None);
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None);
 
         Assert.Equal(2, result.ShellDescriptors.Count);
         Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));
@@ -778,7 +778,7 @@ public class PluginDataHandlerTests
             .Returns([]);
 
         await Assert.ThrowsAsync<PluginCapabilityNotSupportedException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, [], CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None));
     }
 
     private const string AssetData = """
