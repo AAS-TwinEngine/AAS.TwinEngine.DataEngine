@@ -18,7 +18,7 @@
 \echo 'Executing: 02_nameplate_carbonfootprint_technicaldata.sql.inc - Inserting  data...'
 \i /docker-entrypoint-initdb.d/02_nameplate_carbonfootprint_technicaldata.sql.inc
 
-\echo 'Executing: 03_MaintenanceInstructions.sql.inc - Inserting contact information...'
+ \echo 'Executing: 03_MaintenanceInstructions.sql.inc - Inserting maintenance instructions data...'
 \i /docker-entrypoint-initdb.d/03_MaintenanceInstructions.sql.inc
 
 \echo 'Executing: 04_handoverdocumentation.sql.inc - Inserting document metadata...'

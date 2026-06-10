@@ -37,7 +37,7 @@ services:
       - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
       - Plugins__Instances__0__healthEndpoint=/healthz
       - Plugins__MultiLanguageProperty__DefaultLanguages__0=en
-      - Plugins__MultiLanguageProperty__DefaultLanguages__1=de 
+      - Plugins__MultiLanguageProperty__DefaultLanguages__1=de
       - Plugins__Instances__0__headerMappings__0__source=Authorization
       - Plugins__Instances__0__headerMappings__0__target=X-Auth-Token
       - Plugins__Instances__0__headerMappings__0__required=false

@@ -614,7 +614,8 @@ VALUES
 'Disconnect system power','Systemstrom trennen',
 'System is powered off','System ist ausgeschaltet',
 'Power still active','Strom noch aktiv',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 5,'minutes'),
 (1,'MS-002',0,0,NULL,2,TRUE,FALSE,
 'Apply safety lockout','Sicherheitsverriegelung anwenden',
@@ -622,7 +623,8 @@ VALUES
 'Apply lockout/tagout procedure','Lockout/Tagout Verfahren anwenden',
 'Lockout applied','Verriegelung aktiv',
 'Lockout failed','Verriegelung fehlgeschlagen',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 10,'minutes'),
 (0,'MS-003',1,0,NULL,2,TRUE,FALSE,
 'Inspect equipment','Gerät prüfen',
@@ -630,7 +632,8 @@ VALUES
 'Check visible damage','Sichtprüfung durchführen',
 'No damage found','Keine Schäden gefunden',
 'Damage detected','Schaden festgestellt',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 15,'minutes'),
 (0,'MS-004',2,20,'ml',3,TRUE,FALSE,
 'Replace filter','Filter austauschen',
@@ -638,7 +641,8 @@ VALUES
 'Remove and install filter','Filter ersetzen',
 'Filter OK','Filter in Ordnung',
 'Fit issue','Problem erkannt',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 20,'minutes'),
 (1,'MS-005',1,50,'ml',1,TRUE,FALSE,
 'Add lubricant','Schmiermittel hinzufügen',
@@ -646,7 +650,8 @@ VALUES
 'Add lubricant','Schmiermittel hinzufügen',
 'Lubrication OK','Schmierung OK',
 'Leak found','Leck erkannt',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 10,'minutes'),
 (2,'MS-006',0,0,NULL,2,TRUE,FALSE,
 'Test system','System testen',
@@ -654,7 +659,8 @@ VALUES
 'Run test','Test ausführen',
 'Test passed','Test bestanden',
 'Test failed','Test fehlgeschlagen',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 15,'minutes'),
 (1,'MS-007',0,0,NULL,1,TRUE,FALSE,
 'Reconnect power','Stromversorgung wiederherstellen',
@@ -662,7 +668,8 @@ VALUES
 'Reconnect','Verbinden',
 'Power OK','Strom OK',
 'Failure','Fehler',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 5,'minutes'),
 (1,'MS-008',0,0,NULL,1,TRUE,TRUE,
 'End maintenance','Wartung beenden',
@@ -670,7 +677,8 @@ VALUES
 'Finalize','Abschließen',
 'Completed','Abgeschlossen',
 '-','-',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 5,'minutes');
 
 INSERT INTO "MaintenanceInstructionsForSpecificIntervalMaintenanceStep"
