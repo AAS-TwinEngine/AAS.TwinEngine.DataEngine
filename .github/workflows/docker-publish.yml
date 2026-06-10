@@ -7,6 +7,11 @@ name: Docker
 
 on:
   workflow_dispatch:
+    inputs:
+      build_arm64:
+        description: 'Build and publish ARM64 image (multi-arch manifest)'
+        type: boolean
+        default: false
   push:
     branches: 
       - 'develop'
@@ -44,11 +49,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      # Set up QEMU for ARM64 cross-compilation on AMD64 runners
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      # ARM64 is included for release branches, version tags, and manual trigger.
+      # Develop and hotfix branches build AMD64 only to avoid QEMU slowdown.
+      - name: Determine build platforms
+        id: platforms
+        run: |
+          PLATFORMS="linux/amd64"
+          if [[ "${{ github.ref }}" == refs/heads/release/* ]] || \
+             [[ "${{ github.ref }}" == refs/tags/v* ]] || \
+             [[ "${{ inputs.build_arm64 }}" == "true" ]]; then
+            PLATFORMS="linux/amd64,linux/arm64"
+          fi
+          echo "platforms=$PLATFORMS" >> $GITHUB_OUTPUT
+          echo "include_arm64=$([ "$PLATFORMS" = "linux/amd64,linux/arm64" ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
@@ -89,6 +112,7 @@ jobs:
           provenance: mode=max
           context: ${{ env.BUILD_CONTEXT }}
           file: ${{ env.DOCKERFILE_PATH }}
+          platforms: ${{ steps.platforms.outputs.platforms }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -126,6 +150,19 @@ jobs:
           image-ref: ${{ steps.highest-priority-tag.outputs.value }}
           skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a separate SBOM for easier vulnerability management and because trivy misses important fields
           
+      # Scan ARM64 image separately when a multi-arch build was produced
+      - name: Run Trivy scan for ARM64 image
+        if: ${{ github.event_name != 'pull_request' && steps.platforms.outputs.include_arm64 == 'true' }}
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # 0.36.0
+        env:
+          TRIVY_PLATFORM: linux/arm64
+        with:
+          scan-type: 'image'
+          format: 'cyclonedx'
+          output: 'sbom-output/sbom_container_arm64.cyclonedx.json'
+          image-ref: ${{ steps.highest-priority-tag.outputs.value }}
+          skip-dirs: '/App'
+
       - name: Upload trivy/container AND application SBOMs as a Github artifact
         if: ${{ github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
