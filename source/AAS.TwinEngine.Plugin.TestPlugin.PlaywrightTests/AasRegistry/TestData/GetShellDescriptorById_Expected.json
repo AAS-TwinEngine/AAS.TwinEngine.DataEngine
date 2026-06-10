@@ -22,6 +22,21 @@
   "globalAssetId": "https://mm-software.com/ids/assets/000-001",
   "idShort": "M&M01",
   "id": "https://mm-software.com/ids/aas/000-001",
-  "specificAssetIds": [],
+  "specificAssetIds": [
+    {
+      "semanticId": null,
+      "supplementalSemanticIds": null,
+      "name": "serialNumber",
+      "value": "SN-4711",
+      "externalSubjectId": null
+    },
+    {
+      "semanticId": null,
+      "supplementalSemanticIds": null,
+      "name": "batchId",
+      "value": "B-2026-03",
+      "externalSubjectId": null
+    }
+  ],
   "submodelDescriptors": null
 }
