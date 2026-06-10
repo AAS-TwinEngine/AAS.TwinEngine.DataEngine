@@ -4,15 +4,42 @@
   "specificAssetIds": [
     {
       "name": "SerialNumber",
-      "value": "SN-4711"
+      "value": "SN-4711",
+      "externalSubjectId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.com/subjects/serial-number"
+          }
+        ]
+      }
     },
     {
       "name": "BatchId",
-      "value": "B-2026-03"
+      "value": "B-2026-03",
+      "externalSubjectId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.com/subjects/batch-id"
+          }
+        ]
+      }
     },
     {
       "name": "LotNumber",
-      "value": "LOT-DE-71848"
+      "value": "LOT-DE-71848",
+      "externalSubjectId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.com/subjects/lot-number"
+          }
+        ]
+      }
     }
   ],
   "defaultThumbnail": {

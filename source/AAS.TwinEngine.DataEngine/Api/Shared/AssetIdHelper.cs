@@ -18,7 +18,9 @@ public static class AssetIdHelper
 
     public static IList<SpecificAssetId> DecodeAssetIds(string[] assetIds, ILogger logger)
     {
-        if (assetIds?.Length > MaxAssetIdsCount)
+        assetIds ??= [];
+
+        if (assetIds.Length > MaxAssetIdsCount)
         {
             logger.LogWarning("Maximum allowed number of asset IDs exceeded. Count: {Count}, Max: {MaxCount}", assetIds.Length, MaxAssetIdsCount);
 
@@ -37,7 +39,7 @@ public static class AssetIdHelper
                 var node = JsonNode.Parse(decodedJson);
                 filter = Jsonization.Deserialize.SpecificAssetIdFrom(node);
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to parse SpecificAssetId JSON: {Json}", decodedJson);
                 throw new InvalidUserInputException();
