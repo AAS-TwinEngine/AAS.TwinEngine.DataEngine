@@ -109,7 +109,8 @@ TRUE,
 5,
 '2025-12-24T14:30:00Z',
 '2035-12-24T14:30:00Z',
-'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf'
+('https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/' ||
+'AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf')
 ),
 
 (
@@ -154,7 +155,8 @@ FALSE,
 2.2999999999999998,
 '2026-01-15T09:15:00+05:30',
 '2036-01-15T09:15:00+05:31',
-'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf'
+('https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/' ||
+'AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf')
 ),
 
 (
@@ -199,7 +201,8 @@ TRUE,
 7.8,
 '2024-07-01T18:45:00-04:00',
 '2034-07-01T18:45:00-04:01',
-'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf'
+('https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/' ||
+'AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf')
 );
 
 -- ============================================================
@@ -214,4 +217,4 @@ INSERT INTO "SpecificAssetIds" ("AssetId","Name","Value") VALUES
 ('2','BatchId','BATCH-2022-001'),
 ('2','LotNumber','LOT-IN-77882'),
 ('3','SerialNumber','SN-TMABC1680-9804760'),
-('3','BatchId','BATCH-2022-001'); 
+('3','BatchId','BATCH-2022-001');

@@ -4,7 +4,7 @@
 -- This file contains CREATE and INSERT statements for contact-related entities:
 -- - Maintenance Instructions For Specific Interval
 -- - Alarm
--- - ContactForMaintenanceAuthorization - Email - Phone - Fax 
+-- - ContactForMaintenanceAuthorization - Email - Phone - Fax
 -- - MaintenanceStep
 -- - MaintenanceTool
 -- - MaintenanceConsumable
@@ -12,7 +12,7 @@
 -- ============================================================
 
 -- ============================================================
--- Maintenance Instructions 
+-- Maintenance Instructions
 -- ============================================================
 
 CREATE TABLE "MaintenanceInstructionsForSpecificInterval" (
@@ -44,7 +44,8 @@ CREATE TABLE "MaintenanceInstructionsForSpecificInterval" (
 CREATE TABLE "AssetMaintenanceInstruction" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
-    "MaintenanceInstructionId" INT NOT NULL REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE
+    "MaintenanceInstructionId" INT NOT NULL
+        REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE
 );
 
 -- ============================================================
@@ -66,7 +67,8 @@ CREATE TABLE "Alarm" (
 
 CREATE TABLE "MaintenanceInstructionAlarm" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "MaintenanceInstructionId" INT NOT NULL REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE,
+    "MaintenanceInstructionId" INT NOT NULL
+        REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE,
     "AlarmId" INT NOT NULL REFERENCES "Alarm"("Id") ON DELETE CASCADE
 );
 
@@ -108,7 +110,8 @@ CREATE TABLE "ContactForMaintenanceAuthorization" (
 
 CREATE TABLE "Email" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "ContactForMaintenanceAuthorizationId" INT UNIQUE REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
+    "ContactForMaintenanceAuthorizationId" INT UNIQUE
+        REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
     "EmailAddress" TEXT,
     "TypeOfEmailAddress" TEXT,
     "PublicKey_en" TEXT,
@@ -119,7 +122,8 @@ CREATE TABLE "Email" (
 
 CREATE TABLE "Phone" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "ContactForMaintenanceAuthorizationId" INT UNIQUE REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
+    "ContactForMaintenanceAuthorizationId" INT UNIQUE
+        REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
     "TelephoneNumber_en" TEXT,
     "TelephoneNumber_de" TEXT,
     "AvailableTime_en" TEXT,
@@ -129,7 +133,8 @@ CREATE TABLE "Phone" (
 
 CREATE TABLE "Fax" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "ContactForMaintenanceAuthorizationId" INT UNIQUE REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
+    "ContactForMaintenanceAuthorizationId" INT UNIQUE
+        REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
     "FaxNumber_en" TEXT,
     "FaxNumber_de" TEXT,
     "TypeOfFaxNumber" TEXT
@@ -167,7 +172,8 @@ CREATE TABLE "MaintenanceStep" (
 );
 
 CREATE TABLE "MaintenanceInstructionsForSpecificIntervalMaintenanceStep" (
-    "MaintenanceInstructionsForSpecificIntervalId" INT REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE,
+    "MaintenanceInstructionsForSpecificIntervalId" INT
+        REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE,
     "MaintenanceStepId" INT REFERENCES "MaintenanceStep"("Id") ON DELETE CASCADE,
     PRIMARY KEY (
         "MaintenanceInstructionsForSpecificIntervalId",
@@ -277,7 +283,8 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Disconnect power; Secure against restart; Check no voltage',
 'Stromversorgung trennen; Gegen Wiedereinschalten sichern; Spannungsfreiheit prüfen',
 6,'months',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 2,
 'Qualified maintenance technician required',
 'Qualifizierter Wartungstechniker erforderlich',
@@ -293,7 +300,8 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Wear gloves; Disconnect system; Dispose filters safely',
 'Schutzhandschuhe tragen; System trennen; Filter entsorgen',
 12,'months',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 1,
 'Certified technician required',
 'Zertifizierter Techniker erforderlich',
@@ -309,7 +317,8 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Secure vehicle; Use safety stands; Wear goggles',
 'Fahrzeug sichern; Unterstellböcke verwenden; Schutzbrille tragen',
 3,'months',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 0,
 'IEC/EN 60079-14 knowledge required',
 'IEC/EN 60079-14 Kenntnisse erforderlich',
@@ -325,7 +334,8 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Allow cooling; Open cap slowly; Avoid contact',
 'Motor abkühlen lassen; Deckel langsam öffnen; Kontakt vermeiden',
 4,'months',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 1,
 'IEC/EN 60079-19 knowledge required',
 'IEC/EN 60079-19 Kenntnisse erforderlich',
@@ -341,7 +351,8 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Disconnect battery; Avoid sparks; Wear gloves',
 'Batterie trennen; Funken vermeiden; Handschuhe tragen',
 9,'months',
-'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
+('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+'main/example/data/dummy_document.pdf'),
 2,
 'IEC/EN 61009-1 knowledge required',
 'IEC/EN 61009-1 Kenntnisse erforderlich',

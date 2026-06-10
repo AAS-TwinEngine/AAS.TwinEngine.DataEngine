@@ -132,7 +132,8 @@ VALUES
 (
     1,
     0,
-    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg',
+    ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/product1.jpg'),
     'Front view of the machine showing external and structure',
     'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -140,7 +141,8 @@ VALUES
 (
     2,
     1,
-    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/develop/example/data/product1-1.png',
+    ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'develop/example/data/product1-1.png'),
     'Side view of the machine showing external and structure',
     'Seitenansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -148,7 +150,8 @@ VALUES
 (
     3,
     0,
-    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg',
+    ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/product2.jpg'),
     'Front view of the machine showing external and structure',
     'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -156,7 +159,8 @@ VALUES
 (
     4,
     1,
-    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/develop/example/data/product3-1.png',
+    ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'develop/example/data/product3-1.png'),
     'Side view of the machine showing external and structure',
     'Seitenansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -164,7 +168,8 @@ VALUES
 (
     5,
     0,
-    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg',
+    ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/product3.jpg'),
     'Front view of the machine showing external and structure',
     'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 );
