@@ -16,7 +16,7 @@ public class DiscoveryTests : ApiTestBase
         {
             new
             {
-                name = "serialNumber",
+                name = "SerialNumber",
                 value = "SN-4711"
             }
         };
@@ -47,12 +47,12 @@ public class DiscoveryTests : ApiTestBase
         {
             new
             {
-                name = "serialNumber",
+                name = "SerialNumber",
                 value = "SN-4711"
             },
             new
             {
-                name = "batchId",
+                name = "BatchId",
                 value = "B-2026-03"
             }
         };
