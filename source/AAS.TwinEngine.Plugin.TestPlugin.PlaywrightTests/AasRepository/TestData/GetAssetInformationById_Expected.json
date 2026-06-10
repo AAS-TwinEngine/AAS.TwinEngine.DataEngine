@@ -3,11 +3,11 @@
   "globalAssetId": "https://mm-software.com/ids/assets/000-001",
   "specificAssetIds": [
     {
-      "name": "serialNumber",
+      "name": "SerialNumber",
       "value": "SN-4711"
     },
     {
-      "name": "batchId",
+      "name": "BatchId",
       "value": "B-2026-03"
     }
   ],

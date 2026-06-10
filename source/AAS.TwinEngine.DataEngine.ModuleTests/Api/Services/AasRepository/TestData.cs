@@ -14,7 +14,21 @@ internal static class TestData
             {
               "id": "https://example.com/aas/aasTemplate",
               "assetInformation": {
-                "assetKind": "Instance"
+                "assetKind": "Instance",
+                "specificAssetIds": [
+              {
+                "name": "LotNumber",
+                "value": "Test"
+              },
+              {
+                "name": "BatchId",
+                "value": "Test"
+              },
+              {
+                "name": "SerialNumber",
+                "value": "Test"
+              }
+            ]
               },
               "submodels": [
                 {
@@ -209,7 +223,7 @@ internal static class TestData
                  "idShort": "Product1",
                  "id": "https://mm-software.com/ids/aas/000-001",
                  "specificAssetIds": [
-                   { "name": "serialNumber", "value": "SN-4711" }
+                   { "name": "SerialNumber", "value": "SN-4711" }
                  ]
                },
                {
@@ -217,7 +231,7 @@ internal static class TestData
                  "idShort": "Product2",
                  "id": "https://mm-software.com/ids/aas/000-002",
                  "specificAssetIds": [
-                   { "name": "serialNumber", "value": "SN-4712" }
+                   { "name": "SerialNumber", "value": "SN-4712" }
                  ]
                }
              ]

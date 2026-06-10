@@ -25,7 +25,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "SN-4711" }
         };
         var expectedIds = new List<string> { "urn:example:aas:001" };
         var pagingMetaData = new PagingMetaData { Cursor = null };
@@ -68,7 +68,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "" }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -92,7 +92,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = new string('x', 2049) }
+            new AssetLinkDto { Name = "SerialNumber", Value = new string('x', 2049) }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -104,7 +104,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
@@ -135,8 +135,8 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" },
-            new AssetLinkDto { Name = "batchId", Value = "B-001" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "SN-4711" },
+            new AssetLinkDto { Name = "BatchId", Value = "B-001" }
         };
         var expectedIds = new List<string> { "urn:example:aas:001" };
         var pagingMetaData = new PagingMetaData { Cursor = null };
@@ -156,7 +156,7 @@ public class DiscoveryHandlerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "SN-4711" }
         };
         var expectedIds = new List<string> { "urn:example:aas:001", "urn:example:aas:002" };
         var pagingMetaData = new PagingMetaData { Cursor = "nextCursorValue" };

@@ -25,6 +25,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
             TimeoutException => StatusCodes.Status408RequestTimeout,
             ServiceUnavailableException => StatusCodes.Status503ServiceUnavailable,
+            FeatureNotSupportedException => StatusCodes.Status501NotImplemented,
             _ => StatusCodes.Status500InternalServerError
         };
 

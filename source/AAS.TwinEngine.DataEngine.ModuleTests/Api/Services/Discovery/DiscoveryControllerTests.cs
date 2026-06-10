@@ -63,7 +63,7 @@ public abstract class DiscoveryControllerTests : IDisposable
 
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         var response = await _client.PostAsJsonAsync("/lookup/shellsByAssetLink", assetLinks);
@@ -85,8 +85,8 @@ public abstract class DiscoveryControllerTests : IDisposable
 
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" },
-            new AssetLink { Name = "batchId", Value = "B-2026-03" }
+            new AssetLink { Name = "SerialNumber", Value = "SN-4711" },
+            new AssetLink { Name = "BatchId", Value = "B-2026-03" }
         };
 
         var response = await _client.PostAsJsonAsync("/lookup/shellsByAssetLink", assetLinks);
@@ -101,7 +101,7 @@ public abstract class DiscoveryControllerTests : IDisposable
 
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "non-existent" }
+            new AssetLink { Name = "SerialNumber", Value = "non-existent" }
         };
 
         var response = await _client.PostAsJsonAsync("/lookup/shellsByAssetLink", assetLinks);
@@ -129,7 +129,7 @@ public abstract class DiscoveryControllerTests : IDisposable
     {
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLink { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         var response = await _client.PostAsJsonAsync("/lookup/shellsByAssetLink?limit=-1", assetLinks);
@@ -144,7 +144,7 @@ public abstract class DiscoveryControllerTests : IDisposable
 
         var assetLinks = new[]
         {
-            new AssetLink { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLink { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         var response = await _client.PostAsJsonAsync("/lookup/shellsByAssetLink?limit=1", assetLinks);

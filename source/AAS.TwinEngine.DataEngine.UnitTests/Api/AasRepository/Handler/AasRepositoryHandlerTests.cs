@@ -60,7 +60,7 @@ public class AasRepositoryHandlerTests
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithValidInput_ReturnsShells()
     {
-        var json = """{"name":"serialNumber","value":"SN-4711"}""";
+        var json = """{"name":"SerialNumber","value":"SN-4711"}""";
         var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json))
             .Replace('+', '-').Replace('/', '_').TrimEnd('=');
         var assetIds = new[] { encoded };
@@ -82,7 +82,7 @@ public class AasRepositoryHandlerTests
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithNegativeLimit_ThrowsInvalidUserInputException()
     {
-        var json = """{"name":"serialNumber","value":"SN-4711"}""";
+        var json = """{"name":"SerialNumber","value":"SN-4711"}""";
         var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json))
             .Replace('+', '-').Replace('/', '_').TrimEnd('=');
         var assetIds = new[] { encoded };

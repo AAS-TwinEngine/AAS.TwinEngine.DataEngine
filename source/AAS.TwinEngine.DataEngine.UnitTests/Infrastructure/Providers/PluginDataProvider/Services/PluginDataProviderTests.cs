@@ -389,7 +389,7 @@ public class PluginDataProviderTests
             new(httpClientName, "")
         };
 
-        var assetIdsHeaderValue = """[{"name":"serialNumber","value":"SN-4711"}]""";
+        var assetIdsHeaderValue = """[{"name":"SerialNumber","value":"SN-4711"}]""";
 
         var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, CancellationToken.None);
 

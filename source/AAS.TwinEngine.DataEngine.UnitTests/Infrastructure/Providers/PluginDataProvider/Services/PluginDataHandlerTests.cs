@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
@@ -597,9 +599,15 @@ public class PluginDataHandlerTests
                 PluginName = "PluginA",
                 PluginUrl = new Uri("http://plugin-a"),
                 SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities ()
+                Capabilities = new Capabilities { HasAssetIdSearch = true }
             }
         };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<Func<Capabilities, bool>>())
+                    .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
@@ -642,9 +650,15 @@ public class PluginDataHandlerTests
                 PluginName = "PluginA",
                 PluginUrl = new Uri("http://plugin-a"),
                 SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities()
+                Capabilities = new Capabilities { HasAssetIdSearch = true }
             }
         };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<Func<Capabilities, bool>>())
+                    .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
@@ -672,9 +686,15 @@ public class PluginDataHandlerTests
                 PluginName = "PluginA",
                 PluginUrl = new Uri("http://plugin-a"),
                 SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities()
+                Capabilities = new Capabilities{ HasAssetIdSearch = true }
             }
         };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<Func<Capabilities, bool>>())
+                    .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
@@ -702,9 +722,15 @@ public class PluginDataHandlerTests
                 PluginName = "PluginA",
                 PluginUrl = new Uri("http://plugin-a"),
                 SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities { }
+                Capabilities = new Capabilities { HasAssetIdSearch = true }
             }
         };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<Func<Capabilities, bool>>())
+                    .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
@@ -732,6 +758,27 @@ public class PluginDataHandlerTests
 
         Assert.Equal(2, result.ShellDescriptors.Count);
         Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorsByAssetIdsAsync_WhenNoAvailablePlugins_ThrowsPluginCapabilityNotSupportedException()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities{ HasAssetIdSearch = false }
+            }
+        };
+
+        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns([]);
+
+        await Assert.ThrowsAsync<PluginCapabilityNotSupportedException>(() =>
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(manifests, [], CancellationToken.None));
     }
 
     private const string AssetData = """

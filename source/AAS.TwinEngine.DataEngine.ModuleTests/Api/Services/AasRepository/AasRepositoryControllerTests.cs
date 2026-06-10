@@ -351,7 +351,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
         SetupTemplateProvider();
 
-        var specificAssetId = """{"name":"serialNumber","value":"SN-4711"}""";
+        var specificAssetId = """{"name":"SerialNumber","value":"SN-4711"}""";
         var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
 
         var response = await _client.GetAsync($"/shells?assetIds={encoded}");
@@ -370,8 +370,8 @@ public abstract class AasRepositoryControllerTests : IDisposable
         SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
         SetupTemplateProvider();
 
-        var id1 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("""{"name":"serialNumber","value":"SN-4711"}"""));
-        var id2 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("""{"name":"batchId","value":"B-001"}"""));
+        var id1 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("""{"name":"SerialNumber","value":"SN-4711"}"""));
+        var id2 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("""{"name":"BatchId","value":"B-001"}"""));
 
         var response = await _client.GetAsync($"/shells?assetIds={id1}&assetIds={id2}");
 
@@ -387,7 +387,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
         SetupTemplateProvider();
 
-        var specificAssetId = """{"name":"serialNumber","value":"SN-4711"}""";
+        var specificAssetId = """{"name":"SerialNumber","value":"SN-4711"}""";
         var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
 
         var response = await _client.GetAsync($"/shells?assetIds={encoded}&limit=1");
@@ -406,7 +406,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsEmpty());
         SetupTemplateProvider();
 
-        var specificAssetId = """{"name":"serialNumber","value":"non-existent"}""";
+        var specificAssetId = """{"name":"SerialNumber","value":"non-existent"}""";
         var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
 
         var response = await _client.GetAsync($"/shells?assetIds={encoded}");
@@ -452,7 +452,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
     [Fact]
     public async Task GetShellsAsync_WithMissingAssetIdValue_Returns400Async()
     {
-        var json = """{"name":"serialNumber"}""";
+        var json = """{"name":"SerialNumber"}""";
         var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(json));
 
         var response = await _client.GetAsync($"/shells?assetIds={encoded}");
@@ -495,12 +495,25 @@ public abstract class AasRepositoryControllerTests : IDisposable
 
     private void SetupTemplateProvider()
     {
-        _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => new AssetAdministrationShell(
-                callInfo.ArgAt<string>(0),
-                new AssetInformation(AssetKind.Instance))
+        _ = _mockTemplateProvider
+            .GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
             {
-                Submodels = []
+                var assetInformation = new AssetInformation(AssetKind.Instance)
+                {
+                    SpecificAssetIds =
+                    [
+                        new SpecificAssetId("SerialNumber", "Test"),
+                        new SpecificAssetId("manufacturer", "ABC")
+                    ]
+                };
+
+                return new AssetAdministrationShell(
+                    callInfo.ArgAt<string>(0),
+                    assetInformation)
+                {
+                    Submodels = []
+                };
             });
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -203,6 +204,12 @@ public class PluginDataHandler(
     public async Task<ShellDescriptorsMetaData> GetDataForShellDescriptorsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, IList<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken)
     {
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
+
+        if (availablePlugins.Count == 0)
+        {
+            logger.LogWarning("No plugins available that support asset ID search.");
+            throw new PluginCapabilityNotSupportedException();
+        }
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 

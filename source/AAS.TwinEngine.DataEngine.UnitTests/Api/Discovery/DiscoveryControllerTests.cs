@@ -29,7 +29,7 @@ public class DiscoveryControllerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "SN-4711" }
         };
         var expectedResponse = new ShellsByAssetLinkResponseDto
         {
@@ -52,7 +52,7 @@ public class DiscoveryControllerTests
     {
         var assetLinks = new[]
         {
-            new AssetLinkDto { Name = "serialNumber", Value = "SN-4711" }
+            new AssetLinkDto { Name = "SerialNumber", Value = "SN-4711" }
         };
         var expectedResponse = new ShellsByAssetLinkResponseDto
         {

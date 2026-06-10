@@ -156,19 +156,14 @@ public class AasRepositoryService(
 
     private static void SetSpecificAssetIds(IAssetInformation template, AssetData pluginData)
     {
-        template.SpecificAssetIds = [];
-
-        if (pluginData.SpecificAssetIds is null)
+        if (pluginData.SpecificAssetIds is not null)
         {
-            return;
-        }
+            foreach (var assetId in pluginData.SpecificAssetIds)
+            {
+                var existingAssetId = template.SpecificAssetIds.FirstOrDefault(x => x.Name == assetId.Name);
 
-        foreach (var assetId in pluginData.SpecificAssetIds)
-        {
-            template.SpecificAssetIds.Add(new SpecificAssetId(
-                                                              name: assetId.Name ?? string.Empty,
-                                                              value: assetId.Value ?? string.Empty
-                                                             ));
+                _ = (existingAssetId?.Value = assetId.Value);
+            }
         }
     }
 
@@ -186,10 +181,12 @@ public class AasRepositoryService(
 
         if (metadata.SpecificAssetIds is not null)
         {
-            shell.AssetInformation.SpecificAssetIds = [];
             foreach (var assetId in metadata.SpecificAssetIds)
             {
-                shell.AssetInformation.SpecificAssetIds.Add(assetId);
+                var existingAssetId = shell.AssetInformation.SpecificAssetIds
+                    .FirstOrDefault(x => x.Name == assetId.Name);
+
+                _ = (existingAssetId?.Value = assetId.Value);
             }
         }
     }

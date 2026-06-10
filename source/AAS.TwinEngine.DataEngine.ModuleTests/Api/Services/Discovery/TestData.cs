@@ -57,7 +57,7 @@ internal static class TestData
                  "id": "urn:manufacturer-x:aas:motor:001",
                  "specificAssetIds": [
                    {
-                     "name": "serialNumber",
+                     "name": "SerialNumber",
                      "value": "SN-4711"
                    }
                  ]
@@ -68,11 +68,11 @@ internal static class TestData
                  "id": "urn:manufacturer-x:aas:motor:002",
                  "specificAssetIds": [
                    {
-                     "name": "serialNumber",
+                     "name": "SerialNumber",
                      "value": "SN-4711"
                    },
                    {
-                     "name": "batchId",
+                     "name": "BatchId",
                      "value": "B-2026-03"
                    }
                  ]

@@ -31,7 +31,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         var metadata = new ShellDescriptorsMetaData
@@ -63,7 +63,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         var allDescriptors = Enumerable.Range(1, 5)
@@ -92,7 +92,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
@@ -109,7 +109,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
@@ -126,7 +126,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
@@ -144,7 +144,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
@@ -161,7 +161,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         _ = _pluginDataHandler.GetDataForShellDescriptorsByAssetIdsAsync(
@@ -178,7 +178,7 @@ public class AssetIdSearchServiceTests
     {
         var assetLinks = new List<AssetLink>
         {
-            new() { Name = "serialNumber", Value = "SN-4711" }
+            new() { Name = "SerialNumber", Value = "SN-4711" }
         };
 
         var metadata = new ShellDescriptorsMetaData
