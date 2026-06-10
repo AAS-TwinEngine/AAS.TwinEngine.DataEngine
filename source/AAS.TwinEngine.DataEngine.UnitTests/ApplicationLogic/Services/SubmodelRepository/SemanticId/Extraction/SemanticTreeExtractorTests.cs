@@ -82,7 +82,7 @@ public class SemanticTreeExtractorTests
         _resolver.ResolveSemanticId(submodel, "Test").Returns("http://test/root");
         _resolver.ResolveElementSemanticId(element, "UnknownElement").Returns("http://test/unknown");
         _resolver.GetValueType(element).Returns(DataType.Unknown);
-        _resolver.GetCardinality(element).Returns(Cardinality.Unknown);
+        _resolver.GetCardinality(element).Returns(Cardinality.One);
 
         var result = _sut.Extract(submodel) as SemanticBranchNode;
 
@@ -91,6 +91,62 @@ public class SemanticTreeExtractorTests
         var leaf = IsType<SemanticLeafNode>(result.Children[0]);
         Equal("http://test/unknown", leaf.SemanticId);
         Equal(DataType.Unknown, leaf.DataType);
+    }
+
+    [Fact]
+    public void Extract_ElementWithUnknownCardinality_ThrowsInternalDataProcessingException()
+    {
+        var element = Substitute.For<ISubmodelElement>();
+        element.IdShort.Returns("ElementWithUnknownCard");
+        var submodel = Substitute.For<ISubmodel>();
+        submodel.IdShort.Returns("Test");
+        submodel.SubmodelElements.Returns([element]);
+        _resolver.ResolveSemanticId(submodel, "Test").Returns("http://test/root");
+            _resolver.GetCardinality(Arg.Is(element)).Returns(x => throw new InternalDataProcessingException("Cardinality is mandatory for SubmodelElement 'ElementWithUnknownCard' in template. Found: Unknown"));
+        _resolver.ResolveElementSemanticId(element, "ElementWithUnknownCard").Returns("http://test/elem");
+        _resolver.GetValueType(element).Returns(DataType.String);
+
+        var exception = Throws<InternalDataProcessingException>(() => _sut.Extract(submodel));
+        Contains("Cardinality is mandatory", exception.Message);
+    }
+
+    [Fact]
+    public void Extract_SubmodelWithUnknownCardinality_ThrowsInternalDataProcessingException()
+    {
+        var submodel = Substitute.For<ISubmodel>();
+        submodel.IdShort.Returns("TestSubmodel");
+        submodel.SubmodelElements.Returns([]);
+        _resolver.ResolveSemanticId(submodel, "TestSubmodel").Returns("http://test/root");
+
+        var result = _sut.Extract(submodel) as SemanticBranchNode;
+
+        NotNull(result);
+        Equal(Cardinality.One, result!.Cardinality);
+    }
+
+    [Theory]
+    [InlineData(Cardinality.ZeroToOne)]
+    [InlineData(Cardinality.One)]
+    [InlineData(Cardinality.ZeroToMany)]
+    [InlineData(Cardinality.OneToMany)]
+    public void Extract_ElementWithValidCardinality_CreatesLeafNode(Cardinality validCardinality)
+    {
+        var element = Substitute.For<ISubmodelElement>();
+        element.IdShort.Returns("ValidElement");
+        var submodel = Substitute.For<ISubmodel>();
+        submodel.IdShort.Returns("Test");
+        submodel.SubmodelElements.Returns([element]);
+        _resolver.ResolveSemanticId(submodel, "Test").Returns("http://test/root");
+        _resolver.ResolveElementSemanticId(element, "ValidElement").Returns("http://test/valid");
+        _resolver.GetValueType(element).Returns(DataType.String);
+        _resolver.GetCardinality(element).Returns(validCardinality);
+
+        var result = _sut.Extract(submodel) as SemanticBranchNode;
+
+        NotNull(result);
+        Single(result!.Children);
+        var leaf = IsType<SemanticLeafNode>(result.Children[0]);
+        Equal(validCardinality, leaf.Cardinality);
     }
 
     [Fact]
@@ -152,5 +208,38 @@ public class SemanticTreeExtractorTests
         _elementHelper.GetChildElements(property).Returns((IList<ISubmodelElement>?)null);
 
         Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, "Prop.Child"));
+    }
+
+    [Fact]
+    public void ExtractElement_WithUnknownCardinality_ThrowsInternalDataProcessingException()
+    {
+        var element = Substitute.For<ISubmodelElement>();
+        element.IdShort.Returns("TestElement");
+        _resolver.ResolveElementSemanticId(element, "TestElement").Returns("http://test/elem");
+        _resolver.GetValueType(element).Returns(DataType.String);
+    _resolver.GetCardinality(Arg.Is(element)).Returns(x => throw new InternalDataProcessingException("Cardinality is mandatory for SubmodelElement 'TestElement' in template. Found: Unknown"));
+
+        var exception = Throws<InternalDataProcessingException>(() => _sut.ExtractElement(element));
+        Contains("Cardinality is mandatory", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(Cardinality.ZeroToOne)]
+    [InlineData(Cardinality.One)]
+    [InlineData(Cardinality.ZeroToMany)]
+    [InlineData(Cardinality.OneToMany)]
+    public void ExtractElement_WithValidCardinality_CreatesLeafNode(Cardinality validCardinality)
+    {
+        var element = Substitute.For<ISubmodelElement>();
+        element.IdShort.Returns("ValidElement");
+        _resolver.ResolveElementSemanticId(element, "ValidElement").Returns("http://test/valid");
+        _resolver.GetValueType(element).Returns(DataType.Integer);
+        _resolver.GetCardinality(element).Returns(validCardinality);
+
+        var result = _sut.ExtractElement(element);
+
+        var leaf = IsType<SemanticLeafNode>(result);
+        Equal(validCardinality, leaf.Cardinality);
+        Equal(DataType.Integer, leaf.DataType);
     }
 }

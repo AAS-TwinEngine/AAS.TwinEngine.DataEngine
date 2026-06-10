@@ -857,7 +857,8 @@ public class SemanticIdHandlerTests
 
     private SemanticIdHandler CreateSut(IOptions<PluginsConfig> pluginsConfig, IOptions<TemplateManagementConfig> templateManagementConfig)
     {
-        var resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig);
+        var logger = Substitute.For<ILogger<SemanticIdResolver>>();
+        var resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig, logger);
         var helper = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), pluginsConfig);
         var referenceHelper = new ReferenceHelper(resolver, Substitute.For<ILogger<ReferenceHelper>>());
 

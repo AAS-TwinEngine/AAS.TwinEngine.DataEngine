@@ -1203,6 +1203,22 @@
                   </keys>
                 </reference>
               </supplementalSemanticIds>
+              <qualifiers>
+                <qualifier>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>ZeroToMany</value>
+                </qualifier>
+              </qualifiers>
             </submodelElementCollection>
           </value>
         </submodelElementList>
@@ -1422,60 +1438,6 @@
             </keys>
           </semanticIdListElement>
           <typeValueListElement>SubmodelElementCollection</typeValueListElement>
-          <value>
-            <submodelElementCollection>
-              <displayName>
-                <langStringNameType>
-                  <language>en</language>
-                  <text>Specific description</text>
-                </langStringNameType>
-                <langStringNameType>
-                  <language>de</language>
-                  <text>Spezifische Beschreibung</text>
-                </langStringNameType>
-              </displayName>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>0173-1#02-ABM221#001/0173-1#01-AHY912#001</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <supplementalSemanticIds>
-                <reference>
-                  <type>ExternalReference</type>
-                  <keys>
-                    <key>
-                      <type>GlobalReference</type>
-                      <value>0173-1#02-ABM221#001~0/0173-1#01-AHY912#001</value>
-                    </key>
-                    <key>
-                      <type>GlobalReference</type>
-                      <value>https://api.eclass-cdp.com/0173-1-02-ABM221-001/0173-1-01-AHY912-001</value>
-                    </key>
-                  </keys>
-                </reference>
-              </supplementalSemanticIds>
-              <qualifiers>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Naming/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <type>Naming</type>
-                  <valueType>xs:string</valueType>
-                  <value>Name of SMC is use case or application</value>
-                </qualifier>
-              </qualifiers>
-            </submodelElementCollection>
-          </value>
         </submodelElementList>
       </submodelElements>
     </submodel>

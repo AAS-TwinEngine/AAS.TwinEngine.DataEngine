@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -13,7 +14,10 @@ using Range = AasCore.Aas3_0.Range;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
-public partial class SemanticIdResolver(IOptions<PluginsConfig> pluginsConfig, IOptions<TemplateManagementConfig> templateManagementConfig) : ISemanticIdResolver
+public partial class SemanticIdResolver(
+    IOptions<PluginsConfig> pluginsConfig,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    ILogger<SemanticIdResolver> logger) : ISemanticIdResolver
 {
     public const string RangeMinimumPostFixSeparator = "_min";
     public const string RangeMaximumPostFixSeparator = "_max";
@@ -80,9 +84,12 @@ public partial class SemanticIdResolver(IOptions<PluginsConfig> pluginsConfig, I
             return Cardinality.Unknown;
         }
 
-        return Enum.TryParse<Cardinality>(qualifierValue, ignoreCase: true, out var result)
+        var cardinality = Enum.TryParse<Cardinality>(qualifierValue, ignoreCase: true, out var result)
                    ? result
                    : Cardinality.Unknown;
+
+        ValidateCardinality(cardinality, element);
+        return cardinality;
     }
 
     public DataType GetValueType(ISubmodelElement element)
@@ -127,6 +134,16 @@ public partial class SemanticIdResolver(IOptions<PluginsConfig> pluginsConfig, I
         return string.IsNullOrWhiteSpace(index)
                    ? semanticId
                    : $"{semanticId}{_submodelElementIndexContextPrefix}{index}";
+    }
+
+    private void ValidateCardinality(Cardinality cardinality, ISubmodelElement element)
+    {
+        if (cardinality == Cardinality.Unknown)
+        {
+            var errorMessage = $"Cardinality is mandatory for '{element.IdShort}' in template. Found: Unknown";
+            logger.LogError(errorMessage);
+            throw new InternalDataProcessingException("Invalid Template Found");
+        }
     }
 
     /// <summary>

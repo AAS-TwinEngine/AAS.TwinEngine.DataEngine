@@ -28,7 +28,8 @@ public class ReferenceHelperTests
             SubmodelElementIndexContextPrefix = "_aastwinengineindex_"
         });
         var templateManagementConfig = Options.Create(new TemplateManagementConfig());
-        _resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig);
+        var logger = Substitute.For<ILogger<SemanticIdResolver>>();
+        _resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig, logger);
         _logger = Substitute.For<ILogger<ReferenceHelper>>();
         _sut = new ReferenceHelper(_resolver, _logger);
     }

@@ -20,7 +20,7 @@ public class SemanticTreeExtractor(
             throw new InvalidDependencyException(nameof(submodelTemplate), logger);
         }
 
-        var rootNode = new SemanticBranchNode(semanticIdResolver.ResolveSemanticId(submodelTemplate, submodelTemplate.IdShort!), Cardinality.Unknown);
+        var rootNode = new SemanticBranchNode(semanticIdResolver.ResolveSemanticId(submodelTemplate, submodelTemplate.IdShort!), Cardinality.One);
         var childNodes = submodelTemplate.SubmodelElements!
                                          .Select(ExtractElement)
                                          .Where(childNode => childNode != null)

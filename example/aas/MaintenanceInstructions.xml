@@ -324,7 +324,7 @@
                         <qualifier>
                           <type>SMT/Cardinality</type>
                           <valueType>xs:string</valueType>
-                          <value>ZerotToOne</value>
+                          <value>ZeroToOne</value>
                         </qualifier>
                       </qualifiers>
                       <valueType>xs:string</valueType>
@@ -574,7 +574,7 @@
                     <qualifier>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZerotoMany</value>
+                      <value>ZeroToMany</value>
                     </qualifier>
                   </qualifiers>
                   <value>
@@ -2232,7 +2232,7 @@
                     <qualifier>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZerotToOne</value>
+                      <value>ZeroToOne</value>
                     </qualifier>
                   </qualifiers>
                   <value>
@@ -2262,7 +2262,7 @@
                         <qualifier>
                           <type>SMT/Cardinality</type>
                           <valueType>xs:string</valueType>
-                          <value>ZerotToOne</value>
+                          <value>ZeroToOne</value>
                         </qualifier>
                       </qualifiers>
                       <value>
@@ -2574,7 +2574,7 @@
                     <qualifier>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZerotToOne</value>
+                      <value>ZeroToOne</value>
                     </qualifier>
                   </qualifiers>
                   <value>
@@ -2604,7 +2604,7 @@
                         <qualifier>
                           <type>SMT/Cardinality</type>
                           <valueType>xs:string</valueType>
-                          <value>ZerotToOne</value>
+                          <value>ZeroToOne</value>
                         </qualifier>
                       </qualifiers>
                       <value>
@@ -2669,7 +2669,7 @@
                     <qualifier>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZerotToOne</value>
+                      <value>ZeroToOne</value>
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
@@ -2947,7 +2947,7 @@
                     <qualifier>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZerotToOne</value>
+                      <value>ZeroToOne</value>
                     </qualifier>
                   </qualifiers>
                 </multiLanguageProperty>
@@ -2977,7 +2977,7 @@
                     <qualifier>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZerotToOne</value>
+                      <value>ZeroToOne</value>
                     </qualifier>
                   </qualifiers>
                   <value>
@@ -3007,7 +3007,7 @@
                         <qualifier>
                           <type>SMT/Cardinality</type>
                           <valueType>xs:string</valueType>
-                          <value>ZerotToOne</value>
+                          <value>ZeroToOne</value>
                         </qualifier>
                       </qualifiers>
                       <value>
@@ -3037,7 +3037,7 @@
                             <qualifier>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
-                              <value>ZerotToOne</value>
+                              <value>ZeroToOne</value>
                             </qualifier>
                           </qualifiers>
                           <valueType>xs:decimal</valueType>
@@ -3098,7 +3098,7 @@
                     <qualifier>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZerotToOne</value>
+                      <value>ZeroToOne</value>
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
