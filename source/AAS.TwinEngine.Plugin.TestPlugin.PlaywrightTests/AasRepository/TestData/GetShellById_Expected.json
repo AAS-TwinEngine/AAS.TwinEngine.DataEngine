@@ -11,6 +11,10 @@
       {
         "name": "BatchId",
         "value": "B-2026-03"
+      },
+      {
+        "name": "LotNumber",
+        "value": "Test"
       }
     ],
     "defaultThumbnail": {

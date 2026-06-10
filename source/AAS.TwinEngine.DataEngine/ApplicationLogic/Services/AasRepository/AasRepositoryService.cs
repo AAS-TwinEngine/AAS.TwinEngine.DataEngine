@@ -162,7 +162,10 @@ public class AasRepositoryService(
             {
                 var existingAssetId = template.SpecificAssetIds.FirstOrDefault(x => x.Name == assetId.Name);
 
-                _ = (existingAssetId?.Value = assetId.Value);
+                if (existingAssetId != null)
+                {
+                    existingAssetId.Value = assetId.Value;
+                }
             }
         }
     }
@@ -179,14 +182,13 @@ public class AasRepositoryService(
         shell.AssetInformation ??= new AssetInformation(AssetKind.Instance);
         shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
 
-        if (metadata.SpecificAssetIds is not null)
+        foreach (var assetId in metadata.SpecificAssetIds)
         {
-            foreach (var assetId in metadata.SpecificAssetIds)
-            {
-                var existingAssetId = shell.AssetInformation.SpecificAssetIds
-                    .FirstOrDefault(x => x.Name == assetId.Name);
+            var existingAssetId = shell.AssetInformation.SpecificAssetIds.FirstOrDefault(x => x.Name == assetId.Name);
 
-                _ = (existingAssetId?.Value = assetId.Value);
+            if (existingAssetId != null)
+            {
+                existingAssetId.Value = assetId.Value;
             }
         }
     }
