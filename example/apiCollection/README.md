@@ -66,7 +66,7 @@ The collection includes a set of environment/collection variables you can edit t
 | `aasIdentifier-1`                           | AAS identifier (auto-encoded to Base64 by script)          | `https://mm-software.com/ids/aas/000-001`                                                          |
 | `aasIdentifier-2`                           | AAS identifier (auto-encoded to Base64 by script)          | `https://mm-software.com/ids/aas/000-002`                                                          |
 | `aasIdentifier-3`                           | AAS identifier (auto-encoded to Base64 by script)          | `https://mm-software.com/ids/aas/001-001`                                                          |
-| `submodelIdentifierContact-1`               | Submodel identifier for ContactInformation (auto-encoded)  | `https://mm-software.com/submodel/000-001/ContactInformation`                                      |
+| `submodelIdentifierMaintenanceInstructions-1`               | Submodel identifier for MaintenanceInstructions (auto-encoded)  | `https://mm-software.com/submodel/000-001/MaintenanceInstructions`                                      |
 | `submodelIdentifierNameplate-1`             | Submodel identifier for Nameplate (auto-encoded)           | `https://mm-software.com/submodel/000-001/Nameplate`                                               |
 | `submodelIdentifierTechnicalData-1`         | Submodel identifier for TechnicalData (auto-encoded)       | `https://mm-software.com/submodel/000-001/TechnicalData`                                           |
 | `submodelIdentifierCarbonFootprint-1`       | Submodel identifier for CarbonFootprint (auto-encoded)     | `https://mm-software.com/submodel/000-001/CarbonFootprint`                                         |
@@ -86,7 +86,7 @@ The collection includes a set of environment/collection variables you can edit t
 
 * Default submodel templates (under `../aas`):
 
-  * `ContactInformation`
+  * `MaintenanceInstructions`
   * `Nameplate`
   * `HandoverDocumentation`
   * `CarbonFootprint`
@@ -110,7 +110,7 @@ The collection includes a set of environment/collection variables you can edit t
     {
       "type": "ModelReference",
       "keys": [
-        { "type": "Submodel", "value": "ContactInformation" }
+        { "type": "Submodel", "value": "MaintenanceInstructions" }
       ]
     },
     {

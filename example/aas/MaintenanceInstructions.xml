@@ -1676,66 +1676,6 @@
                         </qualifier>
                       </qualifiers>
                     </multiLanguageProperty>
-                    <referenceElement>
-                      <category>CONSTANT</category>
-                      <idShort>LinkSMMaintenanceComponentModuleMachine</idShort>
-                      <description>
-                        <langStringTextType>
-                          <language>de</language>
-                          <text>Link zu einem anderen SM Maintenance. Beispiel Link zum SM Maintenance eines Sensors in einer Maschine. Von hier kann somit in eine Wartungsinformation einer unterlagerten Komponente gesprungen werden.</text>
-                        </langStringTextType>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Link to another SM Maintenance. Example Link to the SM Maintenance of a sensor in a machine. From here, it is possible to jump to the maintenance information of a subordinate component.</text>
-                        </langStringTextType>
-                      </description>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/idta/maintenanceinstructions/linksmmaintenancecomponentmodulemachine/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <qualifiers>
-                        <qualifier>
-                          <type>SMT/Cardinality</type>
-                          <valueType>xs:string</valueType>
-                          <value>ZeroToOne</value>
-                        </qualifier>
-                      </qualifiers>
-                    </referenceElement>
-                    <referenceElement>
-                      <category>CONSTANT</category>
-                      <idShort>LinkAASComponentModuleMachine</idShort>
-                      <description>
-                        <langStringTextType>
-                          <language>de</language>
-                          <text>Link zu einer unterlagerten AAS. Beispiel Link zur Sensors in einer Maschine. Von hier kann somit zu den Inforamtionen einer unterlagerten Komponente gesprungen werden.</text>
-                        </langStringTextType>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Link to a subordinate AAS. Example Link to the sensors in a machine. From here you can jump to the information of a subordinate component.</text>
-                        </langStringTextType>
-                      </description>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/idta/maintenanceinstructions/linkaascomponentmodulemachine/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <qualifiers>
-                        <qualifier>
-                          <type>SMT/Cardinality</type>
-                          <valueType>xs:string</valueType>
-                          <value>ZeroToOne</value>
-                        </qualifier>
-                      </qualifiers>
-                    </referenceElement>
                     <multiLanguageProperty>
                       <category>CONSTANT</category>
                       <idShort>InstructionMaintenanceStep</idShort>
@@ -1797,36 +1737,6 @@
                       </qualifiers>
                       <contentType>application/pdf</contentType>
                     </file>
-                    <referenceElement>
-                      <category>CONSTANT</category>
-                      <idShort>SparePartForMaintenanceStep</idShort>
-                      <description>
-                        <langStringTextType>
-                          <language>de</language>
-                          <text>Link auf ein in diesem Wartungsschritt benötigtes Ersatzteils. Eine Liste aller benötigten Ersatzteile für eine Wartung befindet sich in der SMC SparePartList des SM Maintenance</text>
-                        </langStringTextType>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Link to a spare part required in this maintenance step. A list of all the spare parts required for maintenance can be found in the SMC SparePartList of the SM Maintenance</text>
-                        </langStringTextType>
-                      </description>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/idta/maintenanceinstructions/sparepartformaintenancestep/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <qualifiers>
-                        <qualifier>
-                          <type>SMT/Cardinality</type>
-                          <valueType>xs:string</valueType>
-                          <value>ZeroToMany</value>
-                        </qualifier>
-                      </qualifiers>
-                    </referenceElement>
                     <property>
                       <category>CONSTANT</category>
                       <idShort>QuantityOfSparePartForMaintenanceStep</idShort>
@@ -1858,36 +1768,6 @@
                       </qualifiers>
                       <valueType>xs:decimal</valueType>
                     </property>
-                    <referenceElement>
-                      <category>CONSTANT</category>
-                      <idShort>ConsumablesForMaintenanceStep</idShort>
-                      <description>
-                        <langStringTextType>
-                          <language>de</language>
-                          <text>Link auf ein benötigtes Verbrauchsmaterial.</text>
-                        </langStringTextType>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Link to a required consumable.</text>
-                        </langStringTextType>
-                      </description>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/idta/maintenanceinstructions/consumablesformaintenancestep/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <qualifiers>
-                        <qualifier>
-                          <type>SMT/Cardinality</type>
-                          <valueType>xs:string</valueType>
-                          <value>ZeroToMany</value>
-                        </qualifier>
-                      </qualifiers>
-                    </referenceElement>
                     <property>
                       <category>CONSTANT</category>
                       <idShort>QuantityOfConsumablesForMaintenanceStep</idShort>
@@ -1950,36 +1830,6 @@
                       </qualifiers>
                       <valueType>xs:string</valueType>
                     </property>
-                    <referenceElement>
-                      <category>CONSTANT</category>
-                      <idShort>ToolsForMaintenanceStep</idShort>
-                      <description>
-                        <langStringTextType>
-                          <language>de</language>
-                          <text>Verweis auf ein benötigtes Werkzeug. Eine Liste aller benötigten Ersatzteile für eine Wartung befindet sich in der SMC MaintenanceToolList des SM Maintenance</text>
-                        </langStringTextType>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Reference to a required tool. A list of all required spare parts for a maintenance can be found in the SMC MaintenanceToolList of the SM Maintenance</text>
-                        </langStringTextType>
-                      </description>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/idta/maintenanceinstructions/toolsformaintenancestep/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <qualifiers>
-                        <qualifier>
-                          <type>SMT/Cardinality</type>
-                          <valueType>xs:string</valueType>
-                          <value>ZeroToMany</value>
-                        </qualifier>
-                      </qualifiers>
-                    </referenceElement>
                     <property>
                       <category>CONSTANT</category>
                       <idShort>QuantityOfToolsForMaintenanceStep</idShort>
@@ -2166,36 +2016,6 @@
                         </qualifier>
                       </qualifiers>
                     </multiLanguageProperty>
-                    <referenceElement>
-                      <category>CONSTANT</category>
-                      <idShort>NextMaintenanceStep</idShort>
-                      <description>
-                        <langStringTextType>
-                          <language>de</language>
-                          <text>Referenz auf den folgenden Wartungsschritt, wenn die Bedingung erfüllt ist.</text>
-                        </langStringTextType>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Reference to the following maintenance step if the condition is fulfilled.</text>
-                        </langStringTextType>
-                      </description>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/idta/maintenanceinstructions/nextmaintenancestep/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <qualifiers>
-                        <qualifier>
-                          <type>SMT/Cardinality</type>
-                          <valueType>xs:string</valueType>
-                          <value>ZeroToOne</value>
-                        </qualifier>
-                      </qualifiers>
-                    </referenceElement>
                     <multiLanguageProperty>
                       <category>CONSTANT</category>
                       <idShort>ConditionForAlternativeNextStep</idShort>
@@ -2226,36 +2046,6 @@
                         </qualifier>
                       </qualifiers>
                     </multiLanguageProperty>
-                    <referenceElement>
-                      <category>CONSTANT</category>
-                      <idShort>AlternativeNextMaintenanceStep</idShort>
-                      <description>
-                        <langStringTextType>
-                          <language>de</language>
-                          <text>Referenz auf den folgenden Wartungsschritt, wenn die Bedingung nicht erfüllt ist.</text>
-                        </langStringTextType>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Reference to the following maintenance step if the condition is not fulfilled.</text>
-                        </langStringTextType>
-                      </description>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/idta/maintenanceinstructions/alternativenextmaintenancestep/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <qualifiers>
-                        <qualifier>
-                          <type>SMT/Cardinality</type>
-                          <valueType>xs:string</valueType>
-                          <value>ZeroToMany</value>
-                        </qualifier>
-                      </qualifiers>
-                    </referenceElement>
                     <property>
                       <category>PARAMETER</category>
                       <idShort>EndOfMaintenance</idShort>
@@ -2507,66 +2297,6 @@
                           </qualifiers>
                           <valueType>xs:decimal</valueType>
                         </property>
-                        <referenceElement>
-                          <category>CONSTANT</category>
-                          <idShort>ReferenceNameOfMaintenance</idShort>
-                          <description>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>Referenz zur ID eines spezifischen Wartungsintervals</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>Reference to ID of specific maintenance interval</text>
-                            </langStringTextType>
-                          </description>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>https://admin-shell.io/idta/maintenanceinstructions/referencenameofmaintenance/1/0</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <qualifiers>
-                            <qualifier>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                          </qualifiers>
-                        </referenceElement>
-                        <referenceElement>
-                          <category>CONSTANT</category>
-                          <idShort>ReferenceToMaintenanceID</idShort>
-                          <description>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>Referenz zur ID eines spezifischen Wartungsintervals</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>Reference to ID of specific maintenance interval</text>
-                            </langStringTextType>
-                          </description>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>https://admin-shell.io/idta/maintenanceinstructions/referencenameofmaintenance/1/0</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <qualifiers>
-                            <qualifier>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                          </qualifiers>
-                        </referenceElement>
                       </value>
                     </submodelElementCollection>
                   </value>
@@ -2909,66 +2639,6 @@
                           </qualifiers>
                           <valueType>xs:decimal</valueType>
                         </property>
-                        <referenceElement>
-                          <category>CONSTANT</category>
-                          <idShort>ReferenceNameOfMaintenance</idShort>
-                          <description>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>Referenz zu Namen eines spezifischen Wartungsintervals</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>Referenceto name of specific maintenance interval</text>
-                            </langStringTextType>
-                          </description>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>https://admin-shell.io/idta/maintenanceinstructions/referencenameofmanintainance/1/0</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <qualifiers>
-                            <qualifier>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                          </qualifiers>
-                        </referenceElement>
-                        <referenceElement>
-                          <category>CONSTANT</category>
-                          <idShort>ReferenceToMaintenanceID</idShort>
-                          <description>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>Referenz zur ID eines spezifischen Wartungsintervals</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>Reference to ID of specific maintenance interval</text>
-                            </langStringTextType>
-                          </description>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>https://admin-shell.io/idta/maintenanceinstructions/referencenameofmaintenance/1/0</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <qualifiers>
-                            <qualifier>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                          </qualifiers>
-                        </referenceElement>
                       </value>
                     </submodelElementCollection>
                   </value>
@@ -3372,66 +3042,6 @@
                           </qualifiers>
                           <valueType>xs:decimal</valueType>
                         </property>
-                        <referenceElement>
-                          <category>CONSTANT</category>
-                          <idShort>ReferenceNameOfMaintenance</idShort>
-                          <description>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>Referenz zu Namen eines spezifischen Wartungsintervals</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>Referenceto name of specific maintenance interval</text>
-                            </langStringTextType>
-                          </description>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>https://admin-shell.io/idta/maintenanceinstructions/referencenameofmaintenance/1/0</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <qualifiers>
-                            <qualifier>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                          </qualifiers>
-                        </referenceElement>
-                        <referenceElement>
-                          <category>CONSTANT</category>
-                          <idShort>ReferenceNameOfMaintenance</idShort>
-                          <description>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>Referenz zur ID eines spezifischen Wartungsintervals</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>Reference to ID of specific maintenance interval</text>
-                            </langStringTextType>
-                          </description>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>https://admin-shell.io/idta/maintenanceinstructions/referencenameofmaintenance/1/0</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <qualifiers>
-                            <qualifier>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                          </qualifiers>
-                        </referenceElement>
                       </value>
                     </submodelElementCollection>
                   </value>

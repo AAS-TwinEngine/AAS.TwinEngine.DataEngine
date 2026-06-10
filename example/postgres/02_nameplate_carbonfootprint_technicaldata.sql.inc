@@ -6,7 +6,7 @@
 -- - Asset-Marking relationships
 -- - Product Classification Items
 -- - Carbon Footprint data
--- -Asset-ProductClassificationItem relationships
+-- -Asset-ProductClassifications relationships
 -- ============================================================
 
 CREATE TABLE "Marking" (
@@ -27,21 +27,53 @@ CREATE TABLE "AssetMarking" (
 );
 
 -- ============================================================
+-- ProductImage
+-- ============================================================
+
+CREATE TABLE "ProductImage" (
+    "Id" INT PRIMARY KEY,
+    "Index" INT,
+    "ImageFile" TEXT,
+    "ImageNote_en" TEXT,
+    "ImageNote_de" TEXT
+);
+
+-- ============================================================
+-- Asset ↔ ProductImage Mapping
+-- ============================================================
+
+CREATE TABLE "AssetProductImage" (
+    "Id" INT PRIMARY KEY,
+
+    "AssetId" INT NOT NULL
+        REFERENCES "Asset"("Id")
+        ON DELETE CASCADE,
+
+    "ProductImageId" INT NOT NULL
+        REFERENCES "ProductImage"("Id")
+        ON DELETE CASCADE
+);
+
+-- ============================================================
 -- Product Classification Tables
 -- ============================================================
 
-CREATE TABLE "ProductClassificationItem" (
+CREATE TABLE "ProductClassifications" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
-    "ProductClassificationSystem" TEXT,
+    "ClassificationSystem" TEXT,
     "ClassificationSystemVersion" TEXT,
-    "ProductClassId" TEXT
+    "ClassificationSystemUrl"   TEXT,
+    "ProductClassId" TEXT,
+    "ProductClassCodedName"   TEXT,
+    "ProductClassName_en" TEXT,
+    "ProductClassName_de" TEXT
 );
 
-CREATE TABLE "AssetProductClassificationItem" (
+CREATE TABLE "AssetProductClassifications" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
-    "ProductClassificationItemId" INT REFERENCES "ProductClassificationItem"("Id") ON DELETE CASCADE
+    "ProductClassificationsId" INT REFERENCES "ProductClassifications"("Id") ON DELETE CASCADE
 );
 
 CREATE TABLE "ProductOrSectorSpecificCarbonFootprint" (
@@ -85,18 +117,153 @@ INSERT INTO "AssetMarking" ("AssetId","MarkingId") VALUES
 (3,5);
 
 -- ============================================================
+-- INSERT : ProductImage
+-- ============================================================
+
+INSERT INTO "ProductImage" (
+    "Id",
+    "Index",
+    "ImageFile",
+    "ImageNote_en",
+    "ImageNote_de"
+)
+VALUES
+
+(
+    1,
+    0,
+    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg',
+    'Front view of the machine showing external and structure',
+    'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
+),
+
+(
+    2,
+    1,
+    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/develop/example/data/product1-1.png',
+    'Side view of the machine showing external and structure',
+    'Seitenansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
+),
+
+(
+    3,
+    0,
+    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg',
+    'Front view of the machine showing external and structure',
+    'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
+),
+
+(
+    4,
+    1,
+    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/develop/example/data/product3-1.png',
+    'Side view of the machine showing external and structure',
+    'Seitenansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
+),
+
+(
+    5,
+    0,
+    'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg',
+    'Front view of the machine showing external and structure',
+    'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
+);
+
+-- ============================================================
+-- INSERT : AssetProductImage
+-- ============================================================
+
+INSERT INTO "AssetProductImage" (
+    "Id",
+    "AssetId",
+    "ProductImageId"
+)
+VALUES
+
+(1, 1, 1),
+(2, 1, 2),
+(3, 2, 3),
+(4, 3, 5),
+(5, 3, 4);
+
+-- ============================================================
 -- Product Classification
 -- ============================================================
 
-INSERT INTO "ProductClassificationItem" ("Index","ProductClassificationSystem","ClassificationSystemVersion","ProductClassId") VALUES
-(0,'ECLASS','14','19-01-01-01'),
-(1,'IEC CDD','2024-09','IEC-CDD-AAA124'),
-(2,'UNSPSC','23.0301','UNSPSC-43211503'),
-(0,'ISO 13584','2023','ISO13584-XYZ789'),
-(0,'ECLASS','5','27-02-03-05'),
-(1,'IEC CDD','2024-09','IEC-CDD-AAA123');
+INSERT INTO "ProductClassifications"
+(
+    "Index",
+    "ClassificationSystem",
+    "ClassificationSystemVersion",
+    "ClassificationSystemUrl",
+    "ProductClassId",
+    "ProductClassCodedName",
+    "ProductClassName_en",
+    "ProductClassName_de"
+)
+VALUES
+(
+    0,
+    'ECLASS',
+    '14',
+    'https://eclass.eu',
+    '19-01-01-01',
+    'ECLASS-CAM-001',
+    'Digital Camera',
+    'Digitalkamera'
+),
+(
+    1,
+    'IEC CDD',
+    '2024-09',
+    'https://cdd.iec.ch',
+    'IEC-CDD-AAA124',
+    'IEC-SENSOR-124',
+    'Industrial Sensor',
+    'Industriesensor'
+),
+(
+    2,
+    'UNSPSC',
+    '23.0301',
+    'https://www.unspsc.org',
+    'UNSPSC-43211503',
+    'UNSPSC-COMPUTE-003',
+    'Portable Computer Device',
+    'Tragbares Computergerät'
+),
+(
+    0,
+    'ISO 13584',
+    '2023',
+    'https://www.iso.org/standard/13584.html',
+    'ISO13584-XYZ789',
+    'ISO-PUMP-789',
+    'Hydraulic Pump',
+    'Hydraulikpumpe'
+),
+(
+    0,
+    'ECLASS',
+    '5',
+    'https://eclass.eu',
+    '27-02-03-05',
+    'ECLASS-PERFUME-005',
+    'Luxury Perfume',
+    'Luxusparfüm'
+),
+(
+    1,
+    'IEC CDD',
+    '2024-09',
+    'https://cdd.iec.ch',
+    'IEC-CDD-AAA123',
+    'IEC-CONTROLLER-123',
+    'PLC Controller',
+    'PLC-Steuerung'
+);
 
-INSERT INTO "AssetProductClassificationItem" ("AssetId","ProductClassificationItemId") VALUES
+INSERT INTO "AssetProductClassifications" ("AssetId","ProductClassificationsId") VALUES
 (1,1),
 (1,2),
 (1,3),

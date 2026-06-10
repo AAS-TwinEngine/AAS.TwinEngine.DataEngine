@@ -1,4 +1,4 @@
-﻿<environment xmlns="https://admin-shell.io/aas/3/0">
+﻿<environment xmlns="https://admin-shell.io/aas/3/1">
   <assetAdministrationShells>
     <assetAdministrationShell>
       <idShort>TechnicalDataAAS</idShort>
@@ -468,6 +468,22 @@
                       </keys>
                     </reference>
                   </supplementalSemanticIds>
+                  <qualifiers>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>ZeroToMany</value>
+                    </qualifier>
+                  </qualifiers>
                   <value>
                     <file>
                       <idShort>ImageFile</idShort>
@@ -665,6 +681,22 @@
                   </keys>
                 </reference>
               </supplementalSemanticIds>
+              <qualifiers>
+                <qualifier>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>ZeroToMany</value>
+                </qualifier>
+              </qualifiers>
               <value>
                 <property>
                   <category>PARAMETER</category>
@@ -1073,72 +1105,6 @@
                     </langStringTextType>
                   </value>
                 </multiLanguageProperty>
-                <referenceElement>
-                  <idShort>ReferenceToTechnicalPropertyArea</idShort>
-                  <displayName>
-                    <langStringNameType>
-                      <language>en</language>
-                      <text>Reference to technical property area</text>
-                    </langStringNameType>
-                    <langStringNameType>
-                      <language>de</language>
-                      <text>Referenz auf einen technsichen Merkmalsbereich</text>
-                    </langStringNameType>
-                  </displayName>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>0173-1#02-ABL358#002</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <supplementalSemanticIds>
-                    <reference>
-                      <type>ExternalReference</type>
-                      <keys>
-                        <key>
-                          <type>GlobalReference</type>
-                          <value>https://api.eclass-cdp.com/0173-1-02-ABL358-002</value>
-                        </key>
-                      </keys>
-                    </reference>
-                  </supplementalSemanticIds>
-                  <qualifiers>
-                    <qualifier>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <type>SMT/Cardinality</type>
-                      <valueType>xs:string</valueType>
-                      <value>ZeroToOne</value>
-                    </qualifier>
-                  </qualifiers>
-                  <value>
-                    <type>ModelReference</type>
-                    <keys>
-                      <key>
-                        <type>Submodel</type>
-                        <value>https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0</value>
-                      </key>
-                      <key>
-                        <type>SubmodelElementList</type>
-                        <value>TechnicalPropertyAreas</value>
-                      </key>
-                      <key>
-                        <type>SubmodelElementCollection</type>
-                        <value>0</value>
-                      </key>
-                    </keys>
-                  </value>
-                </referenceElement>
               </value>
             </submodelElementCollection>
           </value>

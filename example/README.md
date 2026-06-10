@@ -11,7 +11,7 @@ The setup includes a complete tech stack with services for AAS registry, reposit
 This example includes 5 standardized submodel templates from the **Digital Product Passport for Industry 4.0**:
 
 - **Nameplate** 
-- **ContactInformation** 
+- **MaintenanceInstructions** 
 - **TechnicalData** 
 - **CarbonFootprint** 
 - **HandoverDocumentation** 
