@@ -42,6 +42,12 @@
     <None Update="AasRepository\TestData\GetSubmodelRefById_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Discovery\TestData\SearchShellByAssetLink_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Discovery\TestData\SearchShellByAssetLinksMultipleFilters_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_Contact_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
