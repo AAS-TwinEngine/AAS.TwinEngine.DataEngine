@@ -179,7 +179,7 @@ public class AasRepositoryService(
             shell.IdShort = metadata.IdShort;
         }
 
-        shell.AssetInformation ??= new AssetInformation(AssetKind.Instance);
+        shell.AssetInformation ??= new AssetInformation(AssetKind.NotApplicable);
         shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
 
         foreach (var assetId in metadata.SpecificAssetIds)

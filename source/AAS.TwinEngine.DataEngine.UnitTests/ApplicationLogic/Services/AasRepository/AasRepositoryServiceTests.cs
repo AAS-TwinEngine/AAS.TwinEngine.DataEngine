@@ -3,8 +3,10 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_0;
 
@@ -227,6 +229,70 @@ public class AasRepositoryServiceTests
 
         await Assert.ThrowsAsync<InvalidUserInputException>(() =>
                                                                 _sut.GetAssetInformationByIdAsync("aasId", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetShellsByFiltersAsync_ShouldKeepAllTemplateSpecificAssetIds_WhenMetadataContainsSubset()
+    {
+        // Arrange
+        var cancellationToken = CancellationToken.None;
+
+        var shellTemplate = new AssetAdministrationShell(
+            id: "aas-1",
+            assetInformation: new AssetInformation(
+                assetKind: AssetKind.Instance,
+                specificAssetIds:
+                [
+                    new SpecificAssetId("ManufacturerId", "OldManufacturer"),
+                    new SpecificAssetId("SerialNumber", "OldSerial"),
+                    new SpecificAssetId("AssetTag", "Asset-001")
+                ]),
+            submodels: []);
+
+        var metadata = new ShellDescriptorMetaData
+        {
+            Id = "aas-1",
+            SpecificAssetIds =
+            [
+                new SpecificAssetId("ManufacturerId", "NewManufacturer"),
+                new SpecificAssetId("SerialNumber", "NewSerial")
+            ]
+        };
+
+        var manifests = new List<PluginManifest>();
+
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+
+        _templateService.GetShellTemplateAsync("aas-1", cancellationToken).Returns(shellTemplate);
+
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(
+                null,
+                null,
+                manifests,
+                cancellationToken)
+            .Returns(new ShellDescriptorsMetaData
+            {
+                ShellDescriptors = [metadata],
+                PagingMetaData = new PagingMetaData()
+            });
+
+        // Act
+        var result = await _sut.GetShellsByFiltersAsync(filters: null, limit: null, cursor: null, cancellationToken);
+
+        // Assert
+        var shell = Assert.Single(result.Result);
+
+        Assert.NotNull(shell.AssetInformation);
+        Assert.NotNull(shell.AssetInformation.SpecificAssetIds);
+
+        Assert.Equal(3, shell.AssetInformation.SpecificAssetIds.Count);
+
+        Assert.Equal("NewManufacturer", shell.AssetInformation.SpecificAssetIds.Single(x => x.Name == "ManufacturerId").Value);
+
+        Assert.Equal("NewSerial", shell.AssetInformation.SpecificAssetIds.Single(x => x.Name == "SerialNumber").Value);
+
+        Assert.Equal("Asset-001", shell.AssetInformation.SpecificAssetIds.Single(x => x.Name == "AssetTag").Value);
     }
 
     private static AssetAdministrationShell CreateShellTemplate()
