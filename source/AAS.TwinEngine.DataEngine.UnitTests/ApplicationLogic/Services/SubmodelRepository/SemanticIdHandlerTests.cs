@@ -99,13 +99,13 @@ public class SemanticIdHandlerTests
         NotNull(file);
         Equal("http://example.com/idta/digital-nameplate/thumbnail", file.SemanticId);
         Equal(DataType.String, file.DataType);
-        Equal(Cardinality.Unknown, file.Cardinality);
+        Equal(Cardinality.ZeroToOne, file.Cardinality);
 
         var blob = node.Children[5] as SemanticLeafNode;
         NotNull(blob);
         Equal("http://example.com/idta/digital-nameplate/blob", blob.SemanticId);
         Equal(DataType.String, blob.DataType);
-        Equal(Cardinality.Unknown, blob.Cardinality);
+        Equal(Cardinality.ZeroToOne, blob.Cardinality);
 
         var range = node.Children[6] as SemanticBranchNode;
         NotNull(range);
@@ -386,7 +386,9 @@ public class SemanticIdHandlerTests
         var submodelElement = Substitute.For<ISubmodelElement>();
         submodelElement.IdShort.Returns(idShort);
         submodelElement.SemanticId.Returns(semanticReference);
-        submodelElement.Qualifiers.Returns([]);
+        var qualifier = Substitute.For<IQualifier>();
+        qualifier.Value.Returns("ZeroToOne");
+        submodelElement.Qualifiers.Returns([qualifier]);
         var submodel = Substitute.For<ISubmodel>();
         submodel.IdShort.Returns("AnySubmodel");
         submodel.SemanticId.Returns(Substitute.For<IReference>());

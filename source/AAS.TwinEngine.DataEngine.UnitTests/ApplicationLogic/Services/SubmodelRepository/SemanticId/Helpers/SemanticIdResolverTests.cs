@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
 using static Xunit.Assert;
 
 using File = AasCore.Aas3_0.File;
@@ -185,25 +187,38 @@ public class SemanticIdResolverTests
     }
 
     [Fact]
-    public void GetCardinality_QualifiersNull_ReturnsUnknown()
+    public void GetCardinality_QualifiersNull_ThrowsInternalDataProcessingException()
     {
         var element = Substitute.For<ISubmodelElement>();
         element.Qualifiers.Returns((List<IQualifier>?)null);
 
-        var actual = _sut.GetCardinality(element);
+        var exception = Throws<InternalDataProcessingException>(() => _sut.GetCardinality(element));
 
-        Equal(Cardinality.Unknown, actual);
+        Equal("Invalid Template Found", exception.Message);
     }
 
     [Fact]
-    public void GetCardinality_EmptyQualifiers_ReturnsUnknown()
+    public void GetCardinality_EmptyQualifiers_ThrowsInternalDataProcessingException()
     {
         var element = Substitute.For<ISubmodelElement>();
         element.Qualifiers.Returns(new List<IQualifier>());
 
-        var actual = _sut.GetCardinality(element);
+        var exception = Throws<InternalDataProcessingException>(() => _sut.GetCardinality(element));
 
-        Equal(Cardinality.Unknown, actual);
+        Equal("Invalid Template Found", exception.Message);
+    }
+
+    [Fact]
+    public void GetCardinality_InvalidQualifierValue_ThrowsInternalDataProcessingException()
+    {
+        var qualifier = Substitute.For<IQualifier>();
+        qualifier.Value.Returns("NotACardinality");
+        var element = Substitute.For<ISubmodelElement>();
+        element.Qualifiers.Returns(new List<IQualifier> { qualifier });
+
+        var exception = Throws<InternalDataProcessingException>(() => _sut.GetCardinality(element));
+
+        Equal("Invalid Template Found", exception.Message);
     }
 
     [Theory]

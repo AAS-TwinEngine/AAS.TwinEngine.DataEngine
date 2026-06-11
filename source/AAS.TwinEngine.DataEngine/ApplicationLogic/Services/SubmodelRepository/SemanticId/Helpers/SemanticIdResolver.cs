@@ -79,11 +79,6 @@ public partial class SemanticIdResolver(
     public Cardinality GetCardinality(ISubmodelElement element)
     {
         var qualifierValue = element.Qualifiers?.FirstOrDefault()?.Value;
-        if (qualifierValue is null)
-        {
-            return Cardinality.Unknown;
-        }
-
         var cardinality = Enum.TryParse<Cardinality>(qualifierValue, ignoreCase: true, out var result)
                    ? result
                    : Cardinality.Unknown;

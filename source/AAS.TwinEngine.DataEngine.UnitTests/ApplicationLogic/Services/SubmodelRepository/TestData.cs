@@ -64,7 +64,14 @@ internal static class TestData
             [
               new Key(KeyTypes.SubmodelElementCollection, "http://example.com/idta/digital-nameplate/thumbnail")
             ]
-          )
+          ),
+          qualifiers:
+          [
+              new Qualifier(
+                            type: "ExternalReference",
+                            valueType: DataTypeDefXsd.String,
+                            value: "ZeroToOne")
+          ]
         );
     }
 
@@ -81,7 +88,14 @@ internal static class TestData
                 [
                     new Key(KeyTypes.SubmodelElementCollection, "http://example.com/idta/digital-nameplate/blob")
                 ]
-            )
+        ),
+        qualifiers:
+        [
+          new Qualifier(
+                  type: "ExternalReference",
+                  valueType: DataTypeDefXsd.String,
+                  value: "ZeroToOne")
+        ]
         );
     }
 
@@ -109,7 +123,14 @@ internal static class TestData
                                     value: new Reference(
                                                          ReferenceTypes.ModelReference,
                                                          []
-                                                         )
+                                               ),
+                                    qualifiers:
+                                    [
+                                      new Qualifier(
+                                              type: "ExternalReference",
+                                              valueType: DataTypeDefXsd.String,
+                                              value: "ZeroToOne")
+                                    ]
                                    );
     }
 
@@ -150,7 +171,14 @@ internal static class TestData
                                                                 new Key(KeyTypes.SubmodelElementCollection, "1"),
                                                                 new Key(KeyTypes.Property, "Name")
                                                              ]
-                                                         )
+                                               ),
+                                    qualifiers:
+                                    [
+                                      new Qualifier(
+                                              type: "ExternalReference",
+                                              valueType: DataTypeDefXsd.String,
+                                              value: "ZeroToOne")
+                                    ]
                                     );
     }
 
@@ -201,7 +229,15 @@ internal static class TestData
                                                                  [
                                                                      new Key(KeyTypes.GlobalReference,
                                                                              "http://example.com/idta/digital-nameplate/relationship-element/second-model-reference")
-                                                                 ])
+                                                     ]
+                                                   ),
+                                         qualifiers:
+                                         [
+                                           new Qualifier(
+                                                 type: "ExternalReference",
+                                                 valueType: DataTypeDefXsd.String,
+                                                 value: "ZeroToOne")
+                                         ]
                                       );
     }
 
@@ -230,7 +266,15 @@ internal static class TestData
                                                                  [
                                                                      new Key(KeyTypes.GlobalReference,
                                                                              "http://example.com/idta/digital-nameplate/relationship-element/both-model-reference")
-                                                                 ])
+                                                     ]
+                                                   ),
+                                         qualifiers:
+                                         [
+                                           new Qualifier(
+                                                 type: "ExternalReference",
+                                                 valueType: DataTypeDefXsd.String,
+                                                 value: "ZeroToOne")
+                                         ]
                                       );
     }
 
@@ -246,7 +290,14 @@ internal static class TestData
                                                    [
                                                        new Key(KeyTypes.Range, "http://example.com/idta/digital-nameplate/range")
                                                    ]
-                                                  )
+                            ),
+               qualifiers:
+               [
+                 new Qualifier(
+                         type: "ExternalReference",
+                         valueType: DataTypeDefXsd.String,
+                         value: "ZeroToOne")
+               ]
                         );
     }
 
@@ -365,7 +416,14 @@ internal static class TestData
                                                                                     [
                                                                                         new Key(KeyTypes.File, "http://example.com/idta/digital-nameplate/model-file")
                                                                                     ]
-                                                                                   )
+                                                                             ),
+                                                           qualifiers:
+                                                           [
+                                                             new Qualifier(
+                                                                     type: "ExternalReference",
+                                                                     valueType: DataTypeDefXsd.String,
+                                                                     value: "ZeroToOne")
+                                                           ]
                                                          ),
                                                  new File(
                                                  contentType: "model/gltf-binary",
@@ -376,7 +434,14 @@ internal static class TestData
                                                                            [
                                                                                new Key(KeyTypes.File, "http://example.com/idta/digital-nameplate/model-file")
                                                                            ]
-                                                                          )
+                                                                        ),
+                                                           qualifiers:
+                                                           [
+                                                             new Qualifier(
+                                                                     type: "ExternalReference",
+                                                                     valueType: DataTypeDefXsd.String,
+                                                                     value: "ZeroToOne")
+                                                           ]
                                                  )
                                              ],
                                              qualifiers:
@@ -438,7 +503,14 @@ internal static class TestData
             [
               new Key(KeyTypes.Property, "http://example.com/idta/digital-nameplate/model-name")
             ]
-          )
+          ),
+          qualifiers:
+          [
+              new Qualifier(
+                            type: "ExternalReference",
+                            valueType: DataTypeDefXsd.String,
+                            value: "ZeroToOne")
+          ]
         )
           ]
         );
@@ -1207,7 +1279,14 @@ internal static class TestData
                 new Key(KeyTypes.SubmodelElementCollection, "3"),
                 new Key(KeyTypes.Property, "ManufacturerName")
             ]
-        )
+        ),
+        qualifiers:
+        [
+          new Qualifier(
+                  type: "ExternalReference",
+                  valueType: DataTypeDefXsd.String,
+                  value: "ZeroToOne")
+        ]
     );
 
     public static ReferenceElement CreateFilledReferenceElementWithModelReferenceWithTemplateValueForProperty() => new(
@@ -1227,7 +1306,14 @@ internal static class TestData
                                                                                                     new Key(KeyTypes.SubmodelElementCollection, "3"),
                                                                                                     new Key(KeyTypes.Property, "Name")
                                                                                                 ]
-                                                                                               )
+                                                                                               ),
+                                                                                             qualifiers:
+                                                                                             [
+                                                                                               new Qualifier(
+                                                                                                     type: "ExternalReference",
+                                                                                                     valueType: DataTypeDefXsd.String,
+                                                                                                     value: "ZeroToOne")
+                                                                                             ]
                                                                                           );
 
     public static RelationshipElement CreateFilledRelationshipElementWithOneExternalReferenceAndOneModelReference()
@@ -1253,7 +1339,15 @@ internal static class TestData
                                                                  [
                                                                      new Key(KeyTypes.GlobalReference,
                                                                              "http://example.com/idta/digital-nameplate/relationship-element/second-model-reference")
-                                                                 ])
+                                                     ]
+                                                   ),
+                                         qualifiers:
+                                         [
+                                           new Qualifier(
+                                                 type: "ExternalReference",
+                                                 valueType: DataTypeDefXsd.String,
+                                                 value: "ZeroToOne")
+                                         ]
                                       );
     }
 
@@ -1282,7 +1376,15 @@ internal static class TestData
                                                                  [
                                                                      new Key(KeyTypes.GlobalReference,
                                                                              "http://example.com/idta/digital-nameplate/relationship-element/both-model-reference")
-                                                                 ])
+                                                     ]
+                                                   ),
+                                         qualifiers:
+                                         [
+                                           new Qualifier(
+                                                 type: "ExternalReference",
+                                                 valueType: DataTypeDefXsd.String,
+                                                 value: "ZeroToOne")
+                                         ]
                                       );
     }
 

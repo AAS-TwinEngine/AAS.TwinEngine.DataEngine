@@ -580,6 +580,23 @@
           }
         ]
       },
+      "qualifiers": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+              }
+            ]
+          },
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "One"
+        }
+      ],
       "value": {
         "type": "ModelReference",
         "keys": [
@@ -602,6 +619,23 @@
           }
         ]
       },
+      "qualifiers": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+              }
+            ]
+          },
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "One"
+        }
+      ],
       "value": "SW5mb3JtYXRpb24gc2V0IGZvciBTdWJtb2RlbCDigJxOYW1lcGxhdGXigJ0=",
       "contentType": "text/markdown",
       "modelType": "Blob"
@@ -1407,6 +1441,23 @@
               }
             ]
           },
+          "qualifiers": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                  }
+                ]
+              },
+              "kind": "ConceptQualifier",
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
           "value": "UmVnYXJkaW5nIHByb3BlcnR5IGBNYXJraW5nTmFtZWAsIHRoZSBwcmVmZXJhYmxlIHNvbHV0aW9uIGlzIHRvIHByb3ZpZGUgYSB2YWx1ZUlkIGluIElSREkgb3JpZ2luYXRpbmcgZnJvbSBJRUMgQ0REIG9yIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZSBsaXN0LCBlLmcuICJDRSIgKElSREk6IDAxMTIvMi8vLzYxOTg3I0FCTzQwOSMwMDMgb3IgMDE3My0xIzA3LURBQTYwMyMwMDQpLiBJbiBjYXNlIG5vbmUgb2YgdGhlIGV4aXN0aW5nIEVDTEFTUyBlbnVtZXJhdGlvbiB2YWx1ZXMgbWF0Y2hlcywgZmlsbGluZyBwbGFpbiBzdHJpbmcgdGV4dCBpbnRvIHRoZSDigJx2YWx1ZeKAnSBmaWVsZCBvZiB0aGUgcHJvcGVydHkgYE1hcmtpbmdOYW1lYCBjYW4gYmUgYWNjZXB0ZWQgYWx0ZXJuYXRpdmVseS4gSXQgbmVlZHMgdG8gYmUgcG9pbnRlZCBvdXQgdGhhdCBFQ0xBU1MgYWxzbyBwcm92aWRlcyBtYXJraW5nIGRlZmluaXRpb25zIGluIHRlcm1zIG9mIGJvb2xlYW4gcHJvcGVydHksIGUuZy4g4oCcQ0UtIHF1YWxpZmljYXRpb24gcHJlc2VudOKAnSAoSVJESTogMDE3My0xIzAyLUJBRjA1MyMwMDgpLiBJbiB0aGlzIGNhc2UgdXNlcnMgc2hvdWxkIGluc3RlYWQgdXNlIGEgbWF0Y2hpbmcgRUNMQVNTIGVudW1lcmF0aW9uIHZhbHVlIG9yLCBpZiBub3QgcHJvdmlkZWQgYXMgZW51bWVyYXRpb24sIGZpbGwgaW4gcGxhaW4gc3RyaW5nIHRleHQuDQoNClRoZSBmb2xsb3dpbmcgZXhhbXBsZSAoc2VlIDw8RmlndXJlXzU+PikgaWxsdXN0cmF0ZXMgaG93IHRvIG1vZGVsIHByb2R1Y3QgbWFya2luZyBpbiBhbiBBQVMuIE9uIHRoZSBsZWZ0IHNpZGUgdGhlcmUgaXMgYSBzYW1wbGUgbmFtZXBsYXRlIHdoaWNoIGNvbnRhaW5zIHR3byBtYXJraW5ncyB0byBiZSBtb2RlbGxlZDogdGhlIENFIG1hcmtpbmcgYW5kIHRoZSBXRUVFIG1hcmtpbmcgd2l0aCBhIGNyb3NzZWQtb3V0IHdoZWVsZWQgYmluLiBOZXh0IHRvIHRoZSBuYW1lcGxhdGUgYSB0YWJsZSBsaXN0cyBhbGwgcHJvcGVydGllcyBhbmQgdGhlaXIgYXR0cmlidXRlcy4gDQo=",
           "contentType": "text/markdown",
           "modelType": "Blob"

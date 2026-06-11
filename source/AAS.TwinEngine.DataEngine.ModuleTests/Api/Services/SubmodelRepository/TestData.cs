@@ -44,7 +44,14 @@ internal static class TestData
             [
               new Key(KeyTypes.SubmodelElementCollection, "http://example.com/idta/digital-nameplate/thumbnail")
             ]
-          )
+          ),
+          qualifiers:
+          [
+              new Qualifier(
+                            type: "ExternalReference",
+                            valueType: DataTypeDefXsd.String,
+                            value: "One")
+          ]
         );
     }
 
@@ -257,6 +264,13 @@ internal static class TestData
                                                          }
                                                        ]
                                                      },
+                                                      "qualifiers": [
+                                                        {
+                                                          "type": "ExternalReference",
+                                                          "valueType": "xs:string",
+                                                          "value": "One"
+                                                        }
+                                                      ],
                                                      "value": "https://example.com/logo.png",
                                                      "contentType": "image/png",
                                                      "modelType": "File"

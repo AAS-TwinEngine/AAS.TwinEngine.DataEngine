@@ -93,9 +93,9 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
         Assert.NotNull(json);
-        var submodelResponse = json.ToString();
-        var expectedSubmodel = TestData.CreateSubmodelWithValues();
-        Assert.Equal(submodelResponse, expectedSubmodel);
+        var expectedSubmodel = JsonNode.Parse(TestData.CreateSubmodelWithValues());
+        Assert.NotNull(expectedSubmodel);
+        Assert.True(JsonNode.DeepEquals(json, expectedSubmodel));
     }
 
     [Fact]
