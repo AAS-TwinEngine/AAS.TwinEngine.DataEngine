@@ -1,4 +1,4 @@
-﻿<environment xmlns="https://admin-shell.io/aas/3/0">
+﻿<environment xmlns="https://admin-shell.io/aas/3/1">
   <assetAdministrationShells>
     <assetAdministrationShell>
       <idShort>AasTemplate</idShort>
@@ -132,6 +132,13 @@
                   </key>
                 </keys>
               </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
               <value>
                 <submodelElementList>
                   <idShort>PcfCalculationMethods</idShort>
@@ -656,6 +663,13 @@
                   </key>
                 </keys>
               </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>ZeroToOne</value>
+                </qualifier>
+              </qualifiers>
               <value>
                 <submodelElementList>
                   <idShort>PcfCalculationMethods</idShort>
