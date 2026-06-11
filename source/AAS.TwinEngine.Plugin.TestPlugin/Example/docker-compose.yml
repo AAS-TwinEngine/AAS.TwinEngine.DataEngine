@@ -107,6 +107,7 @@ services:
       - Semantics__IndexContextPrefix=_aastwinengineindex_
       - Capabilities__HasShellDescriptor=true
       - Capabilities__HasAssetInformation=true
+      - Capabilities__HasAssetIdSearch=true
     networks:
       - dataengine-network
 

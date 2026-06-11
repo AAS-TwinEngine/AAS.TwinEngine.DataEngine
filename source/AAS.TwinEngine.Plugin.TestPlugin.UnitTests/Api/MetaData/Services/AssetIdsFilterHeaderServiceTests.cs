@@ -28,13 +28,13 @@ public class AssetIdsFilterHeaderParserTests
     [Fact]
     public void ParseToDomainModel_ReturnsFilter_ForValidSpecificAssetId()
     {
-        const string header = "[{\"name\":\"serialNumber\",\"value\":\"SN-4711\"}]";
+        const string header = "[{\"name\":\"SerialNumber\",\"value\":\"SN-4711\"}]";
 
         var result = _sut.ParseToDomainModel(header);
 
         Assert.NotNull(result);
         Assert.Single(result!.Identifiers);
-        Assert.Equal("serialNumber", result.Identifiers[0].Name);
+        Assert.Equal("SerialNumber", result.Identifiers[0].Name);
         Assert.Equal("SN-4711", result.Identifiers[0].Value);
     }
 
@@ -54,11 +54,11 @@ public class AssetIdsFilterHeaderParserTests
     [Theory]
     [InlineData("not-json")]
     [InlineData("{}")]
-    [InlineData("[{\"name\":\"serialNumber\"}]")]
+    [InlineData("[{\"name\":\"SerialNumber\"}]")]
     [InlineData("[{\"value\":\"SN-4711\"}]")]
     [InlineData("[{\"name\":\"\",\"value\":\"SN-4711\"}]")]
-    [InlineData("[{\"name\":\"serialNumber\",\"value\":\"\"}]")]
-    [InlineData("[{\"name\":\"serialNumber\",\"value\":\"SN-4711\",\"extra\":true}]")]
+    [InlineData("[{\"name\":\"SerialNumber\",\"value\":\"\"}]")]
+    [InlineData("[{\"name\":\"SerialNumber\",\"value\":\"SN-4711\",\"extra\":true}]")]
     public void ParseToDomainModel_ThrowsBadRequestException_ForInvalidHeader(string headerValue)
     {
         Assert.Throws<BadRequestException>(() => _sut.ParseToDomainModel(headerValue));

@@ -1,0 +1,21 @@
+meta {
+  name: Get All Shells
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells?limit&cursor
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 
+  cursor: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

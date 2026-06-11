@@ -31,14 +31,14 @@
         {
           "semanticId": null,
           "supplementalSemanticIds": null,
-          "name": "serialNumber",
+          "name": "SerialNumber",
           "value": "SN-4711",
           "externalSubjectId": null
         },
         {
           "semanticId": null,
           "supplementalSemanticIds": null,
-          "name": "batchId",
+          "name": "BatchId",
           "value": "B-2026-03",
           "externalSubjectId": null
         }
@@ -73,14 +73,14 @@
         {
           "semanticId": null,
           "supplementalSemanticIds": null,
-          "name": "serialNumber",
+          "name": "SerialNumber",
           "value": "SN-9999",
           "externalSubjectId": null
         },
         {
           "semanticId": null,
           "supplementalSemanticIds": null,
-          "name": "batchId",
+          "name": "BatchId",
           "value": "B-2026-03",
           "externalSubjectId": null
         }
@@ -115,7 +115,7 @@
         {
           "semanticId": null,
           "supplementalSemanticIds": null,
-          "name": "serialNumber",
+          "name": "SerialNumber",
           "value": "SN-1111",
           "externalSubjectId": null
         }

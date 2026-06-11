@@ -10,4 +10,9 @@ public static class JsonSerializationOptions
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters = { new JsonStringEnumConverter() }
     };
+
+    public static readonly JsonSerializerOptions Serialize = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 }

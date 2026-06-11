@@ -1,7 +1,9 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
+using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
@@ -15,6 +17,23 @@ public class AasRepositoryHandler(
     ILogger<AasRepositoryHandler> logger,
     IAasRepositoryService aasRepositoryService) : IAasRepositoryHandler
 {
+    public async Task<ShellsDto> GetShellsByAssetIdsAsync(
+        string[]? assetIds, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        limit.ValidateLimit(logger);
+        cursor?.ValidateCursor(logger);
+
+        var filters = assetIds is not null && assetIds.Length > 0
+            ? AssetIdHelper.DecodeAssetIds(assetIds, logger)
+            : null;
+
+        var shells = await aasRepositoryService
+            .GetShellsByFiltersAsync(filters, limit, cursor, cancellationToken)
+            .ConfigureAwait(false);
+
+        return shells.ToDto();
+    }
+
     public Task<IAssetAdministrationShell> GetShellByIdAsync(GetShellRequest request, CancellationToken cancellationToken)
         => GetResourceByIdAsync(
             request?.AasIdentifier,

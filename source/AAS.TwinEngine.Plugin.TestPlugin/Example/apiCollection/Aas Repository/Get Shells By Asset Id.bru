@@ -1,0 +1,29 @@
+meta {
+  name: Get Shells By Asset Id
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells?assetIds={{assetId}}&limit&cursor
+  body: none
+  auth: inherit
+}
+
+params:query {
+  assetIds: {{assetId}}
+  limit: 
+  cursor: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Retrieves shells filtered by specific asset ID.
+  
+  The `assetIds` parameter must be a base64url-encoded JSON object:
+  {"name":"SerialNumber","value":"SN-1111"}
+}

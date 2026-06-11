@@ -33,7 +33,7 @@ public class SubmodelProviderTests
     [Fact]
     public void EnrichWithData_LeafNode_SetsValueFromJson()
     {
-        var leaf = new SemanticLeafNode("Email", DataType.String, null);
+        var leaf = new SemanticLeafNode("Email", DataType.String, null!);
         var root = new SemanticBranchNode("root", DataType.Object);
         root.AddChild(leaf);
 
@@ -241,7 +241,7 @@ public class SubmodelProviderTests
         _sut.EnrichWithData(rootBranch, ProductId);
 
         var documents = rootBranch.Children.OfType<SemanticBranchNode>().ToList();
-        Assert.Equal(1, documents.Count);
+        Assert.Single(documents);
         var primary = rootBranch.Children.First(c => c.SemanticId == "IsPrimary") as SemanticLeafNode;
         Assert.Equal("false", primary.Value);
         var firstDocumentClassification = documents[0];

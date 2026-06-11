@@ -1,0 +1,30 @@
+meta {
+  name: Search Shells By Asset Link
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{DataEngineBaseUrl}}/lookup/shellsByAssetLink?limit&cursor
+  body: json
+  auth: inherit
+}
+
+params:query {
+  limit: 
+  cursor: 
+}
+
+body:json {
+  [
+    {
+      "name": "SerialNumber",
+      "value": "SN-TMABC1680-980476"
+    }
+  ]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

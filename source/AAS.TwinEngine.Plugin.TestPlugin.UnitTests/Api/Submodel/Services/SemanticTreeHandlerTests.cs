@@ -300,5 +300,5 @@ public class SemanticTreeHandlerTests
     }
 
     [Fact]
-    public void GetJson_WithNullNode_ThrowsArgumentException() => Assert.Throws<ArgumentException>(() => _sut.GetJson(null, null));
+    public void GetJson_WithNullNode_ThrowsArgumentException() => Assert.Throws<ArgumentException>(() => _sut.GetJson(null!, null!));
 }

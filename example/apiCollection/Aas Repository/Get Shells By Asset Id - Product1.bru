@@ -1,0 +1,31 @@
+meta {
+  name: Get Shells By Asset Id - Product1
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells?assetIds={{assetId-product1}}&limit&cursor
+  body: none
+  auth: inherit
+}
+
+params:query {
+  assetIds: {{assetId-product1}}
+  limit: 
+  cursor: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Retrieves shells filtered by specific asset ID for Product1.
+  
+  The `assetIds` parameter must be a base64url-encoded JSON object:
+  {"name":"SerialNumber","value":"SN-FMABC1234-9804820"}
+  
+  Encoded value: eyJuYW1lIjoicHJvZHVjdDEuMCIsInZhbHVlIjoiTSZNIC0gMDAxIn0=
+}

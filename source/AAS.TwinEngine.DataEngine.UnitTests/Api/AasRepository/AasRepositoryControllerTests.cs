@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 using AasCore.Aas3_0;
@@ -47,6 +48,30 @@ public class AasRepositoryControllerTests
         _expectedShellResponse = Jsonization.Serialize.ToJsonObject(_expectedShell);
         _expectedAssetInformationResponse = Jsonization.Serialize.ToJsonObject(_expectedAssetInformation);
         _expectedSubmodelRef = JsonSerializer.SerializeToElement(CreateSubmodelRefDto(), _options);
+    }
+
+    [Fact]
+    public async Task GetShellsByAssetIdAsync_ReturnsOkResult()
+    {
+        var expectedResponse = new ShellsDto { PagingMetaData = new PagingMetaDataDto { Cursor = null }, Result = [] };
+        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(expectedResponse);
+
+        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, CancellationToken.None);
+
+        Assert.IsType<ActionResult<ShellsDto>>(result);
+    }
+
+    [Fact]
+    public async Task GetShellsByAssetIdAsync_ThrowsException_Propagates()
+    {
+        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Throws(new Exception("error"));
+
+        var exception = await Record.ExceptionAsync(() => _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, CancellationToken.None));
+
+        Assert.NotNull(exception);
+        Assert.IsType<Exception>(exception);
     }
 
     [Fact]
@@ -231,7 +256,7 @@ public class AasRepositoryControllerTests
         return new SubmodelRefDto
         {
             PagingMetaData = null,
-            Result = new List<IReference> { submodelRef }
+            Result = [submodelRef]
         };
     }
 
