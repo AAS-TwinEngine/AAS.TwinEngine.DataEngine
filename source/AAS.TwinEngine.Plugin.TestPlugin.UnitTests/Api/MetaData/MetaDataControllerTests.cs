@@ -66,7 +66,7 @@ public class MetaDataControllerTests
     [Fact]
     public async Task GetShellDescriptorsAsync_WithHeaderForwardsHeaderToRequest()
     {
-        const string header = "[{\"name\":\"serialNumber\",\"value\":\"SN-4711\"}]";
+        const string header = "[{\"name\":\"SerialNumber\",\"value\":\"SN-4711\"}]";
         var expectedShells = new ShellDescriptorsDto();
         _handler.GetShellDescriptors(
             Arg.Is<GetShellDescriptorsRequest>(request => request.AssetIdsFilter == header),

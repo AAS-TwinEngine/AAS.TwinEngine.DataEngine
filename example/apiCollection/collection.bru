@@ -10,6 +10,8 @@ vars:pre-request {
   productId-1: 000-001
   productId-2: 000-002
   productId-3: 001-001
+  assetId-product1: {"name":"SerialNumber","value":"SN-FMABC1234-9804820"}
+  assetId-product2: {"name":"SerialNumber","value":"SN-FMABC1238-9804821"}
 }
 
 script:pre-request {
@@ -25,7 +27,9 @@ script:pre-request {
     'submodelIdentifierNameplate-1',
     'submodelIdentifierHandoverDocumentation-1',
     'submodelIdentifierTechnicalData-1',
-    'submodelIdentifierCarbonFootprint-1'
+    'submodelIdentifierCarbonFootprint-1',
+    'assetId-product1',
+    'assetId-product2'
   ];
   
   varsToEncode.forEach(name => {

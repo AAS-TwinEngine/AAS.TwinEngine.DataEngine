@@ -50,13 +50,13 @@ public class MetaDataHandlerTests
     [Fact]
     public async Task GetShellDescriptors_PassesParsedFilter_WhenHeaderIsProvided()
     {
-        var header = "[{\"name\":\"serialNumber\",\"value\":\"SN-4711\"}]";
+        var header = "[{\"name\":\"SerialNumber\",\"value\":\"SN-4711\"}]";
         var request = new GetShellDescriptorsRequest(10, "cursor123", header);
         var filter = new AssetIdFilterHeader
         {
             Identifiers =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" }
             ]
         };
 

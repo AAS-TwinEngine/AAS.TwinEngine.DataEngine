@@ -21,6 +21,21 @@ public class AasRepositoryController(
     ILogger<AasRepositoryController> logger,
     IAasRepositoryHandler aasRepositoryHandler) : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType(typeof(ShellsDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync(
+        [FromQuery] string[]? assetIds,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Start request to get shells by asset identifiers");
+        var response = await aasRepositoryHandler.GetShellsByAssetIdsAsync(assetIds, limit, cursor, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
     [HttpGet("{aasIdentifier}")]
     [ProducesResponseType(typeof(IAssetAdministrationShell), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]

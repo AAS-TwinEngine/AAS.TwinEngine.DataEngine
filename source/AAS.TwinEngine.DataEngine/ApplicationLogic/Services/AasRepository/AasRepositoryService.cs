@@ -1,8 +1,12 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Text.Json;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_0;
 
@@ -11,10 +15,49 @@ using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.E
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 public class AasRepositoryService(
+    ILogger<AasRepositoryService> logger,
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IAasRepositoryService
 {
+    public async Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetId>? filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var (metadata, pagingMetaData) = await GetShellMetadataAsync(filters, limit, cursor, cancellationToken).ConfigureAwait(false);
+
+            var shells = await BuildShellsAsync(metadata, cancellationToken).ConfigureAwait(false);
+
+            shells = [.. FilterByExternalSubjectId(shells, filters)];
+
+            return new Shells
+            {
+                PagingMetaData = pagingMetaData,
+                Result = shells
+            };
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
+        catch (ValidationFailedException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw new ServiceUnAuthorizedException();
+        }
+    }
+
     public async Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
     {
         var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
@@ -113,19 +156,148 @@ public class AasRepositoryService(
 
     private static void SetSpecificAssetIds(IAssetInformation template, AssetData pluginData)
     {
-        template.SpecificAssetIds = [];
-
-        if (pluginData.SpecificAssetIds is null)
+        if (pluginData.SpecificAssetIds is not null)
         {
-            return;
+            foreach (var assetId in pluginData.SpecificAssetIds)
+            {
+                var existingAssetId = template.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
+
+                if (existingAssetId != null)
+                {
+                    existingAssetId.Value = assetId.Value;
+                }
+            }
+        }
+    }
+
+    private static void FillShellFromMetadata(IAssetAdministrationShell shell, ShellDescriptorMetaData metadata)
+    {
+        shell.Id = metadata.Id;
+
+        if (!string.IsNullOrWhiteSpace(metadata.IdShort))
+        {
+            shell.IdShort = metadata.IdShort;
         }
 
-        foreach (var assetId in pluginData.SpecificAssetIds)
+        shell.AssetInformation ??= new AssetInformation(AssetKind.NotApplicable);
+        shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
+
+        foreach (var assetId in metadata.SpecificAssetIds)
         {
-            template.SpecificAssetIds.Add(new SpecificAssetId(
-                                                              name: assetId.Name ?? string.Empty,
-                                                              value: assetId.Value ?? string.Empty
-                                                             ));
+            var existingAssetId = shell.AssetInformation.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
+
+            if (existingAssetId != null)
+            {
+                existingAssetId.Value = assetId.Value;
+            }
         }
+    }
+
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
+    IList<SpecificAssetId>? filters,
+    int? limit,
+    string? cursor,
+    CancellationToken cancellationToken)
+    {
+        return filters is null || filters.Count == 0
+            ? await GetAllShellMetadataAsync(limit, cursor, cancellationToken).ConfigureAwait(false)
+            : await GetFilteredShellMetadataAsync(filters, limit, cursor, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        var metadata = await pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
+            .ConfigureAwait(false);
+
+        return (
+            metadata.ShellDescriptors ?? [],
+            metadata.PagingMetaData ?? new PagingMetaData());
+    }
+
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(IList<SpecificAssetId> filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        var metadata = await pluginDataHandler
+            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filters, cancellationToken)
+            .ConfigureAwait(false);
+
+        var allMetadata = metadata.ShellDescriptors?
+            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
+            .ToList() ?? [];
+
+        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id!, limit, cursor);
+
+        return (pagedItems, pagingMetaData);
+    }
+
+    private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)
+    {
+        var shells = new List<IAssetAdministrationShell>();
+
+        foreach (var metadata in metadataItems)
+        {
+            if (string.IsNullOrWhiteSpace(metadata.Id))
+            {
+                continue;
+            }
+
+            try
+            {
+                var shell = await templateService.GetShellTemplateAsync(metadata.Id, cancellationToken).ConfigureAwait(false);
+
+                FillShellFromMetadata(shell, metadata);
+
+                shells.Add(shell);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to build AAS for id {AasId}. Skipping.", metadata.Id);
+            }
+        }
+
+        return shells;
+    }
+
+    private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetId>? filters)
+    {
+        var filtersWithExternalId = filters?.Where(f => f.ExternalSubjectId is not null).ToList();
+
+        if (filtersWithExternalId is null || filtersWithExternalId.Count == 0)
+        {
+            return shells;
+        }
+
+        return [.. shells
+            .Where(shell =>
+                shell.AssetInformation?.SpecificAssetIds?.Any(assetId =>
+                    filtersWithExternalId.Any(filter =>
+                        assetId.Name == filter.Name &&
+                        assetId.Value == filter.Value &&
+                        AreReferencesEqual(
+                            assetId.ExternalSubjectId,
+                            filter.ExternalSubjectId))) == true)];
+    }
+
+    private static bool AreReferencesEqual(IReference? first, IReference? second)
+    {
+        if (first is null || second is null)
+        {
+            return false;
+        }
+
+        if (first.Type != second.Type)
+        {
+            return false;
+        }
+
+        if (first.Keys.Count != second.Keys.Count)
+        {
+            return false;
+        }
+
+        return first.Keys.Zip(second.Keys)
+            .All(pair =>
+                pair.First.Type == pair.Second.Type &&
+                pair.First.Value == pair.Second.Value);
     }
 }

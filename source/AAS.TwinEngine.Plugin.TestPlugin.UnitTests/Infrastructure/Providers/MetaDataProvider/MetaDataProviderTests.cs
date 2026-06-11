@@ -113,14 +113,14 @@ public class MetaDataProviderTests
         {
             Identifiers =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" }
             ]
         };
 
         var result = await _sut.GetShellDescriptorsAsync(null, null, filter, CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.All(result.Result!, shell => Assert.Contains(shell.SpecificAssetIds!, sai => sai.Name == "serialNumber" && sai.Value == "SN-4711"));
+        Assert.All(result.Result!, shell => Assert.Contains(shell.SpecificAssetIds!, sai => sai.Name == "SerialNumber" && sai.Value == "SN-4711"));
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public class MetaDataProviderTests
         {
             Identifiers =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "DOES-NOT-EXIST" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "DOES-NOT-EXIST" }
             ]
         };
 

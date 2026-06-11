@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -13,6 +14,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_0;
 
 using Json.Schema;
 
@@ -79,9 +82,9 @@ public class PluginDataHandler(
 
         const string Url = $"{ShellsBasePath}";
 
-        for (var i = 0; i < response.Count; i++)
+        foreach (var shellDiscriptor in response)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await shellDiscriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -95,13 +98,13 @@ public class PluginDataHandler(
                 var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
 
                 var invalidDescriptors = shellDescriptors
-                    .Where(x => string.IsNullOrWhiteSpace(x.Id))
-                    .Select(x => new
-                    {
-                        IdShort = x.IdShort ?? "<null>",
-                        GlobalAssetId = x.GlobalAssetId ?? "<null>"
-                    })
-                    .ToList();
+                                         .Where(x => string.IsNullOrWhiteSpace(x.Id))
+                                         .Select(x => new
+                                         {
+                                             IdShort = x.IdShort ?? "<null>",
+                                             GlobalAssetId = x.GlobalAssetId ?? "<null>"
+                                         })
+                                         .ToList();
 
                 if (invalidDescriptors.Count > 0)
                 {
@@ -135,9 +138,9 @@ public class PluginDataHandler(
 
         var url = $"{ShellsBasePath}/{id.EncodeBase64Url()}";
 
-        for (var i = 0; i < response.Count; i++)
+        foreach (var shellDescriptor in response)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await shellDescriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -175,9 +178,9 @@ public class PluginDataHandler(
 
         var url = $"assets/{id.EncodeBase64Url()}";
 
-        for (var i = 0; i < response.Count; i++)
+        foreach (var assetInfo in response)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await assetInfo.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -196,6 +199,57 @@ public class PluginDataHandler(
 
         logger.LogError("Failed to deserialize AssetInformationData.");
         throw new ResponseParsingException();
+    }
+
+    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, IList<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken)
+    {
+        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
+
+        if (availablePlugins.Count == 0)
+        {
+            logger.LogWarning("No plugins available that support asset ID search.");
+            throw new PluginCapabilityNotSupportedException();
+        }
+
+        var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
+
+        var assetIdsHeaderValue = JsonSerializer.Serialize(
+                                                           specificAssetIds.Select(x => new
+                                                           {
+                                                               name = x.Name,
+                                                               value = x.Value
+                                                           }));
+
+        var response = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, cancellationToken).ConfigureAwait(false);
+
+        var result = new ShellDescriptorsMetaData();
+
+        foreach (var shellDescriptor in response)
+        {
+            var responseContent = await shellDescriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorsMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
+                if (shellDescriptorData == null)
+                {
+                    logger.LogError("Failed to deserialize ShellDescriptorData from asset ID search. Response content: {Content}", responseContent);
+                    throw new ResponseParsingException();
+                }
+
+                var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
+                SetHref(shellDescriptors);
+                result.PagingMetaData = shellDescriptorData.PagingMetaData;
+                result.ShellDescriptors?.AddRange(shellDescriptors);
+            }
+            catch (JsonException ex)
+            {
+                logger.LogError(ex, "Invalid response format from asset ID search.");
+                throw new ResponseParsingException();
+            }
+        }
+
+        return result;
     }
 
     private void SetHref(IList<ShellDescriptorMetaData> values)

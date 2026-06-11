@@ -25,7 +25,7 @@ public class AssetIdMatcherTests
             GlobalAssetId = "https://mm-software.com/ids/assets/000-001",
             SpecificAssetIds =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" },
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" },
                 new SpecificAssetIdsData { Name = "assetType", Value = "Demo" }
             ]
         };
@@ -35,7 +35,7 @@ public class AssetIdMatcherTests
             Identifiers =
             [
                 new SpecificAssetIdsData { Name = "globalAssetId", Value = "https://mm-software.com/ids/assets/000-001" },
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" }
             ]
         };
 
@@ -53,7 +53,7 @@ public class AssetIdMatcherTests
             GlobalAssetId = "https://mm-software.com/ids/assets/000-001",
             SpecificAssetIds =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" }
             ]
         };
 
@@ -61,7 +61,7 @@ public class AssetIdMatcherTests
         {
             Identifiers =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" },
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" },
                 new SpecificAssetIdsData { Name = "assetType", Value = "Missing" }
             ]
         };
@@ -101,7 +101,7 @@ public class AssetIdMatcherTests
             Id = "shell-1",
             SpecificAssetIds =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" }
             ]
         };
 
@@ -109,7 +109,7 @@ public class AssetIdMatcherTests
         {
             Identifiers =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-9999" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-9999" }
             ]
         };
 

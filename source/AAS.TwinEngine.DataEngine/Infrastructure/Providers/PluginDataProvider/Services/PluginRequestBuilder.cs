@@ -15,22 +15,20 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
     {
         EnsureManifestIsHealthy();
 
-        return jsonSchema
+        return [.. jsonSchema
             .Select(kvp => new PluginRequestSubmodel(
                 $"{HttpClientNames.PluginDataProviderPrefix}{kvp.Key}",
-                CreateHttpContent(kvp.Value)))
-            .ToList();
+                CreateHttpContent(kvp.Value)))];
     }
 
     public IList<PluginRequestMetaData> Build(IList<string> plugins, string? aasIdentifier = null)
     {
         EnsureManifestIsHealthy();
 
-        return plugins
+        return [.. plugins
             .Select(plugin => new PluginRequestMetaData(
                 $"{HttpClientNames.PluginDataProviderPrefix}{plugin}",
-                aasIdentifier ?? string.Empty))
-            .ToList();
+                aasIdentifier ?? string.Empty))];
     }
 
     private void EnsureManifestIsHealthy()
