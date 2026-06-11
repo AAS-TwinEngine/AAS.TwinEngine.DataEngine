@@ -187,38 +187,38 @@ public class SemanticIdResolverTests
     }
 
     [Fact]
-    public void GetCardinality_QualifiersNull_ThrowsInternalDataProcessingException()
+    public void GetCardinality_QualifiersNull_ThrowsTemplateNotValidException()
     {
         var element = Substitute.For<ISubmodelElement>();
         element.Qualifiers.Returns((List<IQualifier>?)null);
 
-        var exception = Throws<InternalDataProcessingException>(() => _sut.GetCardinality(element));
+        var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal("Invalid Template Found", exception.Message);
+        Equal("Template Not Valid", exception.Message);
     }
 
     [Fact]
-    public void GetCardinality_EmptyQualifiers_ThrowsInternalDataProcessingException()
+    public void GetCardinality_EmptyQualifiers_ThrowsTemplateNotValidException()
     {
         var element = Substitute.For<ISubmodelElement>();
-        element.Qualifiers.Returns(new List<IQualifier>());
+        element.Qualifiers.Returns([]);
 
-        var exception = Throws<InternalDataProcessingException>(() => _sut.GetCardinality(element));
+        var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal("Invalid Template Found", exception.Message);
+        Equal("Template Not Valid", exception.Message);
     }
 
     [Fact]
-    public void GetCardinality_InvalidQualifierValue_ThrowsInternalDataProcessingException()
+    public void GetCardinality_InvalidQualifierValue_ThrowsTemplateNotValidException()
     {
         var qualifier = Substitute.For<IQualifier>();
         qualifier.Value.Returns("NotACardinality");
         var element = Substitute.For<ISubmodelElement>();
-        element.Qualifiers.Returns(new List<IQualifier> { qualifier });
+        element.Qualifiers.Returns([qualifier]);
 
-        var exception = Throws<InternalDataProcessingException>(() => _sut.GetCardinality(element));
+        var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal("Invalid Template Found", exception.Message);
+        Equal("Template Not Valid", exception.Message);
     }
 
     [Theory]

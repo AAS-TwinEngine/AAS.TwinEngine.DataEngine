@@ -137,7 +137,7 @@ public partial class SemanticIdResolver(
         {
             var errorMessage = $"Cardinality is mandatory for '{element.IdShort}' in template. Found: Unknown";
             logger.LogError(errorMessage);
-            throw new InternalDataProcessingException("Invalid Template Found");
+            throw new TemplateNotValidException();
         }
     }
 
