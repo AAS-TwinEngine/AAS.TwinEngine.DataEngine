@@ -7,7 +7,7 @@
 \echo 'Executing: schema/01_core_asset_tables.sql.inc - Creating core asset tables...'
 \i /docker-entrypoint-initdb.d/schema/01_core_asset_tables.sql.inc
 
-\echo 'Executing: schema/02_nameplate_carbonfootprint_technicaldata.sql.inc - Creating nameplate/carbon/technical tables...'
+\echo 'Executing: schema/02_nameplate_carbonfootprint_technicaldata.sql.inc - Creating schema tables...'
 \i /docker-entrypoint-initdb.d/schema/02_nameplate_carbonfootprint_technicaldata.sql.inc
 
 \echo 'Executing: schema/03_MaintenanceInstructions.sql.inc - Creating maintenance tables...'
