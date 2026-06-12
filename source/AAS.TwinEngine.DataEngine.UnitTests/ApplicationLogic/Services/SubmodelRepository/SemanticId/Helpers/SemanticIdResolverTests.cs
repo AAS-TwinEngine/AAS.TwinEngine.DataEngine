@@ -194,18 +194,20 @@ public class SemanticIdResolverTests
 
         var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal("Template Not Valid", exception.Message);
+        Equal("Invalid Template", exception.Message);
     }
 
     [Fact]
     public void GetCardinality_EmptyQualifiers_ThrowsTemplateNotValidException()
     {
+        var qualifier = Substitute.For<IQualifier>();
+        qualifier.Value.Returns("NotACardinality");
         var element = Substitute.For<ISubmodelElement>();
-        element.Qualifiers.Returns([]);
+        element.Qualifiers.Returns([qualifier]);
 
         var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal("Template Not Valid", exception.Message);
+        Equal("Invalid Template", exception.Message);
     }
 
     [Fact]
@@ -218,7 +220,7 @@ public class SemanticIdResolverTests
 
         var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal("Template Not Valid", exception.Message);
+        Equal("Invalid Template", exception.Message);
     }
 
     [Theory]

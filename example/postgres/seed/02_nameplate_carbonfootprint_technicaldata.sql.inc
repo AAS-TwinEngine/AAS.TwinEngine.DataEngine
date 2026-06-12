@@ -1,108 +1,22 @@
--- ============================================================
--- Core Data Insertion
--- ============================================================
--- This file contains CREATE and INSERT statements for core business entities for NamePlate Submodel:
--- - Markings
--- - Asset-Marking relationships
--- - Product Classification Items
--- - Carbon Footprint data
--- -Asset-ProductClassifications relationships
--- ============================================================
-
-CREATE TABLE "Marking" (
-    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "Index" INT,
-    "MarkingName" TEXT,
-    "DesignationOfCertificateOrApproval" TEXT,
-    "IssueDate" DATE,
-    "ExpiryDate" DATE,
-    "MarkingAdditionalText" TEXT,
-    "MarkingFile" TEXT
-);
-
-CREATE TABLE "AssetMarking" (
-    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
-    "MarkingId" INT NOT NULL REFERENCES "Marking"("Id") ON DELETE CASCADE
-);
-
--- ============================================================
--- ProductImage
--- ============================================================
-
-CREATE TABLE "ProductImage" (
-    "Id" INT PRIMARY KEY,
-    "Index" INT,
-    "ImageFile" TEXT,
-    "ImageNote_en" TEXT,
-    "ImageNote_de" TEXT
-);
-
--- ============================================================
--- Asset ↔ ProductImage Mapping
--- ============================================================
-
-CREATE TABLE "AssetProductImage" (
-    "Id" INT PRIMARY KEY,
-
-    "AssetId" INT NOT NULL
-        REFERENCES "Asset"("Id")
-        ON DELETE CASCADE,
-
-    "ProductImageId" INT NOT NULL
-        REFERENCES "ProductImage"("Id")
-        ON DELETE CASCADE
-);
-
--- ============================================================
--- Product Classification Tables
--- ============================================================
-
-CREATE TABLE "ProductClassifications" (
-    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "Index" INT,
-    "ClassificationSystem" TEXT,
-    "ClassificationSystemVersion" TEXT,
-    "ClassificationSystemUrl"   TEXT,
-    "ProductClassId" TEXT,
-    "ProductClassCodedName"   TEXT,
-    "ProductClassName_en" TEXT,
-    "ProductClassName_de" TEXT
-);
-
-CREATE TABLE "AssetProductClassifications" (
-    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
-    "ProductClassificationsId" INT REFERENCES "ProductClassifications"("Id") ON DELETE CASCADE
-);
-
-CREATE TABLE "ProductOrSectorSpecificCarbonFootprint" (
-    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
-    "PcfCalculationMethod" TEXT,
-    "PcfRuleOperator" TEXT,
-    "PcfRuleName" TEXT,
-    "PcfRuleVersion" TEXT,
-    "PcfRuleOnlineReference" TEXT,
-    "PcfApiEndpoint" TEXT,
-    "PcfApiQuery" TEXT
-);
-
--- ============================================================
--- Marking Data
--- ============================================================
-
-INSERT INTO "Marking" ("Index","MarkingName","DesignationOfCertificateOrApproval","IssueDate","ExpiryDate","MarkingAdditionalText","MarkingFile") VALUES
+INSERT INTO "Marking"
+("Index","MarkingName","DesignationOfCertificateOrApproval","IssueDate","ExpiryDate",
+ "MarkingAdditionalText","MarkingFile")
+VALUES
 (0,'0173-1#07-DAA603#004','KEMA99IECEX1105/128','2022-01-01','2030-01-01','additional information on the marking - 00',
- 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
+ ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/checkmark.png')),
 (0,'0173-1#07-DAA603#005','KEMA99IECEX1105/129','2022-02-01','2030-02-01','additional information on the marking - 01',
- 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
+ ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/checkmark.png')),
 (1,'0173-1#07-DAA603#006','KEMA99IECEX1105/130','2022-03-01','2030-03-01','additional information on the marking - 02',
- 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
+ ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/checkmark.png')),
 (0,'0173-1#07-DAA603#007','KEMA99IECEX1105/131','2022-04-01','2030-04-01','additional information on the marking - 03',
- 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png'),
+ ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/checkmark.png')),
 (1,'0173-1#07-DAA603#008','KEMA99IECEX1105/132','2022-05-01','2030-05-01','additional information on the marking - 04',
- 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png');
+ ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
+    'main/example/data/checkmark.png'));
 
 -- ============================================================
 -- Asset-Marking Relationships
@@ -281,8 +195,24 @@ INSERT INTO "AssetProductClassifications" ("AssetId","ProductClassificationsId")
 -- ============================================================
 
 INSERT INTO "ProductOrSectorSpecificCarbonFootprint" (
-  "AssetId","PcfCalculationMethod","PcfRuleOperator","PcfRuleName","PcfRuleVersion","PcfRuleOnlineReference","PcfApiEndpoint","PcfApiQuery"
+    "AssetId","PcfCalculationMethod","PcfRuleOperator","PcfRuleName","PcfRuleVersion",
+    "PcfRuleOnlineReference","PcfApiEndpoint","PcfApiQuery"
 ) VALUES
-(1,'IEC TS 63058','GHG Protocol','GHG Protocol Product Standard','1.1','https://ghgprotocol.org/standards/product-standard','https://api.carbonfootprint.org/v1/calculate','?productId=12345&unit=kgCO2e&scope=cradle-to-gate'),
-(2,'EN 15804','ISO 14067','ISO 14067','2.1','https://www.iso.org/standard/43278.html','https://api.iso14067.org/v2/emissions','?sector=electronics&region=EU&year=2025'),
-(3,'PACT v2.0.0','PAS 2050','PAS 2050','0.9','https://www.bsigroup.com/en-GB/PAS-2050-Carbon-Footprint/','https://api.pas2050.com/v1/footprint','?material=steel&quantity=1000kg&method=ISO14067');
+(
+    1,'IEC TS 63058','GHG Protocol','GHG Protocol Product Standard','1.1',
+    'https://ghgprotocol.org/standards/product-standard',
+    'https://api.carbonfootprint.org/v1/calculate',
+    '?productId=12345&unit=kgCO2e&scope=cradle-to-gate'
+),
+(
+    2,'EN 15804','ISO 14067','ISO 14067','2.1',
+    'https://www.iso.org/standard/43278.html',
+    'https://api.iso14067.org/v2/emissions',
+    '?sector=electronics&region=EU&year=2025'
+),
+(
+    3,'PACT v2.0.0','PAS 2050','PAS 2050','0.9',
+    'https://www.bsigroup.com/en-GB/PAS-2050-Carbon-Footprint/',
+    'https://api.pas2050.com/v1/footprint',
+    '?material=steel&quantity=1000kg&method=ISO14067'
+);
