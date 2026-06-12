@@ -3,7 +3,7 @@
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 

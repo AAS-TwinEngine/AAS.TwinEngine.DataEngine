@@ -1,10 +1,10 @@
 ﻿using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
-using File = AasCore.Aas3_0.File;
-using Key = AasCore.Aas3_0.Key;
-using Range = AasCore.Aas3_0.Range;
+using File = AasCore.Aas3_1.File;
+using Key = AasCore.Aas3_1.Key;
+using Range = AasCore.Aas3_1.Range;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository;
 

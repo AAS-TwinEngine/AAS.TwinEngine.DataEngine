@@ -1,10 +1,8 @@
-﻿using System.Text.Json.Nodes;
-
-using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+﻿using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRepository.MappingProfiles;
 

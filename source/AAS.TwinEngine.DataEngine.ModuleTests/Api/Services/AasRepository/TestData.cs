@@ -2,7 +2,7 @@
 
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRepository;
 

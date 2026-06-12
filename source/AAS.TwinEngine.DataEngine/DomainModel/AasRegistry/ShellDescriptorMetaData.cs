@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 

@@ -7,7 +7,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +16,7 @@ using NSubstitute;
 
 using static Xunit.Assert;
 
-using File = AasCore.Aas3_0.File;
+using File = AasCore.Aas3_1.File;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository;
 
@@ -444,7 +444,7 @@ public class SemanticIdHandlerTests
         NotNull(blob);
         Equal(originalBytes, blob.Value);
 
-        var range = submodelWithNewValues.SubmodelElements?[6] as AasCore.Aas3_0.Range;
+        var range = submodelWithNewValues.SubmodelElements?[6] as AasCore.Aas3_1.Range;
         NotNull(range);
         Equal("10.02", range.Min);
         Equal("99.98", range.Max);

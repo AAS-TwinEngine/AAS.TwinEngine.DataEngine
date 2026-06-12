@@ -1,8 +1,8 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 
@@ -48,7 +48,7 @@ public class ListHandlerTests
         var list = new SubmodelElementList(
             idShort: "MyList",
             typeValueListElement: AasSubmodelElements.Property,
-            value: [child]
+            value: new List<ISubmodelElement> { child }
         );
         _resolver.ResolveElementSemanticId(list, "MyList").Returns("http://test/list");
         _resolver.GetCardinality(list).Returns(Cardinality.ZeroToMany);

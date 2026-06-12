@@ -2,7 +2,7 @@
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
@@ -13,8 +13,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 
 using static Xunit.Assert;
 
-using File = AasCore.Aas3_0.File;
-using Range = AasCore.Aas3_0.Range;
+using File = AasCore.Aas3_1.File;
+using Range = AasCore.Aas3_1.Range;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 

@@ -5,7 +5,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Asp.Versioning;
 

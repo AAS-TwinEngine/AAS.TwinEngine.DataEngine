@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 

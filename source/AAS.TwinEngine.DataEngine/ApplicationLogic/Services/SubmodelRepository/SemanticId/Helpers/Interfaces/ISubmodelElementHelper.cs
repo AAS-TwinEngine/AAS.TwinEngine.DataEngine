@@ -1,4 +1,4 @@
-﻿using AasCore.Aas3_0;
+﻿using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 

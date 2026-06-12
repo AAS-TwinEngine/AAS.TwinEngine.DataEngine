@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 

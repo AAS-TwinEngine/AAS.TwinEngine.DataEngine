@@ -11,11 +11,11 @@
           "System.IO.Packaging": "9.0.15"
         }
       },
-      "AasCore.Aas3_0": {
+      "AasCore.Aas3_1": {
         "type": "Direct",
-        "requested": "[1.0.6, 1.0.6]",
-        "resolved": "1.0.6",
-        "contentHash": "k9xJ0BUI2tHxEe5GyWGcDflOWP+iGupBNd4nSksT8lVX2pVlLMtQ0ptsg1ydMyeOR3KYtsHo4EVR5g8bUxz62Q=="
+        "requested": "[1.0.0, 1.0.0]",
+        "resolved": "1.0.0",
+        "contentHash": "5avVZT5bT/l9D26CC3W8LDFeDnauK38zBzpO8RX6pCZ/XfNccu7NmxaViiDDbhsVmfw8caieDIXE1gfAzxvCMQ=="
       },
       "Asp.Versioning.Mvc": {
         "type": "Direct",

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -9,7 +9,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 

@@ -9,7 +9,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

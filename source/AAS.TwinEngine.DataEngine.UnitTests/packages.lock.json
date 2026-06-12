@@ -62,10 +62,10 @@
           "System.IO.Packaging": "9.0.15"
         }
       },
-      "AasCore.Aas3_0": {
+      "AasCore.Aas3_1": {
         "type": "Transitive",
-        "resolved": "1.0.6",
-        "contentHash": "k9xJ0BUI2tHxEe5GyWGcDflOWP+iGupBNd4nSksT8lVX2pVlLMtQ0ptsg1ydMyeOR3KYtsHo4EVR5g8bUxz62Q=="
+        "resolved": "1.0.0",
+        "contentHash": "5avVZT5bT/l9D26CC3W8LDFeDnauK38zBzpO8RX6pCZ/XfNccu7NmxaViiDDbhsVmfw8caieDIXE1gfAzxvCMQ=="
       },
       "Asp.Versioning.Abstractions": {
         "type": "Transitive",
@@ -817,7 +817,7 @@
         "type": "Project",
         "dependencies": {
           "AasCore.Aas3.Package": "[1.0.4, 1.0.4]",
-          "AasCore.Aas3_0": "[1.0.6, 1.0.6]",
+          "AasCore.Aas3_1": "[1.0.0, 1.0.0]",
           "Asp.Versioning.Mvc": "[10.0.0, 10.0.0]",
           "Cronos": "[0.13.0, 0.13.0]",
           "JsonSchema.Net": "[7.3.4, 7.3.4]",

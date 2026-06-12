@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -15,7 +14,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Help
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Json.Schema;
 

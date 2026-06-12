@@ -2,9 +2,9 @@
 
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
-using File = AasCore.Aas3_0.File;
+using File = AasCore.Aas3_1.File;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRepository;
 

@@ -4,7 +4,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="AasCore.Aas3.Package" Version="[1.0.4]" />
-    <PackageReference Include="AasCore.Aas3_0" Version="[1.0.6]" />
+    <PackageReference Include="AasCore.Aas3_1" Version="[1.0.0]" />
     <PackageReference Include="Asp.Versioning.Mvc" Version="[10.0.0]" />
     <PackageReference Include="Cronos" Version="[0.13.0]" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.8]" />

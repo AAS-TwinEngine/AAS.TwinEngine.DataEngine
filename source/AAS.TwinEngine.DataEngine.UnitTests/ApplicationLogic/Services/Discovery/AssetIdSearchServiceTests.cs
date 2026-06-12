@@ -7,7 +7,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

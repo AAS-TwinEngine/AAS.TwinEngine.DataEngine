@@ -7,7 +7,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 

@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 
