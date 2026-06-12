@@ -179,7 +179,11 @@ public class AasRepositoryService(
             shell.IdShort = metadata.IdShort;
         }
 
-        shell.AssetInformation ??= new AssetInformation(AssetKind.NotApplicable);
+        if (shell.AssetInformation is null)
+        {
+            throw new TemplateNotValidException();
+        }
+
         shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
 
         foreach (var assetId in metadata.SpecificAssetIds)
