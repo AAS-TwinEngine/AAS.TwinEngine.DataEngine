@@ -96,7 +96,7 @@ services:
 
   dpp-plugin:
     image: ghcr.io/aas-twinengine/plugindpp:1.0.0
-    container_name: dpp-plugin 
+    container_name: dpp-plugin
     depends_on:
       postgres:
         condition: service_healthy
