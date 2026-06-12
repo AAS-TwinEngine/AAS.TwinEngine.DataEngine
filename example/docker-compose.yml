@@ -28,7 +28,6 @@ services:
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:1.0.0
     container_name: twinengine-dataengine
-    pull_policy: always
     depends_on:
       dpp-plugin:
         condition: service_started
@@ -97,8 +96,7 @@ services:
 
   dpp-plugin:
     image: ghcr.io/aas-twinengine/plugindpp:1.0.0
-    container_name: dpp-plugin
-    pull_policy: always
+    container_name: dpp-plugin 
     depends_on:
       postgres:
         condition: service_healthy
