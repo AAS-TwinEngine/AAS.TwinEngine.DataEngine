@@ -2,6 +2,9 @@ networks:
   twinengine-network:
     name: twinengine-network
 
+volumes:
+  postgres-data:
+
 services:
   nginx:
     image: nginx:trixie-perl
@@ -25,7 +28,6 @@ services:
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:develop
     container_name: twinengine-dataengine
-    pull_policy: always
     depends_on:
       dpp-plugin:
         condition: service_started
@@ -95,7 +97,6 @@ services:
   dpp-plugin:
     image: ghcr.io/aas-twinengine/plugindpp:develop
     container_name: dpp-plugin
-    pull_policy: always
     depends_on:
       postgres:
         condition: service_healthy
@@ -206,6 +207,7 @@ services:
       POSTGRES_PASSWORD: admin
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
+      - postgres-data:/var/lib/postgresql/data
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d twinengine"]

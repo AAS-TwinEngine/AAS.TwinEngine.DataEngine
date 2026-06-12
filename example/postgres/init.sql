@@ -1,27 +1,20 @@
 -- ============================================================
 -- DPP Plugin Database Initialization Script
 -- ============================================================
--- This is the main orchestration file that executes all database
--- initialization scripts in the correct hierarchical order.
+-- This is the main orchestration file that executes database
+-- initialization scripts in two phases:
+--   1) table creation
+--   2) optional dummy data seeding
 --
--- Execution Order:
---   1. 01_core_asset_tables.sql.inc    - Create core asset database schema
---   2. 02_nameplate_carbonfootprint_technicaldata.sql.inc -  Create Nameplate, Carbon Footprint, Technical Data tables and insert data
---   3. 03_MaintenanceInstructions.sql.inc - Create Maintenance Instructions and relationships table and insert data
---   4. 04_handoverdocumentation.sql.inc - Create Handover Documentation table and insert data
+-- To skip dummy data for a clean environment, comment or remove
+-- the include line for orchestration/init_data.sql below.
 --
 -- ============================================================
 
-\echo 'Executing: 01_core_asset_tables.sql.inc - Creating core asset database schema...'
-\i /docker-entrypoint-initdb.d/01_core_asset_tables.sql.inc
+\echo 'Executing: orchestration/init_tables.sql - Creating database tables...'
+\i /docker-entrypoint-initdb.d/orchestration/init_tables.sql
 
-\echo 'Executing: 02_nameplate_carbonfootprint_technicaldata.sql.inc - Inserting  data...'
-\i /docker-entrypoint-initdb.d/02_nameplate_carbonfootprint_technicaldata.sql.inc
-
- \echo 'Executing: 03_MaintenanceInstructions.sql.inc - Inserting maintenance instructions data...'
-\i /docker-entrypoint-initdb.d/03_MaintenanceInstructions.sql.inc
-
-\echo 'Executing: 04_handoverdocumentation.sql.inc - Inserting document metadata...'
-\i /docker-entrypoint-initdb.d/04_handoverdocumentation.sql.inc
+\echo 'Executing: orchestration/init_data.sql - Seeding dummy data (optional)...'
+\i /docker-entrypoint-initdb.d/orchestration/init_data.sql
 
 \echo 'Database initialization completed successfully!'
