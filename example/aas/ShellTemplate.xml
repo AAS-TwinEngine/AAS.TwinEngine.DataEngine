@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<environment xmlns="https://admin-shell.io/aas/3/0">
+﻿<environment xmlns="https://admin-shell.io/aas/3/1">
   <assetAdministrationShells>
     <assetAdministrationShell>
       <id>https://mm-software.com/aas/aasTemplate</id>
@@ -20,7 +19,6 @@
               </keys>
             </externalSubjectId>
           </specificAssetId>
-
           <specificAssetId>
             <name>BatchId</name>
             <value>B-2026-02</value>
@@ -34,7 +32,6 @@
               </keys>
             </externalSubjectId>
           </specificAssetId>
-
           <specificAssetId>
             <name>LotNumber</name>
             <value>LOT-DE-84572</value>
