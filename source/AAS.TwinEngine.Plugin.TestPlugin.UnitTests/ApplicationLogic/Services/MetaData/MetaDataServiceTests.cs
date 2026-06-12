@@ -33,7 +33,7 @@ public class MetaDataServiceTests
         {
             Identifiers =
             [
-                new SpecificAssetIdsData { Name = "serialNumber", Value = "SN-4711" }
+                new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN-4711" }
             ]
         };
         var expectedShells = new ShellDescriptorsData();

@@ -57,7 +57,7 @@ public static class TestData
          ""id"": ""ContactInformation"",
          ""specificAssetIds"": [
            {
-             ""name"": ""serialNumber"",
+             ""name"": ""SerialNumber"",
              ""value"": ""SN-859-001""
            }
          ],

@@ -11,4 +11,6 @@ public interface IPluginDataProvider
     Task<IList<HttpContent>> GetDataForShellDescriptorByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);
 
     Task<IList<HttpContent>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);
+
+    Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string assetIdsHeaderValue, CancellationToken cancellationToken);
 }

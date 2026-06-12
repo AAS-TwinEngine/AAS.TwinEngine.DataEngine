@@ -5,11 +5,11 @@
     "id": "https://mm-software.com/ids/aas/000-001",
     "specificAssetIds": [
       {
-        "name": "serialNumber",
+        "name": "SerialNumber",
         "value": "SN-4711"
       },
       {
-        "name": "batchId",
+        "name": "BatchId",
         "value": "B-2026-03"
       }
     ],
@@ -26,11 +26,11 @@
     "id": "https://mm-software.com/ids/aas/000-002",
     "specificAssetIds": [
       {
-        "name": "serialNumber",
+        "name": "SerialNumber",
         "value": "SN-9999"
       },
       {
-        "name": "batchId",
+        "name": "BatchId",
         "value": "B-2026-03"
       }
 
@@ -48,7 +48,7 @@
     "id": "https://mm-software.com/ids/aas/000-003",
     "specificAssetIds": [
       {
-        "name": "serialNumber",
+        "name": "SerialNumber",
         "value": "SN-1111"
       }
     ],

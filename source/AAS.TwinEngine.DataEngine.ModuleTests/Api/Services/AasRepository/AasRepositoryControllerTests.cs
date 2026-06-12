@@ -327,6 +327,196 @@ public abstract class AasRepositoryControllerTests : IDisposable
 
     #endregion
 
+    #region GET /shells (GetShellsByAssetId)
+
+    [Fact]
+    public async Task GetShellsAsync_WithNoAssetIds_ReturnsOkWithAllShellsAsync()
+    {
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
+        SetupTemplateProvider();
+
+        var response = await _client.GetAsync("/shells");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithValidAssetId_ReturnsOkWithMatchingShellsAsync()
+    {
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
+        SetupTemplateProvider();
+
+        var specificAssetId = """{"name":"SerialNumber","value":"SN-4711"}""";
+        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
+
+        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        Assert.True(result.Count > 0);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithMultipleAssetIds_ReturnsOkAsync()
+    {
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
+        SetupTemplateProvider();
+
+        var id1 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("""{"name":"SerialNumber","value":"SN-4711"}"""));
+        var id2 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("""{"name":"BatchId","value":"B-001"}"""));
+
+        var response = await _client.GetAsync($"/shells?assetIds={id1}&assetIds={id2}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.NotNull(json["result"]);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithPagination_LimitsResultsAsync()
+    {
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
+        SetupTemplateProvider();
+
+        var specificAssetId = """{"name":"SerialNumber","value":"SN-4711"}""";
+        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
+
+        var response = await _client.GetAsync($"/shells?assetIds={encoded}&limit=1");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithNoMatchingResults_ReturnsEmptyResultAsync()
+    {
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsEmpty());
+        SetupTemplateProvider();
+
+        var specificAssetId = """{"name":"SerialNumber","value":"non-existent"}""";
+        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(specificAssetId));
+
+        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithInvalidBase64AssetId_Returns400Async()
+    {
+        var response = await _client.GetAsync("/shells?assetIds=not-valid-base64!!!");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithInvalidJsonAssetId_Returns400Async()
+    {
+        var invalidJson = "not json at all";
+        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(invalidJson));
+
+        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithMissingAssetIdName_Returns400Async()
+    {
+        var json = """{"value":"SN-4711"}""";
+        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(json));
+
+        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithMissingAssetIdValue_Returns400Async()
+    {
+        var json = """{"name":"SerialNumber"}""";
+        var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(json));
+
+        var response = await _client.GetAsync($"/shells?assetIds={encoded}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithNegativeLimit_Returns400Async()
+    {
+        var response = await _client.GetAsync("/shells?limit=-1");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #endregion
+
+    private void SetupPluginHttpClient(string pluginResponse)
+    {
+        const string HttpClientName1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+
+        _httpClientFactory.CreateClient(HttpClientName1)
+            .Returns(_ => CreateHttpClient(pluginResponse));
+    }
+
+    private static HttpClient CreateHttpClient(string pluginResponse)
+    {
+        var handler = new FakeHttpMessageHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(pluginResponse)
+            }));
+
+        return new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://testendpoint.com")
+        };
+    }
+
+    private void SetupTemplateProvider()
+    {
+        _ = _mockTemplateProvider
+            .GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var assetInformation = new AssetInformation(AssetKind.Instance)
+                {
+                    SpecificAssetIds =
+                    [
+                        new SpecificAssetId("SerialNumber", "Test"),
+                        new SpecificAssetId("manufacturer", "ABC")
+                    ]
+                };
+
+                return new AssetAdministrationShell(
+                    callInfo.ArgAt<string>(0),
+                    assetInformation)
+                {
+                    Submodels = []
+                };
+            });
+    }
+
     private static string EncodeBase64Url(string plainText)
     {
         if (string.IsNullOrWhiteSpace(plainText))

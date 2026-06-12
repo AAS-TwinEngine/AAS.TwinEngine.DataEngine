@@ -14,7 +14,21 @@ internal static class TestData
             {
               "id": "https://example.com/aas/aasTemplate",
               "assetInformation": {
-                "assetKind": "Instance"
+                "assetKind": "Instance",
+                "specificAssetIds": [
+              {
+                "name": "LotNumber",
+                "value": "Test"
+              },
+              {
+                "name": "BatchId",
+                "value": "Test"
+              },
+              {
+                "name": "SerialNumber",
+                "value": "Test"
+              }
+            ]
               },
               "submodels": [
                 {
@@ -87,37 +101,25 @@ internal static class TestData
     public static IReadOnlyList<PluginManifest> CreatePluginManifests()
     {
         return new List<PluginManifest>
-      {
-        new() {
+        {
+            new()
+            {
             PluginName = "TestPlugin1",
             PluginUrl = new Uri("https://example.com/plugin"),
-            SupportedSemanticIds = new List<string>
-            {
+            SupportedSemanticIds =
+            [
                 "http://example.com/idta/digital-nameplate/thumbnail",
                 "http://example.com/idta/digital-nameplate/contact-name",
                 "http://example.com/idta/digital-nameplate/email"
-            },
+            ],
             Capabilities = new Capabilities
             {
                 HasShellDescriptor = true,
-                HasAssetInformation = true
+                HasAssetInformation = true,
+                HasAssetIdSearch = true
             }
-          },
-        new() {
-            PluginName = "TestPlugin2",
-            PluginUrl = new Uri("https://example.com/plugin"),
-            SupportedSemanticIds = new List<string>
-            {
-                "http://example.com/idta/digital-nameplate/manufacturer-name_en",
-                "http://example.com/idta/digital-nameplate/manufacturer-name_de",
-            },
-            Capabilities = new Capabilities
-            {
-                HasShellDescriptor = true,
-                HasAssetInformation = false
             }
-          },
-      };
+        };
     }
 
     public static string CreateShellResponse() => """
@@ -208,4 +210,41 @@ internal static class TestData
 
         return parts[index - 1];
     }
+
+    public static string CreatePluginResponseForShellDescriptors()
+        => """
+           {
+             "paging_metadata": {
+               "cursor": null
+             },
+             "result": [
+               {
+                 "globalAssetId": "https://mm-software.com/ids/assets/000-001",
+                 "idShort": "Product1",
+                 "id": "https://mm-software.com/ids/aas/000-001",
+                 "specificAssetIds": [
+                   { "name": "SerialNumber", "value": "SN-4711" }
+                 ]
+               },
+               {
+                 "globalAssetId": "https://mm-software.com/ids/assets/000-002",
+                 "idShort": "Product2",
+                 "id": "https://mm-software.com/ids/aas/000-002",
+                 "specificAssetIds": [
+                   { "name": "SerialNumber", "value": "SN-4712" }
+                 ]
+               }
+             ]
+           }
+           """;
+
+    public static string CreatePluginResponseForShellDescriptorsEmpty()
+        => """
+           {
+             "paging_metadata": {
+               "cursor": null
+             },
+             "result": []
+           }
+           """;
 }

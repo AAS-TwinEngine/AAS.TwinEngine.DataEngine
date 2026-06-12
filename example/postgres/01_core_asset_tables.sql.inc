@@ -113,6 +113,11 @@ INSERT INTO "Asset" (
 -- ============================================================
 
 INSERT INTO "SpecificAssetIds" ("AssetId","Name","Value") VALUES
-(1,'product1.0','M&M - 001'),
-(1,'product1.1','M&M - 002'),
-(2,'product2','M&M - 003');
+('1','SerialNumber','SN-FMABC1234-9804820'),
+('1','BatchId','BATCH-2022-001'),
+('1','LotNumber','LOT-DE-77881'),
+('2','SerialNumber','SN-FMABC1238-9804821'),
+('2','BatchId','BATCH-2022-001'),
+('2','LotNumber','LOT-IN-77882'),
+('3','SerialNumber','SN-TMABC1680-9804760'),
+('3','BatchId','BATCH-2022-001');

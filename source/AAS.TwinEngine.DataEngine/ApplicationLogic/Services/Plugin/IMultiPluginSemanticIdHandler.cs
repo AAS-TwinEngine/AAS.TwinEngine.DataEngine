@@ -5,7 +5,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 
 public interface IMultiPluginDataHandler
 {
-    public IDictionary<string, SemanticTreeNode> SplitByPluginManifests(SemanticTreeNode globalTree, IReadOnlyList<PluginManifest> pluginManifests);
+    IDictionary<string, SemanticTreeNode> SplitByPluginManifests(SemanticTreeNode globalTree, IReadOnlyList<PluginManifest> pluginManifests);
 
     SemanticTreeNode Merge(SemanticTreeNode globalTree, IList<SemanticTreeNode> valueTrees);
 

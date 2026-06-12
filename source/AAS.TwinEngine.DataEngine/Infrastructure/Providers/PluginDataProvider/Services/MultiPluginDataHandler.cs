@@ -149,7 +149,7 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
                     break;
 
                 case SemanticLeafNode childLeaf:
-                    var mergedLeaf = MergeLeafNode(childLeaf, matchingNodes.OfType<SemanticLeafNode>().ToList());
+                    var mergedLeaf = MergeLeafNode(childLeaf, [.. matchingNodes.OfType<SemanticLeafNode>()]);
                     if (mergedLeaf != null)
                     {
                         mergedBranch.AddChild(mergedLeaf);
@@ -163,7 +163,7 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
     }
 
     private static SemanticTreeNode MergeLeaf(SemanticLeafNode leaf, IList<SemanticTreeNode> valueTrees)
-        => MergeLeafNode(leaf, valueTrees.OfType<SemanticLeafNode>().ToList()) ?? throw new InternalDataProcessingException();
+        => MergeLeafNode(leaf, [.. valueTrees.OfType<SemanticLeafNode>()]) ?? throw new InternalDataProcessingException();
 
     private static List<SemanticTreeNode> MergeBranchNodes(SemanticBranchNode template, List<SemanticTreeNode> candidates)
     {
@@ -272,8 +272,7 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
     }
 
     public IList<string> GetAvailablePlugins(IReadOnlyList<PluginManifest> manifests, Func<Capabilities, bool> capabilitySelector)
-        => manifests
+        => [.. manifests
             .Where(m => capabilitySelector(m.Capabilities))
-            .Select(m => m.PluginName)
-            .ToList();
+            .Select(m => m.PluginName)];
 }

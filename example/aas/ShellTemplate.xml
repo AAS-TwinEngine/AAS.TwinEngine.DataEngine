@@ -5,6 +5,50 @@
       <id>https://mm-software.com/aas/aasTemplate</id>
       <assetInformation>
         <assetKind>Instance</assetKind>
+        <!-- Optional specific asset identifiers -->
+        <specificAssetIds>
+          <specificAssetId>
+            <name>SerialNumber</name>
+            <value>SN-9429</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/serial-number</value>
+                </key>
+              </keys>
+            </externalSubjectId>
+          </specificAssetId>
+
+          <specificAssetId>
+            <name>BatchId</name>
+            <value>B-2026-02</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/batch-id</value>
+                </key>
+              </keys>
+            </externalSubjectId>
+          </specificAssetId>
+
+          <specificAssetId>
+            <name>LotNumber</name>
+            <value>LOT-DE-84572</value>
+            <externalSubjectId>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://example.com/subjects/lot-number</value>
+                </key>
+              </keys>
+            </externalSubjectId>
+          </specificAssetId>
+        </specificAssetIds>
       </assetInformation>
       <submodels>
         <reference>
