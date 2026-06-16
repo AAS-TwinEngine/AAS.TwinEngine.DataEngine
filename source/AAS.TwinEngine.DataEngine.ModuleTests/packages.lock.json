@@ -107,29 +107,29 @@
       },
       "Humanizer.Core": {
         "type": "Transitive",
-        "resolved": "2.14.1",
-        "contentHash": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw=="
+        "resolved": "3.0.10",
+        "contentHash": "yZIhtw8sYuvsONzQbZxWpR60tMWYHXoo0DL6nyOqSFiU5POjBTSEyWFpTQtJEZuy+oqiYTXKXY/Mjx7KnqIQFw=="
       },
       "Json.More.Net": {
         "type": "Transitive",
-        "resolved": "2.1.1",
-        "contentHash": "ZXAKl2VsdnIZeUo1PFII3Oi1m1L4YQjEyDjygHfHln5vgsjgIo749X6xWkv7qFYp8RROES+vOEfDcvvoVgs8kA=="
+        "resolved": "3.0.1",
+        "contentHash": "fRctF2J2SILYG6wqP21drmeEODmCVkVQ/b3MndDu2fT1swfySyUgq7ePCk+aENGlDcIm05fyfjh9vcuqDEfv3w=="
       },
       "JsonPointer.Net": {
         "type": "Transitive",
-        "resolved": "5.3.1",
-        "contentHash": "3e2OJjU0OaE26XC/klgxbJuXvteFWTDJIJv0ITYWcJEoskq7jzUwPSC1s0iz4wPPQnfN7vwwFmg2gJfwRAPwgw==",
+        "resolved": "7.0.1",
+        "contentHash": "5C497yxfktYFsqxKG+GUQPsMvBqIjzLkqtDEdMGsnBpl3/OB8DOvTo7LEyRX7AVc1kVVj0IX5zhmLrlbvAYEnw==",
         "dependencies": {
-          "Humanizer.Core": "2.14.1",
-          "Json.More.Net": "2.1.1"
+          "Humanizer.Core": "3.0.10",
+          "Json.More.Net": "3.0.1"
         }
       },
       "JsonSchema.Net": {
         "type": "Transitive",
-        "resolved": "7.3.4",
-        "contentHash": "7GggWrdzKrtGWETRn3dcMnmuLSyWaDkBK94TK80LEHQEVz4bmsQc7FYO7qL40RDdZU2YPz5d98aT9lW5OYExuA==",
+        "resolved": "9.2.1",
+        "contentHash": "jBBi3JG6+6/QLQvq6V0oLdrJKL08hEPKp8BScCNzI8X4ana87bgPwTDPDnAlDxWi4UuQuhahMKjbINaZgmuDWw==",
         "dependencies": {
-          "JsonPointer.Net": "5.3.1"
+          "JsonPointer.Net": "7.0.1"
         }
       },
       "Microsoft.AspNetCore.TestHost": {
@@ -936,7 +936,7 @@
           "AasCore.Aas3_0": "[1.0.6, 1.0.6]",
           "Asp.Versioning.Mvc": "[10.0.0, 10.0.0]",
           "Cronos": "[0.13.0, 0.13.0]",
-          "JsonSchema.Net": "[7.3.4, 7.3.4]",
+          "JsonSchema.Net": "[9.2.1, 9.2.1]",
           "Microsoft.Extensions.DependencyInjection": "[10.0.8, 10.0.8]",
           "Microsoft.Extensions.Http": "[10.0.8, 10.0.8]",
           "Microsoft.Extensions.Http.Resilience": "[10.6.0, 10.6.0]",
