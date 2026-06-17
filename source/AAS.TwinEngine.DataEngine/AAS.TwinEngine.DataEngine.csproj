@@ -38,7 +38,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="[10.0.8]" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="[10.6.0]" />
     <PackageReference Include="Polly.Core" Version="[8.6.6]" />
-    <PackageReference Include="JsonSchema.Net" Version="[7.3.4]" />
+    <PackageReference Include="JsonSchema.Net" Version="[9.2.2]" />
 
     <!-- Dependency track - Vulnerabilities -->
     <PackageReference Include="System.Text.Json" Version="[10.0.8]" />
