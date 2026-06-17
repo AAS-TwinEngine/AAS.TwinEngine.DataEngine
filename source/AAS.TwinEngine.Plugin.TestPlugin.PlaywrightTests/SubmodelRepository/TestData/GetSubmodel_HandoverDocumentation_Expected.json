@@ -83,7 +83,7 @@
           "value": "One"
         }
       ],
-      "orderRelevant": true,
+      "orderRelevant": false,
       "semanticIdListElement": {
         "type": "ExternalReference",
         "keys": [
@@ -96,7 +96,6 @@
       "typeValueListElement": "SubmodelElementCollection",
       "value": [
         {
-          "idShort": "Document",
           "description": [
             {
               "language": "en",
@@ -194,7 +193,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -207,7 +206,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentId",
                   "displayName": [
                     {
                       "language": "en",
@@ -477,7 +475,6 @@
                   "modelType": "SubmodelElementCollection"
                 },
                 {
-                  "idShort": "DocumentId",
                   "displayName": [
                     {
                       "language": "en",
@@ -798,7 +795,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -811,7 +808,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentClassification",
                   "displayName": [
                     {
                       "language": "en",
@@ -1073,23 +1069,12 @@
                           "value": "Operation@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Electrical Components"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Elektrische Bauteile"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     }
                   ],
                   "modelType": "SubmodelElementCollection"
                 },
                 {
-                  "idShort": "DocumentClassification",
                   "displayName": [
                     {
                       "language": "en",
@@ -1351,16 +1336,6 @@
                           "value": "Operation@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Hydraulic Pumps"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Hydraulikpumpen"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     }
                   ],
@@ -1418,7 +1393,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -1431,7 +1406,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentVersion",
                   "displayName": [
                     {
                       "language": "en",
@@ -1440,12 +1414,6 @@
                     {
                       "language": "de",
                       "text": "Document version"
-                    }
-                  ],
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Set of information for describing the classification of the Document according to a ClassificationSystem"
                     }
                   ],
                   "semanticId": {
@@ -1539,12 +1507,11 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "Property",
                       "valueTypeListElement": "xs:string",
                       "value": [
                         {
-                          "idShort": " language",
                           "displayName": [
                             {
                               "language": "en",
@@ -1661,11 +1628,10 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "File",
                       "value": [
                         {
-                          "idShort": "DigitalFile",
                           "displayName": [
                             {
                               "language": "en",
@@ -2138,16 +2104,6 @@
                           "value": "Examplary title@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "User Guide – DSLR Camera Model X100"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Benutzerhandbuch – DSLR-Kamera Modell X100"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -2213,16 +2169,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary subtitle@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Complete Instructions for Professional Photography"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Vollständige Anleitung für professionelle Fotografie"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -2292,16 +2238,6 @@
                           "value": "Abstract@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Detailed instructions for operating the X100 DSLR camera, including setup and troubleshooting."
-                        },
-                        {
-                          "language": "de",
-                          "text": "Detaillierte Anweisungen zur Bedienung der DSLR-Kamera X100, einschließlich Einrichtung und Fehlerbehebung"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -2367,16 +2303,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary keywords@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "DSLR, Camera, Photography, User Guide, Setup"
-                        },
-                        {
-                          "language": "de",
-                          "text": "DSLR, Kamera, Fotografie, Benutzerhandbuch, Einrichtung"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -2469,7 +2395,6 @@
                   "modelType": "SubmodelElementCollection"
                 },
                 {
-                  "idShort": "DocumentVersion",
                   "displayName": [
                     {
                       "language": "en",
@@ -2478,12 +2403,6 @@
                     {
                       "language": "de",
                       "text": "Document version"
-                    }
-                  ],
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Set of information for describing the classification of the Document according to a ClassificationSystem"
                     }
                   ],
                   "semanticId": {
@@ -2577,12 +2496,11 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "Property",
                       "valueTypeListElement": "xs:string",
                       "value": [
                         {
-                          "idShort": " language",
                           "displayName": [
                             {
                               "language": "en",
@@ -2699,11 +2617,10 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "File",
                       "value": [
                         {
-                          "idShort": "DigitalFile",
                           "displayName": [
                             {
                               "language": "en",
@@ -3176,16 +3093,6 @@
                           "value": "Examplary title@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Technical Specification – Mirrorless Camera Z-Series"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Technische Spezifikation – Systemkamera der Z-Serie"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -3251,16 +3158,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary subtitle@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Detailed Specs for Advanced Imaging"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Detaillierte Spezifikationen für fortschrittliche Bildgebung"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -3330,16 +3227,6 @@
                           "value": "Abstract@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Comprehensive technical details of the Z-Series mirrorless camera, covering sensor and performance."
-                        },
-                        {
-                          "language": "de",
-                          "text": "Umfassende technische Details der spiegellosen Kamera Z-Serie, einschließlich Sensor und Leistung."
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -3405,16 +3292,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary keywords@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Mirrorless, Camera, Specs, Imaging, Performance"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Spiegellos, Kamera, Spezifikationen, Bildgebung, Leistung"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -3513,7 +3390,6 @@
           "modelType": "SubmodelElementCollection"
         },
         {
-          "idShort": "Document",
           "description": [
             {
               "language": "en",
@@ -3611,7 +3487,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -3624,7 +3500,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentId",
                   "displayName": [
                     {
                       "language": "en",
@@ -3945,7 +3820,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -3958,7 +3833,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentClassification",
                   "displayName": [
                     {
                       "language": "en",
@@ -4220,16 +4094,6 @@
                           "value": "Operation@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Industrial Sensors"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Industrielle Sensoren"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     }
                   ],
@@ -4287,7 +4151,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -4300,7 +4164,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentVersion",
                   "displayName": [
                     {
                       "language": "en",
@@ -4309,12 +4172,6 @@
                     {
                       "language": "de",
                       "text": "Document version"
-                    }
-                  ],
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Set of information for describing the classification of the Document according to a ClassificationSystem"
                     }
                   ],
                   "semanticId": {
@@ -4408,12 +4265,11 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "Property",
                       "valueTypeListElement": "xs:string",
                       "value": [
                         {
-                          "idShort": " language",
                           "displayName": [
                             {
                               "language": "en",
@@ -4530,11 +4386,10 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "File",
                       "value": [
                         {
-                          "idShort": "DigitalFile",
                           "displayName": [
                             {
                               "language": "en",
@@ -5007,16 +4862,6 @@
                           "value": "Examplary title@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Maintenance Manual – Professional Camera Lens 50mm"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Wartungshandbuch – Professionelles Kameraobjektiv 50 mm"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -5082,16 +4927,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary subtitle@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Care and Cleaning Procedures"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Pflege und Reinigungsverfahren"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -5161,16 +4996,6 @@
                           "value": "Abstract@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Guidelines for cleaning and maintaining the 50mm professional lens for optimal performance."
-                        },
-                        {
-                          "language": "de",
-                          "text": "Richtlinien zur Reinigung und Wartung des professionellen 50-mm-Objektivs für optimale Leistung."
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -5236,16 +5061,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary keywords@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Lens, Maintenance, Cleaning, Professional, Care"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Objektiv, Wartung, Reinigung, Professionell, Pflege"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -5344,7 +5159,6 @@
           "modelType": "SubmodelElementCollection"
         },
         {
-          "idShort": "Document",
           "description": [
             {
               "language": "en",
@@ -5442,7 +5256,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -5455,7 +5269,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentId",
                   "displayName": [
                     {
                       "language": "en",
@@ -5776,7 +5589,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -5789,7 +5602,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentClassification",
                   "displayName": [
                     {
                       "language": "en",
@@ -6051,16 +5863,6 @@
                           "value": "Operation@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Fasteners"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Befestigungselemente"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     }
                   ],
@@ -6118,7 +5920,7 @@
                   "value": "One"
                 }
               ],
-              "orderRelevant": true,
+              "orderRelevant": false,
               "semanticIdListElement": {
                 "type": "ExternalReference",
                 "keys": [
@@ -6131,7 +5933,6 @@
               "typeValueListElement": "SubmodelElementCollection",
               "value": [
                 {
-                  "idShort": "DocumentVersion",
                   "displayName": [
                     {
                       "language": "en",
@@ -6140,12 +5941,6 @@
                     {
                       "language": "de",
                       "text": "Document version"
-                    }
-                  ],
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Set of information for describing the classification of the Document according to a ClassificationSystem"
                     }
                   ],
                   "semanticId": {
@@ -6239,12 +6034,11 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "Property",
                       "valueTypeListElement": "xs:string",
                       "value": [
                         {
-                          "idShort": " language",
                           "displayName": [
                             {
                               "language": "en",
@@ -6361,11 +6155,10 @@
                           "value": "One"
                         }
                       ],
-                      "orderRelevant": true,
+                      "orderRelevant": false,
                       "typeValueListElement": "File",
                       "value": [
                         {
-                          "idShort": "DigitalFile",
                           "displayName": [
                             {
                               "language": "en",
@@ -6838,16 +6631,6 @@
                           "value": "Examplary title@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Installation Guide – Wide-Angle Lens Kit"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Installationsanleitung – Weitwinkel-Objektiv-Kit"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -6913,16 +6696,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary subtitle@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Step-by-Step Setup Instructions"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Schritt-für-Schritt-Installationsanleitung"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -6992,16 +6765,6 @@
                           "value": "Abstract@en"
                         }
                       ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Step-by-step instructions for installing and configuring the wide-angle lens kit."
-                        },
-                        {
-                          "language": "de",
-                          "text": "Schritt-für-Schritt-Anleitung zur Installation und Konfiguration des Weitwinkel-Objektivsets."
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -7067,16 +6830,6 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Examplary keywords@en"
-                        }
-                      ],
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Wide-Angle, Lens, Installation, Setup, Kit"
-                        },
-                        {
-                          "language": "de",
-                          "text": "Weitwinkel, Objektiv, Installation, Einrichtung, Set"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -7205,7 +6958,7 @@
           "value": "ZeroToOne"
         }
       ],
-      "orderRelevant": true,
+      "orderRelevant": false,
       "typeValueListElement": "Entity",
       "modelType": "SubmodelElementList"
     }

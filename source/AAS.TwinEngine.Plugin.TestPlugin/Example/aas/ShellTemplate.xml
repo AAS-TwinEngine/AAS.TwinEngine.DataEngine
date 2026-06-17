@@ -1,12 +1,10 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<environment xmlns="https://admin-shell.io/aas/3/0">
+﻿<environment xmlns="https://admin-shell.io/aas/3/1">
   <assetAdministrationShells>
     <assetAdministrationShell>
       <id>https://mm-software.com/aas/aasTemplate</id>
       <assetInformation>
         <assetKind>Instance</assetKind>
-        <!-- Optional specific asset identifiers -->
-                <specificAssetIds>
+        <specificAssetIds>
           <specificAssetId>
             <name>SerialNumber</name>
             <value>SN-8080</value>
@@ -20,7 +18,6 @@
               </keys>
             </externalSubjectId>
           </specificAssetId>
-
           <specificAssetId>
             <name>BatchId</name>
             <value>B-2026-08</value>
@@ -34,7 +31,6 @@
               </keys>
             </externalSubjectId>
           </specificAssetId>
-
           <specificAssetId>
             <name>LotNumber</name>
             <value>LOT-DE-71848</value>
