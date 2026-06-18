@@ -152,7 +152,7 @@ jobs:
         with:
           scan-type: 'image'
           format: 'cyclonedx'
-          output: 'sbom-output/sbom_container.cyclonedx_amd64.json'
+          output: 'sbom-output/sbom_container_amd64.cyclonedx.json'
           image-ref: ${{ steps.highest-priority-tag.outputs.value }}
           skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a separate SBOM for easier vulnerability management and because trivy misses important fields
           
