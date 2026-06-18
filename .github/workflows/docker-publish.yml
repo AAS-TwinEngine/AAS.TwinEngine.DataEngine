@@ -148,7 +148,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # 0.36.0
         env:
-          TRIVY_PLATFORM: linux/arm64
+          TRIVY_PLATFORM: linux/amd64
         with:
           scan-type: 'image'
           format: 'cyclonedx'
