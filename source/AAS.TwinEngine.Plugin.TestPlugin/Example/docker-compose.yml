@@ -4,7 +4,7 @@ networks:
 
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:1.31.2
     container_name: nginx
     ports:
       - "8080:80"
@@ -112,7 +112,7 @@ services:
       - dataengine-network
 
   template-repository:
-    image: eclipsebasyx/aas-environment:2.0.0-SNAPSHOT
+    image: eclipsebasyx/aas-environment:2.0.0-milestone-11
     container_name: template-repository
     ports:
       - "8081:8081"
@@ -131,7 +131,7 @@ services:
       - dataengine-network
 
   aas-template-registry:
-    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT
+    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-11
     container_name: aas-template-registry
     ports:
       - '8082:8080'
@@ -144,7 +144,7 @@ services:
       - dataengine-network
 
   sm-template-registry:
-    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT
+    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-11
     container_name: sm-template-registry
     ports:
       - '8083:8080'
@@ -156,7 +156,7 @@ services:
       - dataengine-network
 
   aas-web-ui:
-    image: eclipsebasyx/aas-gui:SNAPSHOT
+    image: eclipsebasyx/aas-gui:v2-260526
     container_name: aas-ui
     volumes:
       - ./logo:/usr/src/app/dist/Logo
@@ -170,6 +170,9 @@ services:
       LOGO_PATH: "MM_Logo.svg"
       PRIMARY_DARK_COLOR: "#00F2E5"
       PRIMARY_LIGHT_COLOR: "#041b2b"
+      ALLOW_EDITING: "false"
+      SM_VIEWER_EDITOR: "false"
+      ALLOW_UPLOADING: "false"
     restart: always
     depends_on:
       template-repository:
@@ -178,7 +181,7 @@ services:
       - dataengine-network
 
   mongo:
-    image: mongo:6.0
+    image: mongo:8.0
     container_name: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongoAdmin
