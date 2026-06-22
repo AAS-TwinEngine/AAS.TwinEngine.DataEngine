@@ -2,9 +2,12 @@ networks:
   twinengine-network:
     name: twinengine-network
 
+volumes:
+  postgres-data:
+
 services:
   nginx:
-    image: nginx:trixie-perl
+    image: nginx:1.31.2
     container_name: nginx
     ports:
       - "8080:80"
@@ -35,18 +38,20 @@ services:
       - Plugins__Instances__0__Name=RelationalDatabasePlugin
       - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
       - Plugins__Instances__0__healthEndpoint=/healthz
+      - Plugins__MultiLanguageProperty__DefaultLanguages__0=en
+      - Plugins__MultiLanguageProperty__DefaultLanguages__1=de
       - Plugins__Instances__0__headerMappings__0__source=Authorization
       - Plugins__Instances__0__headerMappings__0__target=X-Auth-Token
       - Plugins__Instances__0__headerMappings__0__required=false
       - Plugins__Instances__0__headerMappings__1__source=X-Organization-Id
       - Plugins__Instances__0__headerMappings__1__target=X-Tenant-Context
       - Plugins__Instances__0__headerMappings__1__required=false
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=TechnicalData
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=Nameplate
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=ContactInformation
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=MaintenanceInstructions
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__templateId=https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__pattern__0=CarbonFootprint
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
@@ -105,9 +110,9 @@ services:
       - ExtractionRules__SubmodelNameExtractionRules__0__SubmodelName=NamePlate
       - ExtractionRules__SubmodelNameExtractionRules__0__pattern__0=Nameplate
       - ExtractionRules__SubmodelNameExtractionRules__0__pattern__1=NamePlate
-      - ExtractionRules__SubmodelNameExtractionRules__1__SubmodelName=ContactInformation
-      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__0=ContactInformation
-      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__1=ContactInformations
+      - ExtractionRules__SubmodelNameExtractionRules__1__SubmodelName=MaintenanceInstructions
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__0=MaintenanceInstructions
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__1=MaintenanceInstruction
       - ExtractionRules__SubmodelNameExtractionRules__2__SubmodelName=HandoverDocumentation
       - ExtractionRules__SubmodelNameExtractionRules__2__pattern__0=HandoverDocumentation
       - ExtractionRules__SubmodelNameExtractionRules__2__pattern__1=HandoverDocumentations
@@ -125,7 +130,7 @@ services:
       - twinengine-network
 
   template-repository:
-    image: eclipsebasyx/aas-environment:2.0.0-SNAPSHOT
+    image: eclipsebasyx/aas-environment:2.0.0-milestone-11
     container_name: template-repository
     volumes:
       - ./aas:/application/aas
@@ -142,7 +147,7 @@ services:
       - twinengine-network
 
   aas-template-registry:
-    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT
+    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-11
     container_name: aas-template-registry
     restart: always
     depends_on:
@@ -153,7 +158,7 @@ services:
       - twinengine-network
 
   sm-template-registry:
-    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT
+    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-11
     container_name: sm-template-registry
     depends_on:
       - mongo
@@ -163,7 +168,7 @@ services:
       - twinengine-network
 
   aas-web-ui:
-    image: eclipsebasyx/aas-gui:SNAPSHOT
+    image: eclipsebasyx/aas-gui:v2-260526
     container_name: aas-ui
     volumes:
       - ./logo:/usr/src/app/dist/Logo
@@ -177,6 +182,9 @@ services:
       LOGO_PATH: "MM_Logo.svg"
       PRIMARY_DARK_COLOR: "#00F2E5"
       PRIMARY_LIGHT_COLOR: "#041b2b"
+      ALLOW_EDITING: "false"
+      SM_VIEWER_EDITOR: "false"
+      ALLOW_UPLOADING: "false"
     restart: always
     depends_on:
       template-repository:
@@ -185,7 +193,7 @@ services:
       - twinengine-network
 
   mongo:
-    image: mongo:6.0
+    image: mongo:8.0
     container_name: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongoAdmin
@@ -194,7 +202,7 @@ services:
       - twinengine-network
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:14.23-alpine3.24
     container_name: postgres
     environment:
       POSTGRES_DB: twinengine
@@ -202,6 +210,7 @@ services:
       POSTGRES_PASSWORD: admin
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
+      - postgres-data:/var/lib/postgresql/data
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d twinengine"]
@@ -212,7 +221,7 @@ services:
       - twinengine-network
 
   pgadmin:
-    image: dpage/pgadmin4:snapshot
+    image: dpage/pgadmin4:9.16
     container_name: pgadmin
     ports:
       - "8081:80"

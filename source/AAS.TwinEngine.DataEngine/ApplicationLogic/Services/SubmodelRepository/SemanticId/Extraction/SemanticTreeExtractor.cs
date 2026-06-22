@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Extraction;
 
@@ -20,7 +20,7 @@ public class SemanticTreeExtractor(
             throw new InvalidDependencyException(nameof(submodelTemplate), logger);
         }
 
-        var rootNode = new SemanticBranchNode(semanticIdResolver.ResolveSemanticId(submodelTemplate, submodelTemplate.IdShort!), Cardinality.Unknown);
+        var rootNode = new SemanticBranchNode(semanticIdResolver.ResolveSemanticId(submodelTemplate, submodelTemplate.IdShort!), Cardinality.One);
         var childNodes = submodelTemplate.SubmodelElements!
                                          .Select(ExtractElement)
                                          .Where(childNode => childNode != null)

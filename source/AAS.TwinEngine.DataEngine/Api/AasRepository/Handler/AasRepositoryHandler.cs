@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
@@ -9,7 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 

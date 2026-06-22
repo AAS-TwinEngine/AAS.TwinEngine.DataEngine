@@ -3,7 +3,7 @@
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
 

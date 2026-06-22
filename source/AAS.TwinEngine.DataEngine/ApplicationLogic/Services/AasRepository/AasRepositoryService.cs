@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -8,7 +6,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -170,7 +168,7 @@ public class AasRepositoryService(
         }
     }
 
-    private static void FillShellFromMetadata(IAssetAdministrationShell shell, ShellDescriptorMetaData metadata)
+    private void FillShellFromMetadata(IAssetAdministrationShell shell, ShellDescriptorMetaData metadata)
     {
         shell.Id = metadata.Id;
 
@@ -179,7 +177,12 @@ public class AasRepositoryService(
             shell.IdShort = metadata.IdShort;
         }
 
-        shell.AssetInformation ??= new AssetInformation(AssetKind.NotApplicable);
+        if (shell.AssetInformation is null)
+        {
+            logger.LogError("Shell template with id {AasId} has no AssetInformation. Cannot fill out metadata.", shell.Id);
+            throw new TemplateNotValidException();
+        }
+
         shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
 
         foreach (var assetId in metadata.SpecificAssetIds)

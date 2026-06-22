@@ -5,9 +5,9 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 using AasCore.Aas3.Package;
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
-using Environment = AasCore.Aas3_0.Environment;
+using Environment = AasCore.Aas3_1.Environment;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 

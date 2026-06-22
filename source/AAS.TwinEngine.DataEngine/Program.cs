@@ -21,6 +21,8 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        _ = builder.Configuration.AddJsonFile("/config/dataengine-env.json", optional: true, reloadOnChange: true);
+
         _ = builder.Host.UseSerilog();
         builder.ConfigureLogging(builder.Configuration);
         builder.ConfigureCorsServices();

@@ -1,17 +1,20 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
 using static Xunit.Assert;
 
-using File = AasCore.Aas3_0.File;
-using Range = AasCore.Aas3_0.Range;
+using File = AasCore.Aas3_1.File;
+using Range = AasCore.Aas3_1.Range;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
@@ -32,7 +35,8 @@ public class SemanticIdResolverTests
         {
             Semantics = new TemplateSemanticsConfig { InternalSemanticId = "InternalSemanticId" }
         });
-        _sut = new SemanticIdResolver(_pluginsConfig, _templateManagementConfig);
+        var logger = Substitute.For<ILogger<SemanticIdResolver>>();
+        _sut = new SemanticIdResolver(_pluginsConfig, _templateManagementConfig, logger);
     }
 
     [Fact]
@@ -40,8 +44,9 @@ public class SemanticIdResolverTests
     {
         var options = Options.Create<PluginsConfig>(null!);
         var tmConfig = Options.Create(new TemplateManagementConfig());
+        var logger = Substitute.For<ILogger<SemanticIdResolver>>();
 
-        _ = Throws<NullReferenceException>(() => new SemanticIdResolver(options, tmConfig));
+        _ = Throws<NullReferenceException>(() => new SemanticIdResolver(options, tmConfig, logger));
     }
 
     [Fact]
@@ -169,7 +174,6 @@ public class SemanticIdResolverTests
     [InlineData("ZeroToOne", Cardinality.ZeroToOne)]
     [InlineData("ZeroToMany", Cardinality.ZeroToMany)]
     [InlineData("OneToMany", Cardinality.OneToMany)]
-    [InlineData("", Cardinality.Unknown)]
     public void GetCardinality_VariousQualifierValues_ReturnsExpected(string? qualifierValue, Cardinality expected)
     {
         var qualifier = Substitute.For<IQualifier>();
@@ -183,25 +187,40 @@ public class SemanticIdResolverTests
     }
 
     [Fact]
-    public void GetCardinality_QualifiersNull_ReturnsUnknown()
+    public void GetCardinality_QualifiersNull_ThrowsTemplateNotValidException()
     {
         var element = Substitute.For<ISubmodelElement>();
         element.Qualifiers.Returns((List<IQualifier>?)null);
 
-        var actual = _sut.GetCardinality(element);
+        var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal(Cardinality.Unknown, actual);
+        Equal("Invalid Template", exception.Message);
     }
 
     [Fact]
-    public void GetCardinality_EmptyQualifiers_ReturnsUnknown()
+    public void GetCardinality_EmptyQualifiers_ThrowsTemplateNotValidException()
     {
+        var qualifier = Substitute.For<IQualifier>();
+        qualifier.Value.Returns("NotACardinality");
         var element = Substitute.For<ISubmodelElement>();
-        element.Qualifiers.Returns(new List<IQualifier>());
+        element.Qualifiers.Returns([qualifier]);
 
-        var actual = _sut.GetCardinality(element);
+        var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
 
-        Equal(Cardinality.Unknown, actual);
+        Equal("Invalid Template", exception.Message);
+    }
+
+    [Fact]
+    public void GetCardinality_InvalidQualifierValue_ThrowsTemplateNotValidException()
+    {
+        var qualifier = Substitute.For<IQualifier>();
+        qualifier.Value.Returns("NotACardinality");
+        var element = Substitute.For<ISubmodelElement>();
+        element.Qualifiers.Returns([qualifier]);
+
+        var exception = Throws<TemplateNotValidException>(() => _sut.GetCardinality(element));
+
+        Equal("Invalid Template", exception.Message);
     }
 
     [Theory]

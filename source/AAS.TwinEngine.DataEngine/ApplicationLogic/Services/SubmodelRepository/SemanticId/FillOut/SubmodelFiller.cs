@@ -4,7 +4,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
 
@@ -175,7 +175,7 @@ if (values is null)
             : [.. SemanticTreeNavigator.FindNodeBySemanticId<SemanticLeafNode>(values, semanticId).Cast<SemanticTreeNode>()];
     }
 
-    private static bool IsBranchElement(ISubmodelElement element) => element is not (Property or AasCore.Aas3_0.File or Blob);
+    private static bool IsBranchElement(ISubmodelElement element) => element is not (Property or AasCore.Aas3_1.File or Blob);
 
     private void ReplaceWithClones(List<ISubmodelElement> elements, ISubmodelElement element, List<SemanticTreeNode> nodes, bool updateIdShort)
     {

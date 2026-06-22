@@ -1,4 +1,4 @@
-﻿<environment xmlns="https://admin-shell.io/aas/3/0">
+﻿<environment xmlns="https://admin-shell.io/aas/3/1">
   <assetAdministrationShells>
     <assetAdministrationShell>
       <idShort>HandoverDocumentationAAS</idShort>
@@ -101,13 +101,11 @@
                   </key>
                 </keys>
               </semanticId>
-              <kind>ConceptQualifier</kind>
               <type>SMT/Cardinality</type>
               <valueType>xs:string</valueType>
               <value>One</value>
             </qualifier>
           </qualifiers>
-          <orderRelevant>true</orderRelevant>
           <semanticIdListElement>
             <type>ExternalReference</type>
             <keys>
@@ -120,7 +118,6 @@
           <typeValueListElement>SubmodelElementCollection</typeValueListElement>
           <value>
             <submodelElementCollection>
-              <idShort>Document</idShort>
               <description>
                 <langStringTextType>
                   <language>en</language>
@@ -162,7 +159,6 @@
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
                   <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
                   <value>OneToMany</value>
@@ -212,13 +208,11 @@
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
                       <value>One</value>
                     </qualifier>
                   </qualifiers>
-                  <orderRelevant>true</orderRelevant>
                   <semanticIdListElement>
                     <type>ExternalReference</type>
                     <keys>
@@ -231,7 +225,6 @@
                   <typeValueListElement>SubmodelElementCollection</typeValueListElement>
                   <value>
                     <submodelElementCollection>
-                      <idShort>DocumentId</idShort>
                       <displayName>
                         <langStringNameType>
                           <language>en</language>
@@ -283,7 +276,6 @@
                               </key>
                             </keys>
                           </semanticId>
-                          <kind>ConceptQualifier</kind>
                           <type>SMT/Cardinality</type>
                           <valueType>xs:string</valueType>
                           <value>OneToMany</value>
@@ -334,7 +326,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -349,7 +340,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>https://domain.com/...</value>
@@ -401,7 +391,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -416,7 +405,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>XF90-884</value>
@@ -468,7 +456,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>ZeroToOne</value>
@@ -483,7 +470,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>true</value>
@@ -538,13 +524,11 @@
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
                       <value>One</value>
                     </qualifier>
                   </qualifiers>
-                  <orderRelevant>true</orderRelevant>
                   <semanticIdListElement>
                     <type>ExternalReference</type>
                     <keys>
@@ -557,7 +541,6 @@
                   <typeValueListElement>SubmodelElementCollection</typeValueListElement>
                   <value>
                     <submodelElementCollection>
-                      <idShort>DocumentClassification</idShort>
                       <displayName>
                         <langStringNameType>
                           <language>en</language>
@@ -609,7 +592,6 @@
                               </key>
                             </keys>
                           </semanticId>
-                          <kind>ConceptQualifier</kind>
                           <type>SMT/Cardinality</type>
                           <valueType>xs:string</valueType>
                           <value>OneToMany</value>
@@ -660,7 +642,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -675,77 +656,9 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>03-02</value>
-                            </qualifier>
-                          </qualifiers>
-                          <valueType>xs:string</valueType>
-                        </property>
-                        <property>
-                          <category>PARAMETER</category>
-                          <idShort>ClassificationSystem</idShort>
-                          <displayName>
-                            <langStringNameType>
-                              <language>en</language>
-                              <text>Classification system</text>
-                            </langStringNameType>
-                            <langStringNameType>
-                              <language>de</language>
-                              <text>Klassifizierungssystem</text>
-                            </langStringNameType>
-                          </displayName>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>0173-1#02-ABH997#003</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <supplementalSemanticIds>
-                            <reference>
-                              <type>ExternalReference</type>
-                              <keys>
-                                <key>
-                                  <type>GlobalReference</type>
-                                  <value>https://api.eclass-cdp.com/0173-1-02-ABH997-003</value>
-                                </key>
-                              </keys>
-                            </reference>
-                          </supplementalSemanticIds>
-                          <qualifiers>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>One</value>
-                            </qualifier>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>ExampleValue</type>
-                              <valueType>xs:string</valueType>
-                              <value>VDI2770:2020</value>
                             </qualifier>
                           </qualifiers>
                           <valueType>xs:string</valueType>
@@ -794,7 +707,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -809,23 +721,77 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>Operation@en</value>
                             </qualifier>
                           </qualifiers>
-                          <value>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text></text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text></text>
-                            </langStringTextType>
-                          </value>
                         </multiLanguageProperty>
+                        <property>
+                          <category>PARAMETER</category>
+                          <idShort>ClassificationSystem</idShort>
+                          <displayName>
+                            <langStringNameType>
+                              <language>en</language>
+                              <text>Classification system</text>
+                            </langStringNameType>
+                            <langStringNameType>
+                              <language>de</language>
+                              <text>Klassifizierungssystem</text>
+                            </langStringNameType>
+                          </displayName>
+                          <semanticId>
+                            <type>ExternalReference</type>
+                            <keys>
+                              <key>
+                                <type>GlobalReference</type>
+                                <value>0173-1#02-ABH997#003</value>
+                              </key>
+                            </keys>
+                          </semanticId>
+                          <supplementalSemanticIds>
+                            <reference>
+                              <type>ExternalReference</type>
+                              <keys>
+                                <key>
+                                  <type>GlobalReference</type>
+                                  <value>https://api.eclass-cdp.com/0173-1-02-ABH997-003</value>
+                                </key>
+                              </keys>
+                            </reference>
+                          </supplementalSemanticIds>
+                          <qualifiers>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>SMT/Cardinality</type>
+                              <valueType>xs:string</valueType>
+                              <value>One</value>
+                            </qualifier>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>ExampleValue</type>
+                              <valueType>xs:string</valueType>
+                              <value>VDI2770:2020</value>
+                            </qualifier>
+                          </qualifiers>
+                          <valueType>xs:string</valueType>
+                        </property>
                       </value>
                     </submodelElementCollection>
                   </value>
@@ -873,13 +839,11 @@
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
                       <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
                       <value>One</value>
                     </qualifier>
                   </qualifiers>
-                  <orderRelevant>true</orderRelevant>
                   <semanticIdListElement>
                     <type>ExternalReference</type>
                     <keys>
@@ -892,7 +856,6 @@
                   <typeValueListElement>SubmodelElementCollection</typeValueListElement>
                   <value>
                     <submodelElementCollection>
-                      <idShort>DocumentVersion</idShort>
                       <displayName>
                         <langStringNameType>
                           <language>en</language>
@@ -903,12 +866,6 @@
                           <text>Document version</text>
                         </langStringNameType>
                       </displayName>
-                      <description>
-                        <langStringTextType>
-                          <language>en</language>
-                          <text>Set of information for describing the classification of the Document according to a ClassificationSystem</text>
-                        </langStringTextType>
-                      </description>
                       <semanticId>
                         <type>ExternalReference</type>
                         <keys>
@@ -944,7 +901,6 @@
                               </key>
                             </keys>
                           </semanticId>
-                          <kind>ConceptQualifier</kind>
                           <type>SMT/Cardinality</type>
                           <valueType>xs:string</valueType>
                           <value>OneToMany</value>
@@ -994,18 +950,15 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
                             </qualifier>
                           </qualifiers>
-                          <orderRelevant>true</orderRelevant>
                           <typeValueListElement>Property</typeValueListElement>
                           <valueTypeListElement>xs:string</valueTypeListElement>
                           <value>
                             <property>
-                              <idShort> language</idShort>
                               <displayName>
                                 <langStringNameType>
                                   <language>en</language>
@@ -1036,7 +989,6 @@
                                       </key>
                                     </keys>
                                   </semanticId>
-                                  <kind>ConceptQualifier</kind>
                                   <type>SMT/Cardinality</type>
                                   <valueType>xs:string</valueType>
                                   <value>OneToMany</value>
@@ -1051,7 +1003,6 @@
                                       </key>
                                     </keys>
                                   </semanticId>
-                                  <kind>ConceptQualifier</kind>
                                   <type>ExampleValue</type>
                                   <valueType>xs:string</valueType>
                                   <value>en</value>
@@ -1069,130 +1020,6 @@
                                 </keys>
                               </valueId>
                             </property>
-                          </value>
-                        </submodelElementList>
-                        <submodelElementList>
-                          <idShort>DigitalFiles</idShort>
-                          <displayName>
-                            <langStringNameType>
-                              <language>en</language>
-                              <text>Digital files</text>
-                            </langStringNameType>
-                            <langStringNameType>
-                              <language>de</language>
-                              <text>Digitale Dateien</text>
-                            </langStringNameType>
-                          </displayName>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>0173-1#02-ABK126#002</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <supplementalSemanticIds>
-                            <reference>
-                              <type>ExternalReference</type>
-                              <keys>
-                                <key>
-                                  <type>GlobalReference</type>
-                                  <value>https://api.eclass-cdp.com/0173-1-02-ABK126-002</value>
-                                </key>
-                              </keys>
-                            </reference>
-                          </supplementalSemanticIds>
-                          <qualifiers>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>One</value>
-                            </qualifier>
-                          </qualifiers>
-                          <orderRelevant>true</orderRelevant>
-                          <typeValueListElement>File</typeValueListElement>
-                          <value>
-                            <file>
-                              <idShort>DigitalFile</idShort>
-                              <displayName>
-                                <langStringNameType>
-                                  <language>en</language>
-                                  <text>Name of the specific digital file@en</text>
-                                </langStringNameType>
-                                <langStringNameType>
-                                  <language>de</language>
-                                  <text>Name der spezifischen digitalen Datei@de</text>
-                                </langStringNameType>
-                              </displayName>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>0173-1#02-ABK126#002</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <qualifiers>
-                                <qualifier>
-                                  <semanticId>
-                                    <type>ExternalReference</type>
-                                    <keys>
-                                      <key>
-                                        <type>GlobalReference</type>
-                                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                                      </key>
-                                    </keys>
-                                  </semanticId>
-                                  <kind>ConceptQualifier</kind>
-                                  <type>SMT/Cardinality</type>
-                                  <valueType>xs:string</valueType>
-                                  <value>OneToMany</value>
-                                </qualifier>
-                                <qualifier>
-                                  <semanticId>
-                                    <type>ExternalReference</type>
-                                    <keys>
-                                      <key>
-                                        <type>GlobalReference</type>
-                                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                                      </key>
-                                    </keys>
-                                  </semanticId>
-                                  <kind>ConceptQualifier</kind>
-                                  <type>ExampleValue</type>
-                                  <valueType>xs:string</valueType>
-                                  <value>docu_cecc_fullmanual_DE.PDF</value>
-                                </qualifier>
-                                <qualifier>
-                                  <semanticId>
-                                    <type>ExternalReference</type>
-                                    <keys>
-                                      <key>
-                                        <type>GlobalReference</type>
-                                        <value>https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0</value>
-                                      </key>
-                                    </keys>
-                                  </semanticId>
-                                  <kind>ConceptQualifier</kind>
-                                  <type>AllowedIdShort</type>
-                                  <valueType>xs:string</valueType>
-                                  <value>DigitalFile[\d{2,3}]</value>
-                                </qualifier>
-                              </qualifiers>
-                              <contentType>application/pdf</contentType>
-                            </file>
                           </value>
                         </submodelElementList>
                         <property>
@@ -1239,7 +1066,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -1254,7 +1080,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>V1.2</value>
@@ -1262,6 +1087,262 @@
                           </qualifiers>
                           <valueType>xs:string</valueType>
                         </property>
+                        <multiLanguageProperty>
+                          <category>PARAMETER</category>
+                          <idShort>Title</idShort>
+                          <displayName>
+                            <langStringNameType>
+                              <language>en</language>
+                              <text>Document title</text>
+                            </langStringNameType>
+                            <langStringNameType>
+                              <language>de</language>
+                              <text>Dokumententitel</text>
+                            </langStringNameType>
+                          </displayName>
+                          <semanticId>
+                            <type>ExternalReference</type>
+                            <keys>
+                              <key>
+                                <type>GlobalReference</type>
+                                <value>0173-1#02-ABG940#003</value>
+                              </key>
+                            </keys>
+                          </semanticId>
+                          <supplementalSemanticIds>
+                            <reference>
+                              <type>ExternalReference</type>
+                              <keys>
+                                <key>
+                                  <type>GlobalReference</type>
+                                  <value>https://api.eclass-cdp.com/0173-1-02-ABG940-003</value>
+                                </key>
+                              </keys>
+                            </reference>
+                          </supplementalSemanticIds>
+                          <qualifiers>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>SMT/Cardinality</type>
+                              <valueType>xs:string</valueType>
+                              <value>One</value>
+                            </qualifier>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>ExampleValue</type>
+                              <valueType>xs:string</valueType>
+                              <value>Examplary title@en</value>
+                            </qualifier>
+                          </qualifiers>
+                        </multiLanguageProperty>
+                        <multiLanguageProperty>
+                          <category>PARAMETER</category>
+                          <idShort>Subtitle</idShort>
+                          <displayName>
+                            <langStringNameType>
+                              <language>en</language>
+                              <text>Subtitle</text>
+                            </langStringNameType>
+                            <langStringNameType>
+                              <language>de</language>
+                              <text>Untertitel</text>
+                            </langStringNameType>
+                          </displayName>
+                          <semanticId>
+                            <type>ExternalReference</type>
+                            <keys>
+                              <key>
+                                <type>GlobalReference</type>
+                                <value>0173-1#02-ABH998#003</value>
+                              </key>
+                            </keys>
+                          </semanticId>
+                          <supplementalSemanticIds>
+                            <reference>
+                              <type>ExternalReference</type>
+                              <keys>
+                                <key>
+                                  <type>GlobalReference</type>
+                                  <value>https://api.eclass-cdp.com/0173-1-02-ABH998-003</value>
+                                </key>
+                              </keys>
+                            </reference>
+                          </supplementalSemanticIds>
+                          <qualifiers>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>SMT/Cardinality</type>
+                              <valueType>xs:string</valueType>
+                              <value>ZeroToOne</value>
+                            </qualifier>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>ExampleValue</type>
+                              <valueType>xs:string</valueType>
+                              <value>Examplary subtitle@en</value>
+                            </qualifier>
+                          </qualifiers>
+                        </multiLanguageProperty>
+                        <multiLanguageProperty>
+                          <category>PARAMETER</category>
+                          <idShort>Description</idShort>
+                          <displayName>
+                            <langStringNameType>
+                              <language>en</language>
+                              <text>Document description</text>
+                            </langStringNameType>
+                            <langStringNameType>
+                              <language>de</language>
+                              <text>Dokumentenbeschreibung</text>
+                            </langStringNameType>
+                          </displayName>
+                          <semanticId>
+                            <type>ExternalReference</type>
+                            <keys>
+                              <key>
+                                <type>GlobalReference</type>
+                                <value>0173-1#02-AAN466#004</value>
+                              </key>
+                            </keys>
+                          </semanticId>
+                          <supplementalSemanticIds>
+                            <reference>
+                              <type>ExternalReference</type>
+                              <keys>
+                                <key>
+                                  <type>GlobalReference</type>
+                                  <value>https://api.eclass-cdp.com/0173-1-02-AAN466-004</value>
+                                </key>
+                              </keys>
+                            </reference>
+                          </supplementalSemanticIds>
+                          <qualifiers>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>SMT/Cardinality</type>
+                              <valueType>xs:string</valueType>
+                              <value>One</value>
+                            </qualifier>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>ExampleValue</type>
+                              <valueType>xs:string</valueType>
+                              <value>Abstract@en</value>
+                            </qualifier>
+                          </qualifiers>
+                        </multiLanguageProperty>
+                        <multiLanguageProperty>
+                          <category>PARAMETER</category>
+                          <idShort>KeyWords</idShort>
+                          <displayName>
+                            <langStringNameType>
+                              <language>en</language>
+                              <text>Keywords</text>
+                            </langStringNameType>
+                            <langStringNameType>
+                              <language>de</language>
+                              <text>Stichworte</text>
+                            </langStringNameType>
+                          </displayName>
+                          <semanticId>
+                            <type>ExternalReference</type>
+                            <keys>
+                              <key>
+                                <type>GlobalReference</type>
+                                <value>0173-1#02-ABH999#003</value>
+                              </key>
+                            </keys>
+                          </semanticId>
+                          <supplementalSemanticIds>
+                            <reference>
+                              <type>ExternalReference</type>
+                              <keys>
+                                <key>
+                                  <type>GlobalReference</type>
+                                  <value>https://api.eclass-cdp.com/0173-1-02-ABH999-003</value>
+                                </key>
+                              </keys>
+                            </reference>
+                          </supplementalSemanticIds>
+                          <qualifiers>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>SMT/Cardinality</type>
+                              <valueType>xs:string</valueType>
+                              <value>ZeroToOne</value>
+                            </qualifier>
+                            <qualifier>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <type>ExampleValue</type>
+                              <valueType>xs:string</valueType>
+                              <value>Examplary keywords@en</value>
+                            </qualifier>
+                          </qualifiers>
+                        </multiLanguageProperty>
                         <property>
                           <category>PARAMETER</category>
                           <idShort>StatusSetDate</idShort>
@@ -1306,7 +1387,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -1321,7 +1401,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>2020-02-06</value>
@@ -1373,7 +1452,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -1388,7 +1466,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>Released</value>
@@ -1429,7 +1506,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -1444,7 +1520,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>Example company</value>
@@ -1496,7 +1571,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
@@ -1511,7 +1585,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>Example company Ltd.</value>
@@ -1519,17 +1592,16 @@
                           </qualifiers>
                           <valueType>xs:string</valueType>
                         </property>
-                        <multiLanguageProperty>
-                          <category>PARAMETER</category>
-                          <idShort>Title</idShort>
+                        <submodelElementList>
+                          <idShort>DigitalFiles</idShort>
                           <displayName>
                             <langStringNameType>
                               <language>en</language>
-                              <text>Document title</text>
+                              <text>Digital files</text>
                             </langStringNameType>
                             <langStringNameType>
                               <language>de</language>
-                              <text>Dokumententitel</text>
+                              <text>Digitale Dateien</text>
                             </langStringNameType>
                           </displayName>
                           <semanticId>
@@ -1537,7 +1609,7 @@
                             <keys>
                               <key>
                                 <type>GlobalReference</type>
-                                <value>0173-1#02-ABG940#003</value>
+                                <value>0173-1#02-ABK126#002</value>
                               </key>
                             </keys>
                           </semanticId>
@@ -1547,7 +1619,7 @@
                               <keys>
                                 <key>
                                   <type>GlobalReference</type>
-                                  <value>https://api.eclass-cdp.com/0173-1-02-ABG940-003</value>
+                                  <value>https://api.eclass-cdp.com/0173-1-02-ABK126-002</value>
                                 </key>
                               </keys>
                             </reference>
@@ -1559,270 +1631,85 @@
                                 <keys>
                                   <key>
                                     <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>One</value>
                             </qualifier>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>ExampleValue</type>
-                              <valueType>xs:string</valueType>
-                              <value>Examplary title@en</value>
-                            </qualifier>
                           </qualifiers>
+                          <typeValueListElement>File</typeValueListElement>
                           <value>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text></text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text></text>
-                            </langStringTextType>
+                            <file>
+                              <displayName>
+                                <langStringNameType>
+                                  <language>en</language>
+                                  <text>Name of the specific digital file@en</text>
+                                </langStringNameType>
+                                <langStringNameType>
+                                  <language>de</language>
+                                  <text>Name der spezifischen digitalen Datei@de</text>
+                                </langStringNameType>
+                              </displayName>
+                              <semanticId>
+                                <type>ExternalReference</type>
+                                <keys>
+                                  <key>
+                                    <type>GlobalReference</type>
+                                    <value>0173-1#02-ABK126#002</value>
+                                  </key>
+                                </keys>
+                              </semanticId>
+                              <qualifiers>
+                                <qualifier>
+                                  <semanticId>
+                                    <type>ExternalReference</type>
+                                    <keys>
+                                      <key>
+                                        <type>GlobalReference</type>
+                                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                                      </key>
+                                    </keys>
+                                  </semanticId>
+                                  <type>SMT/Cardinality</type>
+                                  <valueType>xs:string</valueType>
+                                  <value>OneToMany</value>
+                                </qualifier>
+                                <qualifier>
+                                  <semanticId>
+                                    <type>ExternalReference</type>
+                                    <keys>
+                                      <key>
+                                        <type>GlobalReference</type>
+                                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
+                                      </key>
+                                    </keys>
+                                  </semanticId>
+                                  <type>ExampleValue</type>
+                                  <valueType>xs:string</valueType>
+                                  <value>docu_cecc_fullmanual_DE.PDF</value>
+                                </qualifier>
+                                <qualifier>
+                                  <semanticId>
+                                    <type>ExternalReference</type>
+                                    <keys>
+                                      <key>
+                                        <type>GlobalReference</type>
+                                        <value>https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0</value>
+                                      </key>
+                                    </keys>
+                                  </semanticId>
+                                  <type>AllowedIdShort</type>
+                                  <valueType>xs:string</valueType>
+                                  <value>DigitalFile[\d{2,3}]</value>
+                                </qualifier>
+                              </qualifiers>
+                              <contentType>application/pdf</contentType>
+                            </file>
                           </value>
-                        </multiLanguageProperty>
-                        <multiLanguageProperty>
-                          <category>PARAMETER</category>
-                          <idShort>Subtitle</idShort>
-                          <displayName>
-                            <langStringNameType>
-                              <language>en</language>
-                              <text>Subtitle</text>
-                            </langStringNameType>
-                            <langStringNameType>
-                              <language>de</language>
-                              <text>Untertitel</text>
-                            </langStringNameType>
-                          </displayName>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>0173-1#02-ABH998#003</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <supplementalSemanticIds>
-                            <reference>
-                              <type>ExternalReference</type>
-                              <keys>
-                                <key>
-                                  <type>GlobalReference</type>
-                                  <value>https://api.eclass-cdp.com/0173-1-02-ABH998-003</value>
-                                </key>
-                              </keys>
-                            </reference>
-                          </supplementalSemanticIds>
-                          <qualifiers>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>ExampleValue</type>
-                              <valueType>xs:string</valueType>
-                              <value>Examplary subtitle@en</value>
-                            </qualifier>
-                          </qualifiers>
-                          <value>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>s</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>s</text>
-                            </langStringTextType>
-                          </value>
-                        </multiLanguageProperty>
-                        <multiLanguageProperty>
-                          <category>PARAMETER</category>
-                          <idShort>Description</idShort>
-                          <displayName>
-                            <langStringNameType>
-                              <language>en</language>
-                              <text>Document description</text>
-                            </langStringNameType>
-                            <langStringNameType>
-                              <language>de</language>
-                              <text>Dokumentenbeschreibung</text>
-                            </langStringNameType>
-                          </displayName>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>0173-1#02-AAN466#004</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <supplementalSemanticIds>
-                            <reference>
-                              <type>ExternalReference</type>
-                              <keys>
-                                <key>
-                                  <type>GlobalReference</type>
-                                  <value>https://api.eclass-cdp.com/0173-1-02-AAN466-004</value>
-                                </key>
-                              </keys>
-                            </reference>
-                          </supplementalSemanticIds>
-                          <qualifiers>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>One</value>
-                            </qualifier>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>ExampleValue</type>
-                              <valueType>xs:string</valueType>
-                              <value>Abstract@en</value>
-                            </qualifier>
-                          </qualifiers>
-                          <value>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>s</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>s</text>
-                            </langStringTextType>
-                          </value>
-                        </multiLanguageProperty>
-                        <multiLanguageProperty>
-                          <category>PARAMETER</category>
-                          <idShort>KeyWords</idShort>
-                          <displayName>
-                            <langStringNameType>
-                              <language>en</language>
-                              <text>Keywords</text>
-                            </langStringNameType>
-                            <langStringNameType>
-                              <language>de</language>
-                              <text>Stichworte</text>
-                            </langStringNameType>
-                          </displayName>
-                          <semanticId>
-                            <type>ExternalReference</type>
-                            <keys>
-                              <key>
-                                <type>GlobalReference</type>
-                                <value>0173-1#02-ABH999#003</value>
-                              </key>
-                            </keys>
-                          </semanticId>
-                          <supplementalSemanticIds>
-                            <reference>
-                              <type>ExternalReference</type>
-                              <keys>
-                                <key>
-                                  <type>GlobalReference</type>
-                                  <value>https://api.eclass-cdp.com/0173-1-02-ABH999-003</value>
-                                </key>
-                              </keys>
-                            </reference>
-                          </supplementalSemanticIds>
-                          <qualifiers>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>SMT/Cardinality</type>
-                              <valueType>xs:string</valueType>
-                              <value>ZeroToOne</value>
-                            </qualifier>
-                            <qualifier>
-                              <semanticId>
-                                <type>ExternalReference</type>
-                                <keys>
-                                  <key>
-                                    <type>GlobalReference</type>
-                                    <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                                  </key>
-                                </keys>
-                              </semanticId>
-                              <kind>ConceptQualifier</kind>
-                              <type>ExampleValue</type>
-                              <valueType>xs:string</valueType>
-                              <value>Examplary keywords@en</value>
-                            </qualifier>
-                          </qualifiers>
-                          <value>
-                            <langStringTextType>
-                              <language>en</language>
-                              <text>s</text>
-                            </langStringTextType>
-                            <langStringTextType>
-                              <language>de</language>
-                              <text>s</text>
-                            </langStringTextType>
-                          </value>
-                        </multiLanguageProperty>
+                        </submodelElementList>
                         <file>
                           <category>PARAMETER</category>
                           <idShort>PreviewFile</idShort>
@@ -1867,7 +1754,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>SMT/Cardinality</type>
                               <valueType>xs:string</valueType>
                               <value>ZeroToOne</value>
@@ -1882,7 +1768,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>ExampleValue</type>
                               <valueType>xs:string</valueType>
                               <value>docu_cecc_fullmanual_DE.jpg</value>
@@ -1897,7 +1782,6 @@
                                   </key>
                                 </keys>
                               </semanticId>
-                              <kind>ConceptQualifier</kind>
                               <type>AllowedIdShort</type>
                               <valueType>xs:string</valueType>
                               <value>PreviewFile[\d{2,3}]</value>
@@ -1935,13 +1819,11 @@
                   </key>
                 </keys>
               </semanticId>
-              <kind>ConceptQualifier</kind>
               <type>SMT/Cardinality</type>
               <valueType>xs:string</valueType>
               <value>ZeroToOne</value>
             </qualifier>
           </qualifiers>
-          <orderRelevant>true</orderRelevant>
           <typeValueListElement>Entity</typeValueListElement>
         </submodelElementList>
       </submodelElements>
@@ -1949,18 +1831,14 @@
   </submodels>
   <conceptDescriptions>
     <conceptDescription>
-      <idShort>KeyWords</idShort>
-      <displayName>
-        <langStringNameType>
+      <idShort>HandoverDocumentation</idShort>
+      <description>
+        <langStringTextType>
           <language>en</language>
-          <text>Keywords</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Stichworte</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABH999#003</id>
+          <text>The Submodel defines a set meta data for the handover of documentation from the manufacturer to the operator for industrial equipment</text>
+        </langStringTextType>
+      </description>
+      <id>0173-1#01-AHF578#003</id>
       <embeddedDataSpecifications>
         <embeddedDataSpecification>
           <dataSpecification>
@@ -1977,32 +1855,263 @@
               <preferredName>
                 <langStringPreferredNameTypeIec61360>
                   <language>en</language>
-                  <text>Keywords</text>
+                  <text>HandoverDocumentation</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>The Submodel defines a set meta data for the handover of documentation from the manufacturer to the operator for industrial equipment</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Documents</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Documents (handover documentation)</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokumente (Übergabedokumentation)</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABI500#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Documents (handover documentation)</text>
                 </langStringPreferredNameTypeIec61360>
                 <langStringPreferredNameTypeIec61360>
                   <language>de</language>
-                  <text>Stichworte</text>
+                  <text>Dokumente (Übergabedokumentation)</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
               <shortName>
                 <langStringShortNameTypeIec61360>
                   <language>en</language>
-                  <text>Keywords</text>
+                  <text>Documents</text>
                 </langStringShortNameTypeIec61360>
                 <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>Stichworte</text>
+                  <language>de</language>
+                  <text>Dokumente</text>
                 </langStringShortNameTypeIec61360>
               </shortName>
-              <dataType>STRING_TRANSLATABLE</dataType>
               <definition>
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
-                  <text>List of language-dependent keywords of the document</text>
+                  <text>Information for a document identity</text>
                 </langStringDefinitionTypeIec61360>
                 <langStringDefinitionTypeIec61360>
                   <language>de</language>
-                  <text>Liste der sprachabhängigen Schlüsselwörter des Dokuments </text>
+                  <text>Informationen für eine Dokumententität</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Document</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokument</text>
+        </langStringNameType>
+      </displayName>
+      <description>
+        <langStringTextType>
+          <language>en</language>
+          <text>This SubmodelElementCollection holds the information for a VDI 2770 Document entity</text>
+        </langStringTextType>
+      </description>
+      <id>0173-1#02-ABI500#003/0173-1#01-AHF579#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document (handover documentation)</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokument (Übergabedokumentation)</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokument</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Each SubmodelElementCollection describes a document by standard, which is associated to the particular Asset Administration Shell</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Jede SubmodelElementCollection beschreibt ein Dokument (siehe IEC 82045-1 und IEC 8245-2), das der jeweiligen Asset Administration Shell zugeordnet ist</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DocumentIds</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document identifyers</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokumentidentifikatoren</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABI501#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document identifiers</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokumentidentifikatoren</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocumentIds</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokumentIds</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Set of document identifiers for the document. One ID in this collection should be used as a preferred ID</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Satz von Dokument-IDs für das Dokument. Eine ID in dieser Sammlung sollte als bevorzugte ID verwendet werden </text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DocumentId</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document identificator</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokumentidentifikator</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABI501#003/0173-1#01-AHF580#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document identificator</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokumentidentifikator</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocuId</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokuId</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Information about a document identification entity</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Information für eine Dokumentenidentifikations-Entität</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>
@@ -2073,443 +2182,6 @@
       </embeddedDataSpecifications>
     </conceptDescription>
     <conceptDescription>
-      <idShort>DocumentVersion</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Document version</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Document version</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABI503#003/0173-1#01-AHF582#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document version</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document version</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>DocuVersion</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>DokuVersion</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Information about a document version entity</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Information für eine Dokumentenversdions-Entität</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>StatusValue</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Document status</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Dokumentstatus</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABI001#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document status</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Dokumentstatus</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>DocStatus</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>de</language>
-                  <text>DokStatus</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Each document version represents a point in time in the document life cycle. This status value refers to the milestones in the document life cycle. The following two values should be used for the application of this guideline: InReview (under review), Released (released)</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Jede Dokumentversion repräsentiert einen Zeitpunkt im Dokumentlebenszyklus. Dieser Statuswert bezieht sich auf die Meilensteine ​​im Dokumentenlebenszyklus. Für die Anwendung dieser Richtlinie sollten die folgenden zwei Werte verwendet werden: InReview (in Überprüfung), Released (freigegeben)</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>Description</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Document description</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Dokumentenbeschreibung</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-AAN466#004</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document description</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Dokumentenbeschreibung</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>DocDescr</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>de</language>
-                  <text>DokBeschreib</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <dataType>STRING_TRANSLATABLE</dataType>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Plain text characterizing the content of the document</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Klartext, der den Inhalt des Dokuments kennzeichnet</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ClassificationSystem</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Classification system</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>en</language>
-          <text>Klassifizierungssystem</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABH997#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Classification system</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Klassifizierungssystem</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>ClassSystem</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>de</language>
-                  <text>KlassSystem</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <dataType>STRING</dataType>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Identification of the classification system</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Identifikation des Klassifikationssystems </text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ClassId</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Class identificator</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Klassenidentifikator</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABH996#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Class identifyer</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Klassenidentifikator</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>ClassId</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>de</language>
-                  <text>KlassenId</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <dataType>STRING</dataType>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Unique ID of the document class within a classficationsystem</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Eindeutige ID der Dokumentenklasse innerhalb eines Klassifikationsystems</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>Title</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Document title</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Dokumententitel</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABG940#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document name</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Dokumentenname</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>DocName</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>de</language>
-                  <text>DokName</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <dataType>STRING_TRANSLATABLE</dataType>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Name of the document</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Name des Dokuments</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>Document</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Document</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Dokument</text>
-        </langStringNameType>
-      </displayName>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>This SubmodelElementCollection holds the information for a VDI 2770 Document entity</text>
-        </langStringTextType>
-      </description>
-      <id>0173-1#02-ABI500#003/0173-1#01-AHF579#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document (handover documentation)</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Dokument (Übergabedokumentation)</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>Dokument</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Each SubmodelElementCollection describes a document by standard, which is associated to the particular Asset Administration Shell</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Jede SubmodelElementCollection beschreibt ein Dokument (siehe IEC 82045-1 und IEC 8245-2), das der jeweiligen Asset Administration Shell zugeordnet ist</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
       <idShort>DocumentIdentifier</idShort>
       <displayName>
         <langStringNameType>
@@ -2537,7 +2209,7 @@
                   <text>DocumentIdentifier</text>
                 </langStringPreferredNameTypeIec61360>
                 <langStringPreferredNameTypeIec61360>
-                  <language>be</language>
+                  <language>de</language>
                   <text>Dokumentennummer</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
@@ -2560,169 +2232,6 @@
                 <langStringDefinitionTypeIec61360>
                   <language>de</language>
                   <text>alphanumerische Zeichenfolge, die ein Dokument eindeutig identifiziert </text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>HandoverDocumentation</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>The Submodel defines a set meta data for the handover of documentation from the manufacturer to the operator for industrial equipment</text>
-        </langStringTextType>
-      </description>
-      <id>0173-1#01-AHF578#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>HandoverDocumentation</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>The Submodel defines a set meta data for the handover of documentation from the manufacturer to the operator for industrial equipment</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ClassName</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Class Name</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Klassenname</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABJ219#002</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Class name</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Klassenname</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>ClassName</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>KlassName</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <dataType>STRING</dataType>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Name of the class in the classification system</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Name der Klasse im Klassifikationssystem</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>OrganizationOfficialName</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Organization official name</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Offizieller Name der Organisation</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABI004#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Organization official name</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>de</language>
-                  <text>Offizieller Name der Organisation</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>OfficialName</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>de</language>
-                  <text>OffiziellerName</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <dataType>STRING</dataType>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Official name of the organization of the author of the document</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Offizieller Name der Organisation des Autors des Dokuments</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>
@@ -2793,18 +2302,18 @@
       </embeddedDataSpecifications>
     </conceptDescription>
     <conceptDescription>
-      <idShort>DocumentId</idShort>
+      <idShort>DocumentClassifications</idShort>
       <displayName>
         <langStringNameType>
           <language>en</language>
-          <text>Document identificator</text>
+          <text>Document classifications</text>
         </langStringNameType>
         <langStringNameType>
           <language>de</language>
-          <text>Dokumentidentifikator</text>
+          <text>Dokumentenklassifizierungen</text>
         </langStringNameType>
       </displayName>
-      <id>0173-1#02-ABI501#003/0173-1#01-AHF580#003</id>
+      <id>0173-1#02-ABI502#003</id>
       <embeddedDataSpecifications>
         <embeddedDataSpecification>
           <dataSpecification>
@@ -2821,31 +2330,588 @@
               <preferredName>
                 <langStringPreferredNameTypeIec61360>
                   <language>en</language>
-                  <text>Document identificator</text>
+                  <text>Document classifications</text>
                 </langStringPreferredNameTypeIec61360>
                 <langStringPreferredNameTypeIec61360>
                   <language>de</language>
-                  <text>Dokumentidentifikator</text>
+                  <text>Dokumentenklassifizierungen</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
               <shortName>
                 <langStringShortNameTypeIec61360>
                   <language>en</language>
-                  <text>DocuId</text>
+                  <text>DocuClasses</text>
                 </langStringShortNameTypeIec61360>
                 <langStringShortNameTypeIec61360>
                   <language>de</language>
-                  <text>DokuId</text>
+                  <text>DokuKlassen</text>
                 </langStringShortNameTypeIec61360>
               </shortName>
               <definition>
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
-                  <text>Information about a document identification entity</text>
+                  <text>Set of information for describing the classification of the Document according to ClassificationSystems</text>
                 </langStringDefinitionTypeIec61360>
                 <langStringDefinitionTypeIec61360>
                   <language>de</language>
-                  <text>Information für eine Dokumentenidentifikations-Entität</text>
+                  <text>Satz von Informationen zur Beschreibung der Klassifizierung des Dokuments gemäß Klassifizierungssystemen </text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DocumentClassification</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document classification</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokumentklassifikation</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABI502#003/0173-1#01-AHF581#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document classification</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokumentklassifikation</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocuClass</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokuKlass</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Information about a document classification entity</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Information für eine Dokumentenklassifikations-Entität</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ClassId</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Class identificator</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Klassenidentifikator</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABH996#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Class identifyer</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Klassenidentifikator</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassId</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>KlassenId</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Unique ID of the document class within a classficationsystem</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Eindeutige ID der Dokumentenklasse innerhalb eines Klassifikationsystems</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ClassName</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Class Name</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Klassenname</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABJ219#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Class name</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Klassenname</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassName</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>KlassName</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Name of the class in the classification system</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Name der Klasse im Klassifikationssystem</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ClassificationSystem</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Classification system</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>en</language>
+          <text>Klassifizierungssystem</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABH997#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Classification system</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Klassifizierungssystem</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassSystem</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>KlassSystem</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Identification of the classification system</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Identifikation des Klassifikationssystems </text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DocumentVersions</idShort>
+      <id>0173-1#02-ABI503#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocumentVersions</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocuVersions</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokuVersions</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Information elements of individual Document Version entities</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Informationselemente einzelner VDI 2770 DocumentVersion Entitäten </text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DocumentVersion</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document version</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Document version</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABI503#003/0173-1#01-AHF582#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document version</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>az</language>
+                  <text>Document version</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocuVersion</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokuVersion</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Information about a document version entity</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Information für eine Dokumentenversdions-Entität</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Language</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Language</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Sprache</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-AAN468#008</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Language of document</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Sprache des Dokuments</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocLang</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokSprache</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Language style of the document</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Sprachstil des Dokuments</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+              <valueList>
+                <valueReferencePairs>
+                  <valueReferencePair>
+                    <value>en</value>
+                    <valueId>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>0173-1#02-AAN468#008</value>
+                        </key>
+                      </keys>
+                    </valueId>
+                  </valueReferencePair>
+                </valueReferencePairs>
+              </valueList>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Version</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document version</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokumentenversion</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-AAP003#005</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document version</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokumentenversion</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocVersion</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokVersion</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Design that partly deviates from the previous</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Ausführung, die in einigen Punkten von der vorhergehenden abweicht</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Title</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document title</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokumententitel</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABG940#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document name</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokumentenname</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocName</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokName</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING_TRANSLATABLE</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Name of the document</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Name des Dokuments</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>
@@ -2916,6 +2982,130 @@
       </embeddedDataSpecifications>
     </conceptDescription>
     <conceptDescription>
+      <idShort>Description</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Document description</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Dokumentenbeschreibung</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-AAN466#004</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Document description</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Dokumentenbeschreibung</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocDescr</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokBeschreib</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING_TRANSLATABLE</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Plain text characterizing the content of the document</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Klartext, der den Inhalt des Dokuments kennzeichnet</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>KeyWords</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Keywords</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Stichworte</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABH999#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Keywords</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Stichworte</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Keywords</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Stichworte</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING_TRANSLATABLE</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>List of language-dependent keywords of the document</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Liste der sprachabhängigen Schlüsselwörter des Dokuments </text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
       <idShort>StatusSetDate</idShort>
       <displayName>
         <langStringNameType>
@@ -2977,18 +3167,18 @@
       </embeddedDataSpecifications>
     </conceptDescription>
     <conceptDescription>
-      <idShort>Version</idShort>
+      <idShort>StatusValue</idShort>
       <displayName>
         <langStringNameType>
           <language>en</language>
-          <text>Document version</text>
+          <text>Document status</text>
         </langStringNameType>
         <langStringNameType>
           <language>de</language>
-          <text>Dokumentenversion</text>
+          <text>Dokumentstatus</text>
         </langStringNameType>
       </displayName>
-      <id>0173-1#02-AAP003#005</id>
+      <id>0173-1#02-ABI001#003</id>
       <embeddedDataSpecifications>
         <embeddedDataSpecification>
           <dataSpecification>
@@ -3005,93 +3195,31 @@
               <preferredName>
                 <langStringPreferredNameTypeIec61360>
                   <language>en</language>
-                  <text>Document version</text>
+                  <text>Document status</text>
                 </langStringPreferredNameTypeIec61360>
                 <langStringPreferredNameTypeIec61360>
                   <language>de</language>
-                  <text>Dokumentenversion</text>
+                  <text>Dokumentstatus</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
               <shortName>
                 <langStringShortNameTypeIec61360>
                   <language>en</language>
-                  <text>DocVersion</text>
+                  <text>DocStatus</text>
                 </langStringShortNameTypeIec61360>
                 <langStringShortNameTypeIec61360>
                   <language>de</language>
-                  <text>DokVersion</text>
-                </langStringShortNameTypeIec61360>
-              </shortName>
-              <dataType>STRING</dataType>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Design that partly deviates from the previous</text>
-                </langStringDefinitionTypeIec61360>
-                <langStringDefinitionTypeIec61360>
-                  <language>de</language>
-                  <text>Ausführung, die in einigen Punkten von der vorhergehenden abweicht</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>DocumentClassification</idShort>
-      <displayName>
-        <langStringNameType>
-          <language>en</language>
-          <text>Document classification</text>
-        </langStringNameType>
-        <langStringNameType>
-          <language>de</language>
-          <text>Dokumentklassifikation</text>
-        </langStringNameType>
-      </displayName>
-      <id>0173-1#02-ABI502#003/0173-1#01-AHF581#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Document classification</text>
-                </langStringPreferredNameTypeIec61360>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>Dokumentklassifikation</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <shortName>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>DocuClass</text>
-                </langStringShortNameTypeIec61360>
-                <langStringShortNameTypeIec61360>
-                  <language>en</language>
-                  <text>DokuKlass</text>
+                  <text>DokStatus</text>
                 </langStringShortNameTypeIec61360>
               </shortName>
               <definition>
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
-                  <text>Information about a document classification entity</text>
+                  <text>Each document version represents a point in time in the document life cycle. This status value refers to the milestones in the document life cycle. The following two values should be used for the application of this guideline: InReview (under review), Released (released)</text>
                 </langStringDefinitionTypeIec61360>
                 <langStringDefinitionTypeIec61360>
                   <language>de</language>
-                  <text>Information für eine Dokumentenklassifikations-Entität</text>
+                  <text>Jede Dokumentversion repräsentiert einen Zeitpunkt im Dokumentlebenszyklus. Dieser Statuswert bezieht sich auf die Meilensteine ​​im Dokumentenlebenszyklus. Für die Anwendung dieser Richtlinie sollten die folgenden zwei Werte verwendet werden: InReview (in Überprüfung), Released (freigegeben)</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>
@@ -3125,6 +3253,555 @@
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
                   <text>Short name of the organization</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>OrganizationOfficialName</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Organization official name</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Offizieller Name der Organisation</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABI004#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Organization official name</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Offizieller Name der Organisation</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>OfficialName</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>OffiziellerName</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Official name of the organization of the author of the document</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Offizieller Name der Organisation des Autors des Dokuments</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>RefersToEntities</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Reference to other documents</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Referenz zu anderen Dokumenten</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABK288#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Reference to other documents</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Verweis auf andere Dokumente</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Reference</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Verweis</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Forms a generic refers to-relationship to another document or document version. They have a loose relationship</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Bildet eine generische RefersTo-Beziehung zu einem anderen Dokument oder einer anderen Dokumentversion. Sie haben ein lockeres Verhältnis</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>BasedOn</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Based on other documents</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Basiert auf anderen Dokumenten</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABK289#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Based on other documents</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Basierend auf anderen Dokumenten</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>BasedOn</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>BasiertAuf</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Forms a based on-relationship to another document or document version. Typically states, that the content of the document bases on another document (e.g. specification requirements). Both have a strong relationship</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Bildet eine BasedOn-Beziehung zu einem anderen Dokument oder einer anderen Dokumentversion. Gibt typischerweise an, dass der Inhalt des Dokuments auf einem anderen Dokument basiert (z. B. Spezifikationsanforderungen). Beide haben eine starke Beziehung</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>TranslationOfEntities</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Translation of other documents</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Übersetzung von anderen Elementen</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABK290#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Translation of other document</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Übersetzung eines anderen Dokuments</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocTranslate</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DokÜbersetzung</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Forms a translation of-relationship to another document or document version. Both have a strong relationship</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Bildet eine TranslationOf-Beziehung zu einem anderen Dokument oder einer anderen Dokumentversion. Beide haben eine starke Beziehung</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DigitalFile</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Digital file</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Digitale Datei</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABK126#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Digital file</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Digitale Datei</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DigitalFile</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>DigitaleDatei</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>MIME-Type, file name and file contents given by the file SubmodelElement</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>MIME-Typ, Dateiname und Dateiinhalt, die von der Datei SubmodelElement vorgegeben werden</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+              <valueList>
+                <valueReferencePairs>
+                  <valueReferencePair>
+                    <value>File</value>
+                    <valueId>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>0173-1#02-ABK126#002</value>
+                        </key>
+                      </keys>
+                    </valueId>
+                  </valueReferencePair>
+                </valueReferencePairs>
+              </valueList>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>PreviewFile</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Preview file</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>en</language>
+          <text>Vorschaudatei</text>
+        </langStringNameType>
+      </displayName>
+      <description>
+        <langStringTextType>
+          <language>en</language>
+          <text>Preview file</text>
+        </langStringTextType>
+      </description>
+      <id>0173-1#02-ABK127#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Preview file</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Vorschaudatei</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>PreviewFile</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Vorschaudatei</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Provides a preview image of the Document Version, e.g. first page, in a commonly used image format and low resolution</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Liefert ein Vorschaubild der DocumentVersion, z.B. erste Seite, in einem gängigen Bildformat und niedriger Auflösung</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DocumentedEntities</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Documented Entities</text>
+        </langStringNameType>
+      </displayName>
+      <id>https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntities</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Documented Entities</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocuEntities</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Documented Entities</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>DocumentedEntity</idShort>
+      <id>https://admin-shell.io/vdi/2770/1/0/Document/DocumentedEntity</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocumentedEntity</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>DocumentedEntity</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Reference for the documented entities</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Entities</idShort>
+      <id>https://admin-shell.io/vdi/2770/1/0/EntitiesForDocumentation</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Entities</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Entities for documentation</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Entity</idShort>
+      <id>https://admin-shell.io/vdi/2770/1/0/EntityForDocumentation</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Entity</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Entity</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>States, that the described Entity is an important entity for documentation of the superordinate Asset of the Asset Administration Shell. Note: typically, such Entities are well-identified sub-parts of the Asset, such as supplier parts delivered to the manufacturer of the Asset.</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>

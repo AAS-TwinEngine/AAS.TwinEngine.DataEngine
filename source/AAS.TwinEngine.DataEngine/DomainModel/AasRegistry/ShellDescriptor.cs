@@ -3,7 +3,7 @@
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 
@@ -51,8 +51,8 @@ public class ShellDescriptor
     {
         return new ShellDescriptor
         {
-            AssetKind = AasCore.Aas3_0.AssetKind.Type,
-            AssetType = AasCore.Aas3_0.AssetKind.Type,
+            AssetKind = AasCore.Aas3_1.AssetKind.Type,
+            AssetType = AasCore.Aas3_1.AssetKind.Type,
             GlobalAssetId = string.Empty,
             IdShort = string.Empty,
             Id = string.Empty,

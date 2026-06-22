@@ -7,7 +7,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +16,7 @@ using NSubstitute;
 
 using static Xunit.Assert;
 
-using File = AasCore.Aas3_0.File;
+using File = AasCore.Aas3_1.File;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository;
 
@@ -99,13 +99,13 @@ public class SemanticIdHandlerTests
         NotNull(file);
         Equal("http://example.com/idta/digital-nameplate/thumbnail", file.SemanticId);
         Equal(DataType.String, file.DataType);
-        Equal(Cardinality.Unknown, file.Cardinality);
+        Equal(Cardinality.ZeroToOne, file.Cardinality);
 
         var blob = node.Children[5] as SemanticLeafNode;
         NotNull(blob);
         Equal("http://example.com/idta/digital-nameplate/blob", blob.SemanticId);
         Equal(DataType.String, blob.DataType);
-        Equal(Cardinality.Unknown, blob.Cardinality);
+        Equal(Cardinality.ZeroToOne, blob.Cardinality);
 
         var range = node.Children[6] as SemanticBranchNode;
         NotNull(range);
@@ -386,7 +386,9 @@ public class SemanticIdHandlerTests
         var submodelElement = Substitute.For<ISubmodelElement>();
         submodelElement.IdShort.Returns(idShort);
         submodelElement.SemanticId.Returns(semanticReference);
-        submodelElement.Qualifiers.Returns([]);
+        var qualifier = Substitute.For<IQualifier>();
+        qualifier.Value.Returns("ZeroToOne");
+        submodelElement.Qualifiers.Returns([qualifier]);
         var submodel = Substitute.For<ISubmodel>();
         submodel.IdShort.Returns("AnySubmodel");
         submodel.SemanticId.Returns(Substitute.For<IReference>());
@@ -442,7 +444,7 @@ public class SemanticIdHandlerTests
         NotNull(blob);
         Equal(originalBytes, blob.Value);
 
-        var range = submodelWithNewValues.SubmodelElements?[6] as AasCore.Aas3_0.Range;
+        var range = submodelWithNewValues.SubmodelElements?[6] as AasCore.Aas3_1.Range;
         NotNull(range);
         Equal("10.02", range.Min);
         Equal("99.98", range.Max);
@@ -857,7 +859,8 @@ public class SemanticIdHandlerTests
 
     private SemanticIdHandler CreateSut(IOptions<PluginsConfig> pluginsConfig, IOptions<TemplateManagementConfig> templateManagementConfig)
     {
-        var resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig);
+        var logger = Substitute.For<ILogger<SemanticIdResolver>>();
+        var resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig, logger);
         var helper = new SubmodelElementHelper(Substitute.For<ILogger<SubmodelElementHelper>>(), pluginsConfig);
         var referenceHelper = new ReferenceHelper(resolver, Substitute.For<ILogger<ReferenceHelper>>());
 

@@ -2,7 +2,7 @@
 
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 

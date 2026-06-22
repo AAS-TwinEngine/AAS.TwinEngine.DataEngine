@@ -1,6 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 

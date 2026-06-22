@@ -1,20 +1,20 @@
-﻿<environment xmlns="https://admin-shell.io/aas/3/0">
+﻿<environment xmlns="https://admin-shell.io/aas/3/1">
   <assetAdministrationShells>
     <assetAdministrationShell>
       <idShort>TechnicalDataAAS</idShort>
-      <id>https://admin-shell.io/aas/TechnicalData/1/2</id>
+      <id>https://admin-shell.io/idta/aas/TechnicalData/2/0</id>
       <derivedFrom>
         <type>ModelReference</type>
         <keys>
           <key>
             <type>AssetAdministrationShell</type>
-            <value>https://admin-shell.io/aas/TechnicalData/1/2</value>
+            <value>https://admin-shell.io/idta/aas/TechnicalData/2/0</value>
           </key>
         </keys>
       </derivedFrom>
       <assetInformation>
         <assetKind>Type</assetKind>
-        <globalAssetId>https://admin-shell.io/asset/TechnicalData/1/2</globalAssetId>
+        <globalAssetId>https://admin-shell.io/idta/asset/TechnicalData/2/0</globalAssetId>
         <assetType>Type</assetType>
       </assetInformation>
       <submodels>
@@ -23,7 +23,7 @@
           <keys>
             <key>
               <type>Submodel</type>
-              <value>https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2</value>
+              <value>https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0</value>
             </key>
           </keys>
         </reference>
@@ -36,46 +36,73 @@
       <description>
         <langStringTextType>
           <language>en</language>
-          <text>Submodel containing techical data of the asset and associated product classificatons.</text>
+          <text>Submodel containing technical data of the asset and associated product classificatons</text>
         </langStringTextType>
         <langStringTextType>
           <language>de</language>
-          <text>Teilmodell, das die technischen Daten der Anlage und die zugehörigen Produktklassifizierungen enthält.</text>
+          <text>Teilmodell, das die technischen Daten des Assets und die zugehörigen Produktklassifizierungen enthält</text>
         </langStringTextType>
       </description>
       <administration>
-        <version>1</version>
-        <revision>2</revision>
+        <version>2</version>
+        <revision>0</revision>
+        <templateId>https://admin-shell.io/idta-02003-2-0</templateId>
       </administration>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2</id>
+      <id>https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0</id>
       <kind>Template</kind>
       <semanticId>
         <type>ModelReference</type>
         <keys>
           <key>
             <type>Submodel</type>
-            <value>https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2</value>
+            <value>0173-1#01-AHX837#002</value>
           </key>
         </keys>
       </semanticId>
+      <supplementalSemanticIds>
+        <reference>
+          <type>ExternalReference</type>
+          <keys>
+            <key>
+              <type>GlobalReference</type>
+              <value>https://api.eclass-cdp.com/0173-1-01-AHX837-002</value>
+            </key>
+          </keys>
+        </reference>
+      </supplementalSemanticIds>
       <submodelElements>
         <submodelElementCollection>
           <idShort>GeneralInformation</idShort>
-          <description>
-            <langStringTextType>
+          <displayName>
+            <langStringNameType>
               <language>en</language>
-              <text>General information, for example ordering and manufacturer information.</text>
-            </langStringTextType>
-          </description>
+              <text>General information</text>
+            </langStringNameType>
+            <langStringNameType>
+              <language>de</language>
+              <text>Allgemeine Informationen</text>
+            </langStringNameType>
+          </displayName>
           <semanticId>
             <type>ExternalReference</type>
             <keys>
               <key>
                 <type>GlobalReference</type>
-                <value>https://admin-shell.io/ZVEI/TechnicalData/GeneralInformation/1/1</value>
+                <value>0173-1#02-ABK161#002/0173-1#01-AHX838#002</value>
               </key>
             </keys>
           </semanticId>
+          <supplementalSemanticIds>
+            <reference>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://api.eclass-cdp.com/ 0173-1-02-ABK161-002/0173-1-01-AHX838-002</value>
+                </key>
+              </keys>
+            </reference>
+          </supplementalSemanticIds>
           <qualifiers>
             <qualifier>
               <semanticId>
@@ -83,12 +110,11 @@
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                    <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                   </key>
                 </keys>
               </semanticId>
-              <kind>ConceptQualifier</kind>
-              <type>Cardinality</type>
+              <type>SMT/Cardinality</type>
               <valueType>xs:string</valueType>
               <value>One</value>
             </qualifier>
@@ -97,21 +123,36 @@
             <property>
               <category>PARAMETER</category>
               <idShort>ManufacturerName</idShort>
-              <description>
-                <langStringTextType>
+              <displayName>
+                <langStringNameType>
                   <language>en</language>
-                  <text>Legally valid designation of the natural or judicial body which is directly responsible for the design, production, packaging and labeling of a product in respect to its being brought into the market.</text>
-                </langStringTextType>
-              </description>
+                  <text>Manufacturer name</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Herstellername</text>
+                </langStringNameType>
+              </displayName>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>0173-1#02-AAO677#002</value>
+                    <value>0173-1#02-AAO677#004</value>
                   </key>
                 </keys>
               </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-AAO677-004</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
               <qualifiers>
                 <qualifier>
                   <semanticId>
@@ -119,154 +160,49 @@
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
+                  <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
                   <value>One</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>ExampleValue</type>
-                  <valueType>xs:string</valueType>
-                  <value>Example Company</value>
-                </qualifier>
-              </qualifiers>
-              <valueType>xs:string</valueType>
-            </property>
-            <property>
-              <category>PARAMETER</category>
-              <idShort>ManufacturerArticleNumber</idShort>
-              <description>
-                <langStringTextType>
-                  <language>en</language>
-                  <text>unique product identifier of the manufacturer </text>
-                </langStringTextType>
-              </description>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>0173-1#02-AAO676#003</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <qualifiers>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
-                  <valueType>xs:string</valueType>
-                  <value>One</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>ExampleValue</type>
-                  <valueType>xs:string</valueType>
-                  <value>A123-456</value>
-                </qualifier>
-              </qualifiers>
-              <valueType>xs:string</valueType>
-            </property>
-            <property>
-              <category>PARAMETER</category>
-              <idShort>ManufacturerOrderCode</idShort>
-              <description>
-                <langStringTextType>
-                  <language>en</language>
-                  <text>By manufactures issued unique combination of numbers and letters used to identify the device for ordering</text>
-                </langStringTextType>
-              </description>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>0173-1#02-AAO227#002</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <qualifiers>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
-                  <valueType>xs:string</valueType>
-                  <value>One</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>ExampleValue</type>
-                  <valueType>xs:string</valueType>
-                  <value>EEA-EX-200-S/47-Q3</value>
                 </qualifier>
               </qualifiers>
               <valueType>xs:string</valueType>
             </property>
             <file>
-              <idShort>ManufacturerLogo</idShort>
-              <description>
-                <langStringTextType>
+              <idShort>CompanyLogo</idShort>
+              <displayName>
+                <langStringNameType>
                   <language>en</language>
-                  <text>Imagefile for logo of manufacturer provided in common format (.png, .jpg).</text>
-                </langStringTextType>
-              </description>
+                  <text>Company logo</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Firmenlogo</text>
+                </langStringNameType>
+              </displayName>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>https://admin-shell.io/ZVEI/TechnicalData/ManufacturerLogo/1/1</value>
+                    <value>0173-1#02-ABI776#002</value>
                   </key>
                 </keys>
               </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-ABI776-002</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
               <qualifiers>
                 <qualifier>
                   <semanticId>
@@ -274,50 +210,13 @@
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
+                  <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
                   <value>ZeroToOne</value>
-                </qualifier>
-              </qualifiers>
-              <contentType>image/png</contentType>
-            </file>
-            <file>
-              <idShort>ProductImage</idShort>
-              <description>
-                <langStringTextType>
-                  <language>en</language>
-                  <text>Image file for associated product provided in common format (.png, .jpg).</text>
-                </langStringTextType>
-              </description>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>https://admin-shell.io/ZVEI/TechnicalData/ProductImage/1/1</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <qualifiers>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
-                  <valueType>xs:string</valueType>
-                  <value>ZeroToMany</value>
                 </qualifier>
               </qualifiers>
               <contentType>image/png</contentType>
@@ -325,21 +224,36 @@
             <multiLanguageProperty>
               <category>PARAMETER</category>
               <idShort>ManufacturerProductDesignation</idShort>
-              <description>
-                <langStringTextType>
+              <displayName>
+                <langStringNameType>
                   <language>en</language>
-                  <text>Product designation as given by the mnaufacturer. Short description of the product, product group or function (short text) in common language.</text>
-                </langStringTextType>
-              </description>
+                  <text>Manufacturer product designation</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Herstellerproduktbezeichnung</text>
+                </langStringNameType>
+              </displayName>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>0173-1#02-AAW338#001</value>
+                    <value>0173-1#02-AAW338#003</value>
                   </key>
                 </keys>
               </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-AAW338-003</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
               <qualifiers>
                 <qualifier>
                   <semanticId>
@@ -347,96 +261,49 @@
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
+                  <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
                   <value>One</value>
                 </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>ExampleValue</type>
-                  <valueType>xs:string</valueType>
-                  <value>Electrical energy accelerator@en</value>
-                </qualifier>
               </qualifiers>
-              <value>
-                <langStringTextType>
-                  <language>en</language>
-                  <text>a</text>
-                </langStringTextType>
-                <langStringTextType>
-                  <language>de</language>
-                  <text>a</text>
-                </langStringTextType>
-              </value>
             </multiLanguageProperty>
-          </value>
-        </submodelElementCollection>
-        <submodelElementCollection>
-          <idShort>ProductClassifications</idShort>
-          <description>
-            <langStringTextType>
-              <language>en</language>
-              <text>Product classifications by association of product classes with common classification systems.</text>
-            </langStringTextType>
-          </description>
-          <semanticId>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/ZVEI/TechnicalData/ProductClassifications/1/1</value>
-              </key>
-            </keys>
-          </semanticId>
-          <qualifiers>
-            <qualifier>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <kind>ConceptQualifier</kind>
-              <type>Cardinality</type>
-              <valueType>xs:string</valueType>
-              <value>ZeroToOne</value>
-            </qualifier>
-          </qualifiers>
-          <value>
-            <submodelElementCollection>
-              <idShort>ProductClassificationItem</idShort>
-              <description>
-                <langStringTextType>
+            <property>
+              <category>PARAMETER</category>
+              <idShort>ManufacturerArticleNumber</idShort>
+              <displayName>
+                <langStringNameType>
                   <language>en</language>
-                  <text>Single product classification item by association with product class in a particular classification system or property dictionary.</text>
-                </langStringTextType>
-              </description>
+                  <text>Manufacturer article number</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Herstellerartikelnummer</text>
+                </langStringNameType>
+              </displayName>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>https://admin-shell.io/ZVEI/TechnicalData/ProductClassificationItem/1/1</value>
+                    <value>0173-1#02-AAO676#005</value>
                   </key>
                 </keys>
               </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-AAO676-005</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
               <qualifiers>
                 <qualifier>
                   <semanticId>
@@ -444,50 +311,163 @@
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
+                  <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
-                  <value>ZeroToMany</value>
+                  <value>One</value>
                 </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+            </property>
+            <property>
+              <category>PARAMETER</category>
+              <idShort>ManufacturerOrderCode</idShort>
+              <displayName>
+                <langStringNameType>
+                  <language>en</language>
+                  <text>Manufacturer order code</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Bestellcode des Herstellers</text>
+                </langStringNameType>
+              </displayName>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>0173-1#02-AAO227#004</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-AAO227-004</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
+              <qualifiers>
                 <qualifier>
                   <semanticId>
                     <type>ExternalReference</type>
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>AllowedIdShort</type>
+                  <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
-                  <value>ProductClassificationItem[\d{2,3}]</value>
+                  <value>One</value>
                 </qualifier>
               </qualifiers>
-              <value>
-                <property>
-                  <category>PARAMETER</category>
-                  <idShort>ProductClassificationSystem</idShort>
-                  <description>
-                    <langStringTextType>
-                      <language>en</language>
-                      <text>Common name of the classification system.</text>
-                    </langStringTextType>
-                  </description>
+              <valueType>xs:string</valueType>
+            </property>
+            <submodelElementList>
+              <idShort>ProductImages</idShort>
+              <displayName>
+                <langStringNameType>
+                  <language>en</language>
+                  <text>Product images</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Produktbilder</text>
+                </langStringNameType>
+              </displayName>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>0173-1#02-ABM220#001</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-ABM220-001</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
+              <qualifiers>
+                <qualifier>
                   <semanticId>
                     <type>ExternalReference</type>
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/ZVEI/TechnicalData/ProductClassificationSystem/1/1</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
+                  <kind>TemplateQualifier</kind>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>ZeroToMany</value>
+                </qualifier>
+              </qualifiers>
+              <semanticIdListElement>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>0173-1#02-ABM220#001/0173-1#01-AHY911#001</value>
+                  </key>
+                </keys>
+              </semanticIdListElement>
+              <typeValueListElement>SubmodelElementCollection</typeValueListElement>
+              <value>
+                <submodelElementCollection>
+                  <displayName>
+                    <langStringNameType>
+                      <language>en</language>
+                      <text>Product image</text>
+                    </langStringNameType>
+                    <langStringNameType>
+                      <language>de</language>
+                      <text>Produktbild</text>
+                    </langStringNameType>
+                  </displayName>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>0173-1#02-ABM220#001/0173-1#01-AHY911#001</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>0173-1#02-ABM220#001~0/0173-1#01-AHY911#001</value>
+                        </key>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>https://api.eclass-cdp.com/0173-1-02-ABM220-001/0173-1-01-AHY911-001</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
                   <qualifiers>
                     <qualifier>
                       <semanticId>
@@ -495,12 +475,274 @@
                         <keys>
                           <key>
                             <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
-                      <type>Cardinality</type>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>ZeroToMany</value>
+                    </qualifier>
+                  </qualifiers>
+                  <value>
+                    <file>
+                      <idShort>ImageFile</idShort>
+                      <displayName>
+                        <langStringNameType>
+                          <language>en</language>
+                          <text>Product image</text>
+                        </langStringNameType>
+                        <langStringNameType>
+                          <language>de</language>
+                          <text>Bildname Sachaufnahme</text>
+                        </langStringNameType>
+                      </displayName>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>0173-1#02-ABK291#002</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <qualifiers>
+                        <qualifier>
+                          <semanticId>
+                            <type>ExternalReference</type>
+                            <keys>
+                              <key>
+                                <type>GlobalReference</type>
+                                <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                              </key>
+                            </keys>
+                          </semanticId>
+                          <type>SMT/Cardinality</type>
+                          <valueType>xs:string</valueType>
+                          <value>One</value>
+                        </qualifier>
+                      </qualifiers>
+                      <contentType>image/png</contentType>
+                    </file>
+                    <multiLanguageProperty>
+                      <idShort>ImageNote</idShort>
+                      <displayName>
+                        <langStringNameType>
+                          <language>en</language>
+                          <text>Image note</text>
+                        </langStringNameType>
+                        <langStringNameType>
+                          <language>de</language>
+                          <text>Bildhinweis</text>
+                        </langStringNameType>
+                      </displayName>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>0173-1#02-ABL423#001</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <supplementalSemanticIds>
+                        <reference>
+                          <type>ExternalReference</type>
+                          <keys>
+                            <key>
+                              <type>GlobalReference</type>
+                              <value>https://api.eclass-cdp.com/0173-1-02-ABL423-001</value>
+                            </key>
+                          </keys>
+                        </reference>
+                      </supplementalSemanticIds>
+                      <qualifiers>
+                        <qualifier>
+                          <semanticId>
+                            <type>ExternalReference</type>
+                            <keys>
+                              <key>
+                                <type>GlobalReference</type>
+                                <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                              </key>
+                            </keys>
+                          </semanticId>
+                          <type>SMT/Cardinality</type>
+                          <valueType>xs:string</valueType>
+                          <value>ZeroToOne</value>
+                        </qualifier>
+                      </qualifiers>
+                      <value>
+                        <langStringTextType>
+                          <language>en</language>
+                          <text>Notes or explanations about the image provided</text>
+                        </langStringTextType>
+                      </value>
+                    </multiLanguageProperty>
+                  </value>
+                </submodelElementCollection>
+              </value>
+            </submodelElementList>
+          </value>
+        </submodelElementCollection>
+        <submodelElementList>
+          <idShort>ProductClassifications</idShort>
+          <displayName>
+            <langStringNameType>
+              <language>en</language>
+              <text>Product classifications</text>
+            </langStringNameType>
+            <langStringNameType>
+              <language>de</language>
+              <text>Produktklassifikationen</text>
+            </langStringNameType>
+          </displayName>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>0173-1#02-ABK162#002</value>
+              </key>
+            </keys>
+          </semanticId>
+          <supplementalSemanticIds>
+            <reference>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://api.eclass-cdp.com/0173-1-02-ABK162-002</value>
+                </key>
+              </keys>
+            </reference>
+          </supplementalSemanticIds>
+          <qualifiers>
+            <qualifier>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <kind>TemplateQualifier</kind>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>ZeroToMany</value>
+            </qualifier>
+          </qualifiers>
+          <orderRelevant>false</orderRelevant>
+          <semanticIdListElement>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>0173-1#02-ABK162#002/0173-1#01-AHX839#002</value>
+              </key>
+            </keys>
+          </semanticIdListElement>
+          <typeValueListElement>SubmodelElementCollection</typeValueListElement>
+          <value>
+            <submodelElementCollection>
+              <displayName>
+                <langStringNameType>
+                  <language>en</language>
+                  <text>Produkt classification</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Produktklassifikation</text>
+                </langStringNameType>
+              </displayName>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>0173-1#02-ABK162#002/0173-1#01-AHX839#002</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>0173-1#02-ABK162#002~0/0173-1#01-AHX839#002</value>
+                    </key>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-ABK162-002/0173-1-01-AHX839-002</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
+              <qualifiers>
+                <qualifier>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>ZeroToMany</value>
+                </qualifier>
+              </qualifiers>
+              <value>
+                <property>
+                  <category>PARAMETER</category>
+                  <idShort>ClassificationSystem</idShort>
+                  <displayName>
+                    <langStringNameType>
+                      <language>en</language>
+                      <text>Classification system</text>
+                    </langStringNameType>
+                    <langStringNameType>
+                      <language>de</language>
+                      <text>Klassifikationssystem</text>
+                    </langStringNameType>
+                  </displayName>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>0173-1#02-ABL424#001</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>https://api.eclass-cdp.com/0173-1-02-ABL424-001</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
+                  <qualifiers>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
                       <value>One</value>
                     </qualifier>
@@ -510,14 +752,108 @@
                         <keys>
                           <key>
                             <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
+                            <value>https://admin-shell.io/SubmodelTemplates/AllowedValue/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <type>SMT/ExampleValue</type>
+                      <valueType>xs:string</valueType>
+                      <value>ECLASS</value>
+                      <valueId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>0173-1#07-ABB367#003</value>
+                          </key>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://api.eclass-cdp.com/0173-1-07-ABB367-003</value>
+                          </key>
+                        </keys>
+                      </valueId>
+                    </qualifier>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/AllowedValue/1/0</value>
                           </key>
                         </keys>
                       </semanticId>
                       <kind>ConceptQualifier</kind>
-                      <type>ExampleValue</type>
+                      <type>SMT/ExampleValue</type>
                       <valueType>xs:string</valueType>
-                      <value>ECLASS</value>
+                      <value>IEC CDD</value>
+                      <valueId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>0173-1#07-ACB994#001</value>
+                          </key>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://api.eclass-cdp.com/0173-1-07-ACB994-001</value>
+                          </key>
+                        </keys>
+                      </valueId>
+                    </qualifier>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/AllowedValue/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <type>SMT/ExampleValue</type>
+                      <valueType>xs:string</valueType>
+                      <value>UNSPSC</value>
+                      <valueId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>0173-1#07-ABB368#003</value>
+                          </key>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://api.eclass-cdp.com/0173-1-07-ABB368-003</value>
+                          </key>
+                        </keys>
+                      </valueId>
+                    </qualifier>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/AllowedValue/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <type>SMT/ExampleValue</type>
+                      <valueType>xs:string</valueType>
+                      <value>customer specific</value>
+                      <valueId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>0173-1#07-ACB894#001</value>
+                          </key>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://api.eclass-cdp.com/0173-1-07-ACB894-001</value>
+                          </key>
+                        </keys>
+                      </valueId>
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
@@ -525,18 +861,72 @@
                 <property>
                   <category>PARAMETER</category>
                   <idShort>ClassificationSystemVersion</idShort>
-                  <description>
-                    <langStringTextType>
+                  <displayName>
+                    <langStringNameType>
                       <language>en</language>
-                      <text>Common version identifier of the used classification system, in order to distinguish different version of the property dictionary.</text>
-                    </langStringTextType>
-                  </description>
+                      <text>Classification system version</text>
+                    </langStringNameType>
+                    <langStringNameType>
+                      <language>de</language>
+                      <text>Version der Klassifikationssystem</text>
+                    </langStringNameType>
+                  </displayName>
                   <semanticId>
                     <type>ExternalReference</type>
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/ZVEI/TechnicalData/ClassificationSystemVersion/1/1</value>
+                        <value>0173-1#02-AAR710#003</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>https://api.eclass-cdp.com/0173-1-02-AAR710-003</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
+                  <qualifiers>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>ZeroToOne</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                </property>
+                <property>
+                  <idShort>ClassificationSystemUrl</idShort>
+                  <displayName>
+                    <langStringNameType>
+                      <language>en</language>
+                      <text>Classification system URL</text>
+                    </langStringNameType>
+                    <langStringNameType>
+                      <language>de</language>
+                      <text>URL des Klassifikationssystems</text>
+                    </langStringNameType>
+                  </displayName>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://admin-shell.io/IDTA/TechnicalData/ProductClassifications/ProduktClassification/ClassificationSystemUrl/2/0</value>
                       </key>
                     </keys>
                   </semanticId>
@@ -547,29 +937,13 @@
                         <keys>
                           <key>
                             <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
-                      <type>Cardinality</type>
+                      <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
                       <value>ZeroToOne</value>
-                    </qualifier>
-                    <qualifier>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <kind>ConceptQualifier</kind>
-                      <type>ExampleValue</type>
-                      <valueType>xs:string</valueType>
-                      <value>9.0 (BASIC)</value>
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
@@ -577,21 +951,36 @@
                 <property>
                   <category>PARAMETER</category>
                   <idShort>ProductClassId</idShort>
-                  <description>
-                    <langStringTextType>
+                  <displayName>
+                    <langStringNameType>
                       <language>en</language>
-                      <text>Class of the associated product or industrial equipment in the classification system. According to the notation of the system.</text>
-                    </langStringTextType>
-                  </description>
+                      <text>Product class ID</text>
+                    </langStringNameType>
+                    <langStringNameType>
+                      <language>de</language>
+                      <text>Produktklassen ID</text>
+                    </langStringNameType>
+                  </displayName>
                   <semanticId>
                     <type>ExternalReference</type>
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/ZVEI/TechnicalData/ProductClassId/1/1</value>
+                        <value>0173-1#02-ABG776#003</value>
                       </key>
                     </keys>
                   </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>https://api.eclass-cdp.com/0173-1-02-ABG776-003</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
                   <qualifiers>
                     <qualifier>
                       <semanticId>
@@ -599,139 +988,50 @@
                         <keys>
                           <key>
                             <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
-                      <type>Cardinality</type>
+                      <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
                       <value>One</value>
-                    </qualifier>
-                    <qualifier>
-                      <semanticId>
-                        <type>ExternalReference</type>
-                        <keys>
-                          <key>
-                            <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                          </key>
-                        </keys>
-                      </semanticId>
-                      <kind>ConceptQualifier</kind>
-                      <type>ExampleValue</type>
-                      <valueType>xs:string</valueType>
-                      <value>27-01-88-77 | 0112/2///61987#ABA827#003</value>
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
                 </property>
-              </value>
-            </submodelElementCollection>
-          </value>
-        </submodelElementCollection>
-        <submodelElementCollection>
-          <idShort>TechnicalProperties</idShort>
-          <description>
-            <langStringTextType>
-              <language>en</language>
-              <text>Individual characteristics that describe the product and its technical properties.</text>
-            </langStringTextType>
-          </description>
-          <semanticId>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/ZVEI/TechnicalData/TechnicalProperties/1/1</value>
-              </key>
-            </keys>
-          </semanticId>
-          <qualifiers>
-            <qualifier>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <kind>ConceptQualifier</kind>
-              <type>Cardinality</type>
-              <valueType>xs:string</valueType>
-              <value>One</value>
-            </qualifier>
-          </qualifiers>
-          <value>
-            <submodelElementCollection>
-              <idShort>MainSection</idShort>
-              <description>
-                <langStringTextType>
-                  <language>en</language>
-                  <text>Main subdivision possibility for properties.</text>
-                </langStringTextType>
-              </description>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>https://admin-shell.io/ZVEI/TechnicalData/MainSection/1/1</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <qualifiers>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
-                  <valueType>xs:string</valueType>
-                  <value>ZeroToMany</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>AllowedIdShort</type>
-                  <valueType>xs:string</valueType>
-                  <value>MainSection[\d{2,3}]</value>
-                </qualifier>
-              </qualifiers>
-              <value>
-                <submodelElementCollection>
-                  <idShort>SubSection</idShort>
-                  <description>
-                    <langStringTextType>
+                <property>
+                  <category>PARAMETER</category>
+                  <idShort>ProductClassCodedName</idShort>
+                  <displayName>
+                    <langStringNameType>
                       <language>en</language>
-                      <text>Subordinate subdivision possibility for properties.</text>
-                    </langStringTextType>
-                  </description>
+                      <text>Product Class Coded Name</text>
+                    </langStringNameType>
+                    <langStringNameType>
+                      <language>de</language>
+                      <text>Produktklasse Coded Name</text>
+                    </langStringNameType>
+                  </displayName>
                   <semanticId>
                     <type>ExternalReference</type>
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/ZVEI/TechnicalData/SubSection/1/1</value>
+                        <value>0173-1#02-ABK128#002</value>
                       </key>
                     </keys>
                   </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>https://api.eclass-cdp.com/0173-1-02-ABK128-002</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
                   <qualifiers>
                     <qualifier>
                       <semanticId>
@@ -739,103 +1039,108 @@
                         <keys>
                           <key>
                             <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
-                      <type>Cardinality</type>
+                      <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>ZeroToMany</value>
+                      <value>One</value>
                     </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                </property>
+                <multiLanguageProperty>
+                  <idShort>ProductClassName</idShort>
+                  <displayName>
+                    <langStringNameType>
+                      <language>en</language>
+                      <text>Product class name</text>
+                    </langStringNameType>
+                    <langStringNameType>
+                      <language>de</language>
+                      <text>Produktklasse Name</text>
+                    </langStringNameType>
+                  </displayName>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>0173-1#02-ABK273#002</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>https://api.eclass-cdp.com/0173-1-02-ABK273-002</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
+                  <qualifiers>
                     <qualifier>
                       <semanticId>
                         <type>ExternalReference</type>
                         <keys>
                           <key>
                             <type>GlobalReference</type>
-                            <value>https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0</value>
+                            <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                           </key>
                         </keys>
                       </semanticId>
-                      <kind>ConceptQualifier</kind>
-                      <type>AllowedIdShort</type>
+                      <type>SMT/Cardinality</type>
                       <valueType>xs:string</valueType>
-                      <value>SubSection[\d{2,3}]</value>
+                      <value>ZeroToOne</value>
                     </qualifier>
                   </qualifiers>
-                </submodelElementCollection>
+                  <value>
+                    <langStringTextType>
+                      <language>en</language>
+                      <text>Name of product class in the used classification system</text>
+                    </langStringTextType>
+                  </value>
+                </multiLanguageProperty>
               </value>
             </submodelElementCollection>
-            <submodelElementCollection>
-              <idShort>SubSection</idShort>
-              <description>
-                <langStringTextType>
-                  <language>en</language>
-                  <text>Subordinate subdivision possibility for properties.</text>
-                </langStringTextType>
-              </description>
-              <semanticId>
-                <type>ExternalReference</type>
-                <keys>
-                  <key>
-                    <type>GlobalReference</type>
-                    <value>https://admin-shell.io/ZVEI/TechnicalData/SubSection/1/1</value>
-                  </key>
-                </keys>
-              </semanticId>
-              <qualifiers>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
-                  <valueType>xs:string</valueType>
-                  <value>ZeroToMany</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>AllowedIdShort</type>
-                  <valueType>xs:string</valueType>
-                  <value>SubSection[\d{2,3}]</value>
-                </qualifier>
-              </qualifiers>
-            </submodelElementCollection>
           </value>
-        </submodelElementCollection>
-        <submodelElementCollection>
-          <idShort>FurtherInformation</idShort>
-          <description>
-            <langStringTextType>
+        </submodelElementList>
+        <submodelElementList>
+          <idShort>TechnicalPropertyAreas</idShort>
+          <displayName>
+            <langStringNameType>
               <language>en</language>
-              <text>Further information on the product, the validity of the information provided and this data record.</text>
-            </langStringTextType>
-          </description>
+              <text>Technical property areas</text>
+            </langStringNameType>
+            <langStringNameType>
+              <language>de</language>
+              <text>Technsiche Merkmalsbereiche</text>
+            </langStringNameType>
+          </displayName>
           <semanticId>
             <type>ExternalReference</type>
             <keys>
               <key>
                 <type>GlobalReference</type>
-                <value>https://admin-shell.io/ZVEI/TechnicalData/FurtherInformation/1/1</value>
+                <value>0173-1#02-ABK163#002</value>
               </key>
             </keys>
           </semanticId>
+          <supplementalSemanticIds>
+            <reference>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://api.eclass-cdp.com/ 0173-1-02-ABK163-002</value>
+                </key>
+              </keys>
+            </reference>
+          </supplementalSemanticIds>
           <qualifiers>
             <qualifier>
               <semanticId>
@@ -843,12 +1148,124 @@
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                    <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                   </key>
                 </keys>
               </semanticId>
-              <kind>ConceptQualifier</kind>
-              <type>Cardinality</type>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>ZeroToMany</value>
+            </qualifier>
+          </qualifiers>
+          <semanticIdListElement>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>0173-1#02-ABL358#002/0173-1#01-AHX773#002</value>
+              </key>
+            </keys>
+          </semanticIdListElement>
+          <typeValueListElement>SubmodelElementCollection</typeValueListElement>
+          <value>
+            <submodelElementCollection>
+              <displayName>
+                <langStringNameType>
+                  <language>en</language>
+                  <text>Technical property area</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Technischer Merkmalsbereich</text>
+                </langStringNameType>
+              </displayName>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>0173-1#02-ABL358#002/0173-1#01-AHX773#002</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>0173-1#02-ABL358#002~0/0173-1#01-AHX773#002</value>
+                    </key>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-ABL358-002/0173-1-01-AHX773-002</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
+              <qualifiers>
+                <qualifier>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>ZeroToMany</value>
+                </qualifier>
+              </qualifiers>
+            </submodelElementCollection>
+          </value>
+        </submodelElementList>
+        <submodelElementCollection>
+          <idShort>FurtherInformation</idShort>
+          <displayName>
+            <langStringNameType>
+              <language>en</language>
+              <text>Further information</text>
+            </langStringNameType>
+            <langStringNameType>
+              <language>de</language>
+              <text>Weitere Informationen</text>
+            </langStringNameType>
+          </displayName>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>0173-1#02-ABK164#002</value>
+              </key>
+            </keys>
+          </semanticId>
+          <supplementalSemanticIds>
+            <reference>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://api.eclass-cdp.com/0173-1-02-ABK164-002</value>
+                </key>
+              </keys>
+            </reference>
+          </supplementalSemanticIds>
+          <qualifiers>
+            <qualifier>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <type>SMT/Cardinality</type>
               <valueType>xs:string</valueType>
               <value>ZeroToOne</value>
             </qualifier>
@@ -857,21 +1274,36 @@
             <multiLanguageProperty>
               <category>PARAMETER</category>
               <idShort>TextStatement</idShort>
-              <description>
-                <langStringTextType>
+              <displayName>
+                <langStringNameType>
                   <language>en</language>
-                  <text>Statement by the manufacturer in text form, e.g. scope of validity of the statements, scopes of application, conditions of operation.</text>
-                </langStringTextType>
-              </description>
+                  <text>Text statement</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Anweisung im Text</text>
+                </langStringNameType>
+              </displayName>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>https://admin-shell.io/ZVEI/TechnicalData/TextStatement/1/1</value>
+                    <value>0173-1#02-ABK134#002</value>
                   </key>
                 </keys>
               </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1-02-ABK134-002</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
               <qualifiers>
                 <qualifier>
                   <semanticId>
@@ -879,75 +1311,55 @@
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
+                  <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
                   <value>ZeroToMany</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>ExampleValue</type>
-                  <valueType>xs:string</valueType>
-                  <value>Restricted use@en</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>AllowedIdShort</type>
-                  <valueType>xs:string</valueType>
-                  <value>TextStatement[\d{2,3}]</value>
                 </qualifier>
               </qualifiers>
               <value>
                 <langStringTextType>
                   <language>en</language>
-                  <text>a</text>
-                </langStringTextType>
-                <langStringTextType>
-                  <language>de</language>
-                  <text>a</text>
+                  <text>Statement by the manufacturer in text form, e.g. scope of validity of the statements, scopes of application, conditions of operation.</text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
             <property>
               <category>PARAMETER</category>
               <idShort>ValidDate</idShort>
-              <description>
-                <langStringTextType>
+              <displayName>
+                <langStringNameType>
                   <language>en</language>
-                  <text>Denotes a date on which the data specified in the Submodel was valid from for the associated asset.</text>
-                </langStringTextType>
-              </description>
+                  <text>Validity date</text>
+                </langStringNameType>
+                <langStringNameType>
+                  <language>de</language>
+                  <text>Verfallsdatum</text>
+                </langStringNameType>
+              </displayName>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
                   <key>
                     <type>GlobalReference</type>
-                    <value>https://admin-shell.io/ZVEI/TechnicalData/ManufacturerOrderCode/1/1</value>
+                    <value>0173-1#02-ABL775#001</value>
                   </key>
                 </keys>
               </semanticId>
+              <supplementalSemanticIds>
+                <reference>
+                  <type>ExternalReference</type>
+                  <keys>
+                    <key>
+                      <type>GlobalReference</type>
+                      <value>https://api.eclass-cdp.com/0173-1#02-ABL775#001</value>
+                    </key>
+                  </keys>
+                </reference>
+              </supplementalSemanticIds>
               <qualifiers>
                 <qualifier>
                   <semanticId>
@@ -955,91 +1367,85 @@
                     <keys>
                       <key>
                         <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                        <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
                       </key>
                     </keys>
                   </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>Cardinality</type>
+                  <type>SMT/Cardinality</type>
                   <valueType>xs:string</valueType>
                   <value>One</value>
-                </qualifier>
-                <qualifier>
-                  <semanticId>
-                    <type>ExternalReference</type>
-                    <keys>
-                      <key>
-                        <type>GlobalReference</type>
-                        <value>https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0</value>
-                      </key>
-                    </keys>
-                  </semanticId>
-                  <kind>ConceptQualifier</kind>
-                  <type>ExampleValue</type>
-                  <valueType>xs:string</valueType>
-                  <value>5/28/2021</value>
                 </qualifier>
               </qualifiers>
               <valueType>xs:date</valueType>
             </property>
           </value>
         </submodelElementCollection>
+        <submodelElementList>
+          <idShort>SpecificDescriptions</idShort>
+          <displayName>
+            <langStringNameType>
+              <language>en</language>
+              <text>Specific description</text>
+            </langStringNameType>
+            <langStringNameType>
+              <language>de</language>
+              <text>Spezifische Beschreibung</text>
+            </langStringNameType>
+          </displayName>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>0173-1#02-ABM221#001</value>
+              </key>
+            </keys>
+          </semanticId>
+          <supplementalSemanticIds>
+            <reference>
+              <type>ExternalReference</type>
+              <keys>
+                <key>
+                  <type>GlobalReference</type>
+                  <value>https://api.eclass-cdp.com/0173-1-02-ABM221-001</value>
+                </key>
+              </keys>
+            </reference>
+          </supplementalSemanticIds>
+          <qualifiers>
+            <qualifier>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://admin-shell.io/SubmodelTemplates/SMT/Cardinality/1/0</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>ZeroToMany</value>
+            </qualifier>
+          </qualifiers>
+          <semanticIdListElement>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>0173-1#02-ABM221#001/0173-1#01-AHY912#001</value>
+              </key>
+            </keys>
+          </semanticIdListElement>
+          <typeValueListElement>SubmodelElementCollection</typeValueListElement>
+        </submodelElementList>
       </submodelElements>
     </submodel>
   </submodels>
   <conceptDescriptions>
     <conceptDescription>
-      <idShort>TechnicalData</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Submodel containing techical data of the asset and associated product classificatons.</text>
-        </langStringTextType>
-        <langStringTextType>
-          <language>de</language>
-          <text>Teilmodell, das die technischen Daten der Anlage und die zugehörigen Produktklassifizierungen enthält.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/Submodel/1/2</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>TechnicalData</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Submodel containing techical data of the asset and associated product classificatons.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
       <idShort>GeneralInformation</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>General information, for example ordering and manufacturer information.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/GeneralInformation/1/1</id>
+      <id>0173-1#02-ABK161#002/0173-1#01-AHX838#002</id>
       <embeddedDataSpecifications>
         <embeddedDataSpecification>
           <dataSpecification>
@@ -1047,7 +1453,7 @@
             <keys>
               <key>
                 <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
               </key>
             </keys>
           </dataSpecification>
@@ -1056,52 +1462,31 @@
               <preferredName>
                 <langStringPreferredNameTypeIec61360>
                   <language>en</language>
-                  <text>GeneralInformation</text>
+                  <text>General information</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Allgemeine Informationen</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>General</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Allgemein</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
               <definition>
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
-                  <text>General information, for example ordering and manufacturer information.</text>
+                  <text>General information, for example ordering and manufacturer information</text>
                 </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ProductClassificationSystem</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Common name of the classification system.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/ProductClassificationSystem/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ProductClassificationSystem</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
                 <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Common name of the classification system.</text>
+                  <language>de</language>
+                  <text>Generelle Informationen, zum Beispiel Bestell- und Herstellerinformationen</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>
@@ -1111,13 +1496,7 @@
     </conceptDescription>
     <conceptDescription>
       <idShort>ManufacturerName</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Legally valid designation of the natural or judicial body which is directly responsible for the design, production, packaging and labeling of a product in respect to its being brought into the market.</text>
-        </langStringTextType>
-      </description>
-      <id>0173-1#02-AAO677#002</id>
+      <id>0173-1#02-AAO677#004</id>
       <embeddedDataSpecifications>
         <embeddedDataSpecification>
           <dataSpecification>
@@ -1125,7 +1504,7 @@
             <keys>
               <key>
                 <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
               </key>
             </keys>
           </dataSpecification>
@@ -1134,13 +1513,32 @@
               <preferredName>
                 <langStringPreferredNameTypeIec61360>
                   <language>en</language>
-                  <text>ManufacturerName</text>
+                  <text>Manufacturer name</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Herstellername</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Manufacturer</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Hersteller</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
               <definition>
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
-                  <text>Legally valid designation of the natural or judicial body which is directly responsible for the design, production, packaging and labeling of a product in respect to its being brought into the market.</text>
+                  <text>Legally valid designation of the natural or judicial person which is directly responsible for the design, production, packaging and labeling of a product in respect to its being brought into circulation</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Bezeichnung für eine natürliche oder juristische Person, die für die Auslegung, Herstellung und Verpackung sowie die Etikettierung eines Produkts im Hinblick auf das 'Inverkehrbringen' im eigenen Namen verantwortlich ist</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>
@@ -1149,14 +1547,8 @@
       </embeddedDataSpecifications>
     </conceptDescription>
     <conceptDescription>
-      <idShort>TextStatement</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Statement by the manufacturer in text form, e.g. scope of validity of the statements, scopes of application, conditions of operation.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/TextStatement/1/1</id>
+      <idShort>CompanyLogo</idShort>
+      <id>0173-1#02-ABI776#002</id>
       <embeddedDataSpecifications>
         <embeddedDataSpecification>
           <dataSpecification>
@@ -1164,7 +1556,7 @@
             <keys>
               <key>
                 <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
               </key>
             </keys>
           </dataSpecification>
@@ -1173,442 +1565,32 @@
               <preferredName>
                 <langStringPreferredNameTypeIec61360>
                   <language>en</language>
-                  <text>TextStatement</text>
+                  <text>Company logo</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Firmenlogo</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Logo</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Logo</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
               <definition>
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
-                  <text>Statement by the manufacturer in text form, e.g. scope of validity of the statements, scopes of application, conditions of operation.</text>
+                  <text>Imagefile for logo of the company provided in common format (.png, .jpg)</text>
                 </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>FurtherInformation</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Further information on the product, the validity of the information provided and this data record.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/FurtherInformation/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>FurtherInformation</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
                 <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Further information on the product, the validity of the information provided and this data record.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ProductClassifications</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Product classifications by association of product classes with common classification systems.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/ProductClassifications/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ProductClassifications</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Product classifications by association of product classes with common classification systems.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>SubSection</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Subordinate subdivision possibility for properties.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/SubSection/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>SubSection</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Subordinate subdivision possibility for properties.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ManufacturerOrderCode</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>By manufactures issued unique combination of numbers and letters used to identify the device for ordering</text>
-        </langStringTextType>
-      </description>
-      <id>0173-1#02-AAO227#002</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ManufacturerOrderCode</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>By manufactures issued unique combination of numbers and letters used to identify the device for ordering</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ProductClassificationItem</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Single product classification item by association with product class in a particular classification system or property dictionary.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/ProductClassificationItem/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ProductClassificationItem</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Single product classification item by association with product class in a particular classification system or property dictionary.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ProductClassId</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Class of the associated product or industrial equipment in the classification system. According to the notation of the system.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/ProductClassId/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ProductClassId</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Class of the associated product or industrial equipment in the classification system. According to the notation of the system.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ManufacturerArticleNumber</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>unique product identifier of the manufacturer </text>
-        </langStringTextType>
-      </description>
-      <id>0173-1#02-AAO676#003</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ManufacturerArticleNumber</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>unique product identifier of the manufacturer </text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ValidDate</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Denotes a date on which the data specified in the Submodel was valid from for the associated asset.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/ManufacturerOrderCode/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ValidDate</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Denotes a date on which the data specified in the Submodel was valid from for the associated asset.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>ClassificationSystemVersion</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Common version identifier of the used classification system, in order to distinguish different version of the property dictionary.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/ClassificationSystemVersion/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>ClassificationSystemVersion</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Common version identifier of the used classification system, in order to distinguish different version of the property dictionary.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>MainSection</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Main subdivision possibility for properties.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/MainSection/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>MainSection</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Main subdivision possibility for properties.</text>
-                </langStringDefinitionTypeIec61360>
-              </definition>
-            </dataSpecificationIec61360>
-          </dataSpecificationContent>
-        </embeddedDataSpecification>
-      </embeddedDataSpecifications>
-    </conceptDescription>
-    <conceptDescription>
-      <idShort>TechnicalProperties</idShort>
-      <description>
-        <langStringTextType>
-          <language>en</language>
-          <text>Individual characteristics that describe the product and its technical properties.</text>
-        </langStringTextType>
-      </description>
-      <id>https://admin-shell.io/ZVEI/TechnicalData/TechnicalProperties/1/1</id>
-      <embeddedDataSpecifications>
-        <embeddedDataSpecification>
-          <dataSpecification>
-            <type>ExternalReference</type>
-            <keys>
-              <key>
-                <type>GlobalReference</type>
-                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
-              </key>
-            </keys>
-          </dataSpecification>
-          <dataSpecificationContent>
-            <dataSpecificationIec61360>
-              <preferredName>
-                <langStringPreferredNameTypeIec61360>
-                  <language>en</language>
-                  <text>TechnicalProperties</text>
-                </langStringPreferredNameTypeIec61360>
-              </preferredName>
-              <definition>
-                <langStringDefinitionTypeIec61360>
-                  <language>en</language>
-                  <text>Individual characteristics that describe the product and its technical properties.</text>
+                  <language>de</language>
+                  <text>Bilddatei für Logo der Firma im gebräuchlichen Format (.png, .jpg)</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>
@@ -1618,13 +1600,172 @@
     </conceptDescription>
     <conceptDescription>
       <idShort>ManufacturerProductDesignation</idShort>
-      <description>
-        <langStringTextType>
+      <id>0173-1#02-AAW338#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Manufacturer product designation</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Herstellerproduktbezeichnung</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Designation</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bezeichnung</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Short description of the product (short text)</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Kurze Beschreibung des Produktes (Kurztext)</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ManufacturerArticleNumber</idShort>
+      <id>0173-1#02-AAO676#005</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Manufacturer article number</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Herstellerartikelnummer</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Articlenumber</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Artikelnummer</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>unique product identifier of the manufacturer</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>eindeutiger Produktidentifikator des Herstellers</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ManufacturerOrderCode</idShort>
+      <id>0173-1#02-AAO227#004</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Manufacturer order code</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bestellcode des Herstellers</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Ordercode</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bestellcode</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>by manufactures issued unique combination of numbers and letters used to identify the device for ordering</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>vom Hersteller vergebene eindeutige Zahlen- und Buchstabenkombination, mit der das Gerät für die Bestellung identifiziert wird</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <displayName>
+        <langStringNameType>
           <language>en</language>
-          <text>Product designation as given by the mnaufacturer. Short description of the product, product group or function (short text) in common language.</text>
-        </langStringTextType>
-      </description>
-      <id>0173-1#02-AAW338#001</id>
+          <text>Product images</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Produktbilder</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABM220#001</id>
       <embeddedDataSpecifications>
         <embeddedDataSpecification>
           <dataSpecification>
@@ -1641,13 +1782,1161 @@
               <preferredName>
                 <langStringPreferredNameTypeIec61360>
                   <language>en</language>
-                  <text>ManufacturerProductDesignation</text>
+                  <text>Product images</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktbilder</text>
                 </langStringPreferredNameTypeIec61360>
               </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Images</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bilder</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
               <definition>
                 <langStringDefinitionTypeIec61360>
                   <language>en</language>
-                  <text>Product designation as given by the mnaufacturer. Short description of the product, product group or function (short text) in common language.</text>
+                  <text>Pictorial representations of the product also related to different applications</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Bildliche Darstellungen des Produktes auch bezogen auf verschiedene Anwendungsfälle</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ProductImage</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Product image</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Produktbild</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABM220#001/0173-1#01-AHY911#001</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Produkt image</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktbild</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Image</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bild</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Pictorial representation of the product related to an application</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Bildliche Darstellung des Produktes bezogen auf einen Anwendungsfall</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ImageFile</idShort>
+      <displayName>
+        <langStringNameType>
+          <language>en</language>
+          <text>Product image</text>
+        </langStringNameType>
+        <langStringNameType>
+          <language>de</language>
+          <text>Bild Sachaufnahme</text>
+        </langStringNameType>
+      </displayName>
+      <id>0173-1#02-ABK291#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Product image</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bild Sachaufnahme</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Productimage</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktbild</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Picture of the product (low resolution) 72 dpi / rgb (GIF or JPG)</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Bild des Produkts (niedrige Auflösung) 72 dpi / rgb (GIF oder JPG)</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ImageNote</idShort>
+      <description>
+        <langStringTextType>
+          <language>en</language>
+          <text>Notes or explanations about the image provided</text>
+        </langStringTextType>
+        <langStringTextType>
+          <language>de</language>
+          <text>Hinweise oder Erklärungen zum bereitgestellten Bild</text>
+        </langStringTextType>
+      </description>
+      <id>0173-1#02-ABL423#001</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Image note</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bildbeschreibung</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Imagenote</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Bildbeschreibung</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Notes or explanations about the image provided</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Hinweise oder Erklärungen zum bereitgestellten Bild</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ProductClassifications</idShort>
+      <id>0173-1#02-ABK162#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Product classifications</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktklassifikationen</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Classifications</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Klassifikationen</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Product classifications by association of product classes with common classification systems</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Produktklassifizierungen durch Zuordnung von Produktklassen zu gängigen Klassifizierungssystemen</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ProductClassification</idShort>
+      <id>0173-1#02-ABK162#002/0173-1#01-AHX839#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Product classification</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktklassifikation</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Classification</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Klassifikation</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Single product classification item by association with product class in a particular classification system or property dictionary</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Einzelnes Produktklassifizierungselement durch Zuordnung zu einer Produktklasse in einem bestimmten Klassifizierungssystem oder Eigenschaftswörterbuch</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ClassificationSystem</idShort>
+      <id>0173-1#02-ABL424#001</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Classification system</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Klassifikationssystem</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassSystem</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>KlassenSystem</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Reference to the scheduled collection of abstract concepts that are used to distinguish and order objects</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Referenz der planmäßige Sammlung von abstrakten Konzepten, die zur Abgrenzung und Ordnung von Objekten verwendet werden</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ClassificationSystemVersion</idShort>
+      <id>0173-1#02-AAR710#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Version of the classification system</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Version des Klassifikationssystems</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassVersion</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>KlassenVersion</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Referenced state of the published classification system</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Referenziertes Stadium des publizierten Klassifikationssystems</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ClassificationSystemUrl</idShort>
+      <id>https://admin-shell.io/IDTA/TechnicalData/ProductClassifications/ProduktClassification/ClassificationSystemUrl/2/0</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Classification system URL</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>URL des Klassifikationssystems</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassUrl</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>KlassenURL</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Classification system URL</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ProductClassId</idShort>
+      <id>0173-1#02-ABG776#003</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Product class ID</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktklassen ID</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassID</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>KlassenID</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Class of the associated product or industrial equipment in the classification system. According to the notation of the system (IRDI)</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Klasse des zugehörigen Produkts oder der zugehörigen Industrieausrüstung im Klassifikationssystem. Entsprechend der Notation des Systems (IRDI)</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ProductClassCodedName</idShort>
+      <id>0173-1#02-ABK128#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Product Class Coded Name</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktklasse Coded Name</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ProductCCN</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>ProduktCCN</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Unique class code in a classification hierarchy</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Eindeutige Kodierung einer Klasse in einer Klassifikationshierarchie</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ProductClassName</idShort>
+      <id>0173-1#02-ABK273#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Product class name</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Produktklasse Name</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ClassName</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Klassenname</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Name of product class in the used classification system</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Name der Produktklasse im verwendeten Klassifikationssystem</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ReferenceToTechnicalPropertyArea</idShort>
+      <id>0173-1#02-ABL358#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Reference to technical property area</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Referenz auf einen technsichen Merkmalsbereich</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>RefPropArea</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>RefMerkmBereich</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Reference to technical property area</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Referenz auf einen technsichen Merkmalsbereich</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <id>0173-1#02-ABK163#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Technical property areas</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Technsiche Merkmalsbereiche</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>PropAreas</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Merkmalsbereiche</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>List of all technical property areas</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Liste aller technischen Merkmalsbereiche</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>TechnicalPropertyArea</idShort>
+      <id>0173-1#02-ABL358#002/0173-1#01-AHX773#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Technical property area</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Technischer Merkmalsbereich</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>PropArea</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>MerkmalsBereich</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Specific property area referenced by a product classification</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Spezifischer Merkmalsbereich referenziert von einer Produktklassifikation</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>arbitrary</idShort>
+      <id>https://admin-shell.io/IDTA/TechnicalData/{arbitrary}/2/0</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Arbitrary element</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>beliebiges Element</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Arbitrary</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Beliebig</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Arbitrary SubmodelElement with semanticId possibly referring to a ConceptDescription can be used within the Technical Properties.</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Ein beliebiges SubmodelElement mit semanticId, das möglicherweise auf eine ConceptDescription verweist, kann innerhalb der technischen Eigenschaften verwendet werden.</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>FurtherInformation</idShort>
+      <id>0173-1#02-ABK164#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Further information</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Weitere Informationen</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>FurtherInfo</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>WeitereInfo</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Further information on the product, the validity of the information provided and this data record</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Weitere Informationen über das Produkt, die Gültigkeit der bereitgestellten Informationen und diesen Datensatz</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>TextStatement</idShort>
+      <id>0173-1#02-ABK134#002</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Text statement</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Anweisung im Text</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>TextStatement</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>TextAnweisung</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>STRING_TRANSLATABLE</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Statement by the manufacturer in text form, e.g. scope of validity of the statements, scopes of application, conditions of operation.</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Erklärung des Herstellers in Textform, z.B. Gültigkeitsbereich der Aussagen, Anwendungsbereiche, Einsatzbedingungen</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>ValidDate</idShort>
+      <id>0173-1#02-ABL775#001</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>http://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Validity date</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Verfallsdatum</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>ValidDate</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Verfallsdatum</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <dataType>DATE</dataType>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Date at which a product, process, norm or similar becomes invalid</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Datum, bis zu dem ein Produkt, ein Verfahren, eine Norm o.ä. gültig ist</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>Section</idShort>
+      <description>
+        <langStringTextType>
+          <language>en</language>
+          <text>Subdivision possibility for properties, which has no specific (machine-readable) semanticId</text>
+        </langStringTextType>
+        <langStringTextType>
+          <language>en</language>
+          <text>Note: The idShort is arbitrary.</text>
+        </langStringTextType>
+        <langStringTextType>
+          <language>en</language>
+          <text>Note: Using displayName is recommended.</text>
+        </langStringTextType>
+      </description>
+      <id>https://admin-shell.io//IDTA/TechnicalData/Section/1/0</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Section</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Sektion</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>Section</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>Sektion</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Subdivision possibility for properties, which has no specific (machine-readable) semanticId</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Unterteilungsmöglichkeit für Eigenschaften, die keine spezifische (maschinenlesbare) semantische ID haben</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <id>0173-1#02-ABM221#001</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Specific descriptions</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Spezifiche Beschreibungen</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>SpecDescrisptions</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>SpezBeschreibungen</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Specific description areas for multiple use cases or areas of ​​application</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Spezifische Beschreibungsbereiche für mehrere Anwendungsfälle oder Anwendungsbereiche</text>
+                </langStringDefinitionTypeIec61360>
+              </definition>
+            </dataSpecificationIec61360>
+          </dataSpecificationContent>
+        </embeddedDataSpecification>
+      </embeddedDataSpecifications>
+    </conceptDescription>
+    <conceptDescription>
+      <idShort>SpecificDescription</idShort>
+      <description>
+        <langStringTextType>
+          <language>en</language>
+          <text>Note: The idShort is arbitrary.</text>
+        </langStringTextType>
+        <langStringTextType>
+          <language>en</language>
+          <text>Note: Using displayName is recommended for the titel of the specific description.</text>
+        </langStringTextType>
+      </description>
+      <id>0173-1#02-ABM221#001/0173-1#01-AHY912#001</id>
+      <embeddedDataSpecifications>
+        <embeddedDataSpecification>
+          <dataSpecification>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIec61360/3/0</value>
+              </key>
+            </keys>
+          </dataSpecification>
+          <dataSpecificationContent>
+            <dataSpecificationIec61360>
+              <preferredName>
+                <langStringPreferredNameTypeIec61360>
+                  <language>en</language>
+                  <text>Specific description</text>
+                </langStringPreferredNameTypeIec61360>
+                <langStringPreferredNameTypeIec61360>
+                  <language>de</language>
+                  <text>Spezifiche Beschreibung</text>
+                </langStringPreferredNameTypeIec61360>
+              </preferredName>
+              <shortName>
+                <langStringShortNameTypeIec61360>
+                  <language>en</language>
+                  <text>SpecDescription</text>
+                </langStringShortNameTypeIec61360>
+                <langStringShortNameTypeIec61360>
+                  <language>de</language>
+                  <text>SpezBeschreibung</text>
+                </langStringShortNameTypeIec61360>
+              </shortName>
+              <definition>
+                <langStringDefinitionTypeIec61360>
+                  <language>en</language>
+                  <text>Specific description for a use case or area of ​​application</text>
+                </langStringDefinitionTypeIec61360>
+                <langStringDefinitionTypeIec61360>
+                  <language>de</language>
+                  <text>Spezifische Beschreibung für einen Anwendungsfall oder ein Einsatzgebiet</text>
                 </langStringDefinitionTypeIec61360>
               </definition>
             </dataSpecificationIec61360>

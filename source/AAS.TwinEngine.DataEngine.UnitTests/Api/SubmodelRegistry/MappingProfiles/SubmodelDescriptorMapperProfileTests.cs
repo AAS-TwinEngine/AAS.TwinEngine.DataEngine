@@ -2,7 +2,7 @@
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.UnitTests.Api.Shared.MappingProfiles;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Api.SubmodelRegistry.MappingProfiles;
 

@@ -1,9 +1,9 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using AasCore.Aas3_0;
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,7 +28,8 @@ public class ReferenceHelperTests
             SubmodelElementIndexContextPrefix = "_aastwinengineindex_"
         });
         var templateManagementConfig = Options.Create(new TemplateManagementConfig());
-        _resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig);
+        var logger = Substitute.For<ILogger<SemanticIdResolver>>();
+        _resolver = new SemanticIdResolver(pluginsConfig, templateManagementConfig, logger);
         _logger = Substitute.For<ILogger<ReferenceHelper>>();
         _sut = new ReferenceHelper(_resolver, _logger);
     }
