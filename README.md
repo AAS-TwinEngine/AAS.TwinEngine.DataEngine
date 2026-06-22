@@ -1,9 +1,5 @@
 # DataEngine
 
-[![Made by M&M Software](https://img.shields.io/badge/Made_by_M%26M_Software-364955?style=flat-square)](https://www.mm-software.com/)
-[![Apache License](https://img.shields.io/badge/License-Apache-364955.svg?style=flat-square)](https://www.apache.org/licenses/)
-[![.NET 8.0](https://img.shields.io/badge/.NET-8.0-512BD4)](https://learn.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-10.0&WT.mc_id=dotnet-35129-website) 
-
 ## Overview
 
 ## DataEngine Overview
