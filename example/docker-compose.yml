@@ -57,7 +57,7 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
-      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=.+
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5

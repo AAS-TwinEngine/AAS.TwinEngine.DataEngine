@@ -53,7 +53,7 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/CustomSubmodel/Template/0/1
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=CustomSubmodel
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
-      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=.+
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
