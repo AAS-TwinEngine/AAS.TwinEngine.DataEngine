@@ -1,7 +1,7 @@
 -- ============================================================
--- Core Data Insertion
+-- Nameplate / Carbon Footprint / Technical Data Schema (Table Creation)
 -- ============================================================
--- This file contains CREATE and INSERT statements for core business entities for NamePlate Submodel:
+-- This file contains CREATE TABLE statements for core business entities for the Nameplate submodel:
 -- - Markings
 -- - Asset-Marking relationships
 -- - Product Classification Items
