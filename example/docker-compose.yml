@@ -26,7 +26,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:v1.0.0
+    image: ghcr.io/aas-twinengine/dataengine:v1.1.0
     container_name: twinengine-dataengine
     depends_on:
       dpp-plugin:
@@ -95,7 +95,7 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:v1.0.0
+    image: ghcr.io/aas-twinengine/plugindpp:v1.1.0
     container_name: dpp-plugin
     depends_on:
       postgres:
