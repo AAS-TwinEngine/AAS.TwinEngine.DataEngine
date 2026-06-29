@@ -27,7 +27,6 @@ services:
 
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:v1.1.0
-    image: ghcr.io/aas-twinengine/dataengine:v1.0.0
     build:
       context: ../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
