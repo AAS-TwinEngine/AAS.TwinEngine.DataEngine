@@ -28,7 +28,7 @@ Before running the demonstrator, ensure you have installed:
   - `8080` — Main API Gateway (nginx)
   - `8081` - PGAdmin 
 
-### Running the Setup
+### Running the Demonstrator Using Prebuilt Images
 
 1. **Clone or extract this repository:**
    ```bash
@@ -55,6 +55,65 @@ cd AAS.TwinEngine.DataEngine\example
    ```bash
    docker-compose down
    ```
+
+### Building Images Locally
+
+If you want to test local code changes instead of using prebuilt container images from GitHub Container Registry (GHCR), build the images directly from source.
+
+#### Repository Structure
+
+**Clone both repositories into the same root directory:** 
+
+```bash
+mkdir TwinEngine
+cd TwinEngine
+```
+
+
+```bash
+git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine.git
+git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.Plugin.DPP.git
+```
+
+Your folder structure should look like this:
+
+```json
+root(TwinEngine)
+│
+├── AAS.TwinEngine.DataEngine
+│   └── source
+|   └── example
+|       └── docker-compose.yml
+│
+├── AAS.TwinEngine.Plugin.DPP
+│   └── source
+```
+
+Build and Run
+
+1) **Navigate to the example folder of the DataEngine repository:**
+```bash
+cd AAS.TwinEngine.DataEngine/example
+```
+
+2) **Build and start all services:** 
+```bash
+docker compose up -d --build
+```
+
+This command will:
+
+- Build twinengine-dataengine image from local source
+- Build dpp-plugin image from local source
+- Start all services using freshly built images
+
+#### When to Use --build
+Use the build option when:
+
+- You have modified DataEngine source code
+- You have modified Plugin source code
+- You want to validate local changes before publishing
+- You want to avoid using prebuilt GHCR images
 
 ## Architecture & Services
 
