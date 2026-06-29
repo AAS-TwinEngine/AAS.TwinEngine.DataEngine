@@ -77,17 +77,13 @@ git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.Plugin.DPP.git
 
 **Your folder structure should look like this:**
 
-```json
-root(TwinEngine)
-│
-├── AAS.TwinEngine.DataEngine
-│   └── source
-|   └── example
-|       └── docker-compose.yml
-│
-├── AAS.TwinEngine.Plugin.DPP
-│   └── source
-```
+    TwinEngine/
+    ├── AAS.TwinEngine.DataEngine/
+    │   ├── source/
+    │   └── example/
+    │       └── docker-compose.yml
+    └── AAS.TwinEngine.Plugin.DPP/
+        └── source/
 
 Build and Run
 
