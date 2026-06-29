@@ -1,7 +1,7 @@
 -- ============================================================
--- Maintenance Instructions Data Insertion
+-- Maintenance Instructions Schema (Table Creation)
 -- ============================================================
--- This file contains CREATE and INSERT statements for contact-related entities:
+-- This file contains CREATE TABLE statements for maintenance-related entities:
 -- - Maintenance Instructions For Specific Interval
 -- - Alarm
 -- - ContactForMaintenanceAuthorization - Email - Phone - Fax

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:548d93f8a18a1acbe6cc127bc4f47281430d34a9e35c18afa80a8d6741c2adc3 AS build 
+FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ea8bde36c11b6e7eec2656d0e59101d4462f6bd630730f2c8201ed0572b295d5 AS build 
 # Install CycloneDX SBOM Generator Package
 RUN dotnet tool install --global CycloneDX --version 5.5.0
 ENV PATH="$PATH:/root/.dotnet/tools"
@@ -19,7 +19,7 @@ FROM scratch AS app-sbom-artifact
 COPY --from=build /App/sbom/bom.xml /sbom_application.cyclonedx.xml
 
 # Create final image containing application
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:f03685b2735e0d3d25d6c60672e74b21bb6334f1402f71bae2d2cf02307163cd
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:57bd717ac18ff6c8a39cc0ee4a76c1f15adc46df50434c73eff0c3f1df4c88f0
 USER app
 WORKDIR /App
 COPY --from=build /App/out .

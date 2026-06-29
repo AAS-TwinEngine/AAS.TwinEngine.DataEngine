@@ -26,6 +26,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
+    image: ghcr.io/aas-twinengine/dataengine:v1.1.0
     image: ghcr.io/aas-twinengine/dataengine:v1.0.0
     build:
       context: ../source
@@ -60,7 +61,7 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
-      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=.+
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
@@ -98,7 +99,7 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:v1.0.0
+    image: ghcr.io/aas-twinengine/plugindpp:v1.1.0
     container_name: dpp-plugin
     build:
       context: ../../AAS.TwinEngine.Plugin.DPP/source

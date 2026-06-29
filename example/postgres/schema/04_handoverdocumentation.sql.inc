@@ -1,7 +1,7 @@
 -- ============================================================
--- Classification and Document Data Insertion
+-- Handover Documentation Schema (Table Creation)
 -- ============================================================
--- This file contains CREATE and INSERT statements for:
+-- This file contains CREATE TABLE statements for:
 -- - Documents and Document metadata
 -- - Document Classifications
 -- - Document Versions
