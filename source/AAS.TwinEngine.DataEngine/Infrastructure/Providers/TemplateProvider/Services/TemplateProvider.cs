@@ -75,16 +75,6 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
             logger.LogError(ex, "Failed to parse or deserialize shell descriptor template JSON. TemplateId: {TemplateId}", templateId);
             throw new ResponseParsingException();
         }
-        catch (InvalidOperationException ex)
-        {
-            logger.LogError(ex, "Failed to deserialize shell descriptor template JSON. TemplateId: {TemplateId}", templateId);
-            throw new ResponseParsingException();
-        }
-        catch (ArgumentException ex)
-        {
-            logger.LogError(ex, "Invalid shell descriptor template JSON format. TemplateId: {TemplateId}", templateId);
-            throw new ResponseParsingException();
-        }
     }
 
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string templateId, CancellationToken cancellationToken)

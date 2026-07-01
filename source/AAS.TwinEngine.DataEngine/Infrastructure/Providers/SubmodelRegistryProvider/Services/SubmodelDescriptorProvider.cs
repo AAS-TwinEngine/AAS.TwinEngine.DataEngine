@@ -56,16 +56,6 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
             logger.LogError(ex, "Failed to deserialize SubmodelDescriptor from response. Submodel ID: {SubmodelId}, Response: {ResponseContent}", id, responseContent);
             throw new ResponseParsingException();
         }
-        catch (InvalidOperationException ex)
-        {
-            logger.LogError(ex, "Failed to deserialize SubmodelDescriptor from response. Submodel ID: {SubmodelId}, Response: {ResponseContent}", id, responseContent);
-            throw new ResponseParsingException();
-        }
-        catch (ArgumentException ex)
-        {
-            logger.LogError(ex, "Invalid SubmodelDescriptor response format. Submodel ID: {SubmodelId}, Response: {ResponseContent}", id, responseContent);
-            throw new ResponseParsingException();
-        }
     }
 
     private static SubmodelDescriptor? DeserializeSubmodelDescriptor(JsonNode? descriptorNode)
