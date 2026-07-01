@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
+
 public class ShellDescriptorDto
 {
     [JsonPropertyName("description")]
