@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel;
+using System.Net;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
@@ -11,39 +12,37 @@ using AasCore.Aas3_1;
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel;
+
+using NSwag.Annotations;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRepository;
 
 [ApiController]
 [Route("shells")]
+[OpenApiTags("Asset Administration Shell Repository API")]
 [ApiVersion(1)]
 public class AasRepositoryController(
     ILogger<AasRepositoryController> logger,
     IAasRepositoryHandler aasRepositoryHandler) : ControllerBase
 {
     /// <summary>
-    /// Returns Asset Administration Shells, optionally filtered by asset identifiers.
+    /// Returns all Asset Administration Shells
     /// </summary>
-    /// <remarks>
-    /// IDTA repository semantics: without <c>assetIds</c>, the endpoint returns paginated shells.
-    /// With <c>assetIds</c>, only shells linked to the given assets are returned.
-    /// </remarks>
-    /// <param name="assetIds">Optional base64url encoded asset identifiers. Example: aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYXNzZXQvNDcxMQ.</param>
-    /// <param name="limit">Maximum number of shells to return per page. Example: 100.</param>
-    /// <param name="cursor">Opaque cursor from a previous response for pagination continuation.</param>
+    /// <param name="assetIds">A list of specific Asset identifiers. Each Asset identifier is a base64-url-encoded SpecificAssetId</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Shell list was returned.</response>
-    /// <response code="400">Input parameters are invalid.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <response code="200">Requested Asset Administration Shells</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet]
     [ProducesResponseType(typeof(ShellsDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync(
-        [FromQuery, Description("Optional base64url encoded asset identifiers used to filter shells.")] string[]? assetIds,
-        [FromQuery, Description("Maximum number of shells to return in one page. Example: 100.")] int? limit,
-        [FromQuery, Description("Opaque cursor token from a previous page.")] string? cursor,
+        [FromQuery] string[]? assetIds,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get shells by asset identifiers");
@@ -52,21 +51,21 @@ public class AasRepositoryController(
     }
 
     /// <summary>
-    /// Returns a single Asset Administration Shell by identifier.
+    /// Returns a specific Asset Administration Shell
     /// </summary>
-    /// <param name="aasIdentifier">Base64url encoded AAS identifier. Example: aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg.</param>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">The shell was returned.</response>
-    /// <response code="400">Identifier format is invalid.</response>
-    /// <response code="404">No shell exists for the given identifier.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <response code="200">Requested Asset Administration Shell</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet("{aasIdentifier}")]
-    [ProducesResponseType(typeof(IAssetAdministrationShell), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(AssetAdministrationShell), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<JsonObject>> GetShellByIdAsync(
-        [FromRoute, Description("Base64url encoded AAS identifier.")] string aasIdentifier,
+        [FromRoute] string aasIdentifier,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get shell");
@@ -76,21 +75,21 @@ public class AasRepositoryController(
     }
 
     /// <summary>
-    /// Returns asset information for a specific Asset Administration Shell.
+    /// Returns the Asset Information
     /// </summary>
-    /// <param name="aasIdentifier">Base64url encoded AAS identifier.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Asset information was returned.</response>
-    /// <response code="400">Identifier format is invalid.</response>
-    /// <response code="404">No shell exists for the given identifier.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <response code="200">Requested Asset Information</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet("{aasIdentifier}/asset-information")]
     [ProducesResponseType(typeof(IAssetInformation), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<JsonObject>> GetAssetInformationByIdAsync(
-        [FromRoute, Description("Base64url encoded AAS identifier.")] string aasIdentifier,
+        [FromRoute] string aasIdentifier,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get asset information");
@@ -100,25 +99,25 @@ public class AasRepositoryController(
     }
 
     /// <summary>
-    /// Returns submodel references associated with a specific Asset Administration Shell.
+    /// Returns all submodel references
     /// </summary>
-    /// <param name="aasIdentifier">Base64url encoded AAS identifier.</param>
-    /// <param name="limit">Maximum number of references to return in one page. Example: 100.</param>
-    /// <param name="cursor">Opaque cursor token from a previous response page.</param>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Submodel references were returned.</response>
-    /// <response code="400">Input parameters are invalid.</response>
-    /// <response code="404">No shell exists for the given identifier.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <response code="200">Requested submodel references</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet("{aasIdentifier}/submodel-refs")]
     [ProducesResponseType(typeof(SubmodelRefDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<SubmodelRefDto>> GetSubmodelRefByIdAsync(
-        [FromRoute, Description("Base64url encoded AAS identifier.")] string aasIdentifier,
-        [FromQuery, Description("Maximum number of references to return in one page. Example: 100.")] int? limit,
-        [FromQuery, Description("Opaque cursor token from a previous page.")] string? cursor,
+        [FromRoute] string aasIdentifier,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get submodel-refs for shell");

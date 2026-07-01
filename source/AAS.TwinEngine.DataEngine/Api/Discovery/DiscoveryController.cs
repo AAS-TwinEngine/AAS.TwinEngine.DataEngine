@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
@@ -8,43 +9,37 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel;
+
+using NSwag.Annotations;
 
 namespace AAS.TwinEngine.DataEngine.Api.Discovery;
 
 [ApiController]
 [Route("lookup")]
 [ApiVersion(1)]
+[OpenApiTags("Asset Administration Shell Basic Discovery API")]
 public class DiscoveryController(
     ILogger<DiscoveryController> logger,
     IDiscoveryHandler discoveryHandler) : ControllerBase
 {
     /// <summary>
-    /// Finds AAS identifiers by asset links.
+    /// Returns a list of Asset Administration Shell IDs linked to specific asset identifiers or the global asset ID
     /// </summary>
-    /// <remarks>
-    /// IDTA Basic Discovery API semantics: each asset link is a name/value pair and the result contains matching shell identifiers.
-    ///
-    /// Example request body:
-    /// [
-    ///   { "name": "globalAssetId", "value": "https://example.com/ids/asset/4711" }
-    /// ]
-    /// </remarks>
-    /// <param name="assetLinks">Asset links used for lookup. At least one entry is expected.</param>
-    /// <param name="limit">Maximum number of returned identifiers for one page. Example: 100.</param>
-    /// <param name="cursor">Opaque cursor token returned by a previous response for pagination continuation.</param>
+    /// <param name="assetLinks">A list of specific asset identifiers. Search for the global asset ID is supported by setting "name" to "globalAssetId" (see Constraint AASd-116).</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Matching AAS identifiers and pagination metadata were returned.</response>
-    /// <response code="400">Input is invalid, for example an empty body or malformed asset link entry.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <response code="200">Requested Asset Administration Shell IDs</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpPost("shellsByAssetLink")]
     [ProducesResponseType(typeof(ShellsByAssetLinkResponseDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<ShellsByAssetLinkResponseDto>> SearchShellsByAssetLinkAsync(
         [FromBody] AssetLinkDto[] assetLinks,
-        [FromQuery, Description("Maximum number of identifiers to return in one page. Example: 100.")] int? limit,
-        [FromQuery, Description("Opaque cursor from a previous response used to continue paginated discovery results.")] string? cursor,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
         CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Start request to search shells by asset link");

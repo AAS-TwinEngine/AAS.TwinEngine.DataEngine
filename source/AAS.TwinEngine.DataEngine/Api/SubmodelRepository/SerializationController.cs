@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
@@ -7,41 +8,39 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel;
+
+using NSwag.Annotations;
 
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
 
 [ApiController]
 [Route("serialization")]
 [ApiVersion(1)]
+[OpenApiTags("Serialization API")]
 public class SerializationController(
     ILogger<SerializationController> logger,
     ISerializationHandler serializationHandler) : ControllerBase
 {
     /// <summary>
-    /// Exports selected shells and submodels as an AASX package.
+    /// Returns an appropriate serialization based on the specified format(see SerializationFormat)
     /// </summary>
-    /// <remarks>
-    /// Route behavior is intentionally unchanged in this release for backward compatibility.
-    /// Example identifiers are expected in base64url format.
-    /// </remarks>
-    /// <param name="aasIds">Base64url encoded AAS identifiers to include in the export.</param>
-    /// <param name="submodelIds">Base64url encoded submodel identifiers to include in the export.</param>
+    /// <param name="aasIds">The Asset Administration Shells' unique ids (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIds">The Submodels' unique ids (UTF8-BASE64-URL-encoded)</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <param name="includeConceptDescriptions">If true, related concept descriptions are added to the package. Default: true.</param>
-    /// <response code="200">AASX package stream was returned.</response>
-    /// <response code="400">Input parameters are invalid.</response>
-    /// <response code="404">One or more referenced entities were not found.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <param name="includeConceptDescriptions">Include Concept Descriptions?</param>
+    /// <response code="200">Requested serialization based on SerializationFormat</response>
+    /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet("")]
     [ProducesResponseType(typeof(FileStreamResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult> SerializeAasxAsync([FromQuery, Description("Base64url encoded AAS identifiers.")] string[] aasIds,
-                                                       [FromQuery, Description("Base64url encoded submodel identifiers.")] string[] submodelIds,
+    public async Task<ActionResult> SerializeAasxAsync([FromQuery] string[] aasIds,
+                                                       [FromQuery] string[] submodelIds,
                                                        CancellationToken cancellationToken,
-                                                       [FromQuery, Description("Include related concept descriptions in the exported AASX package.")] bool includeConceptDescriptions = true)
+                                                       [FromQuery] bool includeConceptDescriptions = true)
     {
         logger.LogInformation("Start request to get aasx file");
 

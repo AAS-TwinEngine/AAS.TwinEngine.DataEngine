@@ -1,5 +1,5 @@
-﻿using System.Net;
-using System.Text.Json.Nodes;
+﻿using System.ComponentModel;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
@@ -10,65 +10,65 @@ using AasCore.Aas3_1;
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel;
+
+using NSwag.Annotations;
 
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
 
 [ApiController]
 [Route("submodels")]
 [ApiVersion(1)]
+[OpenApiTags("Submodel Repository API")]
 public class SubmodelRepositoryController(
     ILogger<SubmodelRepositoryController> logger,
     ISubmodelRepositoryHandler submodelRepositoryHandler)
     : ControllerBase
 {
     /// <summary>
-    /// Returns a submodel by identifier.
+    /// Returns a specific Submodel.
     /// </summary>
-    /// <param name="submodelIdentifier">Base64url encoded submodel identifier.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Submodel was returned.</response>
-    /// <response code="400">Identifier format is invalid.</response>
-    /// <response code="404">No submodel exists for the given identifier.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <response code="200">Requested Submodel</response>
+    /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet("{submodelIdentifier}")]
-    [ProducesResponseType(typeof(ISubmodel), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(Submodel), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetSubmodelAsync(
-        [FromRoute, Description("Base64url encoded submodel identifier.")] string submodelIdentifier,
+    public async Task<ActionResult<Submodel>> GetSubmodelAsync(
+        [FromRoute] string submodelIdentifier,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel");
         var request = new GetSubmodelRequest(submodelIdentifier);
         var response = await submodelRepositoryHandler.GetSubmodel(request, cancellationToken).ConfigureAwait(false);
-        return Ok(Jsonization.Serialize.ToJsonObject(response));
+        return Ok(response);
     }
 
     /// <summary>
-    /// Returns a submodel element by idShort path.
+    /// Returns a specific submodel element from the submodel at a specified path
     /// </summary>
-    /// <param name="submodelIdentifier">Base64url encoded submodel identifier.</param>
-    /// <param name="idShortPath">URL-encoded idShort path to a nested submodel element. Example: Nameplate/ManufacturerName.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Submodel element was returned.</response>
-    /// <response code="400">Input format is invalid.</response>
-    /// <response code="404">No element exists for the given identifier or path.</response>
-    /// <response code="500">Unexpected server-side error occurred.</response>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="idShortPath">The IdShort path to the submodel element (dot-separated)</param>
+    /// <response code="200">Requested submodel element</response>
+    /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet("{submodelIdentifier}/submodel-elements/{idShortPath}")]
     [ProducesResponseType(typeof(ISubmodelElement), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetSubmodelElementAsync(
-        [FromRoute, Description("Base64url encoded submodel identifier.")] string submodelIdentifier,
-        [FromRoute, Description("URL-encoded idShort path to the target submodel element.")] string idShortPath,
+    public async Task<ActionResult<ISubmodelElement>> GetSubmodelElementAsync(
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel Element");
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
         var response = await submodelRepositoryHandler.GetSubmodelElement(request, cancellationToken).ConfigureAwait(false);
-        return Ok(Jsonization.Serialize.ToJsonObject(response));
+        return Ok(response);
     }
 }
