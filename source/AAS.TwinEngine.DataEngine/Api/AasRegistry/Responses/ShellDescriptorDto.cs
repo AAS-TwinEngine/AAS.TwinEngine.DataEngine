@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using System.ComponentModel;
 
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
@@ -31,7 +30,6 @@ public class ShellDescriptorDto
     public IList<EndpointDto>? Endpoints { get; init; }
 
     [JsonPropertyName("globalAssetId")]
-    [DefaultValue("https://example.com/ids/asset/4711")]
     public string? GlobalAssetId { get; set; }
 
     [JsonPropertyName("idShort")]

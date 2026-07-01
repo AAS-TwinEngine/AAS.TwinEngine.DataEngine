@@ -39,10 +39,7 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ShellsDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync(
-        [FromQuery] string[]? assetIds,
-        [FromQuery] int? limit,
-        [FromQuery] string? cursor,
+    public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync([FromQuery] string[]? assetIds, [FromQuery] int? limit, [FromQuery] string? cursor,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get shells by asset identifiers");
@@ -64,9 +61,7 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetShellByIdAsync(
-        [FromRoute] string aasIdentifier,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetShellByIdAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get shell");
         var request = new GetShellRequest(aasIdentifier);
@@ -88,9 +83,7 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetAssetInformationByIdAsync(
-        [FromRoute] string aasIdentifier,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetAssetInformationByIdAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get asset information");
         var request = new GetAssetInformationRequest(aasIdentifier);
@@ -114,11 +107,7 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<SubmodelRefDto>> GetSubmodelRefByIdAsync(
-        [FromRoute] string aasIdentifier,
-        [FromQuery] int? limit,
-        [FromQuery] string? cursor,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetSubmodelRefByIdAsync([FromRoute] string aasIdentifier, [FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get submodel-refs for shell");
         var request = new GetSubmodelRefRequest(aasIdentifier, limit, cursor);

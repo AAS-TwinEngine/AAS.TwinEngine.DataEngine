@@ -4,9 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 
-/// <summary>
-/// IDTA discovery asset link used to search for matching AAS identifiers.
-/// </summary>
 public class AssetLinkDto
 {
     [JsonPropertyName("name")]

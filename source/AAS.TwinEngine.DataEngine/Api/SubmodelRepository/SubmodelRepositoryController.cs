@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Net;
+using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
@@ -37,9 +38,7 @@ public class SubmodelRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Submodel>> GetSubmodelAsync(
-        [FromRoute] string submodelIdentifier,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<Submodel>> GetSubmodelAsync([FromRoute] string submodelIdentifier, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel");
         var request = new GetSubmodelRequest(submodelIdentifier);
@@ -61,14 +60,11 @@ public class SubmodelRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ISubmodelElement>> GetSubmodelElementAsync(
-        [FromRoute] string submodelIdentifier,
-        [FromRoute] string idShortPath,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetSubmodelElementAsync([FromRoute] string submodelIdentifier, [FromRoute] string idShortPath, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel Element");
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
         var response = await submodelRepositoryHandler.GetSubmodelElement(request, cancellationToken).ConfigureAwait(false);
-        return Ok(response);
+        return Ok(Jsonization.Serialize.ToJsonObject(response));
     }
 }

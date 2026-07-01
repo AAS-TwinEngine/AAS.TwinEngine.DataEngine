@@ -38,10 +38,7 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync(
-        [FromQuery] int? limit,
-        [FromQuery] string? cursor,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get All ShellDescriptors");
         var request = new GetShellDescriptorsRequest(limit, cursor);
@@ -63,9 +60,7 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShellDescriptorDto>> GetShellDescriptorByIdAsync(
-        [FromRoute, Description("Base64url encoded AAS identifier.")] string aasIdentifier,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<ShellDescriptorDto>> GetShellDescriptorByIdAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get ShellDescriptor");
         var request = new GetShellDescriptorRequest(aasIdentifier);

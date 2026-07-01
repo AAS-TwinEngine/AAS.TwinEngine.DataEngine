@@ -37,9 +37,7 @@ public class SubmodelDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<SubmodelDescriptorDto>> GetSubmodelDescriptorByIdAsync(
-        [FromRoute] string submodelIdentifier,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<SubmodelDescriptorDto>> GetSubmodelDescriptorByIdAsync([FromRoute] string submodelIdentifier, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel Descriptor");
         var request = new GetSubmodelDescriptorRequest(submodelIdentifier);

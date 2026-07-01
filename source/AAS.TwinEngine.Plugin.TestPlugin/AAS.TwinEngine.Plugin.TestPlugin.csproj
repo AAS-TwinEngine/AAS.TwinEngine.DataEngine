@@ -4,8 +4,6 @@
 	  <TargetFramework>net10.0</TargetFramework>
 	  <Nullable>enable</Nullable>
 	  <ImplicitUsings>enable</ImplicitUsings>
-	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
-	  <NoWarn>$(NoWarn);1591</NoWarn>
 	  <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	  <DockerfileContext>.</DockerfileContext>
       <UserSecretsId>2ba5fa1c-2588-4655-bd1f-bc7cd274eba9</UserSecretsId>
