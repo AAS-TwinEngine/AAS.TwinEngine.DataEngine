@@ -38,12 +38,12 @@ public class SubmodelRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Submodel>> GetSubmodelAsync([FromRoute] string submodelIdentifier, CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetSubmodelAsync([FromRoute] string submodelIdentifier, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel");
         var request = new GetSubmodelRequest(submodelIdentifier);
         var response = await submodelRepositoryHandler.GetSubmodel(request, cancellationToken).ConfigureAwait(false);
-        return Ok(response);
+        return Ok(Jsonization.Serialize.ToJsonObject(response));
     }
 
     /// <summary>
