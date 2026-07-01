@@ -20,8 +20,7 @@ public static class AasJsonNodeDeserializer
         }
 
         return [.. array.Select(item => item is null ? null : deserializer(item))
-                    .Where(item => item is not null)
-                    .Cast<T>()];
+                    .OfType<T>()];
     }
 
     public static T? DeserializeObject<T>(JsonNode? node, JsonSerializerOptions? options = null)
