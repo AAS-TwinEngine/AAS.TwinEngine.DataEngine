@@ -6,9 +6,14 @@
   "idShort": "ContactInformations",
   "id": "https://mm-software.com/submodel/000-001/ContactInformation",
   "semanticId": {
-    "type": "ExternalReference",
+    "type": "ModelReference",
     "referredSemanticId": null,
-    "keys": null
+    "keys": [
+      {
+        "type": "Submodel",
+        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations"
+      }
+    ]
   },
   "supplementalSemanticId": null,
   "endpoints": [

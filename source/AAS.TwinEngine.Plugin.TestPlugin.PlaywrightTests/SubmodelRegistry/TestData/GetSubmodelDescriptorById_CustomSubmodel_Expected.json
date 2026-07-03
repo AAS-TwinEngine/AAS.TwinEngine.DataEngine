@@ -1,8 +1,8 @@
 {
   "description": [
     {
-      "language": null,
-      "text": null
+      "language": "en",
+      "text": "The Submodel HierarchicalStructures identified by its semanticId. The Submodel idShort can be picked freely."
     }
   ],
   "displayName": null,
@@ -13,7 +13,12 @@
   "semanticId": {
     "type": "ExternalReference",
     "referredSemanticId": null,
-    "keys": null
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1"
+      }
+    ]
   },
   "supplementalSemanticId": null,
   "endpoints": [
