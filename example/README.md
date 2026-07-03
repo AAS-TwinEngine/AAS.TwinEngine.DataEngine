@@ -103,7 +103,7 @@ This command will:
 - Build dpp-plugin image from local source
 - Start all services using freshly built images
 
-#### When to Use --build
+#### **When to use : `--build`**
 
 Use the build option when:
 
