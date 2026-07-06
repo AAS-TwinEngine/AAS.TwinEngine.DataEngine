@@ -5,7 +5,10 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -55,8 +58,11 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
         try
         {
-            var descriptor = JsonSerializer.Deserialize<ShellDescriptor>(content);
-            if (descriptor != null)
+            var jsonNode = JsonNode.Parse(content);
+            var descriptorNode = jsonNode?["result"] ?? jsonNode;
+            var descriptor = DeserializeShellDescriptor(descriptorNode);
+
+            if (descriptor is not null)
             {
                 return descriptor;
             }
@@ -230,6 +236,30 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
                 logger.LogError("Validation error encountered. Endpoint: {Url}", url);
                 throw new ValidationFailedException();
         }
+    }
+
+    private static ShellDescriptor? DeserializeShellDescriptor(JsonNode? descriptorNode)
+    {
+        if (descriptorNode is null)
+        {
+            return null;
+        }
+
+        return new ShellDescriptor
+        {
+            Description = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["description"], Jsonization.Deserialize.LangStringTextTypeFrom),
+            DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["displayName"], Jsonization.Deserialize.LangStringNameTypeFrom),
+            Extensions = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["extensions"], Jsonization.Deserialize.ExtensionFrom),
+            Administration = AasJsonNodeDeserializer.DeserializeAasNode(descriptorNode["administration"], Jsonization.Deserialize.AdministrativeInformationFrom),
+            AssetKind = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(descriptorNode["assetKind"]),
+            AssetType = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(descriptorNode["assetType"]),
+            Endpoints = descriptorNode["endpoints"]?.Deserialize<List<EndpointData>>(),
+            GlobalAssetId = descriptorNode["globalAssetId"]?.GetValue<string>(),
+            IdShort = descriptorNode["idShort"]?.GetValue<string>(),
+            Id = descriptorNode["id"]?.GetValue<string>(),
+            SpecificAssetIds = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["specificAssetIds"], Jsonization.Deserialize.SpecificAssetIdFrom),
+            SubmodelDescriptors = descriptorNode["submodelDescriptors"]?.Deserialize<List<SubmodelDescriptor>>()
+        };
     }
 
     private static void UpdateSubmodelTemplateKind(ISubmodel submodel) => submodel.Kind = ModellingKind.Instance;

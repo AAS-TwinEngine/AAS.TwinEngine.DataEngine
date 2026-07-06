@@ -122,6 +122,85 @@ public class TemplateProviderTests
         Assert.Equal("https://admin-shell.io/idta/asset/ContactInformation/1/0", result.GlobalAssetId);
     }
 
+        [Fact]
+        public async Task GetShellDescriptorTemplateAsync_DeserializesAasNestedTypes_WhenResponseContainsAasPayload()
+        {
+                const string JsonResponse = """
+                                                                        {
+                                                                            "description": [
+                                                                                {
+                                                                                    "language": "en",
+                                                                                    "text": "Template Asset Administration Shell for example environments."
+                                                                                }
+                                                                            ],
+                                                                            "displayName": [
+                                                                                {
+                                                                                    "language": "en",
+                                                                                    "text": "AAS Template"
+                                                                                }
+                                                                            ],
+                                                                            "extensions": [
+                                                                                {
+                                                                                    "name": "templateSource",
+                                                                                    "valueType": "xs:string",
+                                                                                    "value": "ShellTemplate"
+                                                                                }
+                                                                            ],
+                                                                            "administration": {
+                                                                                "version": "1",
+                                                                                "revision": "0"
+                                                                            },
+                                                                            "assetKind": "Instance",
+                                                                            "id": "https://mm-software.com/aas/aasTemplate",
+                                                                            "specificAssetIds": [
+                                                                                {
+                                                                                    "name": "SerialNumber",
+                                                                                    "value": "SN-9429",
+                                                                                    "externalSubjectId": {
+                                                                                        "type": "ExternalReference",
+                                                                                        "keys": [
+                                                                                            {
+                                                                                                "type": "GlobalReference",
+                                                                                                "value": "https://example.com/subjects/serial-number"
+                                                                                            }
+                                                                                        ]
+                                                                                    }
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                        """;
+
+                using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+                mockHttpResponse.Content = new StringContent(JsonResponse);
+                using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
+                using var httpClient = new HttpClient(mockHttpMessageHandler);
+                httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
+                _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
+
+                var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
+
+                Assert.NotNull(result.Description);
+                Assert.Equal("en", result.Description![0].Language);
+                Assert.Equal("Template Asset Administration Shell for example environments.", result.Description[0].Text);
+
+                Assert.NotNull(result.DisplayName);
+                Assert.Equal("AAS Template", result.DisplayName![0].Text);
+
+                Assert.NotNull(result.Extensions);
+                Assert.Equal("templateSource", result.Extensions![0].Name);
+                Assert.Equal(DataTypeDefXsd.String, result.Extensions[0].ValueType);
+                Assert.Equal("ShellTemplate", result.Extensions[0].Value);
+
+                Assert.NotNull(result.Administration);
+                Assert.Equal("1", result.Administration!.Version);
+                Assert.Equal("0", result.Administration.Revision);
+
+                Assert.NotNull(result.SpecificAssetIds);
+                Assert.Equal("SerialNumber", result.SpecificAssetIds![0].Name);
+                Assert.NotNull(result.SpecificAssetIds[0].ExternalSubjectId);
+                Assert.Equal("https://example.com/subjects/serial-number", result.SpecificAssetIds[0].ExternalSubjectId!.Keys[0].Value);
+        }
+
     [Fact]
     public async Task GetShellDescriptorTemplateAsync_ThrowsResponseParsingException_WhenInvalidJsonResponse()
     {

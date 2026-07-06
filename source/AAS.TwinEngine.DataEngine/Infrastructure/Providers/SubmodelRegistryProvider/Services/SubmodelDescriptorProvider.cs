@@ -1,12 +1,17 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_1;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -34,8 +39,11 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
 
         try
         {
-            var descriptor = JsonSerializer.Deserialize<SubmodelDescriptor>(responseContent);
-            if (descriptor != null)
+            var jsonNode = JsonNode.Parse(responseContent);
+            var descriptorNode = jsonNode?["result"] ?? jsonNode;
+            var descriptor = DeserializeSubmodelDescriptor(descriptorNode);
+
+            if (descriptor is not null)
             {
                 return descriptor;
             }
@@ -48,6 +56,27 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
             logger.LogError(ex, "Failed to deserialize SubmodelDescriptor from response. Submodel ID: {SubmodelId}, Response: {ResponseContent}", id, responseContent);
             throw new ResponseParsingException();
         }
+    }
+
+    private static SubmodelDescriptor? DeserializeSubmodelDescriptor(JsonNode? descriptorNode)
+    {
+        if (descriptorNode is null)
+        {
+            return null;
+        }
+
+        return new SubmodelDescriptor
+        {
+            Description = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["description"], Jsonization.Deserialize.LangStringTextTypeFrom),
+            DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["displayName"], Jsonization.Deserialize.LangStringNameTypeFrom),
+            Extensions = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["extensions"], Jsonization.Deserialize.ExtensionFrom),
+            Administration = AasJsonNodeDeserializer.DeserializeAasNode(descriptorNode["administration"], Jsonization.Deserialize.AdministrativeInformationFrom),
+            IdShort = descriptorNode["idShort"]?.GetValue<string>(),
+            Id = descriptorNode["id"]?.GetValue<string>(),
+            SemanticId = AasJsonNodeDeserializer.DeserializeAasNode(descriptorNode["semanticId"], Jsonization.Deserialize.ReferenceFrom),
+            SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["supplementalSemanticId"], Jsonization.Deserialize.ReferenceFrom),
+            Endpoints = descriptorNode["endpoints"]?.Deserialize<List<EndpointData>>()
+        };
     }
 
     private async Task<HttpContent> ProcessResponseAsync(HttpResponseMessage response, string url, CancellationToken cancellationToken)
