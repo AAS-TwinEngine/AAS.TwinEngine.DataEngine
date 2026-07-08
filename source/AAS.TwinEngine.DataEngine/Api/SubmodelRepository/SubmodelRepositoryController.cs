@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
 using AasCore.Aas3_1;
@@ -21,6 +22,22 @@ public class SubmodelRepositoryController(
     ISubmodelRepositoryHandler submodelRepositoryHandler)
     : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType(typeof(SubmodelsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<SubmodelsDto>> GetAllSubmodelsAsync(
+        [FromQuery] GetAllSubmodelsRequest request,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get All Submodels");
+
+        var response = await submodelRepositoryHandler
+            .GetAllSubmodels(request, cancellationToken);
+
+        return Ok(response);
+    }
+
     [HttpGet("{submodelIdentifier}")]
     [ProducesResponseType(typeof(ISubmodel), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]

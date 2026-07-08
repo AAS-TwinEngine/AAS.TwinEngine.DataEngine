@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -278,6 +278,93 @@ public class TemplateProviderTests
         var expectedEncodedTemplateId = Convert.ToBase64String(Encoding.UTF8.GetBytes(templateId)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         Assert.EndsWith($"/shell-descriptors/{expectedEncodedTemplateId}", requestPath, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task GetShellDescriptorTemplateAsync_ReturnsShellDescriptor_WhenResponseIsWrappedInResultProperty()
+    {
+        const string JsonResponse = """
+                                    {
+                                      "result": {
+                                        "assetKind": "Instance",
+                                        "globalAssetId": "https://admin-shell.io/idta/asset/wrapped/1/0",
+                                        "idShort": "WrappedAAS",
+                                        "id": "https://admin-shell.io/idta/aas/wrapped/1/0"
+                                      }
+                                    }
+                                    """;
+
+        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        mockHttpResponse.Content = new StringContent(JsonResponse);
+        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
+        _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
+
+        var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("https://admin-shell.io/idta/aas/wrapped/1/0", result.Id);
+        Assert.Equal("WrappedAAS", result.IdShort);
+        Assert.Equal("https://admin-shell.io/idta/asset/wrapped/1/0", result.GlobalAssetId);
+        Assert.Equal(AssetKind.Instance, result.AssetKind);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorTemplateAsync_DeserializesAssetKindAndAssetType_FromEnumStrings()
+    {
+        const string JsonResponse = """
+                                    {
+                                      "assetKind": "Type",
+                                      "assetType": "Instance",
+                                      "id": "https://mm-software.com/aas/typed",
+                                      "idShort": "TypedAAS"
+                                    }
+                                    """;
+
+        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        mockHttpResponse.Content = new StringContent(JsonResponse);
+        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
+        _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
+
+        var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(AssetKind.Type, result.AssetKind);
+        Assert.Equal(AssetKind.Instance, result.AssetType);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorTemplateAsync_ReturnsNullAssetKindAndAssetType_WhenFieldsAreMissing()
+    {
+        const string JsonResponse = """
+                                    {
+                                      "id": "https://mm-software.com/aas/no-kind",
+                                      "idShort": "NoKindAAS"
+                                    }
+                                    """;
+
+        using var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        mockHttpResponse.Content = new StringContent(JsonResponse);
+        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
+        _httpClientFactory.CreateClient(HttpClientNames.AasRegistry).Returns(httpClient);
+
+        var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Null(result.AssetKind);
+        Assert.Null(result.AssetType);
+        Assert.Null(result.GlobalAssetId);
+        Assert.Null(result.Description);
+        Assert.Null(result.Extensions);
+        Assert.Null(result.Administration);
+        Assert.Null(result.SpecificAssetIds);
+        Assert.Null(result.SubmodelDescriptors);
+    }
+
 
     [Fact]
     public async Task GetShellTemplateAsync_ReturnsShell_WhenValidResponse()

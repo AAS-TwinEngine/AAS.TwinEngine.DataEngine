@@ -323,4 +323,145 @@ public class SubmodelTemplateServiceTests
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(
             () => _sut.GetSubmodelTemplateAsync(SubmodelId, "SomePath", CancellationToken.None));
     }
+    #region GetFilteredSubmodelTemplateAsync
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_ReturnsTemplate_WhenTemplateIdMatches()
+    {
+        var expectedSubmodel = Substitute.For<ISubmodel>();
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider
+            .GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
+
+        var result = await _sut.GetFilteredSubmodelTemplateAsync(SubmodelId, TemplateId, null, CancellationToken.None);
+
+        Assert.Equal(expectedSubmodel, result);
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_ReturnsNull_WhenFilteredTemplateIdDoesNotMatch()
+    {
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+
+        var result = await _sut.GetFilteredSubmodelTemplateAsync(SubmodelId, "different-template-id", null, CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_ReturnsNull_WhenMappingThrowsResourceNotFoundException()
+    {
+        _mappingProvider.GetTemplateId(SubmodelId).Throws(new ResourceNotFoundException());
+
+        var result = await _sut.GetFilteredSubmodelTemplateAsync(SubmodelId, TemplateId, null, CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_ThrowsInternalDataProcessingException_WhenResponseParsingFails()
+    {
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider
+            .GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ResponseParsingException());
+
+        await Assert.ThrowsAsync<InternalDataProcessingException>(
+            () => _sut.GetFilteredSubmodelTemplateAsync(SubmodelId, TemplateId, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_ThrowsTemplateRequestFailedException_WhenRequestTimesOut()
+    {
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider
+            .GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new RequestTimeoutException());
+
+        await Assert.ThrowsAsync<TemplateRequestFailedException>(
+            () => _sut.GetFilteredSubmodelTemplateAsync(SubmodelId, TemplateId, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_ThrowsRepositoryNotAvailableException_WhenServiceUnavailable()
+    {
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider
+            .GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ServiceUnavailableException("down"));
+
+        await Assert.ThrowsAsync<RepositoryNotAvailableException>(
+            () => _sut.GetFilteredSubmodelTemplateAsync(SubmodelId, TemplateId, null, CancellationToken.None));
+    }
+
+    #endregion
+
+    #region GetFilteredSubmodelTemplateIdAsync
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateIdAsync_ReturnsSubmodelId_WhenTemplateFound()
+    {
+        const string SemanticId = "https://example.com/semanticId";
+        var submodelTemplate = Substitute.For<ISubmodel>();
+        submodelTemplate.Id.Returns(SubmodelId);
+        _templateProvider
+            .GetFilteredSubmodelTemplateBySemanticIdAsync(SemanticId, Arg.Any<CancellationToken>())
+            .Returns(submodelTemplate);
+
+        var result = await _sut.GetFilteredSubmodelTemplateIdAsync(SemanticId, CancellationToken.None);
+
+        Assert.Equal(SubmodelId, result);
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateIdAsync_ReturnsNull_WhenNoTemplateFound()
+    {
+        const string SemanticId = "https://example.com/unknownSemanticId";
+        _templateProvider
+            .GetFilteredSubmodelTemplateBySemanticIdAsync(SemanticId, Arg.Any<CancellationToken>())
+            .Returns((ISubmodel?)null);
+
+        var result = await _sut.GetFilteredSubmodelTemplateIdAsync(SemanticId, CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateIdAsync_ThrowsInternalDataProcessingException_WhenResponseParsingFails()
+    {
+        const string SemanticId = "https://example.com/semanticId";
+        _templateProvider
+            .GetFilteredSubmodelTemplateBySemanticIdAsync(SemanticId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ResponseParsingException());
+
+        await Assert.ThrowsAsync<InternalDataProcessingException>(
+            () => _sut.GetFilteredSubmodelTemplateIdAsync(SemanticId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateIdAsync_ThrowsTemplateRequestFailedException_WhenRequestTimesOut()
+    {
+        const string SemanticId = "https://example.com/semanticId";
+        _templateProvider
+            .GetFilteredSubmodelTemplateBySemanticIdAsync(SemanticId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new RequestTimeoutException());
+
+        await Assert.ThrowsAsync<TemplateRequestFailedException>(
+            () => _sut.GetFilteredSubmodelTemplateIdAsync(SemanticId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateIdAsync_ThrowsRepositoryNotAvailableException_WhenServiceUnavailable()
+    {
+        const string SemanticId = "https://example.com/semanticId";
+        _templateProvider
+            .GetFilteredSubmodelTemplateBySemanticIdAsync(SemanticId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ServiceUnavailableException("down"));
+
+        await Assert.ThrowsAsync<RepositoryNotAvailableException>(
+            () => _sut.GetFilteredSubmodelTemplateIdAsync(SemanticId, CancellationToken.None));
+    }
+
+    #endregion
 }

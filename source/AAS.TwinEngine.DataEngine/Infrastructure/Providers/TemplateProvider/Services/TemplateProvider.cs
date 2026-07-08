@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
@@ -31,7 +32,58 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
         var url = $"{SubModelRepositoryPath}/{encodedTemplateId}";
 
-        var response = await SendGetRequestAsync(url, HttpClientNames.SubmodelTemplateRepository, cancellationToken).ConfigureAwait(false);
+        return await GetSubmodelFromUrlAsync(
+            url,
+            templateId,
+            "Failed to parse or deserialize submodel template JSON. Submodel ID: {TemplateId}",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        var encodedTemplateId = templateId.EncodeBase64Url(logger);
+
+        var queryParams = new List<string>();
+
+        if (!string.IsNullOrEmpty(queryOptions?.Level))
+        {
+            queryParams.Add($"level={Uri.EscapeDataString(queryOptions.Level)}");
+        }
+
+        if (!string.IsNullOrEmpty(queryOptions?.Extent))
+        {
+            queryParams.Add($"extent={Uri.EscapeDataString(queryOptions.Extent)}");
+        }
+
+        var url = queryParams.Count > 0
+            ? $"{SubModelRepositoryPath}/{encodedTemplateId}?{string.Join("&", queryParams)}"
+            : $"{SubModelRepositoryPath}/{encodedTemplateId}";
+
+        try
+        {
+            return await GetSubmodelFromUrlAsync(
+                url,
+                templateId,
+                "Failed to parse or deserialize filtered submodel template JSON. TemplateId: {TemplateId}",
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (ResourceNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    private async Task<ISubmodel> GetSubmodelFromUrlAsync(
+        string url,
+        string templateId,
+        string errorMessage,
+        CancellationToken cancellationToken)
+    {
+        var response = await SendGetRequestAsync(
+            url,
+            HttpClientNames.SubmodelTemplateRepository,
+            cancellationToken).ConfigureAwait(false);
+
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -43,7 +95,37 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to parse or deserialize submodel template JSON. Submodel ID: {SubmodelId}", templateId);
+            logger.LogError(ex, errorMessage, templateId);
+            throw new ResponseParsingException();
+        }
+    }
+
+    public async Task<ISubmodel?> GetFilteredSubmodelTemplateBySemanticIdAsync(string semanticId, CancellationToken cancellationToken)
+    {
+        var url = $"{SubModelRepositoryPath}?semanticId={semanticId}";
+
+        var response = await SendGetRequestAsync(
+            url,
+            HttpClientNames.SubmodelTemplateRepository,
+            cancellationToken).ConfigureAwait(false);
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            var jsonNode = JsonNode.Parse(content);
+            var submodelNode = jsonNode?["result"]?.AsArray().FirstOrDefault();
+
+            if (submodelNode is null)
+            {
+                return null;
+            }
+
+            return Jsonization.Deserialize.SubmodelFrom(submodelNode);
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Failed to parse or deserialize submodel templates JSON.");
             throw new ResponseParsingException();
         }
     }
