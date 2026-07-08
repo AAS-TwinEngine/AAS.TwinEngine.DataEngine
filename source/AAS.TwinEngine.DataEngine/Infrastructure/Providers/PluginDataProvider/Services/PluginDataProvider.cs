@@ -20,6 +20,8 @@ public class PluginDataProvider(
     private const string ShellsEndpoint = "shells";
     private const string AssetInformationEndpoint = "assets";
     private const string DataEndpoint = "data";
+    public const string AssetIdsHeader = "aastwinengine-assetids";
+    public const string IdShortHeader = "aastwinengine-idshort";
 
     public async Task<IList<HttpContent>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequests, string submodelId, CancellationToken cancellationToken)
     {
@@ -123,11 +125,11 @@ public class PluginDataProvider(
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
                 if (assetIdsHeaderValue is not null)
                 {
-                    _ = request.Headers.TryAddWithoutValidation("aastwinengine-assetids", assetIdsHeaderValue);
+                    _ = request.Headers.TryAddWithoutValidation(AssetIdsHeader, assetIdsHeaderValue);
                 }
                 if (idShortHeaderValue is not null)
                 {
-                    _ = request.Headers.TryAddWithoutValidation("aastwinengine-idshort", idShortHeaderValue);
+                    _ = request.Headers.TryAddWithoutValidation(IdShortHeader , idShortHeaderValue);
                 }
 
                 var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
