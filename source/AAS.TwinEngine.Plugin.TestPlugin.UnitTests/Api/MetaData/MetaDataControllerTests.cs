@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
@@ -26,7 +26,7 @@ public class MetaDataControllerTests
         var expectedShells = new ShellDescriptorsDto();
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>()).Returns(expectedShells);
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var actualShells = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -40,7 +40,7 @@ public class MetaDataControllerTests
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>())
         .Throws(new NotFoundException("Shell not found"));
 
-        await Assert.ThrowsAsync<NotFoundException>(() => _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<NotFoundException>(() => _sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class MetaDataControllerTests
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>())
                 .Throws(new BadRequestException("Invalid request"));
 
-        await Assert.ThrowsAsync<BadRequestException>(() => _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<BadRequestException>(() => _sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class MetaDataControllerTests
         _handler.GetShellDescriptors(request, Arg.Any<CancellationToken>())
                 .Throws(new Exception("Unexpected error"));
 
-        await Assert.ThrowsAsync<Exception>(() => _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<Exception>(() => _sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -73,7 +73,23 @@ public class MetaDataControllerTests
             Arg.Any<CancellationToken>())
             .Returns(expectedShells);
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, header, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, header, null, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(expectedShells, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorsAsync_WithIdShortHeaderForwardsHeaderToRequest()
+    {
+        const string idShort = "test-idshort";
+        var expectedShells = new ShellDescriptorsDto();
+        _handler.GetShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(request => request.IdShortFilter == idShort),
+            Arg.Any<CancellationToken>())
+            .Returns(expectedShells);
+
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, idShort, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Equal(expectedShells, okResult.Value);

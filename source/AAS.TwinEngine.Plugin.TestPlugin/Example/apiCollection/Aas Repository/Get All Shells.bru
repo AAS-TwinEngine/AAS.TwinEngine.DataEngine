@@ -5,12 +5,13 @@ meta {
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shells?limit&cursor
+  url: {{DataEngineBaseUrl}}/shells?idShort&limit&cursor
   body: none
   auth: inherit
 }
 
 params:query {
+  idShort: 
   limit: 
   cursor: 
 }
@@ -19,4 +20,3 @@ settings {
   encodeUrl: true
   timeout: 0
 }
-​

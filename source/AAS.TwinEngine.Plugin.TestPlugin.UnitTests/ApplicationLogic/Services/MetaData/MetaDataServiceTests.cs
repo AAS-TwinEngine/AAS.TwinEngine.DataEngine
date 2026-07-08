@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
 using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
 using Microsoft.Extensions.Logging;
@@ -19,10 +19,10 @@ public class MetaDataServiceTests
     public async Task GetShellsAsync_ReturnsShells()
     {
         var expectedShells = new ShellDescriptorsData();
-        _repository.GetShellDescriptorsAsync(null, null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
-
-        var result = await _sut.GetShellDescriptorsAsync(null, null, null, CancellationToken.None);
-
+        _repository.GetShellDescriptorsAsync(null, null, null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
+ 
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
+ 
         Assert.NotNull(result);
     }
 
@@ -37,9 +37,21 @@ public class MetaDataServiceTests
             ]
         };
         var expectedShells = new ShellDescriptorsData();
-        _repository.GetShellDescriptorsAsync(null, null, filter, Arg.Any<CancellationToken>()).Returns(expectedShells);
+        _repository.GetShellDescriptorsAsync(null, null, filter, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
+ 
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, CancellationToken.None);
+ 
+        Assert.NotNull(result);
+    }
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, CancellationToken.None);
+    [Fact]
+    public async Task GetShellsAsync_ReturnsShells_WithIdShort()
+    {
+        const string idShort = "test-idshort";
+        var expectedShells = new ShellDescriptorsData();
+        _repository.GetShellDescriptorsAsync(null, null, null, idShort, Arg.Any<CancellationToken>()).Returns(expectedShells);
+
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, idShort, CancellationToken.None);
 
         Assert.NotNull(result);
     }

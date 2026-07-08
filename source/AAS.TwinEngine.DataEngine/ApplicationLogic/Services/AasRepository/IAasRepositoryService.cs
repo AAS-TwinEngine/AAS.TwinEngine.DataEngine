@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 
@@ -8,7 +8,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 public interface IAasRepositoryService
 {
-    Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetId>? filters, int? limit, string? cursor, CancellationToken cancellationToken);
+    Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken);
 
     Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken);
 

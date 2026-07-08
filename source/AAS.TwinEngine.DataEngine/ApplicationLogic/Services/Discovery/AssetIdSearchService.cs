@@ -1,8 +1,9 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 
 using AasCore.Aas3_1;
@@ -46,7 +47,12 @@ public class AssetIdSearchService(
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
 
-            return await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifests, specificAssetIds, cancellationToken).ConfigureAwait(false);
+            var filter = new ShellSearchFilter
+            {
+                SpecificAssetIds = specificAssetIds
+            };
+
+            return await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifests, filter, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
         {

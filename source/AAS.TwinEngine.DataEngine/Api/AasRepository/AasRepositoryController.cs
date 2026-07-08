@@ -29,6 +29,7 @@ public class AasRepositoryController(
     /// Returns all Asset Administration Shells
     /// </summary>
     /// <param name="assetIds">A list of specific Asset identifiers. Each Asset identifier is a base64-url-encoded SpecificAssetId</param>
+    /// <param name="idShort">The Asset Administration Shell’s IdShort</param>
     /// <param name="limit">The maximum number of elements in the response array</param>
     /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -39,11 +40,15 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ShellsDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync([FromQuery] string[]? assetIds, [FromQuery] int? limit, [FromQuery] string? cursor,
+    public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync(
+        [FromQuery] string[]? assetIds,
+        [FromQuery] string? idShort,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Start request to get shells by asset identifiers");
-        var response = await aasRepositoryHandler.GetShellsByAssetIdsAsync(assetIds, limit, cursor, cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("Start request to get shells (assetIds/idShort filters)");
+        var response = await aasRepositoryHandler.GetShellsByAssetIdsAsync(assetIds, idShort, limit, cursor, cancellationToken).ConfigureAwait(false);
         return Ok(response);
     }
 

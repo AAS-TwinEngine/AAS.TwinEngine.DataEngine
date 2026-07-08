@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -627,13 +627,14 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new List<HttpContent> { httpResponse.Content });
 
         const string Json = """[{"name":"sn","value":"123"}]""";
 
         var assetIds = JsonSerializer.Deserialize<List<SpecificAssetId>>(Json)!;
-        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, assetIds, CancellationToken.None);
+        var filter = new ShellSearchFilter { SpecificAssetIds = assetIds };
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result.ShellDescriptors);
@@ -669,11 +670,12 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns([httpResponse.Content]);
 
+        var filter = new ShellSearchFilter { SpecificAssetIds = [] };
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None));
     }
 
     [Fact]
@@ -705,11 +707,12 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns([httpResponse.Content]);
 
+        var filter = new ShellSearchFilter { SpecificAssetIds = [] };
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None));
     }
 
     [Fact]
@@ -751,10 +754,11 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns([httpResponse.Content]);
 
-        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None);
+        var filter = new ShellSearchFilter { SpecificAssetIds = [] };
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None);
 
         Assert.Equal(2, result.ShellDescriptors.Count);
         Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));
@@ -777,8 +781,62 @@ public class PluginDataHandlerTests
         _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns([]);
 
+        var filter = new ShellSearchFilter { SpecificAssetIds = [] };
         await Assert.ThrowsAsync<PluginCapabilityNotSupportedException>(() =>
-            _sut.GetDataForShellsByAssetIdsAsync(manifests, [], CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForShellsByAssetIdsAsync_WithIdShort_PassesIdShort()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasAssetIdSearch = true }
+            }
+        };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<Func<Capabilities, bool>>())
+                    .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var responseJson = """
+        {
+            "result": [
+                { "id": "urn:aas:001", "idShort": "Motor001" }
+            ],
+            "paging_metadata": { "cursor": null }
+        }
+        """;
+
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+        };
+
+        const string targetIdShort = "Motor001";
+
+        _pluginDataProvider
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), null, targetIdShort, Arg.Any<CancellationToken>())
+            .Returns([httpResponse.Content]);
+
+        var filter = new ShellSearchFilter { IdShort = targetIdShort };
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Single(result.ShellDescriptors);
+        Assert.Equal("urn:aas:001", result.ShellDescriptors[0].Id);
+        await _pluginDataProvider.Received(1)
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), null, targetIdShort, Arg.Any<CancellationToken>());
     }
 
     private const string AssetData = """

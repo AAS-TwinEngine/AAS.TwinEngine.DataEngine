@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -278,7 +278,7 @@ public class AasRepositoryServiceTests
             });
 
         // Act
-        var result = await _sut.GetShellsByFiltersAsync(filters: null, limit: null, cursor: null, cancellationToken);
+        var result = await _sut.GetShellsByFiltersAsync(filter: null, limit: null, cursor: null, cancellationToken);
 
         // Assert
         var shell = Assert.Single(result.Result);
@@ -293,6 +293,42 @@ public class AasRepositoryServiceTests
         Assert.Equal("NewSerial", shell.AssetInformation.SpecificAssetIds.Single(x => x.Name == "SerialNumber").Value);
 
         Assert.Equal("Asset-001", shell.AssetInformation.SpecificAssetIds.Single(x => x.Name == "AssetTag").Value);
+    }
+
+    [Fact]
+    public async Task GetShellsByFiltersAsync_WithIdShort_QueriesFilteredShellMetadata()
+    {
+        // Arrange
+        var cancellationToken = CancellationToken.None;
+        var manifests = new List<PluginManifest>();
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+
+        const string targetIdShort = "test-idshort-value";
+
+        _pluginDataHandler
+            .GetDataForShellsByAssetIdsAsync(
+                manifests,
+                Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort),
+                cancellationToken)
+            .Returns(new ShellDescriptorsMetaData
+            {
+                ShellDescriptors = [new ShellDescriptorMetaData { Id = "aas-1", SpecificAssetIds = [] }],
+                PagingMetaData = new PagingMetaData()
+            });
+
+        _templateService.GetShellTemplateAsync("aas-1", cancellationToken)
+            .Returns(new AssetAdministrationShell("aas-1", new AssetInformation(AssetKind.Instance)));
+
+        // Act
+        var filter = new ShellSearchFilter { IdShort = targetIdShort };
+        var result = await _sut.GetShellsByFiltersAsync(filter, limit: null, cursor: null, cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.Result);
+        Assert.Equal("aas-1", result.Result[0].Id);
+        await _pluginDataHandler.Received(1)
+            .GetDataForShellsByAssetIdsAsync(manifests, Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort), cancellationToken);
     }
 
     private static AssetAdministrationShell CreateShellTemplate()
