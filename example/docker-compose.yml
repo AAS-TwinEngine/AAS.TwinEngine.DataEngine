@@ -6,15 +6,6 @@ volumes:
   postgres-data:
 
 services:
-  otel-lgtm:
-    image: grafana/otel-lgtm:latest
-    container_name: otel-lgtm
-    ports:
-      - "3000:3000"
-      - "4317:4317"
-    restart: always
-    networks:
-      - twinengine-network
 
   nginx:
     image: nginx:1.31.2
@@ -253,6 +244,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: always
+    networks:
+      - twinengine-network
+    
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: otel-lgtm
+    ports:
+      - "3000:3000"
+      - "4317:4317"
     restart: always
     networks:
       - twinengine-network
