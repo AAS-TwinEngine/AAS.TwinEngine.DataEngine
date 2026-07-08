@@ -17,7 +17,7 @@ public class SubmodelRepositoryHandler(
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
     {
         var queryOptions = request?.Level is not null || request?.Extent is not null
-            ? new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString())
+            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
             : null;
 
         return GetResourceByIdAsync(
