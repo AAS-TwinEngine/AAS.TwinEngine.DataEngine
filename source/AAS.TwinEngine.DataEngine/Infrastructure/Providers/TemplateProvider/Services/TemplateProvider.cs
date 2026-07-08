@@ -114,8 +114,8 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         try
         {
             var jsonNode = JsonNode.Parse(content);
-            var submodelNode = jsonNode?["result"]?.AsArray().FirstOrDefault();
-
+            var resultArray = jsonNode?["result"] as JsonArray;
+            var submodelNode = resultArray?.FirstOrDefault();
             if (submodelNode is null)
             {
                 return null;
