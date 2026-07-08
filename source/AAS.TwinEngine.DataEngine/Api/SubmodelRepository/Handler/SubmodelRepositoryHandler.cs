@@ -51,7 +51,7 @@ public class SubmodelRepositoryHandler(
         };
 
         var queryOptions = request?.Level is not null || request?.Extent is not null
-            ? new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString())
+            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
             : null;
 
         var result = await submodelRepositoryService
