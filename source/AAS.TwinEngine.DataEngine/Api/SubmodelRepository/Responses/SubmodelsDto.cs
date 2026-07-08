@@ -11,5 +11,5 @@ public class SubmodelsDto
     public PagingMetaDataDto? PagingMetaData { get; set; }
 
     [JsonPropertyName("result")]
-    public IList<JsonObject>? Result { get; init; }
+    public IList<JsonObject> Result { get; init; } = [];
 }
