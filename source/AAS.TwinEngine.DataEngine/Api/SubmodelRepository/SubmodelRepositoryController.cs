@@ -44,7 +44,8 @@ public class SubmodelRepositoryController(
         logger.LogInformation("Get All Submodels");
 
         var response = await submodelRepositoryHandler
-            .GetAllSubmodels(request, cancellationToken);
+            .GetAllSubmodels(request, cancellationToken)
+            .ConfigureAwait(false);
 
         return Ok(response);
     }
