@@ -102,7 +102,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<ISubmodel?> GetFilteredSubmodelTemplateBySemanticIdAsync(string semanticId, CancellationToken cancellationToken)
     {
-        var url = $"{SubModelRepositoryPath}?semanticId={semanticId}";
+        var url = $"{SubModelRepositoryPath}?semanticId={Uri.EscapeDataString(semanticId)}";
 
         var response = await SendGetRequestAsync(
             url,
