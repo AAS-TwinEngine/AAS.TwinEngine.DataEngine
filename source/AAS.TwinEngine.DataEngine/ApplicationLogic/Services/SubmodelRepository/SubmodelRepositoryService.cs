@@ -130,7 +130,7 @@ public class SubmodelRepositoryService(
             return submodel;
         });
 
-        return [.. (await Task.WhenAll(tasks).ConfigureAwait(false)).Where(submodel => submodel is not null)];
+        return (await Task.WhenAll(tasks).ConfigureAwait(false)).OfType<ISubmodel>().ToList();
     }
 
     private async Task<ISubmodel> BuildSubmodelWithValuesAsync(ISubmodel template, string submodelId, CancellationToken cancellationToken)
