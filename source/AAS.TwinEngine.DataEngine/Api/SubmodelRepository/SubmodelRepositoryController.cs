@@ -36,6 +36,7 @@ public class SubmodelRepositoryController(
     [HttpGet]
     [ProducesResponseType(typeof(SubmodelsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<SubmodelsDto>> GetAllSubmodelsAsync(
         [FromQuery] GetAllSubmodelsRequest request,
