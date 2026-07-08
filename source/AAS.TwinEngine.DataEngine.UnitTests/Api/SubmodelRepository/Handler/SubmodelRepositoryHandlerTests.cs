@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
@@ -30,11 +30,46 @@ public class SubmodelRepositoryHandlerTests
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelRequest(encodedId);
         var expectedSubmodel = Substitute.For<ISubmodel>();
-        _submodelRepository.GetSubmodelAsync(SubmodelId, Arg.Any<CancellationToken>()).Returns(expectedSubmodel);
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
 
         var result = await _sut.GetSubmodel(request, CancellationToken.None);
 
         Assert.Equal(expectedSubmodel, result);
+    }
+
+    [Fact]
+    public async Task HandleSubmodel_WithLevelAndExtent_PassesQueryOptionsToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelRequest(encodedId) { Level = Level.deep, Extent = Extent.withBlobValue };
+        var expectedSubmodel = Substitute.For<ISubmodel>();
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
+
+        await _sut.GetSubmodel(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetSubmodelAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleSubmodel_WithNoLevelOrExtent_PassesNullQueryOptionsToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelRequest(encodedId);
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, (SubmodelQueryOptions?)null, Arg.Any<CancellationToken>())
+            .Returns(Substitute.For<ISubmodel>());
+
+        await _sut.GetSubmodel(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetSubmodelAsync(SubmodelId, (SubmodelQueryOptions?)null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -43,7 +78,9 @@ public class SubmodelRepositoryHandlerTests
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelRequest(encodedId);
-        _submodelRepository.GetSubmodelAsync(SubmodelId, Arg.Any<CancellationToken>())!.Returns((ISubmodel)null!);
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())!
+            .Returns((ISubmodel)null!);
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodel(request, CancellationToken.None));
     }

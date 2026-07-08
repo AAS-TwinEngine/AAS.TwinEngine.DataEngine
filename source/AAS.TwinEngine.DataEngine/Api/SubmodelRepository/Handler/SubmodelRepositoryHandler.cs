@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.MappingProfiles;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -15,11 +15,17 @@ public class SubmodelRepositoryHandler(
     ISubmodelRepositoryService submodelRepositoryService) : ISubmodelRepositoryHandler
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
-        => GetResourceByIdAsync(
+    {
+        var queryOptions = request?.Level is not null || request?.Extent is not null
+            ? new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString())
+            : null;
+
+        return GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetSubmodelAsync(id, cancellationToken)!
+            id => submodelRepositoryService.GetSubmodelAsync(id, queryOptions, cancellationToken)!
         );
+    }
 
     public Task<ISubmodelElement> GetSubmodelElement(GetSubmodelElementRequest request, CancellationToken cancellationToken)
     {

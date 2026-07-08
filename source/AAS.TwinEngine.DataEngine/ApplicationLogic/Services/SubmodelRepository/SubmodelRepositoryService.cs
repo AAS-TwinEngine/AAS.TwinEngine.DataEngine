@@ -21,11 +21,16 @@ public class SubmodelRepositoryService(
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryTemplateService aasRepositoryTemplateService) : ISubmodelRepositoryService
 {
-    public async Task<ISubmodel> GetSubmodelAsync(string submodelId, CancellationToken cancellationToken)
+    public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var submodelTemplate = await submodelTemplateService.GetSubmodelTemplateAsync(submodelId, cancellationToken).ConfigureAwait(false);
+            var submodelTemplate = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, null, queryOptions, cancellationToken).ConfigureAwait(false);
+
+            if (submodelTemplate is null)
+            {
+                throw new ResourceNotFoundException();
+            }
 
             var submodelWithValues = await BuildSubmodelWithValuesAsync(submodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
 

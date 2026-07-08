@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Xml;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -51,7 +51,7 @@ public class SerializationService(
         logger.LogInformation("Fetching submodels by IDs.");
 
         var submodels = submodelIds
-                         .Select(id => submodelRepositoryService.GetSubmodelAsync(id, cancellationToken))
+                         .Select(id => submodelRepositoryService.GetSubmodelAsync(id, null, cancellationToken))
                          .ToList();
 
         return [.. (await Task.WhenAll(submodels).ConfigureAwait(false))];

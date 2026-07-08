@@ -51,7 +51,8 @@ public class SubmodelRepositoryServiceTests
         var values = TestData.CreateSubmodelTreeNode();
         var expected = TestData.CreateFilledSubmodel();
 
-        _templateService.GetSubmodelTemplateAsync(SubmodelId, Arg.Any<CancellationToken>())
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(TestData.CreateSubmodel());
         _semanticIdHandler.Extract(Arg.Any<Submodel>()).Returns(semanticId);
 
@@ -66,9 +67,41 @@ public class SubmodelRepositoryServiceTests
         _semanticIdHandler.FillOutTemplate(Arg.Any<Submodel>(), values)
             .Returns(expected);
 
-        var result = await _sut.GetSubmodelAsync(SubmodelId, CancellationToken.None);
+        var result = await _sut.GetSubmodelAsync(SubmodelId, null, CancellationToken.None);
 
         Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task GetSubmodelAsync_WhenQueryOptionsProvided_PassesThemToTemplateService()
+    {
+        var queryOptions = new SubmodelQueryOptions("deep", "withBlobValue");
+        var template = TestData.CreateSubmodel();
+
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, queryOptions, Arg.Any<CancellationToken>())
+            .Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(TestData.CreateFilledSubmodel());
+
+        await _sut.GetSubmodelAsync(SubmodelId, queryOptions, CancellationToken.None);
+
+        await _templateService.Received(1)
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, queryOptions, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelAsync_WhenTemplateReturnsNull_ThrowsSubmodelNotFoundException()
+    {
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns((ISubmodel?)null);
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+            _sut.GetSubmodelAsync(SubmodelId, null, CancellationToken.None));
     }
 
     [Fact]
@@ -128,11 +161,11 @@ public class SubmodelRepositoryServiceTests
     public async Task GetSubmodelAsync_WhenResourceNotFound_ThrowsPluginRequestFailedException()
     {
         _templateService
-            .GetSubmodelTemplateAsync(SubmodelId, Arg.Any<CancellationToken>())
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
-            _sut.GetSubmodelAsync(SubmodelId, CancellationToken.None));
+            _sut.GetSubmodelAsync(SubmodelId, null, CancellationToken.None));
     }
 
     [Fact]
@@ -143,7 +176,7 @@ public class SubmodelRepositoryServiceTests
             .ThrowsAsync(new ResponseParsingException());
 
         await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
-            _sut.GetSubmodelAsync(SubmodelId, CancellationToken.None));
+            _sut.GetSubmodelAsync(SubmodelId, null, CancellationToken.None));
     }
 
     [Fact]
@@ -154,7 +187,7 @@ public class SubmodelRepositoryServiceTests
             .ThrowsAsync(new RequestTimeoutException());
 
         await Assert.ThrowsAsync<PluginNotAvailableException>(() =>
-            _sut.GetSubmodelAsync(SubmodelId, CancellationToken.None));
+            _sut.GetSubmodelAsync(SubmodelId, null, CancellationToken.None));
     }
 
     [Fact]

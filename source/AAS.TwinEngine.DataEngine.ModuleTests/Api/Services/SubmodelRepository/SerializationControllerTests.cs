@@ -59,7 +59,7 @@ public abstract class SerializationControllerTests : IDisposable
         var mockSubmodel = TestData.CreateSubmodel();
         var mockResponse = TestData.CreateShellTemplate();
 
-        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockSubmodel);
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Returns(mockSubmodel);
 
         _ = _mockAasRepositoryService.GetShellByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockResponse);
 
@@ -81,7 +81,7 @@ public abstract class SerializationControllerTests : IDisposable
         var mockSubmodel = TestData.CreateSubmodel();
         var mockResponse = TestData.CreateShellTemplate();
 
-        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockSubmodel);
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Returns(mockSubmodel);
 
         _ = _mockAasRepositoryService.GetShellByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockResponse);
 
@@ -103,7 +103,7 @@ public abstract class SerializationControllerTests : IDisposable
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
 
-        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new SubmodelNotFoundException());
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Throws(new SubmodelNotFoundException());
 
         // Act
         var response = await _client.GetAsync(url);
@@ -121,7 +121,7 @@ public abstract class SerializationControllerTests : IDisposable
 
         var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
 
-        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new InternalDataProcessingException());
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Throws(new InternalDataProcessingException());
 
         // Act
         var response = await _client.GetAsync(url);
@@ -222,7 +222,7 @@ public abstract class SerializationControllerTests : IDisposable
 
         var url = $"/serialization?aasIds={validAasId}&submodelIds={validSubmodelId}&includeConceptDescriptions=false";
 
-        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>())
             .Throws(new SubmodelNotFoundException());
 
         var response = await _client.GetAsync(url);

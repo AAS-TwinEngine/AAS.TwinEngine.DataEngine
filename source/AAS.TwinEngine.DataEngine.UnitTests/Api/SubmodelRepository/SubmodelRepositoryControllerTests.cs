@@ -62,11 +62,27 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodel(Arg.Any<GetSubmodelRequest>(), Arg.Any<CancellationToken>())
         .Returns(_expectedSubmodel);
 
-        var result = await _sut.GetSubmodelAsync(encodedId, CancellationToken.None);
+        var result = await _sut.GetSubmodelAsync(encodedId, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<JsonObject>(okResult.Value);
         Assert.Equal(expectedJson.ToJsonString(), json.ToJsonString());
+    }
+
+    [Fact]
+    public async Task GetSubmodelAsync_WithLevelAndExtent_PassesThemToHandler()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        _handler.GetSubmodel(Arg.Any<GetSubmodelRequest>(), Arg.Any<CancellationToken>())
+            .Returns(_expectedSubmodel);
+
+        await _sut.GetSubmodelAsync(encodedId, AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep,
+            AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue, CancellationToken.None);
+
+        await _handler.Received(1).GetSubmodel(
+            Arg.Is<GetSubmodelRequest>(r => r.Level == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep
+                                         && r.Extent == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
