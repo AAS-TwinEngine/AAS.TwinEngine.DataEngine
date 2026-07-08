@@ -1,10 +1,11 @@
-﻿using System.ComponentModel;
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
+
+using AasCore.Aas3_1;
 
 using Asp.Versioning;
 
@@ -43,7 +44,30 @@ public class DiscoveryController(
         CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Start request to search shells by asset link");
-        var response = await discoveryHandler.SearchShellsByAssetLinkAsync(assetLinks, limit, cursor, cancellationToken).ConfigureAwait(false);
+        var request = new SearchShellsByAssetLinkRequest(assetLinks, limit, cursor);
+        var response = await discoveryHandler.SearchShellsByAssetLinkAsync(request, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Returns a list of specific Asset identifiers based on an Asset Administration Shell id to edit discoverable content
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Requested specific Asset identifiers</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="500">Internal Server Error</response>
+    /// <response code="404">Not Found</response>
+    [HttpGet("shells/{aasIdentifier}")]
+    [ProducesResponseType(typeof(IList<SpecificAssetId>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    public async Task<ActionResult<IList<ISpecificAssetId>>> GetSpecificAssetIdByAasIdentifierAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Start request to specific asset identifiers by asset administration shell id");
+        var request = new GetSpecificAssetIdByAasIdentifierRequest(aasIdentifier);
+        var response = await discoveryHandler.GetSpecificAssetIdByAasIdentifierAsync(request, cancellationToken).ConfigureAwait(false);
         return Ok(response);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
@@ -13,7 +15,8 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 
 public class AssetIdSearchService(
     IPluginDataHandler pluginDataHandler,
-    IPluginManifestConflictHandler pluginManifestConflictHandler) : IAssetIdSearchService
+    IPluginManifestConflictHandler pluginManifestConflictHandler,
+    IAasRepositoryService aasRepositoryService) : IAssetIdSearchService
 {
     public async Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(IList<AssetLink> assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
     {
@@ -38,6 +41,24 @@ public class AssetIdSearchService(
             PagingMetaData = pagingMetaData,
             Result = pagedItems
         };
+    }
+
+    public async Task<IList<ISpecificAssetId>> GetSpecificAssetIdByAasIdentifierAsync(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        var shell = await aasRepositoryService.GetShellByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+        if (shell == null)
+        {
+            throw new NotFoundException();
+        }
+        var specificAssetIds = shell.AssetInformation.SpecificAssetIds;
+
+        if (specificAssetIds == null || specificAssetIds.Count == 0)
+        {
+            throw new NotFoundException();
+        }
+
+        return specificAssetIds;
     }
 
     private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken)

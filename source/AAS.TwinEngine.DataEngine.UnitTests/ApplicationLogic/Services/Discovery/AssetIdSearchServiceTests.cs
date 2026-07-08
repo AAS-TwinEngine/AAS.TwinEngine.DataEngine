@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -18,11 +19,12 @@ public class AssetIdSearchServiceTests
 {
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+    private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
     private readonly AssetIdSearchService _sut;
 
     public AssetIdSearchServiceTests()
     {
-        _sut = new AssetIdSearchService(_pluginDataHandler, _pluginManifestConflictHandler);
+        _sut = new AssetIdSearchService(_pluginDataHandler, _pluginManifestConflictHandler, _aasRepositoryService);
         _ = _pluginManifestConflictHandler.Manifests.Returns(CreatePluginManifests());
     }
 

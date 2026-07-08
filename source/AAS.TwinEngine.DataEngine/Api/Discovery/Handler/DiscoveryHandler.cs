@@ -7,27 +7,41 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 
+using AasCore.Aas3_1;
+
 namespace AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 
 public class DiscoveryHandler(ILogger<DiscoveryHandler> logger, IAssetIdSearchService assetIdSearchService) : IDiscoveryHandler
 {
     public async Task<ShellsByAssetLinkResponseDto> SearchShellsByAssetLinkAsync(
-        AssetLinkDto[] assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
+        SearchShellsByAssetLinkRequest request, CancellationToken cancellationToken)
     {
-        limit.ValidateLimit(logger);
-        cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
-        ValidateAssetLinks(assetLinks);
+        ValidateAssetLinks(request.AssetLinks);
 
-        var domainAssetLinks = assetLinks
+        var domainAssetLinks = request.AssetLinks
             .Select(l => new AssetLink { Name = l.Name, Value = l.Value })
             .ToList();
 
         var result = await assetIdSearchService
-            .SearchShellsByAssetLinkAsync(domainAssetLinks, limit, cursor, cancellationToken)
+            .SearchShellsByAssetLinkAsync(domainAssetLinks, request.Limit, request.Cursor, cancellationToken)
             .ConfigureAwait(false);
 
         return result.ToDto();
+    }
+
+    public async Task<IList<ISpecificAssetId>> GetSpecificAssetIdByAasIdentifierAsync(
+        GetSpecificAssetIdByAasIdentifierRequest request, CancellationToken cancellationToken)
+    {
+        var decodedId = request.AasIdentifier.DecodeBase64Url(logger);
+
+        var result = await assetIdSearchService
+            .GetSpecificAssetIdByAasIdentifierAsync(decodedId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return result;
     }
 
     private void ValidateAssetLinks(AssetLinkDto[] assetLinks)
