@@ -25,33 +25,35 @@ public class SubmodelDescriptorService(
 
     public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
-        var shells = await aasRepositoryService
-                         .GetShellsByFiltersAsync(null, null, null, cancellationToken)
-                         .ConfigureAwait(false);
-
+        var shells = await aasRepositoryService.GetShellsByFiltersAsync(null, null, null, cancellationToken).ConfigureAwait(false);
+    
         var submodelIds = ExtractDistinctSubmodelIds(shells.Result);
-        var allDescriptors = new List<SubmodelDescriptor>();
-
-        foreach (var submodelId in submodelIds)
+    
+        var descriptorTasks = submodelIds.Select(async submodelId =>
         {
             try
             {
-                var descriptor = await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
-                allDescriptors.Add(descriptor);
+                return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
             }
             catch (SubmodelDescriptorNotFoundException ex)
             {
                 logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
+                return null;
             }
-        }
-
+        });
+    
+        var allDescriptors = (await Task.WhenAll(descriptorTasks).ConfigureAwait(false))
+            .Where(descriptor => descriptor is not null)
+            .Cast<SubmodelDescriptor>()
+            .ToList();
+    
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
         {
             throw new SubmodelDescriptorNotFoundException();
         }
-
+    
         var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allDescriptors, d => d.Id!, limit, cursor);
-
+    
         return new SubmodelDescriptors
         {
             PagingMetaData = pagingMetaData,
