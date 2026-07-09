@@ -42,6 +42,9 @@
     <None Update="AasRepository\TestData\GetSubmodelRefById_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Description\TestData\GetDescription_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Discovery\TestData\SearchShellByAssetLink_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

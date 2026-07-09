@@ -1,7 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
@@ -13,9 +11,6 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using AasCore.Aas3_1;
-
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
@@ -176,29 +171,6 @@ public abstract class DiscoveryControllerTests : IDisposable
         httpClient.BaseAddress = new Uri("https://testendpoint1.com");
         const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
-    }
-
-    private void SetupPluginHttpClientNotCalled()
-    {
-        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
-        _ = _httpClientFactory.CreateClient(HttpClientName).Returns((HttpClient)null!);
-    }
-
-    private void SetupTemplateProvider()
-    {
-        _ = _mockTemplateService.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => new AssetAdministrationShell(
-                callInfo.ArgAt<string>(0),
-                new AssetInformation(AssetKind.Instance))
-            {
-                Submodels =
-                [
-                    new Reference(ReferenceTypes.ModelReference,
-                    [
-                        new Key(KeyTypes.Submodel, "urn:example:sm:nameplate:001")
-                    ])
-                ]
-            });
     }
 }
 

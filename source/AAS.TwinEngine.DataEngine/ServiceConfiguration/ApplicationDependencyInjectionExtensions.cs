@@ -1,11 +1,13 @@
 ﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
+using AAS.TwinEngine.DataEngine.Api.Description.Handler;
 using AAS.TwinEngine.DataEngine.Api.Discovery.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Description;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
@@ -33,6 +35,8 @@ public static class ApplicationDependencyInjectionExtensions
         _ = services.AddScoped<ISubmodelRepositoryHandler, SubmodelRepositoryHandler>();
         _ = services.AddScoped<IShellDescriptorHandler, ShellDescriptorHandler>();
         _ = services.AddScoped<IShellDescriptorService, ShellDescriptorService>();
+        _ = services.AddScoped<IDescriptionHandler, DescriptionHandler>();
+        _ = services.AddScoped<IDescriptionService, DescriptionService>();
         _ = services.AddScoped<IShellDescriptorDataHandler, ShellDescriptorDataHandler>();
         _ = services.AddScoped<ISubmodelDescriptorHandler, SubmodelDescriptorHandler>();
         _ = services.AddScoped<ISubmodelDescriptorService, SubmodelDescriptorService>();
