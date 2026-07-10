@@ -1,0 +1,28 @@
+meta {
+  name: Get Shells By Asset Id and IdShort - M&M03
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells?assetIds={{assetId}}&idShort={{idShort}}&limit&cursor
+  body: none
+  auth: inherit
+}
+
+params:query {
+  assetIds: {{assetId}}
+  idShort: {{idShort}}
+  limit: 
+  cursor: 
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}
+
+docs {
+  Retrieves shells filtered by specific asset ID and idShort value "M&M03".
+  The idShort value is URL-encoded in the collection pre-request script.
+}

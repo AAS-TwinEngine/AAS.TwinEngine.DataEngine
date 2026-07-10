@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
@@ -7,6 +7,7 @@ using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 
 using AasCore.Aas3_1;
 
@@ -17,17 +18,23 @@ public class AasRepositoryHandler(
     IAasRepositoryService aasRepositoryService) : IAasRepositoryHandler
 {
     public async Task<ShellsDto> GetShellsByAssetIdsAsync(
-        string[]? assetIds, int? limit, string? cursor, CancellationToken cancellationToken)
+        string[]? assetIds, string? idShort, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         limit.ValidateLimit(logger);
         cursor?.ValidateCursor(logger);
 
-        var filters = assetIds is not null && assetIds.Length > 0
+        var assetIdsFilters = assetIds is not null && assetIds.Length > 0
             ? AssetIdHelper.DecodeAssetIds(assetIds, logger)
             : null;
 
+        var filter = new ShellSearchFilter
+        {
+            SpecificAssetIds = assetIdsFilters,
+            IdShort = idShort
+        };
+
         var shells = await aasRepositoryService
-            .GetShellsByFiltersAsync(filters, limit, cursor, cancellationToken)
+            .GetShellsByFiltersAsync(filter, limit, cursor, cancellationToken)
             .ConfigureAwait(false);
 
         return shells.ToDto();

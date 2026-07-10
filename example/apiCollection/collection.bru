@@ -12,6 +12,7 @@ vars:pre-request {
   productId-3: 001-001
   assetId-product1: {"name":"SerialNumber","value":"SN-FMABC1234-9804820"}
   assetId-product2: {"name":"SerialNumber","value":"SN-FMABC1238-9804821"}
+  idShort: Product2
 }
 
 script:pre-request {
@@ -38,5 +39,8 @@ script:pre-request {
     bru.setVar(name, encoded);
   });
   
-  
+  const rawIdShort = bru.getCollectionVar('idShort');
+  if (rawIdShort) {
+    bru.setVar('idShort', encodeURIComponent(rawIdShort));
+  }
 }

@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Services;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
@@ -35,7 +35,7 @@ public class MetaDataHandlerTests
                 new() { Id = "desc2" }
             }
         };
-        _shellDescriptorService.GetShellDescriptorsAsync(request.Limit, request.Cursor, null, Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetShellDescriptorsAsync(request.Limit, request.Cursor, null, request.IdShortFilter, Arg.Any<CancellationToken>())
                                .Returns(shellDescriptorsData);
 
         var result = await _sut.GetShellDescriptors(request, CancellationToken.None);
@@ -61,7 +61,7 @@ public class MetaDataHandlerTests
         };
 
         _assetIdsFilterHeaderParser.ParseToDomainModel(header).Returns(filter);
-        _shellDescriptorService.GetShellDescriptorsAsync(request.Limit, request.Cursor, filter, Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetShellDescriptorsAsync(request.Limit, request.Cursor, filter, request.IdShortFilter, Arg.Any<CancellationToken>())
                                .Returns(new ShellDescriptorsData
                                {
                                    PagingMetaData = new PagingMetaData { Cursor = null },
@@ -73,7 +73,7 @@ public class MetaDataHandlerTests
         Assert.NotNull(result);
         _assetIdsFilterHeaderParser.Received(1).ParseToDomainModel(header);
         await _shellDescriptorService.Received(1)
-            .GetShellDescriptorsAsync(request.Limit, request.Cursor, filter, Arg.Any<CancellationToken>());
+            .GetShellDescriptorsAsync(request.Limit, request.Cursor, filter, request.IdShortFilter, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class MetaDataHandlerTests
     {
         var request = new GetShellDescriptorsRequest(10, "cursor123", null);
         _assetIdsFilterHeaderParser.ParseToDomainModel(null).Returns((AssetIdFilterHeader?)null);
-        _shellDescriptorService.GetShellDescriptorsAsync(request.Limit, request.Cursor, null, Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetShellDescriptorsAsync(request.Limit, request.Cursor, null, request.IdShortFilter, Arg.Any<CancellationToken>())
                                .Returns(new ShellDescriptorsData
                                {
                                    PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
@@ -102,6 +102,26 @@ public class MetaDataHandlerTests
 
         Assert.NotNull(result);
         Assert.Single(result.Result!);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptors_PassesIdShort_WhenIdShortFilterIsProvided()
+    {
+        const string idShort = "test-idshort";
+        var request = new GetShellDescriptorsRequest(10, "cursor123", null, idShort);
+        _assetIdsFilterHeaderParser.ParseToDomainModel(null).Returns((AssetIdFilterHeader?)null);
+        _shellDescriptorService.GetShellDescriptorsAsync(request.Limit, request.Cursor, null, idShort, Arg.Any<CancellationToken>())
+                               .Returns(new ShellDescriptorsData
+                               {
+                                   PagingMetaData = new PagingMetaData { Cursor = null },
+                                   Result = []
+                               });
+ 
+        var result = await _sut.GetShellDescriptors(request, CancellationToken.None);
+ 
+        Assert.NotNull(result);
+        await _shellDescriptorService.Received(1)
+            .GetShellDescriptorsAsync(request.Limit, request.Cursor, null, idShort, Arg.Any<CancellationToken>());
     }
 
     [Fact]

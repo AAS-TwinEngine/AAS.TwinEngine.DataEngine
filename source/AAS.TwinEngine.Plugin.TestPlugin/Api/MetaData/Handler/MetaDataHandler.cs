@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.MappingProfiles;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Services;
@@ -21,7 +21,7 @@ public class MetaDataHandler(
 
         logger.LogDebug("Start executing get request for shell-descriptors metadata");
 
-        var shellDescriptors = await metaDataService.GetShellDescriptorsAsync(request?.Limit, request?.Cursor, filter, cancellationToken);
+        var shellDescriptors = await metaDataService.GetShellDescriptorsAsync(request?.Limit, request?.Cursor, filter, request?.IdShortFilter, cancellationToken);
 
         return shellDescriptors.ToDto();
     }
