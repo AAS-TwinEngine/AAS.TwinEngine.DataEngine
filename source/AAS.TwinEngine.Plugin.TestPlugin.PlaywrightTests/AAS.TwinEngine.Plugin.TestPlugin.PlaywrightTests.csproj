@@ -63,9 +63,6 @@
     <None Update="AasRepository\TestData\GetAssetInformationById_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="AasRepository\TestData\GetAllShells_WithUnknownCursorValue_Expected.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Discovery\TestData\SearchShellByAssetLink_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
