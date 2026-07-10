@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using System.Collections.Concurrent;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
@@ -19,41 +21,49 @@ public class SubmodelDescriptorService(
     ISubmodelTemplateMappingProvider submodelTemplateMappingProvider,
     IAasRepositoryService aasRepositoryService,
     IOptions<GeneralConfig> generalConfig,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
     ILogger<SubmodelDescriptorService> logger) : ISubmodelDescriptorService
 {
     private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
+    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRegistry.ConcurrentOperationsLimit;
 
     public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var shells = await aasRepositoryService.GetShellsByFiltersAsync(null, null, null, cancellationToken).ConfigureAwait(false);
-    
+
         var submodelIds = ExtractDistinctSubmodelIds(shells.Result);
-    
-        var descriptorTasks = submodelIds.Select(async submodelId =>
-        {
-            try
+
+        var descriptorArray = new SubmodelDescriptor[submodelIds.Count];
+
+        await Parallel.ForEachAsync(
+            submodelIds.Select((id, index) => (id, index)),
+            new ParallelOptions
             {
-                return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
-            }
-            catch (SubmodelDescriptorNotFoundException ex)
+                MaxDegreeOfParallelism = _concurrentOperationsLimit,
+                CancellationToken = cancellationToken
+            },
+            async (item, ct) =>
             {
-                logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
-                return null;
-            }
-        });
-    
-        var allDescriptors = (await Task.WhenAll(descriptorTasks).ConfigureAwait(false))
-            .Where(descriptor => descriptor is not null)
-            .Cast<SubmodelDescriptor>()
-            .ToList();
-    
+                try
+                {
+                    var descriptor = await GetSubmodelDescriptorByIdAsync(item.id, ct).ConfigureAwait(false);
+                    descriptorArray[item.index] = descriptor;
+                }
+                catch (SubmodelDescriptorNotFoundException ex)
+                {
+                    logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", item.id);
+                }
+            });
+
+        var allDescriptors = descriptorArray.ToList();
+
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
         {
             throw new SubmodelDescriptorNotFoundException();
         }
-    
+
         var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allDescriptors, d => d.Id!, limit, cursor);
-    
+
         return new SubmodelDescriptors
         {
             PagingMetaData = pagingMetaData,

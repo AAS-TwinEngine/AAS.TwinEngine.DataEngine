@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
@@ -25,6 +25,7 @@ public class SubmodelDescriptorServiceTests
     private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
     private readonly SubmodelDescriptorService _sut;
     private readonly IOptions<GeneralConfig> _options;
+    private readonly IOptions<TemplateManagementConfig> _templateManagementOptions;
     private readonly ILogger<SubmodelDescriptorService> _logger = Substitute.For<ILogger<SubmodelDescriptorService>>();
     private readonly ISubmodelTemplateMappingProvider _submodelTemplateMappingProvider = Substitute.For<ISubmodelTemplateMappingProvider>();
 
@@ -34,7 +35,14 @@ public class SubmodelDescriptorServiceTests
         {
             DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com"),
         });
-        _sut = new SubmodelDescriptorService(_provider, _submodelTemplateMappingProvider, _aasRepositoryService, _options, _logger);
+        _templateManagementOptions = Options.Create(new TemplateManagementConfig
+        {
+            SubmodelTemplateRegistry = new ServiceInstance
+            {
+                ConcurrentOperationsLimit = 10
+            }
+        });
+        _sut = new SubmodelDescriptorService(_provider, _submodelTemplateMappingProvider, _aasRepositoryService, _options, _templateManagementOptions, _logger);
     }
 
     [Fact]
@@ -90,6 +98,46 @@ public class SubmodelDescriptorServiceTests
 
         Assert.Single(result.Result!);
         Assert.Equal("ValidSubmodelId", result.Result![0].Id);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_ThrowsSubmodelDescriptorNotFoundException_WhenAllLookupsFail()
+    {
+        var shells = new Shells
+        {
+            Result =
+            [
+                CreateShell("MissingSubmodel1"),
+                CreateShell("MissingSubmodel2")
+            ]
+        };
+        _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+                           .Returns(shells);
+        _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel1").Returns("MissingSubmodel1");
+        _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel2").Returns("MissingSubmodel2");
+        _provider.GetDataForSubmodelDescriptorByIdAsync("MissingSubmodel1", Arg.Any<CancellationToken>())
+                 .Throws(new ResourceNotFoundException());
+        _provider.GetDataForSubmodelDescriptorByIdAsync("MissingSubmodel2", Arg.Any<CancellationToken>())
+                 .Throws(new ResourceNotFoundException());
+
+        await Assert.ThrowsAsync<SubmodelDescriptorNotFoundException>(() =>
+            _sut.GetAllSubmodelDescriptorsAsync(5, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_ReturnsEmptyResult_WhenShellsHaveNoSubmodels()
+    {
+        var shells = new Shells
+        {
+            Result = []
+        };
+        _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+                           .Returns(shells);
+
+        var result = await _sut.GetAllSubmodelDescriptorsAsync(5, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Empty(result.Result!);
     }
 
     [Fact]
