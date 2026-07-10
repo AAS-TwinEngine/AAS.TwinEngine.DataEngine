@@ -5,13 +5,14 @@ meta {
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shells?assetIds={{assetId-product1}}&limit&cursor
+  url: {{DataEngineBaseUrl}}/shells?assetIds={{assetId-product1}}&idShort=&limit&cursor
   body: none
   auth: inherit
 }
 
 params:query {
   assetIds: {{assetId-product1}}
+  idShort:
   limit: 
   cursor: 
 }

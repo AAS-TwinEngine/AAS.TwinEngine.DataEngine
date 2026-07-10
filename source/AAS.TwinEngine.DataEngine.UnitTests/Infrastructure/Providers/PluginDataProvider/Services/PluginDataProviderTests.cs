@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -391,7 +391,7 @@ public class PluginDataProviderTests
 
         var assetIdsHeaderValue = """[{"name":"SerialNumber","value":"SN-4711"}]""";
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result);
@@ -403,6 +403,45 @@ public class PluginDataProviderTests
         Assert.Equal("https://testendpoint.com/metadata/shells", captured.RequestUri!.ToString());
         Assert.True(captured.Headers.Contains("aastwinengine-assetids"));
         Assert.Equal(assetIdsHeaderValue, captured.Headers.GetValues("aastwinengine-assetids").First());
+    }
+
+    [Fact]
+    public async Task GetDataForShellDescriptorsByAssetIdsAsync_WithIdShort_AddsIdShortHeader()
+    {
+        HttpRequestMessage? captured = null;
+
+        using var messageHandler = new FakeHttpMessageHandler((req, _) =>
+        {
+            captured = req;
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(ProviderTestData.ShellDescriptors, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://testendpoint.com") };
+        var httpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin";
+        _httpClientFactory.CreateClient(httpClientName).Returns(httpClient);
+
+        var metadata = new List<PluginRequestMetaData>
+        {
+            new(httpClientName, "")
+        };
+
+        const string idShort = "test-idshort-value";
+
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, null, idShort, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Single(result);
+
+        Assert.NotNull(captured);
+        Assert.Equal(HttpMethod.Get, captured!.Method);
+        Assert.Equal("https://testendpoint.com/metadata/shells", captured.RequestUri!.ToString());
+        Assert.True(captured.Headers.Contains("aastwinengine-idshort"));
+        Assert.Equal(idShort, captured.Headers.GetValues("aastwinengine-idshort").First());
+        Assert.False(captured.Headers.Contains("aastwinengine-assetids"));
     }
 
     [Fact]
@@ -422,7 +461,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
     }
 
     [Fact]
@@ -442,7 +481,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
     }
 
     [Fact]
@@ -456,7 +495,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
     }
 
     [Fact]
@@ -465,7 +504,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { null! };
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
     }
 
     [Fact]
@@ -485,7 +524,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
     }
 
     private static List<ShellDescriptorMetaData> GetTestShellDescriptorDataList()

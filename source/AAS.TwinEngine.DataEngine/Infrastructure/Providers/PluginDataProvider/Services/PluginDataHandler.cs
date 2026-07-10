@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -200,7 +200,7 @@ public class PluginDataHandler(
         throw new ResponseParsingException();
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, IList<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, CancellationToken cancellationToken)
     {
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
 
@@ -212,14 +212,16 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 
-        var assetIdsHeaderValue = JsonSerializer.Serialize(
-                                                           specificAssetIds.Select(x => new
-                                                           {
-                                                               name = x.Name,
-                                                               value = x.Value
-                                                           }));
+        var assetIdsHeaderValue = filter?.SpecificAssetIds is not null && filter.SpecificAssetIds.Count > 0
+            ? JsonSerializer.Serialize(
+                                       filter.SpecificAssetIds.Select(x => new
+                                       {
+                                           name = x.Name,
+                                           value = x.Value
+                                       }))
+            : null;
 
-        var response = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, cancellationToken).ConfigureAwait(false);
+        var response = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, filter?.IdShort, cancellationToken).ConfigureAwait(false);
 
         var result = new ShellDescriptorsMetaData();
 

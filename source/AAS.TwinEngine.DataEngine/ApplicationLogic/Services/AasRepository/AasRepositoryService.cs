@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -18,15 +18,15 @@ public class AasRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler) : IAasRepositoryService
 {
-    public async Task<Shells> GetShellsByFiltersAsync(IList<SpecificAssetId>? filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
-            var (metadata, pagingMetaData) = await GetShellMetadataAsync(filters, limit, cursor, cancellationToken).ConfigureAwait(false);
+            var (metadata, pagingMetaData) = await GetShellMetadataAsync(filter, limit, cursor, cancellationToken).ConfigureAwait(false);
 
             var shells = await BuildShellsAsync(metadata, cancellationToken).ConfigureAwait(false);
 
-            shells = [.. FilterByExternalSubjectId(shells, filters)];
+            shells = [.. FilterByExternalSubjectId(shells, filter?.SpecificAssetIds)];
 
             return new Shells
             {
@@ -197,14 +197,14 @@ public class AasRepositoryService(
     }
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
-    IList<SpecificAssetId>? filters,
-    int? limit,
-    string? cursor,
-    CancellationToken cancellationToken)
+        ShellSearchFilter? filter,
+        int? limit,
+        string? cursor,
+        CancellationToken cancellationToken)
     {
-        return filters is null || filters.Count == 0
+        return (filter?.SpecificAssetIds is null || filter.SpecificAssetIds.Count == 0) && string.IsNullOrEmpty(filter?.IdShort)
             ? await GetAllShellMetadataAsync(limit, cursor, cancellationToken).ConfigureAwait(false)
-            : await GetFilteredShellMetadataAsync(filters, limit, cursor, cancellationToken).ConfigureAwait(false);
+            : await GetFilteredShellMetadataAsync(filter, limit, cursor, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
@@ -218,10 +218,14 @@ public class AasRepositoryService(
             metadata.PagingMetaData ?? new PagingMetaData());
     }
 
-    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(IList<SpecificAssetId> filters, int? limit, string? cursor, CancellationToken cancellationToken)
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(
+        ShellSearchFilter? filter,
+        int? limit,
+        string? cursor,
+        CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filters, cancellationToken)
+            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, cancellationToken)
             .ConfigureAwait(false);
 
         var allMetadata = metadata.ShellDescriptors?

@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 
@@ -12,5 +12,5 @@ public interface IPluginDataProvider
 
     Task<IList<HttpContent>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);
 
-    Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string assetIdsHeaderValue, CancellationToken cancellationToken);
+    Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, CancellationToken cancellationToken);
 }
