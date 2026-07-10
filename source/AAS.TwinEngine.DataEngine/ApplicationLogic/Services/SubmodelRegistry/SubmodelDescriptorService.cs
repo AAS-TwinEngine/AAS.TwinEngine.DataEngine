@@ -33,8 +33,10 @@ public class SubmodelDescriptorService(
     
         var submodelIds = ExtractDistinctSubmodelIds(shells.Result);
     
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
         var descriptorTasks = submodelIds.Select(async submodelId =>
         {
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
@@ -43,6 +45,10 @@ public class SubmodelDescriptorService(
             {
                 logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
                 return null;
+            }
+            finally
+            {
+                semaphore.Release();
             }
         });
     
