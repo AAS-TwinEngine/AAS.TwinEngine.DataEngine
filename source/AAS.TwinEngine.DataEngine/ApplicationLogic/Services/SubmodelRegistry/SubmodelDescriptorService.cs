@@ -33,29 +33,23 @@ public class SubmodelDescriptorService(
     
         var submodelIds = ExtractDistinctSubmodelIds(shells.Result);
     
-        var descriptors = new ConcurrentBag<SubmodelDescriptor>();
-    
-        await Parallel.ForEachAsync(
-            submodelIds,
-            new ParallelOptions
+        var descriptorTasks = submodelIds.Select(async submodelId =>
+        {
+            try
             {
-                MaxDegreeOfParallelism = 10,
-                CancellationToken = cancellationToken
-            },
-            async (submodelId, ct) =>
+                return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (SubmodelDescriptorNotFoundException ex)
             {
-                try
-                {
-                    var descriptor = await GetSubmodelDescriptorByIdAsync(submodelId, ct).ConfigureAwait(false);
-                    descriptors.Add(descriptor);
-                }
-                catch (SubmodelDescriptorNotFoundException ex)
-                {
-                    logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
-                }
-            });
+                logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
+                return null;
+            }
+        });
     
-        var allDescriptors = descriptors.ToList();
+        var allDescriptors = (await Task.WhenAll(descriptorTasks).ConfigureAwait(false))
+            .Where(descriptor => descriptor is not null)
+            .Cast<SubmodelDescriptor>()
+            .ToList();
     
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
         {
