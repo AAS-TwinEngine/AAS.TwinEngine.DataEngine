@@ -4,15 +4,15 @@
   },
   "result": [
     {
-      "idShort": "M&M03",
-      "id": "https://mm-software.com/ids/aas/000-003",
+      "idShort": "M&M02",
+      "id": "https://mm-software.com/ids/aas/000-002",
       "assetInformation": {
         "assetKind": "Instance",
-        "globalAssetId": "https://mm-software.com/ids/assets/000-003",
+        "globalAssetId": "https://mm-software.com/ids/assets/000-002",
         "specificAssetIds": [
           {
             "name": "SerialNumber",
-            "value": "SN-1111",
+            "value": "SN-9999",
             "externalSubjectId": {
               "type": "ExternalReference",
               "keys": [
@@ -25,7 +25,7 @@
           },
           {
             "name": "BatchId",
-            "value": "B-2026-08",
+            "value": "B-2026-03",
             "externalSubjectId": {
               "type": "ExternalReference",
               "keys": [
@@ -57,7 +57,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://mm-software.com/submodel/000-003/CustomSubmodel"
+              "value": "https://mm-software.com/submodel/000-002/CustomSubmodel"
             }
           ]
         },
@@ -66,7 +66,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://mm-software.com/submodel/000-003/ContactInformation"
+              "value": "https://mm-software.com/submodel/000-002/ContactInformation"
             }
           ]
         },
@@ -75,7 +75,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://mm-software.com/submodel/000-003/HandoverDocumentation"
+              "value": "https://mm-software.com/submodel/000-002/HandoverDocumentation"
             }
           ]
         }

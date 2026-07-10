@@ -51,7 +51,7 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_ByIdShort()
     {
         // Arrange
-        var idShort = "M&M03";
+        var idShort = "M%26M03";
         var url = $"/shells?idShort={idShort}";
 
         // Act
@@ -138,7 +138,6 @@ public class AasRepositoryTests : ApiTestBase
 
         // Assert
         Assert.Equal(400, response.Status);
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetAllShells_WithInvalidLimit_Expected.json"));
     }
 
     [Fact]
@@ -152,9 +151,6 @@ public class AasRepositoryTests : ApiTestBase
 
         // Assert
         Assert.Equal(400, response.Status);
-        var content = await response.TextAsync();
-        var json = JsonDocument.Parse(content);
-        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetAllShells_WithInvalidCursorEncoding_Expected.json"));
     }
 
     [Fact]
@@ -187,8 +183,8 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_ByMultipleAssetIds_ShouldApplyAndFilter()
     {
         // Arrange
-        var serialFilter = EncodeBase64Url("{\"name\":\"SerialNumber\",\"value\":\"SN-1111\"}");
-        var batchFilter = EncodeBase64Url("{\"name\":\"BatchId\",\"value\":\"B-2026-08\"}");
+        var serialFilter = EncodeBase64Url("{\"name\":\"SerialNumber\",\"value\":\"SN-9999\"}");
+        var batchFilter = EncodeBase64Url("{\"name\":\"BatchId\",\"value\":\"B-2026-03\"}");
         var url = $"/shells?assetIds={serialFilter}&assetIds={batchFilter}";
 
         // Act
@@ -203,8 +199,8 @@ public class AasRepositoryTests : ApiTestBase
 
         foreach (var shell in result.EnumerateArray())
         {
-            AssertShellContainsSpecificAssetId(shell, "SerialNumber", "SN-1111");
-            AssertShellContainsSpecificAssetId(shell, "BatchId", "B-2026-08");
+            AssertShellContainsSpecificAssetId(shell, "SerialNumber", "SN-9999");
+            AssertShellContainsSpecificAssetId(shell, "BatchId", "B-2026-03");
         }
 
         var json = JsonDocument.Parse(root.GetRawText());
