@@ -6,6 +6,7 @@ volumes:
   postgres-data:
 
 services:
+
   nginx:
     image: nginx:1.31.2
     container_name: nginx
@@ -34,9 +35,12 @@ services:
     depends_on:
       dpp-plugin:
         condition: service_started
+      otel-lgtm:
+        condition: service_started
     restart: always
     environment:
       - General__DataEngineRepositoryBaseUrl=http://localhost:8080
+      - General__OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
       - General__CustomerDomainUrl=https://mm-software.com
       - Plugins__Instances__0__Name=RelationalDatabasePlugin
       - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
@@ -106,8 +110,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      otel-lgtm:
+        condition: service_started
     restart: always
     environment:
+      - OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
       - Semantics__IndexContextPrefix=_aastwinengineindex_
       - Capabilities__HasShellDescriptor=true
       - Capabilities__HasAssetInformation=true
@@ -237,6 +244,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: always
+    networks:
+      - twinengine-network
+    
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: otel-lgtm
+    ports:
+      - "3000:3000"
+      - "4317:4317"
     restart: always
     networks:
       - twinengine-network
