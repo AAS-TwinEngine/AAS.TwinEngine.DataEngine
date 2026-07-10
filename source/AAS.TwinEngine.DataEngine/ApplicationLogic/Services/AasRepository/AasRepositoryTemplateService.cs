@@ -34,6 +34,7 @@ public class AasRepositoryTemplateService(
             logger.LogError(ex, "No product ID found for AAS identifier {AasIdentifier}", aasIdentifier);
             throw new InternalDataProcessingException();
         }
+        using var activity = DataEngineDiagnostics.StartFillDataIntoTemplate(aasIdentifier);
 
         foreach (var key in from submodel in shellTemplate?.Submodels
                             let key = submodel.Keys.FirstOrDefault()

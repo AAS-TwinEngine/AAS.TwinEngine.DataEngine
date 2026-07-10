@@ -28,7 +28,6 @@ public static class DataEngineDiagnostics
 
         public const string FetchPluginMetadata = "FetchPluginMetadata";
         public const string FetchAssetInformation = "FetchAssetInformation";
-        public const string SearchAssetsByAssetIds = "SearchAssetsByAssetIds";
     }
 
     public static class Attributes
@@ -91,8 +90,6 @@ public static class DataEngineDiagnostics
 
     /// <summary>Starts an <see cref="Spans.ExtractSemanticIds"/> span.</summary>
     public static Activity? StartExtractSemanticIds() => Source.StartActivity(Spans.ExtractSemanticIds);
-
-    // ── Fill data into template ───────────────────────────────────────────────
 
     /// <summary>Starts a <see cref="Spans.FillDataIntoTemplate"/> span for a submodel template (tags template ID).</summary>
     public static Activity? StartFillDataIntoTemplate(string templateId)
@@ -161,9 +158,6 @@ public static class DataEngineDiagnostics
         activity?.SetTag(Attributes.ShellId, shellId);
         return activity;
     }
-
-    /// <summary>Starts a <see cref="Spans.SearchAssetsByAssetIds"/> span.</summary>
-    public static Activity? StartSearchAssetsByAssetIds() => Source.StartActivity(Spans.SearchAssetsByAssetIds);
 
     // ── Error helpers ─────────────────────────────────────────────────────────
 

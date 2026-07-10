@@ -210,7 +210,7 @@ public class PluginDataHandler(
 
     public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartSearchAssetsByAssetIds();
+        using var activity = DataEngineDiagnostics.StartFetchPluginMetadata();
 
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
 
