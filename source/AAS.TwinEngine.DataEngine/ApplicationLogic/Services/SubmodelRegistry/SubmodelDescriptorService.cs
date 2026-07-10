@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -30,40 +30,40 @@ public class SubmodelDescriptorService(
     public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var shells = await aasRepositoryService.GetShellsByFiltersAsync(null, null, null, cancellationToken).ConfigureAwait(false);
-
+    
         var submodelIds = ExtractDistinctSubmodelIds(shells.Result);
-
-        var descriptorArray = new SubmodelDescriptor[submodelIds.Count];
-
+    
+        var descriptors = new ConcurrentBag<SubmodelDescriptor>();
+    
         await Parallel.ForEachAsync(
-            submodelIds.Select((id, index) => (id, index)),
+            submodelIds,
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = _concurrentOperationsLimit,
+                MaxDegreeOfParallelism = 10,
                 CancellationToken = cancellationToken
             },
-            async (item, ct) =>
+            async (submodelId, ct) =>
             {
                 try
                 {
-                    var descriptor = await GetSubmodelDescriptorByIdAsync(item.id, ct).ConfigureAwait(false);
-                    descriptorArray[item.index] = descriptor;
+                    var descriptor = await GetSubmodelDescriptorByIdAsync(submodelId, ct).ConfigureAwait(false);
+                    descriptors.Add(descriptor);
                 }
                 catch (SubmodelDescriptorNotFoundException ex)
                 {
-                    logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", item.id);
+                    logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
                 }
             });
-
-        var allDescriptors = descriptorArray.ToList();
-
+    
+        var allDescriptors = descriptors.ToList();
+    
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
         {
             throw new SubmodelDescriptorNotFoundException();
         }
-
+    
         var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allDescriptors, d => d.Id!, limit, cursor);
-
+    
         return new SubmodelDescriptors
         {
             PagingMetaData = pagingMetaData,
