@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -561,6 +562,32 @@ public class TemplateProviderTests
         var result = await _sut.GetConceptDescriptionByIdAsync(CdIdentifier, CancellationToken.None);
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetSubmodelTemplateAsync_StartsFetchTemplateSpan_WithTemplateIdTag()
+    {
+        const string TemplateIdForSpan = "Nameplate";
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activities.Add
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ProviderTestData.ValidateSubmodelResponse) };
+        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
+        _httpClientFactory.CreateClient(HttpClientNames.SubmodelTemplateRepository).Returns(httpClient);
+
+        _ = await _sut.GetSubmodelTemplateAsync(TemplateIdForSpan, CancellationToken.None);
+
+        var span = Assert.Single(activities);
+        Assert.Equal(DataEngineDiagnostics.Spans.FetchTemplate, span.OperationName);
+        Assert.Equal(TemplateIdForSpan, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
     }
 }
 

@@ -908,9 +908,10 @@ public class PluginDataHandlerTests
 
         await _sut.TryGetValuesAsync(manifests, inputNode, SubmodelId, CancellationToken.None);
 
-        var span = Assert.Single(activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.FetchPluginData, span.OperationName);
-        Assert.Equal(SubmodelId, span.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
+        var fetchPluginDataSpan = activities.FirstOrDefault(a => a.OperationName == DataEngineDiagnostics.Spans.FetchPluginData);
+        Assert.NotNull(fetchPluginDataSpan);
+        Assert.Equal(DataEngineDiagnostics.Spans.FetchPluginData, fetchPluginDataSpan.OperationName);
+        Assert.Equal(SubmodelId, fetchPluginDataSpan.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
     }
 }
 

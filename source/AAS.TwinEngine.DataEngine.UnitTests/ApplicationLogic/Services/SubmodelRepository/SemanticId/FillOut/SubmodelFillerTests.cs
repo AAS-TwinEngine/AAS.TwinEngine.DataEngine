@@ -1,8 +1,11 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Diagnostics;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -557,5 +560,30 @@ public class SubmodelFillerTests
         _ = _sut.FillOutTemplate(submodel, root);
 
         Equal("de", childProperty.Value);
+    }
+
+    [Fact]
+    public void FillOutTemplate_StartsFillDataIntoTemplateSpan_WithTemplateIdTag()
+    {
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activities.Add
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        const string TemplateId = "Template-123";
+        var submodel = Substitute.For<ISubmodel>();
+        submodel.Id.Returns(TemplateId);
+        submodel.SubmodelElements.Returns([]);
+        var values = new SemanticBranchNode("root", Cardinality.Unknown);
+
+        _ = _sut.FillOutTemplate(submodel, values);
+
+        var span = Assert.Single(activities);
+        Assert.Equal(DataEngineDiagnostics.Spans.FillDataIntoTemplate, span.OperationName);
+        Assert.Equal(TemplateId, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
     }
 }

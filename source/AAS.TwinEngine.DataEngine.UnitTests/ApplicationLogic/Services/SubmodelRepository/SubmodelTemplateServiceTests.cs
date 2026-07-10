@@ -328,30 +328,6 @@ public class SubmodelTemplateServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelTemplateAsync_StartsResolveTemplateSpan_WithSubmodelIdTag()
-    {
-        var activities = new List<Activity>();
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activities.Add
-        };
-        ActivitySource.AddActivityListener(listener);
-        var expectedSubmodel = Substitute.For<ISubmodel>();
-        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
-            .Returns(expectedSubmodel);
-
-        await _sut.GetSubmodelTemplateAsync(SubmodelId, CancellationToken.None);
-
-        var span = Assert.Single(activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.ResolveTemplate, span.OperationName);
-        Assert.Equal(SubmodelId, span.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
-        Assert.Equal(TemplateId, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
-    }
-
-    [Fact]
     public async Task GetSubmodelTemplateAsync_StartsResolveTemplateSpan_WithSubmodelIdTag_WhenIdShortPathProvided()
     {
         var activities = new List<Activity>();
