@@ -1,0 +1,86 @@
+{
+  "paging_metadata": {
+    "cursor": null
+  },
+  "result": [
+    {
+      "idShort": "M&M03",
+      "id": "https://mm-software.com/ids/aas/000-003",
+      "assetInformation": {
+        "assetKind": "Instance",
+        "globalAssetId": "https://mm-software.com/ids/assets/000-003",
+        "specificAssetIds": [
+          {
+            "name": "SerialNumber",
+            "value": "SN-1111",
+            "externalSubjectId": {
+              "type": "ExternalReference",
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://example.com/subjects/serial-number"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BatchId",
+            "value": "B-2026-08",
+            "externalSubjectId": {
+              "type": "ExternalReference",
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://example.com/subjects/batch-id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "LotNumber",
+            "value": "LOT-DE-71848",
+            "externalSubjectId": {
+              "type": "ExternalReference",
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://example.com/subjects/lot-number"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "submodels": [
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://mm-software.com/submodel/000-003/CustomSubmodel"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://mm-software.com/submodel/000-003/ContactInformation"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://mm-software.com/submodel/000-003/HandoverDocumentation"
+            }
+          ]
+        }
+      ],
+      "modelType": "AssetAdministrationShell"
+    }
+  ]
+}
