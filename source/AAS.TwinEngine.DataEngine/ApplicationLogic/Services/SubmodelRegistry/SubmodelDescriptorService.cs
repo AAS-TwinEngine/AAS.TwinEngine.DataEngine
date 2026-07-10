@@ -54,7 +54,7 @@ public class SubmodelDescriptorService(
     
         var allDescriptors = (await Task.WhenAll(descriptorTasks).ConfigureAwait(false))
             .Where(descriptor => descriptor is not null)
-            .Cast<SubmodelDescriptor>()
+            .Select(descriptor => descriptor!)
             .ToList();
     
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
