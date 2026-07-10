@@ -11,12 +11,7 @@ public class SemanticIdHandler(
     ISemanticTreeExtractor extractor,
     ISubmodelFiller filler) : ISemanticIdHandler
 {
-    public SemanticTreeNode Extract(ISubmodel submodelTemplate)
-    {
-        using var activity = DataEngineDiagnostics.StartExtractSemanticIds();
-
-        return extractor.Extract(submodelTemplate);
-    }
+    public SemanticTreeNode Extract(ISubmodel submodelTemplate) => extractor.Extract(submodelTemplate);
 
     public ISubmodelElement Extract(ISubmodel submodelTemplate, string idShortPath) => extractor.Extract(submodelTemplate, idShortPath);
 

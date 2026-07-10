@@ -2,6 +2,7 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -15,6 +16,8 @@ public class SemanticTreeExtractor(
 {
     public SemanticTreeNode Extract(ISubmodel submodelTemplate)
     {
+        using var activity = DataEngineDiagnostics.StartExtractSemanticIds();
+
         if (submodelTemplate == null)
         {
             throw new InvalidDependencyException(nameof(submodelTemplate), logger);

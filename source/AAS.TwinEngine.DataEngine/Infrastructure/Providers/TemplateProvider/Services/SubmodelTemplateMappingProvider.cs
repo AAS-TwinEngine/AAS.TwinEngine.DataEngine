@@ -20,9 +20,9 @@ public class SubmodelTemplateMappingProvider(ILogger<SubmodelTemplateMappingProv
 
         var templateId = _submodelTemplateMappings
                          .Where(templatePattern => templatePattern.Pattern
-                                                                      .Any(pattern => Regex.IsMatch(submodelId, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
-                             .Select(templatePattern => templatePattern.TemplateId)
-                             .FirstOrDefault();
+                                                                  .Any(pattern => Regex.IsMatch(submodelId, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
+                         .Select(templatePattern => templatePattern.TemplateId)
+                         .FirstOrDefault();
 
         if (templateId != null)
         {
