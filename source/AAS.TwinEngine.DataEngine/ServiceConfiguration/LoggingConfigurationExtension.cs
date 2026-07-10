@@ -63,6 +63,7 @@ internal static class LoggingConfigurationExtension
                    _ = tracerProvider
                        .AddAspNetCoreInstrumentation()
                        .AddHttpClientInstrumentation()
+                       .AddSource(Config.DataEngineDiagnostics.SourceName)
                        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otelSettings.OtlpEndpoint));
                })
                .WithMetrics(metricsProvider =>

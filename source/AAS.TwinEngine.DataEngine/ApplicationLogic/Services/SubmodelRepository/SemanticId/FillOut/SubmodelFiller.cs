@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -16,6 +17,8 @@ public class SubmodelFiller(
 {
     public ISubmodel FillOutTemplate(ISubmodel submodelTemplate, SemanticTreeNode values)
     {
+        using var activity = DataEngineDiagnostics.StartFillDataIntoTemplate(submodelTemplate?.Id ?? "unknown");
+
         if (submodelTemplate is null)
         {
             throw new InvalidDependencyException(nameof(submodelTemplate), logger);

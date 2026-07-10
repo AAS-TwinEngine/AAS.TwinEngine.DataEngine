@@ -13,6 +13,8 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 {
     public IList<PluginRequestSubmodel> Build(IDictionary<string, JsonSchema> jsonSchema)
     {
+        using var activity = DataEngineDiagnostics.StartRequestGeneration();
+
         EnsureManifestIsHealthy();
 
         return [.. jsonSchema

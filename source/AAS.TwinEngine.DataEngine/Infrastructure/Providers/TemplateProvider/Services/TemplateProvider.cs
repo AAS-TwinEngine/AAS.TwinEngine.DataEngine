@@ -27,6 +27,8 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
 
         var url = $"{SubModelRepositoryPath}/{encodedTemplateId}";
@@ -44,12 +46,15 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         catch (JsonException ex)
         {
             logger.LogError(ex, "Failed to parse or deserialize submodel template JSON. Submodel ID: {SubmodelId}", templateId);
+            activity.RecordError("JSON deserialization failed");
             throw new ResponseParsingException();
         }
     }
 
     public async Task<ShellDescriptor> GetShellDescriptorTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRegistryPath}/{encodedTemplateId}";
 
@@ -79,6 +84,8 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}";
 
@@ -106,6 +113,8 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<IAssetInformation> GetAssetInformationTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/asset-information";
 
@@ -133,6 +142,8 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<List<IReference>> GetSubmodelRefByIdAsync(string templateId, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/{SubmodelRefPath}";
 

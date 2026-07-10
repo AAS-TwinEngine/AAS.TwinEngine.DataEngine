@@ -1,10 +1,11 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -77,6 +78,8 @@ public class AasRepositoryService(
             var pluginManifests = pluginManifestConflictHandler.Manifests;
 
             var pluginData = await pluginDataHandler.GetDataForAssetInformationByIdAsync(pluginManifests, aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+            using var activity = DataEngineDiagnostics.StartFillAssetInformationIntoTemplate(aasIdentifier);
 
             return FillOutAssetInformation(template, pluginData);
         }

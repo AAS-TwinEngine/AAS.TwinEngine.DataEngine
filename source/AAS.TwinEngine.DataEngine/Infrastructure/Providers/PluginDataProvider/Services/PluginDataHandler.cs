@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -36,6 +36,8 @@ public class PluginDataHandler(
 
     public async Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchPluginData(submodelId);
+
         var jsonSchemas = new Dictionary<string, JsonSchema>();
 
         var dicSemanticTreeNode = multiPluginDataHandler.SplitByPluginManifests(semanticIds, pluginManifests);
@@ -71,6 +73,8 @@ public class PluginDataHandler(
 
     public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchPluginMetadata();
+
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
@@ -129,6 +133,8 @@ public class PluginDataHandler(
 
     public async Task<ShellDescriptorMetaData> GetDataForShellDescriptorAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchShellDescriptorMetadata(id);
+
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
@@ -169,6 +175,8 @@ public class PluginDataHandler(
 
     public async Task<AssetData> GetDataForAssetInformationByIdAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchAssetInformation(id);
+
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetInformation);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
@@ -202,6 +210,8 @@ public class PluginDataHandler(
 
     public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartSearchAssetsByAssetIds();
+
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
 
         if (availablePlugins.Count == 0)

@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -849,5 +850,67 @@ public class PluginDataHandlerTests
                                                     }
                                                 }
                                                 """;
+
+    [Fact]
+    public async Task TryGetValuesAsync_StartsFetchPluginDataSpan_WithSubmodelIdAndPluginCountTags()
+    {
+        const string SubmodelId = "submodelId";
+        const string JsonSchemaString = """
+                                        {
+                                            "$schema": "http://json-schema.org/draft-07/schema#",
+                                            "type": "object",
+                                            "properties": {
+                                                "Contact": { "type": "string" }
+                                            }
+                                        }
+                                        """;
+        const string ResponseJson = """{"Contact": "value"}""";
+
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activities.Add
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        var inputNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["Contact"],
+                Capabilities = new Capabilities()
+            }
+        };
+
+        using var jsonContent = ConvertToJsonContent(JsonSchemaString);
+        var requestList = new List<PluginRequestSubmodel>
+        {
+            new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", jsonContent)
+        };
+
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { "PluginA", inputNode } });
+        _pluginRequestBuilder.Build(Arg.Any<IDictionary<string, JsonSchema>>()).Returns(requestList);
+        _jsonSchemaValidator.When(x => x.ValidateRequestSchema(Arg.Any<JsonSchema>())).Do(_ => { });
+        _jsonSchemaValidator.When(x => x.ValidateResponseContent(Arg.Any<string>(), Arg.Any<JsonSchema>())).Do(_ => { });
+        _pluginDataProvider
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult<IList<HttpContent>>([new StringContent(ResponseJson, Encoding.UTF8, "application/json")]));
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(inputNode);
+
+        await _sut.TryGetValuesAsync(manifests, inputNode, SubmodelId, CancellationToken.None);
+
+        var span = Assert.Single(activities);
+        Assert.Equal(DataEngineDiagnostics.Spans.FetchPluginData, span.OperationName);
+        Assert.Equal(SubmodelId, span.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
+    }
 }
 

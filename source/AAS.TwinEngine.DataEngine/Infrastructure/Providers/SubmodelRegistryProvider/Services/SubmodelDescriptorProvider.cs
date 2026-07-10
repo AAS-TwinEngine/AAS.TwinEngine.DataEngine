@@ -23,6 +23,8 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
 
     public async Task<SubmodelDescriptor> GetDataForSubmodelDescriptorByIdAsync(string id, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineDiagnostics.StartFetchSubmodelDescriptorMetadata(id);
+
         var encodedAasId = id.EncodeBase64Url();
 
         var url = $"/{SubModelRegistryPath}/{encodedAasId}";

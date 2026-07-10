@@ -55,6 +55,7 @@ public class AasRepositoryTemplateService(
         {
             var submodelRefList = await GetTemplateAsync(aasIdentifier, _templateProvider.GetSubmodelRefByIdAsync, cancellationToken).ConfigureAwait(false);
             var productId = _shellTemplateMappingProvider.GetProductIdFromRule(aasIdentifier);
+            using var activity = DataEngineDiagnostics.StartGenerateSubmodelIds(aasIdentifier);
 
             foreach (var key in submodelRefList.SelectMany(submodelRef => submodelRef.Keys!))
             {
