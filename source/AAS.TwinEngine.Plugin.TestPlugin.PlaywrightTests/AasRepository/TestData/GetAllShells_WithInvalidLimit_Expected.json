@@ -1,0 +1,11 @@
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "An error occurred.",
+    "status": 400,
+    "errors": [
+        {
+            "description": "Invalid User Input."
+        }
+    ],
+    "traceId": "0HNMU80GL2LKJ:00000001"
+}
