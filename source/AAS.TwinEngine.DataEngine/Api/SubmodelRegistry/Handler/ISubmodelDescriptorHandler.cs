@@ -5,5 +5,7 @@ namespace AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Handler;
 
 public interface ISubmodelDescriptorHandler
 {
+    Task<SubmodelDescriptorsDto> GetAllSubmodelDescriptors(GetSubmodelDescriptorsRequest request, CancellationToken cancellationToken);
+
     Task<SubmodelDescriptorDto> GetSubmodelDescriptorById(GetSubmodelDescriptorRequest request, CancellationToken cancellationToken);
 }
