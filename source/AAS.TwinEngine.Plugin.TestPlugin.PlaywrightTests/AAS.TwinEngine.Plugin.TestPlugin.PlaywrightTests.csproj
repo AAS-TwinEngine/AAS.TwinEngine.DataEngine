@@ -69,6 +69,15 @@
     <None Update="Discovery\TestData\SearchShellByAssetLinksMultipleFilters_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="SubmodelRegistry\TestData\GetAllSubmodelDescriptors_WithLimitOne_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRegistry\TestData\GetAllSubmodelDescriptors_WithCursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRegistry\TestData\GetAllSubmodelDescriptors_WithoutParameters_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_Contact_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

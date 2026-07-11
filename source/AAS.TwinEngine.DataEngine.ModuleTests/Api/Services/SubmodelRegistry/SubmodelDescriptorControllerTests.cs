@@ -3,10 +3,14 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
+
+using AasCore.Aas3_1;
 
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,17 +24,20 @@ public abstract class SubmodelDescriptorControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ISubmodelDescriptorProvider _mockSubmodelDescriptorProvider;
+    private readonly IAasRepositoryService _mockAasRepositoryService;
     private readonly HttpClient _client;
 
     protected SubmodelDescriptorControllerTests(string configDir)
     {
         _mockSubmodelDescriptorProvider = Substitute.For<ISubmodelDescriptorProvider>();
+        _mockAasRepositoryService = Substitute.For<IAasRepositoryService>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
 
         _factory = new ConfigTestFactory(configDir, services =>
         {
             _ = services.AddSingleton(mockPluginManifestProvider);
             _ = services.AddSingleton(_mockSubmodelDescriptorProvider);
+            _ = services.AddSingleton(_mockAasRepositoryService);
         });
 
         _client = _factory.CreateClient();
@@ -41,6 +48,61 @@ public abstract class SubmodelDescriptorControllerTests : IDisposable
         _client.Dispose();
         _factory.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_ReturnsOkAsync()
+    {
+        var shells = new Shells
+        {
+            Result =
+            [
+                CreateShell("ContactInformation"),
+                CreateShell("Nameplate")
+            ]
+        };
+        _ = _mockAasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+                                    .Returns(shells);
+
+        _ = _mockSubmodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                                            .Returns(_ => TestData.CreateSubmodelDescriptor());
+
+        var response = await _client.GetAsync("/submodel-descriptors?limit=2");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_WithInvalidLimit_Returns400Async()
+    {
+        var response = await _client.GetAsync("/submodel-descriptors?limit=0");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_WithNotFound_Returns404Async()
+    {
+        var shells = new Shells
+        {
+            Result =
+            [
+                CreateShell("MissingSubmodel")
+            ]
+        };
+        _ = _mockAasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+                                    .Returns(shells);
+        _ = _mockSubmodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                                            .Throws(new ResourceNotFoundException());
+
+        var response = await _client.GetAsync("/submodel-descriptors?limit=1");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -183,6 +245,20 @@ public abstract class SubmodelDescriptorControllerTests : IDisposable
 
         var bytes = Encoding.UTF8.GetBytes(plainText);
         return WebEncoders.Base64UrlEncode(bytes);
+    }
+
+    private static AssetAdministrationShell CreateShell(string submodelId)
+    {
+        return new AssetAdministrationShell(
+            id: "shell-id",
+            assetInformation: new AssetInformation(assetKind: AssetKind.Instance, globalAssetId: null),
+            submodels:
+            [
+                new Reference(
+                    type: ReferenceTypes.ModelReference,
+                    keys: [new Key(KeyTypes.Submodel, submodelId)],
+                    referredSemanticId: null)
+            ]);
     }
 }
 

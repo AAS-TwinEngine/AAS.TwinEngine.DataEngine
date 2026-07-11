@@ -11,21 +11,77 @@ public class SubmodelDescriptorHandler(
     ILogger<SubmodelDescriptorHandler> logger,
     ISubmodelDescriptorService submodelDescriptorService) : ISubmodelDescriptorHandler
 {
-    public async Task<SubmodelDescriptorDto> GetSubmodelDescriptorById(GetSubmodelDescriptorRequest request, CancellationToken cancellationToken)
+    public Task<SubmodelDescriptorsDto> GetAllSubmodelDescriptors(
+        GetSubmodelDescriptorsRequest request,
+        CancellationToken cancellationToken)
     {
-        logger.LogInformation("Start executing get request for submodel descriptor");
+        request?.Limit.ValidateLimit(logger);
+        request?.Cursor?.ValidateCursor(logger);
 
-        var decodedId = request.SubmodelIdentifier?.DecodeBase64Url(logger);
-        var submodelDescriptor = await submodelDescriptorService.GetSubmodelDescriptorByIdAsync(decodedId, cancellationToken).ConfigureAwait(false);
+        return GetSubmodelDescriptorResourceAsync(
+            null,
+            "submodel descriptors",
+            _ => submodelDescriptorService.GetAllSubmodelDescriptorsAsync(
+                request.Limit,
+                request.Cursor,
+                cancellationToken),
+            descriptors => descriptors.ToDto());
+    }
 
-        if (submodelDescriptor != null)
+    public Task<SubmodelDescriptorDto> GetSubmodelDescriptorById(
+        GetSubmodelDescriptorRequest request,
+        CancellationToken cancellationToken)
+        => GetSubmodelDescriptorResourceAsync(
+            request?.SubmodelIdentifier,
+            "submodel descriptor",
+            id => submodelDescriptorService.GetSubmodelDescriptorByIdAsync(
+                id,
+                cancellationToken),
+            descriptor => descriptor.ToDto());
+
+    private async Task<TDto> GetSubmodelDescriptorResourceAsync<TModel, TDto>(
+        string? encodedId,
+        string resourceName,
+        Func<string?, Task<TModel?>> serviceFetchFunc,
+        Func<TModel, TDto> mapFunc)
+    {
+        var decodedId = encodedId?.DecodeBase64Url(logger);
+
+        LogRequestStart(resourceName, decodedId);
+
+        var result = await serviceFetchFunc(decodedId)
+            .ConfigureAwait(false);
+
+        ValidateResourceExists(result, resourceName, decodedId);
+
+        return mapFunc(result!);
+    }
+
+    private void LogRequestStart(
+        string resourceName,
+        string? decodedId)
+    {
+        if (resourceName is "submodel descriptors")
         {
-            var submodelDescriptorsDto = submodelDescriptor.ToDto();
-            return submodelDescriptorsDto;
+            logger.LogInformation("Start executing get request for {ResourceName}", resourceName);
         }
+        else
+        {
+            logger.LogInformation("Start executing get request for {ResourceName} for Submodel Identifier: {SubmodelIdentifier}", resourceName, decodedId);
+        }
+    }
 
-        logger.LogWarning("Submodel Descriptor content not found. Submodel ID: {SubmodelId}", decodedId);
-        throw new SubmodelDescriptorNotFoundException(decodedId);
+    private void ValidateResourceExists<TModel>(
+        TModel? result,
+        string resourceName,
+        string? decodedId)
+    {
+        if (result is null)
+        {
+            logger.LogWarning("{ResourceName} not found. Submodel Identifier: {SubmodelIdentifier}", resourceName, decodedId);
+
+            throw new SubmodelDescriptorNotFoundException();
+        }
     }
 }
 
