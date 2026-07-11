@@ -6,8 +6,11 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
+
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -19,8 +22,10 @@ public class SubmodelRepositoryService(
     ISemanticIdHandler semanticIdHandler,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
-    IAasRepositoryTemplateService aasRepositoryTemplateService) : ISubmodelRepositoryService
+    IAasRepositoryTemplateService aasRepositoryTemplateService,
+    IOptions<TemplateManagementConfig> templateManagementConfig) : ISubmodelRepositoryService
 {
+    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRegistry.ConcurrentOperationsLimit;
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
@@ -91,8 +96,10 @@ public class SubmodelRepositoryService(
 
     private async Task<List<string>> GetDistinctSubmodelIdsAsync(List<ShellDescriptorMetaData> shellDescriptors, CancellationToken cancellationToken)
     {
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
         var tasks = shellDescriptors.Where(shell => !string.IsNullOrWhiteSpace(shell.Id)).Select(async shell =>
             {
+                await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
                     return await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
@@ -101,6 +108,10 @@ public class SubmodelRepositoryService(
                 {
                     logger.LogWarning(ex, "Could not retrieve submodel refs for shell {ShellId}. Skipping shell.", shell.Id);
                     return [];
+                }
+                finally
+                {
+                    semaphore.Release();
                 }
             });
 
@@ -116,18 +127,27 @@ public class SubmodelRepositoryService(
 
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(IEnumerable<string> submodelIds, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
         var tasks = submodelIds.Select(async submodelId =>
         {
-            var template = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
-
-            if (template is null)
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
-                return null;
+                var template = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
+
+                if (template is null)
+                {
+                    return null;
+                }
+
+                var submodel = await BuildSubmodelWithValuesAsync(template, submodelId, cancellationToken).ConfigureAwait(false);
+
+                return submodel;
             }
-
-            var submodel = await BuildSubmodelWithValuesAsync(template, submodelId, cancellationToken).ConfigureAwait(false);
-
-            return submodel;
+            finally
+            {
+                semaphore.Release();
+            }
         });
 
         return [.. (await Task.WhenAll(tasks).ConfigureAwait(false)).OfType<ISubmodel>()];
