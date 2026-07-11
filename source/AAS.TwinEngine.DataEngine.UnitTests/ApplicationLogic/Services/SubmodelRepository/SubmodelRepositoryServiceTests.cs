@@ -8,10 +8,12 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -28,6 +30,7 @@ public class SubmodelRepositoryServiceTests
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly IAasRepositoryTemplateService _aasRepositoryTemplateService = Substitute.For<IAasRepositoryTemplateService>();
     private readonly ILogger<SubmodelRepositoryService> _logger = Substitute.For<ILogger<SubmodelRepositoryService>>();
+    private readonly IOptions<TemplateManagementConfig> _templateManagementOptions;
     private readonly SubmodelRepositoryService _sut;
 
     private const string SubmodelId = "NameplateSubmodel";
@@ -35,13 +38,22 @@ public class SubmodelRepositoryServiceTests
 
     public SubmodelRepositoryServiceTests()
     {
+        _templateManagementOptions = Options.Create(new TemplateManagementConfig
+        {
+            SubmodelTemplateRegistry = new ServiceInstance
+            {
+                ConcurrentOperationsLimit = 10
+            }
+        });
+
         _sut = new SubmodelRepositoryService(
             _logger,
             _templateService,
             _semanticIdHandler,
             _pluginDataHandler,
             _pluginManifestConflictHandler,
-            _aasRepositoryTemplateService);
+            _aasRepositoryTemplateService,
+            _templateManagementOptions);
     }
 
     [Fact]
