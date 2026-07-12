@@ -39,4 +39,5 @@ public class ServiceInstance
     public Uri? BaseUrl { get; set; }
     public IList<HeaderMappingRule> HeaderMappings { get; init; } = [];
     public string HealthEndpoint { get; set; } = string.Empty;
+    public int ConcurrentOperationsLimit { get; set; } = 10;
 }

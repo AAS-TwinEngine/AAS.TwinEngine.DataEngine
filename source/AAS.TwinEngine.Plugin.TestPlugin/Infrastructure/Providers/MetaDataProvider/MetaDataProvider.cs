@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
@@ -60,7 +60,7 @@ public class MetaDataProvider : IMetaDataProvider
                                                          );
     }
 
-    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, CancellationToken cancellationToken)
+    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, string? idShort, CancellationToken cancellationToken)
     {
         var domainModels = _shellDescriptorLookup.Values.ToList();
 
@@ -69,6 +69,11 @@ public class MetaDataProvider : IMetaDataProvider
         if (filter != null)
         {
             shellDescriptors = [.. shellDescriptors.Where(item => AssetIdMatcher.MatchesAllIdentifiers(item, filter))];
+        }
+
+        if (!string.IsNullOrEmpty(idShort))
+        {
+            shellDescriptors = [.. shellDescriptors.Where(item => string.Equals(item.IdShort, idShort, StringComparison.Ordinal))];
         }
 
         ValidateCursor(cursor, shellDescriptors);

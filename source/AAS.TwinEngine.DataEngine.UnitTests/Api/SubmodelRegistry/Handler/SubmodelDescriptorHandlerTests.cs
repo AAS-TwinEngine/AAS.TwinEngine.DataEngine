@@ -21,6 +21,43 @@ public class SubmodelDescriptorHandlerTests
     public SubmodelDescriptorHandlerTests() => _sut = new SubmodelDescriptorHandler(_logger, _submodelDescriptorService);
 
     [Fact]
+    public async Task GetAllSubmodelDescriptors_ReturnsDto_WhenDescriptorsExist()
+    {
+        var request = new GetSubmodelDescriptorsRequest(5, null);
+        var descriptors = new SubmodelDescriptors
+        {
+            Result =
+            [
+                new SubmodelDescriptor { Id = "id1" }
+            ]
+        };
+
+        _submodelDescriptorService.GetAllSubmodelDescriptorsAsync(5, null, Arg.Any<CancellationToken>())
+                                  .Returns(descriptors);
+
+        var result = await _sut.GetAllSubmodelDescriptors(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Single(result.Result!);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptors_ThrowsInvalidUserInputException_WhenLimitIsInvalid()
+    {
+        var request = new GetSubmodelDescriptorsRequest(0, null);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetAllSubmodelDescriptors(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptors_ThrowsInvalidUserInputException_WhenCursorIsInvalid()
+    {
+        var request = new GetSubmodelDescriptorsRequest(5, "invalid cursor");
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetAllSubmodelDescriptors(request, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task GetSubmodelDescriptorById_ReturnsDto_WhenDescriptorExists()
     {
         const string Id = "submodelId";

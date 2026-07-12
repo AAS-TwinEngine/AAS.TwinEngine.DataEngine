@@ -1,4 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.Api.Shared.MappingProfiles;
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 
@@ -6,6 +7,18 @@ namespace AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.MappingProfiles;
 
 public static class SubmodelDescriptorMapperProfile
 {
+    public static SubmodelDescriptorsDto ToDto(this SubmodelDescriptors descriptors)
+    {
+        return new SubmodelDescriptorsDto
+        {
+            PagingMetaData = new PagingMetaDataDto
+            {
+                Cursor = descriptors.PagingMetaData?.Cursor
+            },
+            Result = descriptors.Result?.Select(s => s.ToDto()).ToList()
+        };
+    }
+
     public static SubmodelDescriptorDto ToDto(this SubmodelDescriptor? descriptor)
     {
         return descriptor == null

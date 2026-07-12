@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Configuration;
 
@@ -127,6 +127,7 @@ public class V2DirectBindingTests
         Assert.Equal(new Uri("http://localhost:8082"), tmConfig.AasTemplateRegistry.BaseUrl);
         Assert.Equal(new Uri("http://localhost:8083"), tmConfig.SubmodelTemplateRegistry.BaseUrl);
         Assert.Equal(new Uri("http://localhost:8081"), tmConfig.SubmodelTemplateRepository.BaseUrl);
+        Assert.Equal(12, tmConfig.SubmodelTemplateRegistry.ConcurrentOperationsLimit);
     }
 
     [Fact]
@@ -216,7 +217,8 @@ public class V2DirectBindingTests
             ["TemplateManagement:AasTemplateRegistry:headerMappings:0:target"] = "Authorization",
             ["TemplateManagement:AasTemplateRegistry:headerMappings:0:required"] = "false",
             ["TemplateManagement:SubmodelTemplateRegistry:Name"] = "SubmodelTemplateRegistry",
-            ["TemplateManagement:SubmodelTemplateRegistry:baseUrl"] = "http://localhost:8083"
+            ["TemplateManagement:SubmodelTemplateRegistry:baseUrl"] = "http://localhost:8083",
+            ["TemplateManagement:SubmodelTemplateRegistry:ConcurrentOperationsLimit"] = "12"
         });
     }
 

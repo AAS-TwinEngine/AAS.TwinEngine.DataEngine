@@ -238,6 +238,25 @@ internal static class TestData
            }
            """;
 
+    public static string CreatePluginResponseForShellDescriptorsFilterByIdShort()
+    => """
+           {
+             "paging_metadata": {
+               "cursor": null
+             },
+             "result": [
+               {
+                 "globalAssetId": "https://mm-software.com/ids/assets/000-001",
+                 "idShort": "Product1",
+                 "id": "https://mm-software.com/ids/aas/000-001",
+                 "specificAssetIds": [
+                   { "name": "SerialNumber", "value": "SN-4711" }
+                 ]
+               }
+             ]
+           }
+           """;
+
     public static string CreatePluginResponseForShellDescriptorsEmpty()
         => """
            {

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -54,21 +54,35 @@ public class AasRepositoryControllerTests
     public async Task GetShellsByAssetIdAsync_ReturnsOkResult()
     {
         var expectedResponse = new ShellsDto { PagingMetaData = new PagingMetaDataDto { Cursor = null }, Result = [] };
-        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<string?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
-        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, CancellationToken.None);
+        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, null, CancellationToken.None);
 
         Assert.IsType<ActionResult<ShellsDto>>(result);
     }
 
     [Fact]
+    public async Task GetShellsByAssetIdAsync_WithIdShort_ReturnsOkResult()
+    {
+        var expectedResponse = new ShellsDto { PagingMetaData = new PagingMetaDataDto { Cursor = null }, Result = [] };
+        const string idShort = "test-idshort";
+        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), idShort, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(expectedResponse);
+
+        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], idShort, null, null, CancellationToken.None);
+
+        Assert.IsType<ActionResult<ShellsDto>>(result);
+        await _handler.Received(1).GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), idShort, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task GetShellsByAssetIdAsync_ThrowsException_Propagates()
     {
-        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<string?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("error"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, null, CancellationToken.None));
 
         Assert.NotNull(exception);
         Assert.IsType<Exception>(exception);

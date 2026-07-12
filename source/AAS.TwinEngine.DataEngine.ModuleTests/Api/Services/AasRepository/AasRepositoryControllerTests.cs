@@ -468,6 +468,38 @@ public abstract class AasRepositoryControllerTests : IDisposable
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task GetShellsAsync_WithIdShort_ReturnsOnlyMatchingShellAsync()
+    {
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsFilterByIdShort());
+        SetupTemplateProvider();
+
+        var response = await _client.GetAsync("/shells?idShort=Product1");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        _ = Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetShellsAsync_WithIdShortNoMatch_ReturnsEmptyResultAsync()
+    {
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsEmpty());
+        SetupTemplateProvider();
+
+        var response = await _client.GetAsync("/shells?idShort=NonExistentShell");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
     #endregion
 
     private void SetupPluginHttpClient(string pluginResponse)

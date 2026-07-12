@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Requests;
@@ -23,6 +22,30 @@ public class SubmodelDescriptorController(
     ISubmodelDescriptorHandler submodelDescriptorHandler)
     : ControllerBase
 {
+    /// <summary>
+    /// Returns all Submodel Descriptors.
+    /// </summary>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <response code="200">Requested Submodel Descriptors</response>
+    /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+
+    [HttpGet]
+    [ProducesResponseType(typeof(SubmodelDescriptorsDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<SubmodelDescriptorsDto>> GetAllSubmodelDescriptorsAsync([FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get All Submodel Descriptors");
+        var request = new GetSubmodelDescriptorsRequest(limit, cursor);
+        var response = await submodelDescriptorHandler.GetAllSubmodelDescriptors(request, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
     /// <summary>
     /// Returns a specific Submodel Descriptor.
     /// </summary>
