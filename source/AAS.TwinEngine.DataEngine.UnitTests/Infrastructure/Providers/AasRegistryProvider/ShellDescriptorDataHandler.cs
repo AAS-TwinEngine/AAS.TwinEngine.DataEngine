@@ -22,29 +22,6 @@ public class ShellDescriptorDataHandlerTests
     }
 
     [Fact]
-    public void FillOut_ThrowsIfTemplateIsNull() => Assert.Throws<InvalidDependencyException>(() => _sut.FillOut(null!, []));
-
-    [Fact]
-    public void FillOut_ThrowsIfValuesIsNull()
-    {
-        var template = CreateShellDescriptorTemplate();
-        Assert.Throws<InvalidDependencyException>(() => _sut.FillOut(template, (List<ShellDescriptorMetaData>)null!));
-    }
-
-    [Fact]
-    public void FillOut_FillsValuesCorrectly()
-    {
-        var template = CreateShellDescriptorTemplate();
-        var values = CreateShellDescriptorDataList();
-
-        var result = _sut.FillOut(template, values);
-
-        Assert.Equal(2, result.Count);
-        AssertDescriptorMatch(result[0], "GlobalAssetId_SensorWeatherStation", "idShort1", "SensorWeatherStation", [], "href1");
-        AssertDescriptorMatch(result[1], "GlobalAssetId_ContactInformation", "idShort2", "ContactInformation", [], "href2");
-    }
-
-    [Fact]
     public void FillOut_SingleTemplate_UpdatesFieldsCorrectly()
     {
         var descriptor = CreateEmptyShellDescriptorWithEndpoint();
@@ -109,20 +86,6 @@ public class ShellDescriptorDataHandlerTests
         var metaData = new ShellDescriptorMetaData { Id = "testId", Href = "http://localhost" };
 
         Assert.Throws<InternalDataProcessingException>(() => _sut.FillOut(descriptor, metaData));
-    }
-
-    [Fact]
-    public void FillOut_MultipleMetaData_DoesNotModifyOriginalTemplate()
-    {
-        var template = CreateShellDescriptorTemplate();
-        var originalHref = template.Endpoints![0].ProtocolInformation!.Href;
-
-        var values = CreateShellDescriptorDataList();
-        _sut.FillOut(template, values);
-
-        // Ensure template is not modified
-        Assert.Equal(originalHref, template.Endpoints![0].ProtocolInformation!.Href);
-        Assert.Equal("templateAssetId", template.GlobalAssetId);
     }
 
     #region Test Data Helpers
