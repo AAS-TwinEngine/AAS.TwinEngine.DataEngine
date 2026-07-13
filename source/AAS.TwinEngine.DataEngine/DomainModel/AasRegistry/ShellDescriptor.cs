@@ -56,8 +56,8 @@ public class ShellDescriptor
             GlobalAssetId = string.Empty,
             IdShort = string.Empty,
             Id = string.Empty,
-            Endpoints = new List<EndpointData>
-            {
+            Endpoints =
+            [
                 new()
                 {
                     Interface = "AAS-3.0",
@@ -67,7 +67,7 @@ public class ShellDescriptor
                         EndpointProtocol = "http"
                     }
                 }
-            }
+            ]
         };
     }
 }

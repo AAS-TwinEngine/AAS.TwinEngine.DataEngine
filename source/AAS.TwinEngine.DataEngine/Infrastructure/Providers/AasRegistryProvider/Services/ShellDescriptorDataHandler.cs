@@ -9,27 +9,6 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider
 
 public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logger) : IShellDescriptorDataHandler
 {
-    public IList<ShellDescriptor> FillOut(ShellDescriptor template, IList<ShellDescriptorMetaData> metaData)
-    {
-        if (template is null)
-        {
-            throw new InvalidDependencyException(nameof(template), logger);
-        }
-
-        if (metaData is null)
-        {
-            throw new InvalidDependencyException(nameof(metaData), logger);
-        }
-
-        return metaData
-               .Select(value =>
-               {
-                   var clonedDescriptor = Clone(template);
-                   return FillOut(clonedDescriptor, value);
-               })
-               .ToList();
-    }
-
     public ShellDescriptor FillOut(ShellDescriptor template, ShellDescriptorMetaData metaData)
     {
         if (template is null)
@@ -61,7 +40,14 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
         descriptor.GlobalAssetId = metaData.GlobalAssetId;
         descriptor.IdShort = metaData.IdShort;
         descriptor.Id = metaData.Id;
-        descriptor.SpecificAssetIds = metaData.SpecificAssetIds;
+
+        foreach (var specificAssetIdData in metaData.SpecificAssetIds)
+        {
+            var descriptorAssetId = descriptor.SpecificAssetIds?
+                .FirstOrDefault(x => x.Name == specificAssetIdData.Name);
+
+            _ = (descriptorAssetId?.Value = specificAssetIdData.Value);
+        }
     }
 
     private ShellDescriptor Clone(ShellDescriptor shellDescriptor)
