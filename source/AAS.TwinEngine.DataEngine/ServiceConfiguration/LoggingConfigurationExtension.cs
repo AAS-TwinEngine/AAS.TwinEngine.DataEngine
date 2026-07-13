@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
@@ -67,16 +68,8 @@ internal static class LoggingConfigurationExtension
                        .AddAspNetCoreInstrumentation()
                        .AddHttpClientInstrumentation(options =>
                        {
-                           options.EnrichWithHttpRequestMessage = (activity, request) =>
-                           {
-                               var host = request.RequestUri?.Host;
-                               if (string.IsNullOrWhiteSpace(host))
-                               {
-                                   return;
-                               }
-
-                               _ = activity.SetTag(PeerServiceTag, host);
-                           };
+                           options.EnrichWithHttpRequestMessage = static (activity, request) =>
+                               SetPeerServiceTag(activity, request);
                        })
                        .AddSource(DataEngineTracing.SourceName)
                        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otelSettings.OtlpEndpoint));
@@ -88,5 +81,16 @@ internal static class LoggingConfigurationExtension
                        .AddHttpClientInstrumentation()
                        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otelSettings.OtlpEndpoint));
                });
+    }
+
+    private static void SetPeerServiceTag(Activity activity, HttpRequestMessage request)
+    {
+        var host = request.RequestUri?.Host;
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return;
+        }
+
+        _ = activity.SetTag(PeerServiceTag, host);
     }
 }

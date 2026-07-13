@@ -3,7 +3,6 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
