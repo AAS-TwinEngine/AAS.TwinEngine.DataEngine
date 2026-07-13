@@ -454,8 +454,8 @@ public class DataEngineDiagnosticsTests
         Activity? activity = null;
         var ex = new InvalidOperationException("Operation failed");
 
-        // Should not throw
-        activity.RecordError(ex);
+        var result = Record.NoException(() => activity.RecordError(ex));
+        Assert.Null(result);
     }
 
     [Fact]
@@ -477,8 +477,8 @@ public class DataEngineDiagnosticsTests
         Activity? activity = null;
         const string ErrorDescription = "Custom error occurred";
 
-        // Should not throw
-        activity.RecordError(ErrorDescription);
+        var result = Record.NoException(() => activity.RecordError(ErrorDescription));
+        Assert.Null(result);
     }
 
     #endregion
