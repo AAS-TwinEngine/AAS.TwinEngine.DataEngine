@@ -1,10 +1,8 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
 
 using AasCore.Aas3_1;
 
@@ -23,7 +21,6 @@ public class SubmodelTemplateServiceTests
     private readonly ISubmodelTemplateMappingProvider _mappingProvider = Substitute.For<ISubmodelTemplateMappingProvider>();
     private readonly ILogger<SubmodelTemplateService> _logger = Substitute.For<ILogger<SubmodelTemplateService>>();
 
-    private ActivityListenerFixture CreateFixture() => new();
     private readonly SubmodelTemplateService _sut;
     private const string SubmodelId = "Nameplate";
     private const string TemplateId = "template-Nameplate";
@@ -329,9 +326,8 @@ public class SubmodelTemplateServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelTemplateAsync_StartsResolveTemplateSpan_WithSubmodelIdTag_WhenIdShortPathProvided()
+    public async Task GetSubmodelTemplateAsync_WithIdShortPath_UsesMappedTemplateId()
     {
-        using var fixture = CreateFixture();
         const string IdShortPath = "ManufacturerName";
         var expectedSubmodel = TestData.CreateSubmodel();
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
@@ -340,9 +336,7 @@ public class SubmodelTemplateServiceTests
 
         await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None);
 
-        var span = Assert.Single(fixture.Activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.ResolveTemplate, span.OperationName);
-        Assert.Equal(SubmodelId, span.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
-        Assert.Equal(TemplateId, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
+        _mappingProvider.Received(1).GetTemplateId(SubmodelId);
+        await _templateProvider.Received(1).GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>());
     }
 }

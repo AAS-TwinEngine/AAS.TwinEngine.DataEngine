@@ -33,8 +33,6 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
 
     public ShellDescriptor FillOut(ShellDescriptor template, ShellDescriptorMetaData metaData)
     {
-        using var activity = DataEngineDiagnostics.StartFillShellDataIntoTemplate(metaData?.Id ?? "unknown", template?.Id ?? "unknown");
-
         if (template is null)
         {
             throw new InvalidDependencyException(nameof(template), logger);

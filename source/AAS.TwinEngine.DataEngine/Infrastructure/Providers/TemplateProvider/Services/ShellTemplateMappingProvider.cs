@@ -7,7 +7,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
-using DataEngineDiagnostics = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineDiagnostics;
+using DataEngineTracing = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineTracing;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
@@ -20,8 +20,6 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
 
     public string? GetTemplateId(string aasIdentifier)
     {
-        using var activity = DataEngineDiagnostics.StartResolveShellTemplateId(aasIdentifier);
-
         var templateId = _shellTemplateMappings
             .FirstOrDefault(mapping => mapping.Pattern
                                               .Any(pattern => Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
@@ -33,13 +31,12 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
             throw new ResourceNotFoundException();
         }
 
-        activity?.SetTag(DataEngineDiagnostics.Attributes.TemplateId, templateId);
         return templateId;
     }
 
     public string GetProductIdFromRule(string aasIdentifier)
     {
-        using var activity = DataEngineDiagnostics.StartGetProductId(aasIdentifier);
+        using var activity = DataEngineTracing.StartGetProductId(aasIdentifier);
         foreach (var rule in _aasIdExtractionRules)
         {
             var extracted = rule.Strategy switch

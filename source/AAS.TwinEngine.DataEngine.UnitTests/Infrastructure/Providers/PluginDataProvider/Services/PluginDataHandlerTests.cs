@@ -17,7 +17,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using AasCore.Aas3_1;
 
@@ -903,10 +903,10 @@ public class PluginDataHandlerTests
 
         await _sut.TryGetValuesAsync(manifests, inputNode, SubmodelId, CancellationToken.None);
 
-        var fetchPluginDataSpan = fixture.Activities.FirstOrDefault(a => a.OperationName == DataEngineDiagnostics.Spans.FetchPluginData);
+        var fetchPluginDataSpan = fixture.Activities.FirstOrDefault(a => a.OperationName == DataEngineTracing.Spans.GetPluginData);
         Assert.NotNull(fetchPluginDataSpan);
-        Assert.Equal(DataEngineDiagnostics.Spans.FetchPluginData, fetchPluginDataSpan.OperationName);
-        Assert.Equal(SubmodelId, fetchPluginDataSpan.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
+        Assert.Equal(DataEngineTracing.Spans.GetPluginData, fetchPluginDataSpan.OperationName);
+        Assert.Equal(SubmodelId, fetchPluginDataSpan.GetTagItem(DataEngineTracing.Attributes.SubmodelId));
     }
 }
 

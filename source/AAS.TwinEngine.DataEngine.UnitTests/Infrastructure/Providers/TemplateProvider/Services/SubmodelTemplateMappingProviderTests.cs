@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -67,18 +67,5 @@ public class SubmodelTemplateMappingProviderTests
 
         var exception = Assert.Throws<InvalidDependencyException>(() => new SubmodelTemplateMappingProvider(_logger, _options));
         Assert.IsType<InvalidDependencyException>(exception);
-    }
-
-    [Fact]
-    public void GetTemplateId_StartsResolveSubmodelTemplateIdSpan_WithSubmodelIdTag()
-    {
-        const string SubmodelId = "submodel1";
-        using var fixture = CreateFixture();
-
-        _ = _sut.GetTemplateId(SubmodelId);
-
-        var span = Assert.Single(fixture.Activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.ResolveTemplateId, span.OperationName);
-        Assert.Equal(SubmodelId, span.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
     }
 }

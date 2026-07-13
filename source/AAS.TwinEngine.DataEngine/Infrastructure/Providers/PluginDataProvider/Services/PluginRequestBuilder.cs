@@ -14,7 +14,7 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 {
     public IList<PluginRequestSubmodel> Build(IDictionary<string, JsonSchema> jsonSchema)
     {
-        using var activity = DataEngineDiagnostics.StartRequestGeneration();
+        using var activity = DataEngineTracing.StartPluginRequestGeneration();
 
         EnsureManifestIsHealthy();
 
@@ -26,6 +26,8 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 
     public IList<PluginRequestMetaData> Build(IList<string> plugins, string? aasIdentifier = null)
     {
+        using var activity = DataEngineTracing.StartPluginRequestGeneration();
+
         EnsureManifestIsHealthy();
 
         return [.. plugins

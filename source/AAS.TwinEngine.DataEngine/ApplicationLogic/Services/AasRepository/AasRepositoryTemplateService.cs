@@ -35,7 +35,6 @@ public class AasRepositoryTemplateService(
             logger.LogError(ex, "No product ID found for AAS identifier {AasIdentifier}", aasIdentifier);
             throw new InternalDataProcessingException();
         }
-        using var activity = DataEngineDiagnostics.StartFillDataIntoTemplate(aasIdentifier);
 
         foreach (var key in from submodel in shellTemplate?.Submodels
                             let key = submodel.Keys.FirstOrDefault()
@@ -57,7 +56,6 @@ public class AasRepositoryTemplateService(
         {
             var submodelRefList = await GetTemplateAsync(aasIdentifier, _templateProvider.GetSubmodelRefByIdAsync, cancellationToken).ConfigureAwait(false);
             var productId = _shellTemplateMappingProvider.GetProductIdFromRule(aasIdentifier);
-            using var activity = DataEngineDiagnostics.StartGenerateSubmodelIds(aasIdentifier);
 
             foreach (var key in submodelRefList.SelectMany(submodelRef => submodelRef.Keys!))
             {

@@ -17,8 +17,6 @@ public class SubmodelTemplateMappingProvider(ILogger<SubmodelTemplateMappingProv
 
     public string? GetTemplateId(string submodelId)
     {
-        using var activity = DataEngineDiagnostics.StartResolveSubmodelTemplateId(submodelId);
-
         var templateId = _submodelTemplateMappings
                          .Where(templatePattern => templatePattern.Pattern
                                                                   .Any(pattern => Regex.IsMatch(submodelId, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
@@ -27,12 +25,10 @@ public class SubmodelTemplateMappingProvider(ILogger<SubmodelTemplateMappingProv
 
         if (templateId != null)
         {
-            activity?.SetTag(DataEngineDiagnostics.Attributes.TemplateId, templateId);
             return templateId;
         }
 
         logger.LogError("No matching template found for submodel: {SubmodelId}", submodelId);
-        activity.RecordError("No matching template found");
         throw new ResourceNotFoundException();
     }
 }

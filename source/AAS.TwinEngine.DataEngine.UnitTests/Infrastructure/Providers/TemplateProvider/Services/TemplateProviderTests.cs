@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 
@@ -6,7 +7,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
 
 using AasCore.Aas3_1;
 
@@ -16,6 +16,7 @@ using NSubstitute;
 
 using Template = AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services.TemplateProvider;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Services;
 
@@ -580,9 +581,10 @@ public class TemplateProviderTests
 
         _ = await _sut.GetSubmodelTemplateAsync(TemplateIdForSpan, CancellationToken.None);
 
-        var span = Assert.Single(fixture.Activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.FetchTemplate, span.OperationName);
-        Assert.Equal(TemplateIdForSpan, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
+        var capturedActivities = fixture.Activities.ToArray();
+        var span = Assert.Single(capturedActivities.Where(a => a.OperationName == DataEngineTracing.Spans.GetSubmodelTemplate));
+        Assert.Equal(DataEngineTracing.Spans.GetSubmodelTemplate, span.OperationName);
+        Assert.Equal(TemplateIdForSpan, span.GetTagItem(DataEngineTracing.Attributes.TemplateId));
     }
 }
 

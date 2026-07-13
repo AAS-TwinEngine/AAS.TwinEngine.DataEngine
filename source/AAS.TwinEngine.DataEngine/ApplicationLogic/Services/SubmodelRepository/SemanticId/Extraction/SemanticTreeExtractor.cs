@@ -16,8 +16,6 @@ public class SemanticTreeExtractor(
 {
     public SemanticTreeNode Extract(ISubmodel submodelTemplate)
     {
-        using var activity = DataEngineDiagnostics.StartExtractSemanticIds();
-
         if (submodelTemplate == null)
         {
             throw new InvalidDependencyException(nameof(submodelTemplate), logger);

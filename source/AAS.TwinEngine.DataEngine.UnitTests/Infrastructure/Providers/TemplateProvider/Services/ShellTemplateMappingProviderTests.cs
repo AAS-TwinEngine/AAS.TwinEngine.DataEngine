@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -548,23 +548,6 @@ public class ShellTemplateMappingProviderTests
     }
 
     [Fact]
-    public void GetTemplateId_StartsResolveShellTemplateIdSpan_WithShellIdTag()
-    {
-        const string ShellId = "Shell123";
-        using var fixture = CreateFixture();
-
-        var sut = CreateSut(
-            rules: [new AasIdExtractionRule { Strategy = ExtractionStrategy.Regex, Pattern = @".*", Index = 0 }],
-            shellMappings: [new ShellTemplateMappings { Pattern = [".*"], TemplateId = "default-template" }]);
-
-        _ = sut.GetTemplateId(ShellId);
-
-        var span = Assert.Single(fixture.Activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.ResolveTemplateId, span.OperationName);
-        Assert.Equal(ShellId, span.GetTagItem(DataEngineDiagnostics.Attributes.ShellId));
-    }
-
-    [Fact]
     public void GetProductIdFromRule_StartsGetProductIdSpan_WithShellIdTag()
     {
         const string ShellId = "https://test.com/ids/submodel/2000-2201/ContactInformation";
@@ -583,7 +566,7 @@ public class ShellTemplateMappingProviderTests
         _ = sut.GetProductIdFromRule(ShellId);
 
         var span = Assert.Single(fixture.Activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.GetProductId, span.OperationName);
-        Assert.Equal(ShellId, span.GetTagItem(DataEngineDiagnostics.Attributes.ShellId));
+        Assert.Equal(DataEngineTracing.Spans.GetProductId, span.OperationName);
+        Assert.Equal(ShellId, span.GetTagItem(DataEngineTracing.Attributes.ShellId));
     }
 }

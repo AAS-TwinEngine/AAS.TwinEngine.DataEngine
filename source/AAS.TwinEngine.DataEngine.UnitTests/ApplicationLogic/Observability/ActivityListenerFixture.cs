@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
+namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 /// <summary>
 /// Fixture to properly manage ActivityListener lifecycle for test isolation.
@@ -8,7 +8,6 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
 /// </summary>
 public sealed class ActivityListenerFixture : IDisposable
 {
-    private readonly List<Activity> _activities = [];
     private readonly ActivityListener _listener;
 
     public ActivityListenerFixture()
@@ -17,16 +16,16 @@ public sealed class ActivityListenerFixture : IDisposable
         {
             ShouldListenTo = s => s.Name == "DataEngine",
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = _activities.Add
+            ActivityStarted = Activities.Add
         };
         ActivitySource.AddActivityListener(_listener);
     }
 
-    public List<Activity> Activities => _activities;
+    public List<Activity> Activities { get; } = [];
 
     public void Dispose()
     {
-        _activities.Clear();
+        Activities.Clear();
         _listener?.Dispose();
     }
 }

@@ -4,7 +4,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Sem
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using AasCore.Aas3_1;
 
@@ -561,23 +561,5 @@ public class SubmodelFillerTests
         _ = _sut.FillOutTemplate(submodel, root);
 
         Equal("de", childProperty.Value);
-    }
-
-    [Fact]
-    public void FillOutTemplate_StartsFillDataIntoTemplateSpan_WithTemplateIdTag()
-    {
-        using var fixture = CreateFixture();
-
-        const string TemplateId = "Template-123";
-        var submodel = Substitute.For<ISubmodel>();
-        submodel.Id.Returns(TemplateId);
-        submodel.SubmodelElements.Returns([]);
-        var values = new SemanticBranchNode("root", Cardinality.Unknown);
-
-        _ = _sut.FillOutTemplate(submodel, values);
-
-        var span = Assert.Single(fixture.Activities);
-        Assert.Equal(DataEngineDiagnostics.Spans.FillDataIntoTemplate, span.OperationName);
-        Assert.Equal(TemplateId, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
     }
 }

@@ -79,8 +79,6 @@ public class AasRepositoryService(
 
             var pluginData = await pluginDataHandler.GetDataForAssetInformationByIdAsync(pluginManifests, aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-            using var activity = DataEngineDiagnostics.StartFillAssetInformationIntoTemplate(aasIdentifier);
-
             return FillOutAssetInformation(template, pluginData);
         }
         catch (ResourceNotFoundException ex)

@@ -17,6 +17,8 @@ namespace AAS.TwinEngine.DataEngine.ServiceConfiguration;
 [ExcludeFromCodeCoverage]
 internal static class LoggingConfigurationExtension
 {
+    private const string PeerServiceTag = "peer.service";
+
     public static void ConfigureLogging(this WebApplicationBuilder builder, IConfiguration configuration)
     {
         var otelSettings = configuration.GetSection($"{Config.GeneralConfig.Section}:{Config.OpenTelemetrySettings.Section}").Get<Config.OpenTelemetrySettings>() ?? new Config.OpenTelemetrySettings();
@@ -63,8 +65,20 @@ internal static class LoggingConfigurationExtension
                {
                    _ = tracerProvider
                        .AddAspNetCoreInstrumentation()
-                       .AddHttpClientInstrumentation()
-                       .AddSource(DataEngineDiagnostics.SourceName)
+                       .AddHttpClientInstrumentation(options =>
+                       {
+                           options.EnrichWithHttpRequestMessage = (activity, request) =>
+                           {
+                               var host = request.RequestUri?.Host;
+                               if (string.IsNullOrWhiteSpace(host))
+                               {
+                                   return;
+                               }
+
+                               _ = activity.SetTag(PeerServiceTag, host);
+                           };
+                       })
+                       .AddSource(DataEngineTracing.SourceName)
                        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otelSettings.OtlpEndpoint));
                })
                .WithMetrics(metricsProvider =>

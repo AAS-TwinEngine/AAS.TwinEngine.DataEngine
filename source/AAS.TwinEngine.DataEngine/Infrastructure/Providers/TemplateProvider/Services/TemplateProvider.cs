@@ -14,7 +14,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
-using DataEngineDiagnostics = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineDiagnostics;
+using DataEngineTracing = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineTracing;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
@@ -29,7 +29,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+        using var activity = DataEngineTracing.StartGetSubmodelTemplate(templateId);
 
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
 
@@ -55,7 +55,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<ShellDescriptor> GetShellDescriptorTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+        using var activity = DataEngineTracing.StartGetShellDescriptorTemplate(templateId);
 
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRegistryPath}/{encodedTemplateId}";
@@ -86,7 +86,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+        using var activity = DataEngineTracing.StartGetShellTemplate(templateId);
 
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}";
@@ -115,7 +115,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<IAssetInformation> GetAssetInformationTemplateAsync(string templateId, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+        using var activity = DataEngineTracing.StartGetPluginMetadataAssets(templateId);
 
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/asset-information";
@@ -144,7 +144,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<List<IReference>> GetSubmodelRefByIdAsync(string templateId, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartFetchTemplate(templateId);
+        using var activity = DataEngineTracing.StartGetSubmodelRefTemplate(templateId);
 
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/{SubmodelRefPath}";
@@ -190,6 +190,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     public async Task<IConceptDescription?> GetConceptDescriptionByIdAsync(string cdIdentifier, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineTracing.StartGetConceptDescription(cdIdentifier);
         var encodedCdId = cdIdentifier.EncodeBase64Url(logger);
 
         var url = $"{ConceptDescriptionPath}/{encodedCdId}";

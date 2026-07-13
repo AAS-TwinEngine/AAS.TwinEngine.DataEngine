@@ -24,41 +24,34 @@ public partial class SubmodelTemplateService(
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartResolveTemplate(submodelId);
         try
         {
             ValidateSubmodelId(submodelId);
 
             var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-            activity?.SetTag(DataEngineDiagnostics.Attributes.TemplateId, templateId);
 
             return await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
         }
         catch (ResourceNotFoundException ex)
         {
-            activity.RecordError(ex);
             throw new SubmodelNotFoundException(ex, submodelId);
         }
         catch (ResponseParsingException ex)
         {
-            activity.RecordError(ex);
             throw new InternalDataProcessingException(ex);
         }
         catch (RequestTimeoutException ex)
         {
-            activity.RecordError(ex);
             throw new TemplateRequestFailedException(ex);
         }
         catch (ServiceUnavailableException ex)
         {
-            activity.RecordError(ex);
             throw new RepositoryNotAvailableException(ex);
         }
     }
 
     public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineDiagnostics.StartResolveTemplate(submodelId);
         if (!string.IsNullOrWhiteSpace(idShortPath))
         {
             try
@@ -66,29 +59,24 @@ public partial class SubmodelTemplateService(
                 ValidateSubmodelId(submodelId);
 
                 var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-                activity?.SetTag(DataEngineDiagnostics.Attributes.TemplateId, templateId);
                 var submodel = await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
 
                 return BuildSubmodel(submodel, idShortPath);
             }
             catch (ResourceNotFoundException ex)
             {
-                activity.RecordError(ex);
                 throw new SubmodelElementNotFoundException(ex, submodelId);
             }
             catch (ResponseParsingException ex)
             {
-                activity.RecordError(ex);
                 throw new InternalDataProcessingException(ex);
             }
             catch (RequestTimeoutException ex)
             {
-                activity.RecordError(ex);
                 throw new TemplateRequestFailedException(ex);
             }
             catch (ServiceUnavailableException ex)
             {
-                activity.RecordError(ex);
                 throw new RepositoryNotAvailableException(ex);
             }
         }

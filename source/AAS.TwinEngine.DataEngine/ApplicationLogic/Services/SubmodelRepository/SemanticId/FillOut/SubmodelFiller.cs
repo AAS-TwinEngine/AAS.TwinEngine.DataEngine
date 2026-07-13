@@ -17,8 +17,6 @@ public class SubmodelFiller(
 {
     public ISubmodel FillOutTemplate(ISubmodel submodelTemplate, SemanticTreeNode values)
     {
-        using var activity = DataEngineDiagnostics.StartFillDataIntoTemplate(submodelTemplate?.Id ?? "unknown");
-
         if (submodelTemplate is null)
         {
             throw new InvalidDependencyException(nameof(submodelTemplate), logger);
