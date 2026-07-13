@@ -84,7 +84,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
         var mockSubmodel = TestData.CreateSubmodel();
 
-        _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockSubmodel);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Returns(mockSubmodel);
 
         // Act
         var response = await _client.GetAsync($"/submodels/{SubmodelId}");
@@ -103,7 +103,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     {
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
 
-        _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
         var response = await _client.GetAsync($"/submodels/{SubmodelId}");
 
@@ -115,7 +115,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     {
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
 
-        _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
 
         var response = await _client.GetAsync($"/submodels/{SubmodelId}");
 
@@ -174,7 +174,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
 
         _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
-        var response = await _client.GetAsync($"/submodels/{SubmodelId}");
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, "Test"));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -184,7 +184,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     {
         const string SubmodelId = "in valid";
 
-        var response = await _client.GetAsync($"/submodels/{SubmodelId}");
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, "Test"));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -196,7 +196,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
 
         _ = _mockTemplateProvider.GetSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Throws(new ResponseParsingException());
 
-        var response = await _client.GetAsync($"/submodels/{SubmodelId}");
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, "Test"));
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
@@ -334,5 +334,6 @@ public class SubmodelRepositoryControllerTestsV2Config() : SubmodelRepositoryCon
 
 public class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
 {
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => send(request, cancellationToken);
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        => send(request, cancellationToken);
 }
