@@ -24,7 +24,7 @@ public class ShellDescriptorDataHandlerTests
     [Fact]
     public void FillOut_SingleTemplate_UpdatesFieldsCorrectly()
     {
-        var descriptor = CreateEmptyShellDescriptorWithEndpoint();
+        var descriptor = CreateShellDescriptorTemplate();
         var value = new ShellDescriptorMetaData
         {
             GlobalAssetId = "testAsset",
@@ -34,7 +34,7 @@ public class ShellDescriptorDataHandlerTests
                 [
                     new SpecificAssetId
                     (
-                       "test", "test"
+                       "SerialNumber", "test"
                     )
                 ],
             Href = "http://localhost"
@@ -51,7 +51,7 @@ public class ShellDescriptorDataHandlerTests
                               [
                                   new SpecificAssetId
                                   (
-                                      "test", "test"
+                                      "SerialNumber", "test"
                                   )
                               ],
                               expectedHref: "http://localhost"
@@ -105,7 +105,15 @@ public class ShellDescriptorDataHandlerTests
             GlobalAssetId = "templateAssetId",
             IdShort = "templateIdShort",
             Id = "templateId",
-            SpecificAssetIds = []
+            SpecificAssetIds =
+            [
+                new SpecificAssetId(
+                    name: "SerialNumber",
+                    value: "SN-123456789",
+                    externalSubjectId: null,
+                    supplementalSemanticIds: null,
+                    semanticId: null)
+            ]
         };
 
         return descriptorTemplate;

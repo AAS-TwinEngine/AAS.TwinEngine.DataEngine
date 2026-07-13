@@ -41,12 +41,17 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
         descriptor.IdShort = metaData.IdShort;
         descriptor.Id = metaData.Id;
 
-        foreach (var specificAssetIdData in metaData.SpecificAssetIds)
+        if (metaData.SpecificAssetIds is not null && metaData.SpecificAssetIds.Count > 0)
         {
-            var descriptorAssetId = descriptor.SpecificAssetIds?
-                .FirstOrDefault(x => x.Name == specificAssetIdData.Name);
+            foreach (var specificAssetIdData in metaData.SpecificAssetIds)
+            {
+                var descriptorAssetId = descriptor.SpecificAssetIds?.FirstOrDefault(x => x.Name == specificAssetIdData.Name);
 
-            _ = (descriptorAssetId?.Value = specificAssetIdData.Value);
+                if (descriptorAssetId is not null)
+                {
+                    descriptorAssetId.Value = specificAssetIdData.Value;
+                }
+            }
         }
     }
 
