@@ -6,6 +6,26 @@ namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRegistry;
 
 internal static class TestData
 {
+    public static SubmodelDescriptors CreateSubmodelDescriptors()
+    {
+        return new SubmodelDescriptors
+        {
+            Result =
+            [
+                new SubmodelDescriptor
+                {
+                    Id = "http://twinengine/admin-shell.io/submodel/1",
+                    Endpoints = []
+                },
+                new SubmodelDescriptor
+                {
+                    Id = "http://twinengine/admin-shell.io/submodel/2",
+                    Endpoints = []
+                }
+            ]
+        };
+    }
+
     public static SubmodelDescriptor CreateSubmodelDescriptor()
     {
         var json = """
