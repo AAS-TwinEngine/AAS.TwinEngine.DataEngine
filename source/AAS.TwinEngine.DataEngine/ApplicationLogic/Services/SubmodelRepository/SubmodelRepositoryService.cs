@@ -25,7 +25,7 @@ public class SubmodelRepositoryService(
     IAasRepositoryTemplateService aasRepositoryTemplateService,
     IOptions<TemplateManagementConfig> templateManagementConfig) : ISubmodelRepositoryService
 {
-    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRegistry.ConcurrentOperationsLimit;
+    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRepository.ConcurrentOperationsLimit;
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
@@ -111,7 +111,7 @@ public class SubmodelRepositoryService(
                 }
                 finally
                 {
-                    semaphore.Release();
+                    _ = semaphore.Release();
                 }
             });
 

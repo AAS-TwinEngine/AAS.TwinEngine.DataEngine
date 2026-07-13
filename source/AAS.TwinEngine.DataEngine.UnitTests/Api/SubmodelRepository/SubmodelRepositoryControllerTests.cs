@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
@@ -111,7 +111,7 @@ public class SubmodelRepositoryControllerTests
         _handler.GetAllSubmodels(Arg.Any<GetAllSubmodelsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedDto);
 
-        var result = await _sut.GetAllSubmodelsAsync(new GetAllSubmodelsRequest(), CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var dto = Assert.IsType<SubmodelsDto>(okResult.Value);
@@ -129,7 +129,7 @@ public class SubmodelRepositoryControllerTests
             .Returns(expectedDto);
         var request = new GetAllSubmodelsRequest { SemanticId = SemanticId, IdShort = IdShort, Limit = Limit };
 
-        await _sut.GetAllSubmodelsAsync(request, CancellationToken.None);
+        await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, Limit, null, null, null, CancellationToken.None);
 
         await _handler.Received(1).GetAllSubmodels(
             Arg.Is<GetAllSubmodelsRequest>(r => r.SemanticId == SemanticId && r.IdShort == IdShort && r.Limit == Limit),
