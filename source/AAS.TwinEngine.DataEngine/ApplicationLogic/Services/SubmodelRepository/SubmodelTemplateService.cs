@@ -30,7 +30,7 @@ public partial class SubmodelTemplateService(
 
             var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
 
-            return await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
+            return await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, null, cancellationToken).ConfigureAwait(false);
         }
         catch (ResourceNotFoundException ex)
         {
@@ -59,7 +59,7 @@ public partial class SubmodelTemplateService(
                 ValidateSubmodelId(submodelId);
 
                 var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-                var submodel = await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
+                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, null, cancellationToken).ConfigureAwait(false);
 
                 return BuildSubmodel(submodel, idShortPath);
             }

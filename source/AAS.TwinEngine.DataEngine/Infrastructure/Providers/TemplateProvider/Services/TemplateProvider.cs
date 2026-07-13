@@ -26,20 +26,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     private const string AasRepositoryPath = ApiPaths.Shells;
     private const string SubmodelRefPath = ApiPaths.SubmodelRefs;
     private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
-
-    public async Task<ISubmodel> GetSubmodelTemplateAsync(string templateId, CancellationToken cancellationToken)
-    {
-        var encodedTemplateId = templateId.EncodeBase64Url(logger);
-
-        var url = $"{SubModelRepositoryPath}/{encodedTemplateId}";
-
-        return await GetSubmodelFromUrlAsync(
-            url,
-            templateId,
-            "Failed to parse or deserialize submodel template JSON. Submodel ID: {TemplateId}",
-            cancellationToken).ConfigureAwait(false);
-    }
-
+    
     public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         var encodedTemplateId = templateId.EncodeBase64Url(logger);

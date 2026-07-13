@@ -47,7 +47,7 @@ public class SubmodelTemplateServiceTests
     {
         var expectedSubmodel = Substitute.For<ISubmodel>();
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, CancellationToken.None);
@@ -70,7 +70,7 @@ public class SubmodelTemplateServiceTests
         const string IdShortPath = "InvalidElement";
         var expectedSubmodel = TestData.CreateSubmodel();
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
         var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
@@ -93,7 +93,7 @@ public class SubmodelTemplateServiceTests
         var expectedSubmodel = TestData.CreateSubmodel();
         var expectedElement = TestData.CreateSubmodelWithoutExtraElements();
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None);
@@ -109,7 +109,7 @@ public class SubmodelTemplateServiceTests
         var expectedSubmodel = TestData.CreateSubmodel();
         var expectedElement = TestData.CreateSubmodelWithoutExtraElementsNested();
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None);
@@ -127,7 +127,7 @@ public class SubmodelTemplateServiceTests
         const string IdShortPath = "ContactInformation0.InvalidIdShort";
         var expectedSubmodel = TestData.CreateSubmodel();
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
         var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
@@ -148,7 +148,7 @@ public class SubmodelTemplateServiceTests
         var expectedSubmodel = TestData.CreateSubmodelWithModel3DList();
         var path = "Model3D[0].ModelDataFile";
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(expectedSubmodel);
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, path, CancellationToken.None);
@@ -172,7 +172,7 @@ public class SubmodelTemplateServiceTests
         var expectedSubmodel = TestData.CreateSubmodelWithModel3DList();
         const string Path = "Model3D[0]";
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(expectedSubmodel);
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None);
@@ -196,7 +196,7 @@ public class SubmodelTemplateServiceTests
         const string Path = "Model3D%5B0%5D.ModelDataFile";
 
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None);
@@ -211,7 +211,7 @@ public class SubmodelTemplateServiceTests
         const string Path = "Model3D[-1]";
 
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
         await Assert.ThrowsAsync<InternalDataProcessingException>(
@@ -225,7 +225,7 @@ public class SubmodelTemplateServiceTests
         var submodel = TestData.CreateSubmodelWithModel3DList();
         const string Path = "Model3D[5].ModelDataFile";
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None);
@@ -249,7 +249,7 @@ public class SubmodelTemplateServiceTests
         var submodel = TestData.CreateSubmodelWithPropertyInsideList();
         const string Path = "listProperty[2]";
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
         await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
@@ -261,7 +261,7 @@ public class SubmodelTemplateServiceTests
         var submodel = TestData.CreateSubmodelWithModel3DList();
         const string Path = "Model3D[0].NonExistentFile";
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
         await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
@@ -271,7 +271,7 @@ public class SubmodelTemplateServiceTests
     public async Task GetSubmodelTemplateAsync_ThrowsSubmodelNotFoundException_WhenResourceNotFound()
     {
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelNotFoundException>(
@@ -282,7 +282,7 @@ public class SubmodelTemplateServiceTests
     public async Task GetSubmodelTemplateAsync_ThrowsInternalDataProcessingException_WhenResponseParsingFails()
     {
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .ThrowsAsync(new ResponseParsingException());
 
         var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(
@@ -295,7 +295,7 @@ public class SubmodelTemplateServiceTests
     public async Task GetSubmodelTemplateAsync_ThrowsTemplateRequestFailedException_WhenRequestTimesOut()
     {
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .ThrowsAsync(new RequestTimeoutException());
 
         await Assert.ThrowsAsync<TemplateRequestFailedException>(
@@ -306,7 +306,7 @@ public class SubmodelTemplateServiceTests
     public async Task GetSubmodelTemplateAsync_ThrowsRepositoryNotAvailableException_WhenServiceUnavailable()
     {
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .ThrowsAsync(new ServiceUnavailableException("http://fake-url"));
 
         await Assert.ThrowsAsync<RepositoryNotAvailableException>(
@@ -317,7 +317,7 @@ public class SubmodelTemplateServiceTests
     public async Task GetSubmodelTemplateAsync_WithIdShortPath_ThrowsSubmodelElementNotFoundException_WhenResourceNotFound()
     {
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
-        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(

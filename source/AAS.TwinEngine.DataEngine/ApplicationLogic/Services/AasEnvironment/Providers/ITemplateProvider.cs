@@ -8,8 +8,6 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Pro
 
 public interface ITemplateProvider
 {
-    Task<ISubmodel> GetSubmodelTemplateAsync(string templateId, CancellationToken cancellationToken);
-
     Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken);
 
     Task<ISubmodel?> GetFilteredSubmodelTemplateBySemanticIdAsync(string semanticId, CancellationToken cancellationToken);
