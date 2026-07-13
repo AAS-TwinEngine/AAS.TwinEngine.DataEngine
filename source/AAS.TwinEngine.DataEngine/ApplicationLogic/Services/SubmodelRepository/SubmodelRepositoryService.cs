@@ -146,7 +146,7 @@ public class SubmodelRepositoryService(
             }
             finally
             {
-                semaphore.Release();
+                _ = semaphore.Release();
             }
         });
 

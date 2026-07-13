@@ -21,13 +21,12 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
             throw new InvalidDependencyException(nameof(metaData), logger);
         }
 
-        return metaData
+        return [.. metaData
                .Select(value =>
                {
                    var clonedDescriptor = Clone(template);
                    return FillOut(clonedDescriptor, value);
-               })
-               .ToList();
+               })];
     }
 
     public ShellDescriptor FillOut(ShellDescriptor template, ShellDescriptorMetaData metaData)

@@ -26,7 +26,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     private const string AasRepositoryPath = ApiPaths.Shells;
     private const string SubmodelRefPath = ApiPaths.SubmodelRefs;
     private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
-    
+
     public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
