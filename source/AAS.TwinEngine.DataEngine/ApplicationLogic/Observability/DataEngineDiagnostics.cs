@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 
 public static class DataEngineDiagnostics
 {

@@ -1,13 +1,12 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -18,6 +17,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
 
 using AasCore.Aas3_1;
 
@@ -39,6 +39,8 @@ public class PluginDataHandlerTests
     private readonly ILogger<PluginDataHandler> _logger;
     private readonly IOptions<GeneralConfig> _options;
     private readonly PluginDataHandler _sut;
+
+    private ActivityListenerFixture CreateFixture() => new();
 
     public PluginDataHandlerTests()
     {
@@ -866,14 +868,7 @@ public class PluginDataHandlerTests
                                         """;
         const string ResponseJson = """{"Contact": "value"}""";
 
-        var activities = new List<Activity>();
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activities.Add
-        };
-        ActivitySource.AddActivityListener(listener);
+        using var fixture = CreateFixture();
 
         var inputNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
         var manifests = new List<PluginManifest>
@@ -908,7 +903,7 @@ public class PluginDataHandlerTests
 
         await _sut.TryGetValuesAsync(manifests, inputNode, SubmodelId, CancellationToken.None);
 
-        var fetchPluginDataSpan = activities.FirstOrDefault(a => a.OperationName == DataEngineDiagnostics.Spans.FetchPluginData);
+        var fetchPluginDataSpan = fixture.Activities.FirstOrDefault(a => a.OperationName == DataEngineDiagnostics.Spans.FetchPluginData);
         Assert.NotNull(fetchPluginDataSpan);
         Assert.Equal(DataEngineDiagnostics.Spans.FetchPluginData, fetchPluginDataSpan.OperationName);
         Assert.Equal(SubmodelId, fetchPluginDataSpan.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
 using OpenTelemetry.Logs;
@@ -63,7 +64,7 @@ internal static class LoggingConfigurationExtension
                    _ = tracerProvider
                        .AddAspNetCoreInstrumentation()
                        .AddHttpClientInstrumentation()
-                       .AddSource(Config.DataEngineDiagnostics.SourceName)
+                       .AddSource(DataEngineDiagnostics.SourceName)
                        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otelSettings.OtlpEndpoint));
                })
                .WithMetrics(metricsProvider =>

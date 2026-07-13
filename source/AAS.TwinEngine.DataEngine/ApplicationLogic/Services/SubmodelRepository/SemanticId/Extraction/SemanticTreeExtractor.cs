@@ -2,7 +2,7 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 
 using AasCore.Aas3_1;
 

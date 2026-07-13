@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
@@ -13,6 +14,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
+using DataEngineDiagnostics = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineDiagnostics;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;

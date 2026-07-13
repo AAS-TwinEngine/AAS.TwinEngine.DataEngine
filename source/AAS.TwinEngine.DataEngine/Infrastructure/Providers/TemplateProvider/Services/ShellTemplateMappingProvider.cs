@@ -7,6 +7,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
+using DataEngineDiagnostics = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineDiagnostics;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
 public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> logger, IOptions<TemplateManagementConfig> options) : IShellTemplateMappingProvider

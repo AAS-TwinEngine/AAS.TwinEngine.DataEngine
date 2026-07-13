@@ -12,9 +12,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-
-using AasCore.Aas3_1;
 
 using Json.Schema;
 

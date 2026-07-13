@@ -5,7 +5,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 
 using AasCore.Aas3_1;
 

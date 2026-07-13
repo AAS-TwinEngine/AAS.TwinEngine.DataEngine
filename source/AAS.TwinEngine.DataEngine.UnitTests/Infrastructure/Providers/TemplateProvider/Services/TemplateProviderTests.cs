@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
 
 using AasCore.Aas3_1;
 
@@ -24,6 +24,8 @@ public class TemplateProviderTests
     private readonly ICreateClient _httpClientFactory;
     private readonly Template _sut;
     private const string TemplateId = "Nameplate";
+
+    private ActivityListenerFixture CreateFixture() => new();
 
     public TemplateProviderTests()
     {
@@ -568,14 +570,7 @@ public class TemplateProviderTests
     public async Task GetSubmodelTemplateAsync_StartsFetchTemplateSpan_WithTemplateIdTag()
     {
         const string TemplateIdForSpan = "Nameplate";
-        var activities = new List<Activity>();
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activities.Add
-        };
-        ActivitySource.AddActivityListener(listener);
+        using var fixture = CreateFixture();
 
         var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ProviderTestData.ValidateSubmodelResponse) };
         using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
@@ -585,7 +580,7 @@ public class TemplateProviderTests
 
         _ = await _sut.GetSubmodelTemplateAsync(TemplateIdForSpan, CancellationToken.None);
 
-        var span = Assert.Single(activities);
+        var span = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineDiagnostics.Spans.FetchTemplate, span.OperationName);
         Assert.Equal(TemplateIdForSpan, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
     }

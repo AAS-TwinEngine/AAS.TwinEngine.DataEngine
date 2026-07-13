@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
 
 using AasCore.Aas3_1;
 
@@ -24,6 +23,8 @@ public class SubmodelFillerTests
     private readonly ISubmodelElementHelper _elementHelper;
     private readonly ILogger<SubmodelFiller> _logger;
     private readonly List<ISubmodelElementTypeHandler> _handlers;
+
+    private ActivityListenerFixture CreateFixture() => new();
 
     public SubmodelFillerTests()
     {
@@ -565,14 +566,7 @@ public class SubmodelFillerTests
     [Fact]
     public void FillOutTemplate_StartsFillDataIntoTemplateSpan_WithTemplateIdTag()
     {
-        var activities = new List<Activity>();
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activities.Add
-        };
-        ActivitySource.AddActivityListener(listener);
+        using var fixture = CreateFixture();
 
         const string TemplateId = "Template-123";
         var submodel = Substitute.For<ISubmodel>();
@@ -582,7 +576,7 @@ public class SubmodelFillerTests
 
         _ = _sut.FillOutTemplate(submodel, values);
 
-        var span = Assert.Single(activities);
+        var span = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineDiagnostics.Spans.FillDataIntoTemplate, span.OperationName);
         Assert.Equal(TemplateId, span.GetTagItem(DataEngineDiagnostics.Attributes.TemplateId));
     }

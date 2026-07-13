@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Observability;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,6 +15,8 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateP
 public class SubmodelTemplateMappingProviderTests
 {
     private readonly ILogger<SubmodelTemplateMappingProvider> _logger = Substitute.For<ILogger<SubmodelTemplateMappingProvider>>();
+
+    private ActivityListenerFixture CreateFixture() => new();
     private readonly IOptions<TemplateManagementConfig> _options = Substitute.For<IOptions<TemplateManagementConfig>>();
     private readonly SubmodelTemplateMappingProvider _sut;
 
@@ -71,18 +73,11 @@ public class SubmodelTemplateMappingProviderTests
     public void GetTemplateId_StartsResolveSubmodelTemplateIdSpan_WithSubmodelIdTag()
     {
         const string SubmodelId = "submodel1";
-        var activities = new List<Activity>();
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == DataEngineDiagnostics.SourceName,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activities.Add
-        };
-        ActivitySource.AddActivityListener(listener);
+        using var fixture = CreateFixture();
 
         _ = _sut.GetTemplateId(SubmodelId);
 
-        var span = Assert.Single(activities);
+        var span = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineDiagnostics.Spans.ResolveTemplateId, span.OperationName);
         Assert.Equal(SubmodelId, span.GetTagItem(DataEngineDiagnostics.Attributes.SubmodelId));
     }
