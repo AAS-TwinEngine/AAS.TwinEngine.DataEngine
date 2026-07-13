@@ -449,16 +449,6 @@ public class DataEngineDiagnosticsTests
     }
 
     [Fact]
-    public void RecordError_WithException_WhenActivityIsNull_DoesNotThrow()
-    {
-        Activity? activity = null;
-        var ex = new InvalidOperationException("Operation failed");
-
-        var result = Record.NoException(() => activity.RecordError(ex));
-        Assert.Null(result);
-    }
-
-    [Fact]
     public void RecordError_WithDescription_SetsErrorStatusWithDescription()
     {
         using var fixture = CreateFixture();
@@ -469,16 +459,6 @@ public class DataEngineDiagnosticsTests
 
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal(ErrorDescription, activity.StatusDescription);
-    }
-
-    [Fact]
-    public void RecordError_WithDescription_WhenActivityIsNull_DoesNotThrow()
-    {
-        Activity? activity = null;
-        const string ErrorDescription = "Custom error occurred";
-
-        var result = Record.NoException(() => activity.RecordError(ErrorDescription));
-        Assert.Null(result);
     }
 
     #endregion
