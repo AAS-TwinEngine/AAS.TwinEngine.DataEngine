@@ -15,6 +15,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AasCore.Aas3_1;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
@@ -282,7 +283,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     private async Task<HttpResponseMessage> SendGetRequestAsync(string url, string httpClientName, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sending HTTP GET request to {Url}", url);
+        logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(url));
 
         var relativeUri = new Uri(url, UriKind.Relative);
 
@@ -302,20 +303,20 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         switch (response.StatusCode)
         {
             case System.Net.HttpStatusCode.NotFound:
-                logger.LogError("Requested resource could not be found. Endpoint: {Url}", url);
+                logger.LogError("Requested resource could not be found. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new ResourceNotFoundException();
 
             case System.Net.HttpStatusCode.Unauthorized:
             case System.Net.HttpStatusCode.Forbidden:
-                logger.LogError("Unauthorized access. Endpoint: {Url}", url);
+                logger.LogError("Unauthorized access. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new UnauthorizedAccessException();
 
             case System.Net.HttpStatusCode.RequestTimeout:
-                logger.LogError("Request timed out. Endpoint: {Url}", url);
+                logger.LogError("Request timed out. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new RequestTimeoutException();
 
             default:
-                logger.LogError("Validation error encountered. Endpoint: {Url}", url);
+                logger.LogError("Validation error encountered. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new ValidationFailedException();
         }
     }
