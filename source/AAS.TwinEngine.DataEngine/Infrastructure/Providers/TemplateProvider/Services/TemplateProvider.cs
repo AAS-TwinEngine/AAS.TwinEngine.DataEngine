@@ -14,7 +14,6 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
-using DataEngineTracing = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineTracing;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
@@ -191,6 +190,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     public async Task<IConceptDescription?> GetConceptDescriptionByIdAsync(string cdIdentifier, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetConceptDescription, DataEngineTracing.Attributes.TemplateId, cdIdentifier);
+
         var encodedCdId = cdIdentifier.EncodeBase64Url(logger);
 
         var url = $"{ConceptDescriptionPath}/{encodedCdId}";

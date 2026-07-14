@@ -17,8 +17,6 @@ public class DataEngineTracingTests
 
     private ActivityListenerFixture CreateFixture() => new();
 
-    #region Span Name Constants
-
     [Fact]
     public void SpanNames_AreCorrect()
     {
@@ -35,10 +33,6 @@ public class DataEngineTracingTests
         Assert.Equal("Get Plugin Metadata-assets", DataEngineTracing.Spans.GetPluginMetadataAssets);
     }
 
-    #endregion
-
-    #region Attribute Name Constants
-
     [Fact]
     public void AttributeNames_AreCorrect()
     {
@@ -46,10 +40,6 @@ public class DataEngineTracingTests
         Assert.Equal("aas.template_id", DataEngineTracing.Attributes.TemplateId);
         Assert.Equal("aas.shell_id", DataEngineTracing.Attributes.ShellId);
     }
-
-    #endregion
-
-    #region Generic StartSpan Tests
 
     [Fact]
     public void StartSpan_WithoutTag_CreatesActivityWithCorrectName()
@@ -76,10 +66,6 @@ public class DataEngineTracingTests
         Assert.Equal(spanName, capturedActivity.OperationName);
         Assert.Equal(tagValue, capturedActivity.GetTagItem(tagName));
     }
-
-    #endregion
-
-    #region Template Span Tests
 
     [Fact]
     public void StartSpan_GetShellTemplate_CreatesActivityWithTemplateTag()
@@ -153,10 +139,6 @@ public class DataEngineTracingTests
         Assert.Equal(conceptDescriptionId, capturedActivity.GetTagItem(DataEngineTracing.Attributes.TemplateId));
     }
 
-    #endregion
-
-    #region ProductId Span Tests
-
     [Fact]
     public void StartSpan_GetProductId_CreatesActivityWithCorrectName()
     {
@@ -177,10 +159,6 @@ public class DataEngineTracingTests
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(ShellId, capturedActivity.GetTagItem(DataEngineTracing.Attributes.ShellId));
     }
-
-    #endregion
-
-    #region Plugin Span Tests
 
     [Fact]
     public void StartSpan_PluginRequestGeneration_CreatesActivityWithCorrectName()
@@ -239,10 +217,6 @@ public class DataEngineTracingTests
         Assert.Equal(assetId, capturedActivity.GetTagItem(DataEngineTracing.Attributes.ShellId));
     }
 
-    #endregion
-
-    #region RecordError Extension Method Tests
-
     [Fact]
     public void RecordError_WithException_SetsErrorStatusWithExceptionMessage()
     {
@@ -268,6 +242,4 @@ public class DataEngineTracingTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal(ErrorDescription, activity.StatusDescription);
     }
-
-    #endregion
 }
