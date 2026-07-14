@@ -49,14 +49,44 @@ public class DataEngineTracingTests
 
     #endregion
 
+    #region Generic StartSpan Tests
+
+    [Fact]
+    public void StartSpan_WithoutTag_CreatesActivityWithCorrectName()
+    {
+        using var fixture = CreateFixture();
+        const string spanName = "Custom Span";
+        using var activity = DataEngineTracing.StartSpan(spanName);
+
+        var capturedActivity = Assert.Single(fixture.Activities);
+        Assert.Equal(spanName, capturedActivity.OperationName);
+        Assert.Empty(capturedActivity.Tags);
+    }
+
+    [Fact]
+    public void StartSpan_WithTag_CreatesActivityAndSetsTag()
+    {
+        using var fixture = CreateFixture();
+        const string spanName = "Tagged Span";
+        const string tagName = "custom.tag";
+        const string tagValue = "value-001";
+        using var activity = DataEngineTracing.StartSpan(spanName, tagName, tagValue);
+
+        var capturedActivity = Assert.Single(fixture.Activities);
+        Assert.Equal(spanName, capturedActivity.OperationName);
+        Assert.Equal(tagValue, capturedActivity.GetTagItem(tagName));
+    }
+
+    #endregion
+
     #region Template Span Tests
 
     [Fact]
-    public void StartGetShellTemplate_CreatesActivityWithTemplateTag()
+    public void StartSpan_GetShellTemplate_CreatesActivityWithTemplateTag()
     {
         using var fixture = CreateFixture();
         const string templateId = "template-shell-001";
-        using var activity = DataEngineTracing.StartGetShellTemplate(templateId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetShellTemplate, DataEngineTracing.Attributes.TemplateId, templateId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetShellTemplate, capturedActivity.OperationName);
@@ -64,11 +94,11 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetSubmodelTemplate_CreatesActivityWithTemplateTag()
+    public void StartSpan_GetSubmodelTemplate_CreatesActivityWithTemplateTag()
     {
         using var fixture = CreateFixture();
         const string templateId = "template-submodel-001";
-        using var activity = DataEngineTracing.StartGetSubmodelTemplate(templateId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelTemplate, DataEngineTracing.Attributes.TemplateId, templateId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetSubmodelTemplate, capturedActivity.OperationName);
@@ -76,11 +106,11 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetShellDescriptorTemplate_CreatesActivityWithTemplateTag()
+    public void StartSpan_GetShellDescriptorTemplate_CreatesActivityWithTemplateTag()
     {
         using var fixture = CreateFixture();
         const string templateId = "template-shell-descriptor-001";
-        using var activity = DataEngineTracing.StartGetShellDescriptorTemplate(templateId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetShellDescriptorTemplate, DataEngineTracing.Attributes.TemplateId, templateId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetShellDescriptorTemplate, capturedActivity.OperationName);
@@ -88,11 +118,11 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetSubmodelDescriptorTemplate_CreatesActivityWithTemplateTag()
+    public void StartSpan_GetSubmodelDescriptorTemplate_CreatesActivityWithTemplateTag()
     {
         using var fixture = CreateFixture();
         const string templateId = "template-submodel-descriptor-001";
-        using var activity = DataEngineTracing.StartGetSubmodelDescriptorTemplate(templateId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelDescriptorTemplate, DataEngineTracing.Attributes.TemplateId, templateId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetSubmodelDescriptorTemplate, capturedActivity.OperationName);
@@ -100,11 +130,11 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetSubmodelRefTemplate_CreatesActivityWithTemplateTag()
+    public void StartSpan_GetSubmodelRefTemplate_CreatesActivityWithTemplateTag()
     {
         using var fixture = CreateFixture();
         const string templateId = "template-submodel-ref-001";
-        using var activity = DataEngineTracing.StartGetSubmodelRefTemplate(templateId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelRefTemplate, DataEngineTracing.Attributes.TemplateId, templateId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetSubmodelRefTemplate, capturedActivity.OperationName);
@@ -112,11 +142,11 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetConceptDescription_CreatesActivityWithTemplateTag()
+    public void StartSpan_GetConceptDescription_CreatesActivityWithTemplateTag()
     {
         using var fixture = CreateFixture();
         const string conceptDescriptionId = "cd-001";
-        using var activity = DataEngineTracing.StartGetConceptDescription(conceptDescriptionId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetConceptDescription, DataEngineTracing.Attributes.TemplateId, conceptDescriptionId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetConceptDescription, capturedActivity.OperationName);
@@ -125,24 +155,24 @@ public class DataEngineTracingTests
 
     #endregion
 
-    #region StartGetProductId Tests
+    #region ProductId Span Tests
 
     [Fact]
-    public void StartGetProductId_CreatesActivityWithCorrectName()
+    public void StartSpan_GetProductId_CreatesActivityWithCorrectName()
     {
         using var fixture = CreateFixture();
-        using var activity = DataEngineTracing.StartGetProductId("shell-prod");
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetProductId, DataEngineTracing.Attributes.ShellId, "shell-prod");
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetProductId, capturedActivity.OperationName);
     }
 
     [Fact]
-    public void StartGetProductId_SetsShellIdTag()
+    public void StartSpan_GetProductId_SetsShellIdTag()
     {
         using var fixture = CreateFixture();
         const string ShellId = "shell-prod-456";
-        using var activity = DataEngineTracing.StartGetProductId(ShellId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetProductId, DataEngineTracing.Attributes.ShellId, ShellId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(ShellId, capturedActivity.GetTagItem(DataEngineTracing.Attributes.ShellId));
@@ -153,21 +183,21 @@ public class DataEngineTracingTests
     #region Plugin Span Tests
 
     [Fact]
-    public void StartPluginRequestGeneration_CreatesActivityWithCorrectName()
+    public void StartSpan_PluginRequestGeneration_CreatesActivityWithCorrectName()
     {
         using var fixture = CreateFixture();
-        using var activity = DataEngineTracing.StartPluginRequestGeneration();
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PluginRequestGeneration);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.PluginRequestGeneration, capturedActivity.OperationName);
     }
 
     [Fact]
-    public void StartGetPluginData_CreatesActivityWithSubmodelTag()
+    public void StartSpan_GetPluginData_CreatesActivityWithSubmodelTag()
     {
         using var fixture = CreateFixture();
         const string submodelId = "submodel-plugin-001";
-        using var activity = DataEngineTracing.StartGetPluginData(submodelId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginData, DataEngineTracing.Attributes.SubmodelId, submodelId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetPluginData, capturedActivity.OperationName);
@@ -175,11 +205,11 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetPluginMetadataShells_WithShellId_SetsTag()
+    public void StartSpan_GetPluginMetadataShells_WithShellId_SetsTag()
     {
         using var fixture = CreateFixture();
         const string shellId = "shell-123";
-        using var activity = DataEngineTracing.StartGetPluginMetadataShells(shellId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells, DataEngineTracing.Attributes.ShellId, shellId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetPluginMetadataShells, capturedActivity.OperationName);
@@ -187,10 +217,10 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetPluginMetadataShells_WithoutArgument_CreatesActivity()
+    public void StartSpan_GetPluginMetadataShells_WithoutTag_CreatesActivity()
     {
         using var fixture = CreateFixture();
-        using var activity = DataEngineTracing.StartGetPluginMetadataShells();
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetPluginMetadataShells, capturedActivity.OperationName);
@@ -198,11 +228,11 @@ public class DataEngineTracingTests
     }
 
     [Fact]
-    public void StartGetPluginMetadataAssets_SetsAssetTag()
+    public void StartSpan_GetPluginMetadataAssets_SetsAssetTag()
     {
         using var fixture = CreateFixture();
         const string assetId = "asset-001";
-        using var activity = DataEngineTracing.StartGetPluginMetadataAssets(assetId);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataAssets, DataEngineTracing.Attributes.ShellId, assetId);
 
         var capturedActivity = Assert.Single(fixture.Activities);
         Assert.Equal(DataEngineTracing.Spans.GetPluginMetadataAssets, capturedActivity.OperationName);

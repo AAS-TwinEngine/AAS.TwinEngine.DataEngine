@@ -55,7 +55,7 @@ public class PluginDataProvider(
 
     public async Task<IList<HttpContent>> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineTracing.StartGetPluginMetadataShells();
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
         var result = new List<HttpContent>();
         var exceptions = new List<Exception>();

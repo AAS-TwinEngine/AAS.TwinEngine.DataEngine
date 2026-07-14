@@ -24,7 +24,7 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
 
     public async Task<SubmodelDescriptor> GetDataForSubmodelDescriptorByIdAsync(string id, CancellationToken cancellationToken)
     {
-        using var activity = DataEngineTracing.StartGetSubmodelDescriptorTemplate(id);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelDescriptorTemplate, DataEngineTracing.Attributes.TemplateId, id);
 
         var encodedAasId = id.EncodeBase64Url();
 

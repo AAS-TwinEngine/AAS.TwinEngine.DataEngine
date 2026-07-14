@@ -36,7 +36,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
 
     public string GetProductIdFromRule(string aasIdentifier)
     {
-        using var activity = DataEngineTracing.StartGetProductId(aasIdentifier);
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetProductId, DataEngineTracing.Attributes.ShellId, aasIdentifier);
         foreach (var rule in _aasIdExtractionRules)
         {
             var extracted = rule.Strategy switch

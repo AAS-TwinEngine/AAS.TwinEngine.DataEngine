@@ -34,76 +34,13 @@ public static class DataEngineTracing
         public const string ShellId = "aas.shell_id";
     }
 
-    public static Activity? StartGetShellTemplate(string templateId)
-    {
-        var activity = Source.StartActivity(Spans.GetShellTemplate);
-        _ = activity?.SetTag(Attributes.TemplateId, templateId);
-        return activity;
-    }
+    public static Activity? StartSpan(string spanName)
+        => Source.StartActivity(spanName);
 
-    public static Activity? StartGetSubmodelTemplate(string templateId)
+    public static Activity? StartSpan(string spanName, string tagName, object? tagValue)
     {
-        var activity = Source.StartActivity(Spans.GetSubmodelTemplate);
-        _ = activity?.SetTag(Attributes.TemplateId, templateId);
-        return activity;
-    }
-
-    public static Activity? StartGetShellDescriptorTemplate(string templateId)
-    {
-        var activity = Source.StartActivity(Spans.GetShellDescriptorTemplate);
-        _ = activity?.SetTag(Attributes.TemplateId, templateId);
-        return activity;
-    }
-
-    public static Activity? StartGetSubmodelDescriptorTemplate(string templateId)
-    {
-        var activity = Source.StartActivity(Spans.GetSubmodelDescriptorTemplate);
-        _ = activity?.SetTag(Attributes.TemplateId, templateId);
-        return activity;
-    }
-    public static Activity? StartGetSubmodelRefTemplate(string templateId)
-    {
-        var activity = Source.StartActivity(Spans.GetSubmodelRefTemplate);
-        _ = activity?.SetTag(Attributes.TemplateId, templateId);
-        return activity;
-    }
-
-    public static Activity? StartGetConceptDescription(string cdIdentifier)
-    {
-        var activity = Source.StartActivity(Spans.GetConceptDescription);
-        _ = activity?.SetTag(Attributes.TemplateId, cdIdentifier);
-        return activity;
-    }
-
-    public static Activity? StartGetProductId(string shellId)
-    {
-        var activity = Source.StartActivity(Spans.GetProductId);
-        _ = activity?.SetTag(Attributes.ShellId, shellId);
-        return activity;
-    }
-
-    public static Activity? StartPluginRequestGeneration() => Source.StartActivity(Spans.PluginRequestGeneration);
-
-    public static Activity? StartGetPluginData(string submodelId)
-    {
-        var activity = Source.StartActivity(Spans.GetPluginData);
-        _ = activity?.SetTag(Attributes.SubmodelId, submodelId);
-        return activity;
-    }
-
-    public static Activity? StartGetPluginMetadataShells() => Source.StartActivity(Spans.GetPluginMetadataShells);
-
-    public static Activity? StartGetPluginMetadataShells(string shellId)
-    {
-        var activity = Source.StartActivity(Spans.GetPluginMetadataShells);
-        _ = activity?.SetTag(Attributes.ShellId, shellId);
-        return activity;
-    }
-
-    public static Activity? StartGetPluginMetadataAssets(string assetId)
-    {
-        var activity = Source.StartActivity(Spans.GetPluginMetadataAssets);
-        _ = activity?.SetTag(Attributes.ShellId, assetId);
+        var activity = Source.StartActivity(spanName);
+        _ = activity?.SetTag(tagName, tagValue);
         return activity;
     }
 
