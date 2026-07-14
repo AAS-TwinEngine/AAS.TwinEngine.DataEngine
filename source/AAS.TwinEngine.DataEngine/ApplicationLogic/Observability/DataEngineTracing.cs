@@ -90,6 +90,9 @@ public static class DataEngineTracing
         _ = activity?.SetTag(Attributes.SubmodelId, submodelId);
         return activity;
     }
+
+    public static Activity? StartGetPluginMetadataShells() => Source.StartActivity(Spans.GetPluginMetadataShells);
+
     public static Activity? StartGetPluginMetadataShells(string shellId)
     {
         var activity = Source.StartActivity(Spans.GetPluginMetadataShells);
@@ -103,8 +106,6 @@ public static class DataEngineTracing
         _ = activity?.SetTag(Attributes.ShellId, assetId);
         return activity;
     }
-
-    public static Activity? StartGetPluginMetadataShells() => Source.StartActivity(Spans.GetPluginMetadataShells);
 
     public static void RecordError(this Activity? activity, Exception ex)
         => activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
