@@ -54,28 +54,5 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
             }
         }
     }
-
-    private ShellDescriptor Clone(ShellDescriptor shellDescriptor)
-    {
-        if (shellDescriptor is null)
-        {
-            throw new InvalidDependencyException(nameof(shellDescriptor), logger);
-        }
-
-        try
-        {
-            var content = JsonSerializer.Serialize(shellDescriptor, JsonSerializationOptions.Serialization);
-
-            var cloned = JsonSerializer.Deserialize<ShellDescriptor>(content, JsonSerializationOptions.Serialization)
-                         ?? throw new InternalDataProcessingException();
-
-            return cloned;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Unexpected error occurred while cloning ShellDescriptor. Object: {@ShellDescriptor}", shellDescriptor);
-            throw new InternalDataProcessingException();
-        }
-    }
 }
 
