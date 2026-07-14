@@ -16,8 +16,6 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
 
     public IDictionary<string, SemanticTreeNode> SplitByPluginManifests(SemanticTreeNode globalTree, IReadOnlyList<PluginManifest> pluginManifests)
     {
-        using var activity = DataEngineTracing.StartPluginRequestGeneration();
-
         var result = new Dictionary<string, SemanticTreeNode>();
 
         ValidateSemanticIds(globalTree, pluginManifests);
