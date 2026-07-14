@@ -1,7 +1,9 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,6 +15,8 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateP
 public class SubmodelTemplateMappingProviderTests
 {
     private readonly ILogger<SubmodelTemplateMappingProvider> _logger = Substitute.For<ILogger<SubmodelTemplateMappingProvider>>();
+
+    private ActivityListenerFixture CreateFixture() => new();
     private readonly IOptions<TemplateManagementConfig> _options = Substitute.For<IOptions<TemplateManagementConfig>>();
     private readonly SubmodelTemplateMappingProvider _sut;
 

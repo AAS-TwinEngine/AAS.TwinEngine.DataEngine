@@ -41,6 +41,7 @@ services:
     environment:
       - General__DataEngineRepositoryBaseUrl=http://localhost:8080
       - General__OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
+      - General__OpenTelemetry__ServiceName=TwinEngine
       - General__CustomerDomainUrl=https://mm-software.com
       - Plugins__Instances__0__Name=RelationalDatabasePlugin
       - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
@@ -115,6 +116,7 @@ services:
     restart: always
     environment:
       - OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
+      - OpenTelemetry__ServiceName=Plugin.RelationalDatabase
       - Semantics__IndexContextPrefix=_aastwinengineindex_
       - Capabilities__HasShellDescriptor=true
       - Capabilities__HasAssetInformation=true
@@ -249,7 +251,7 @@ services:
       - twinengine-network
     
   otel-lgtm:
-    image: grafana/otel-lgtm:latest
+    image: grafana/otel-lgtm:0.29.0
     container_name: otel-lgtm
     ports:
       - "3000:3000"

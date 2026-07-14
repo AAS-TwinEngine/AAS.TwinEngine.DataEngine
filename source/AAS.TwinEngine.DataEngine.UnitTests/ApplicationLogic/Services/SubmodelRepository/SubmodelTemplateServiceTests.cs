@@ -20,6 +20,7 @@ public class SubmodelTemplateServiceTests
     private readonly ITemplateProvider _templateProvider = Substitute.For<ITemplateProvider>();
     private readonly ISubmodelTemplateMappingProvider _mappingProvider = Substitute.For<ISubmodelTemplateMappingProvider>();
     private readonly ILogger<SubmodelTemplateService> _logger = Substitute.For<ILogger<SubmodelTemplateService>>();
+
     private readonly SubmodelTemplateService _sut;
     private const string SubmodelId = "Nameplate";
     private const string TemplateId = "template-Nameplate";
@@ -322,5 +323,20 @@ public class SubmodelTemplateServiceTests
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(
             () => _sut.GetSubmodelTemplateAsync(SubmodelId, "SomePath", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelTemplateAsync_WithIdShortPath_UsesMappedTemplateId()
+    {
+        const string IdShortPath = "ManufacturerName";
+        var expectedSubmodel = TestData.CreateSubmodel();
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider.GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
+
+        await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None);
+
+        _mappingProvider.Received(1).GetTemplateId(SubmodelId);
+        await _templateProvider.Received(1).GetSubmodelTemplateAsync(TemplateId, Arg.Any<CancellationToken>());
     }
 }

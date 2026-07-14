@@ -7,6 +7,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
+using DataEngineTracing = AAS.TwinEngine.DataEngine.ApplicationLogic.Observability.DataEngineTracing;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
 public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> logger, IOptions<TemplateManagementConfig> options) : IShellTemplateMappingProvider
@@ -34,6 +36,7 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
 
     public string GetProductIdFromRule(string aasIdentifier)
     {
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetProductId, DataEngineTracing.Attributes.ShellId, aasIdentifier);
         foreach (var rule in _aasIdExtractionRules)
         {
             var extracted = rule.Strategy switch

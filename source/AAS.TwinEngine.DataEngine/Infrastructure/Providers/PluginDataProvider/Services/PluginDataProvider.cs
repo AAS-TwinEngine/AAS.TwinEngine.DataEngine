@@ -1,7 +1,8 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
@@ -54,6 +55,8 @@ public class PluginDataProvider(
 
     public async Task<IList<HttpContent>> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
     {
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
+
         var result = new List<HttpContent>();
         var exceptions = new List<Exception>();
         var remainingLimit = limit;
