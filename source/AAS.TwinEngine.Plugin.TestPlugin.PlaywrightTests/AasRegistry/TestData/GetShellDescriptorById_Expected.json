@@ -28,14 +28,48 @@
       "supplementalSemanticIds": null,
       "name": "SerialNumber",
       "value": "SN-4711",
-      "externalSubjectId": null
+      "externalSubjectId": {
+        "type": "ExternalReference",
+        "referredSemanticId": null,
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.com/subjects/serial-number"
+          }
+        ]
+      }
     },
     {
       "semanticId": null,
       "supplementalSemanticIds": null,
       "name": "BatchId",
       "value": "B-2026-03",
-      "externalSubjectId": null
+      "externalSubjectId": {
+        "type": "ExternalReference",
+        "referredSemanticId": null,
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.com/subjects/batch-id"
+          }
+        ]
+      }
+    },
+    {
+      "semanticId": null,
+      "supplementalSemanticIds": null,
+      "name": "LotNumber",
+      "value": "LOT-DE-71848",
+      "externalSubjectId": {
+        "type": "ExternalReference",
+        "referredSemanticId": null,
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.com/subjects/lot-number"
+          }
+        ]
+      }
     }
   ],
   "submodelDescriptors": null

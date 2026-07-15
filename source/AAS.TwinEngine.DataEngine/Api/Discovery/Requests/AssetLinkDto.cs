@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace AAS.TwinEngine.DataEngine.Api.Discovery.Requests;
 
-public class AssetLinkDto
+public record AssetLinkDto
 {
     [JsonPropertyName("name")]
     [Required]
