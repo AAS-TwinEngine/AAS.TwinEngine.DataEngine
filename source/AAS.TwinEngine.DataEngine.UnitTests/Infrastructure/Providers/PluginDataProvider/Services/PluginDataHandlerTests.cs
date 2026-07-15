@@ -1,12 +1,12 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -17,6 +17,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using AasCore.Aas3_1;
 
@@ -38,6 +39,8 @@ public class PluginDataHandlerTests
     private readonly ILogger<PluginDataHandler> _logger;
     private readonly IOptions<GeneralConfig> _options;
     private readonly PluginDataHandler _sut;
+
+    private ActivityListenerFixture CreateFixture() => new();
 
     public PluginDataHandlerTests()
     {
@@ -849,5 +852,61 @@ public class PluginDataHandlerTests
                                                     }
                                                 }
                                                 """;
+
+    [Fact]
+    public async Task TryGetValuesAsync_StartsFetchPluginDataSpan_WithSubmodelIdAndPluginCountTags()
+    {
+        const string SubmodelId = "submodelId";
+        const string JsonSchemaString = """
+                                        {
+                                            "$schema": "http://json-schema.org/draft-07/schema#",
+                                            "type": "object",
+                                            "properties": {
+                                                "Contact": { "type": "string" }
+                                            }
+                                        }
+                                        """;
+        const string ResponseJson = """{"Contact": "value"}""";
+
+        using var fixture = CreateFixture();
+
+        var inputNode = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["Contact"],
+                Capabilities = new Capabilities()
+            }
+        };
+
+        using var jsonContent = ConvertToJsonContent(JsonSchemaString);
+        var requestList = new List<PluginRequestSubmodel>
+        {
+            new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", jsonContent)
+        };
+
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { "PluginA", inputNode } });
+        _pluginRequestBuilder.Build(Arg.Any<IDictionary<string, JsonSchema>>()).Returns(requestList);
+        _jsonSchemaValidator.When(x => x.ValidateRequestSchema(Arg.Any<JsonSchema>())).Do(_ => { });
+        _jsonSchemaValidator.When(x => x.ValidateResponseContent(Arg.Any<string>(), Arg.Any<JsonSchema>())).Do(_ => { });
+        _pluginDataProvider
+            .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult<IList<HttpContent>>([new StringContent(ResponseJson, Encoding.UTF8, "application/json")]));
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(inputNode);
+
+        await _sut.TryGetValuesAsync(manifests, inputNode, SubmodelId, CancellationToken.None);
+
+        var fetchPluginDataSpan = fixture.Activities.FirstOrDefault(a => a.OperationName == DataEngineTracing.Spans.GetPluginData);
+        Assert.NotNull(fetchPluginDataSpan);
+        Assert.Equal(DataEngineTracing.Spans.GetPluginData, fetchPluginDataSpan.OperationName);
+        Assert.Equal(SubmodelId, fetchPluginDataSpan.GetTagItem(DataEngineTracing.Attributes.SubmodelId));
+    }
 }
 

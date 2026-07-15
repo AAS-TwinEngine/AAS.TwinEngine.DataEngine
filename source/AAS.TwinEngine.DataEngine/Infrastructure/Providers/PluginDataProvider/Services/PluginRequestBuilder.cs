@@ -1,4 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
@@ -13,6 +14,8 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 {
     public IList<PluginRequestSubmodel> Build(IDictionary<string, JsonSchema> jsonSchema)
     {
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PluginRequestGeneration);
+
         EnsureManifestIsHealthy();
 
         return [.. jsonSchema
@@ -23,6 +26,8 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 
     public IList<PluginRequestMetaData> Build(IList<string> plugins, string? aasIdentifier = null)
     {
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PluginRequestGeneration);
+
         EnsureManifestIsHealthy();
 
         return [.. plugins

@@ -1,5 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
 using OpenTelemetry.Logs;
@@ -16,6 +18,8 @@ namespace AAS.TwinEngine.DataEngine.ServiceConfiguration;
 [ExcludeFromCodeCoverage]
 internal static class LoggingConfigurationExtension
 {
+    private const string PeerServiceTag = "peer.service";
+
     public static void ConfigureLogging(this WebApplicationBuilder builder, IConfiguration configuration)
     {
         var otelSettings = configuration.GetSection($"{Config.GeneralConfig.Section}:{Config.OpenTelemetrySettings.Section}").Get<Config.OpenTelemetrySettings>() ?? new Config.OpenTelemetrySettings();
@@ -62,7 +66,12 @@ internal static class LoggingConfigurationExtension
                {
                    _ = tracerProvider
                        .AddAspNetCoreInstrumentation()
-                       .AddHttpClientInstrumentation()
+                       .AddHttpClientInstrumentation(options =>
+                       {
+                           options.EnrichWithHttpRequestMessage = static (activity, request) =>
+                               SetPeerServiceTag(activity, request);
+                       })
+                       .AddSource(DataEngineTracing.SourceName)
                        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otelSettings.OtlpEndpoint));
                })
                .WithMetrics(metricsProvider =>
@@ -72,5 +81,16 @@ internal static class LoggingConfigurationExtension
                        .AddHttpClientInstrumentation()
                        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(otelSettings.OtlpEndpoint));
                });
+    }
+
+    private static void SetPeerServiceTag(Activity activity, HttpRequestMessage request)
+    {
+        var host = request.RequestUri?.Host;
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return;
+        }
+
+        _ = activity.SetTag(PeerServiceTag, host);
     }
 }

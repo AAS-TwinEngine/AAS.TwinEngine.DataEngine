@@ -1,8 +1,10 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using AasCore.Aas3_1;
 
@@ -21,6 +23,8 @@ public class SubmodelFillerTests
     private readonly ISubmodelElementHelper _elementHelper;
     private readonly ILogger<SubmodelFiller> _logger;
     private readonly List<ISubmodelElementTypeHandler> _handlers;
+
+    private ActivityListenerFixture CreateFixture() => new();
 
     public SubmodelFillerTests()
     {
