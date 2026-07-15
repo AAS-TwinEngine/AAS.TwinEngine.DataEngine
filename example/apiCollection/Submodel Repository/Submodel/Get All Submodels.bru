@@ -1,0 +1,24 @@
+meta {
+  name: Get All Submodels
+  type: http
+  seq: 0
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 10
+  ~cursor: 
+  ~idShort: 
+  ~semanticId: 
+  ~level: deep
+  ~extent: withBlobValue
+}
+
+settings {
+  encodeUrl: true
+}

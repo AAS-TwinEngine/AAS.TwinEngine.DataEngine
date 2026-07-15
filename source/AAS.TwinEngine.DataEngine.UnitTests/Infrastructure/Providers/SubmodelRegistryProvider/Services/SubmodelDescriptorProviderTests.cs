@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -120,6 +120,138 @@ public class SubmodelDescriptorProviderTests
                 Assert.Equal(ReferenceTypes.ExternalReference, result.SemanticId!.Type);
                 Assert.Equal("https://admin-shell.io/zvei/nameplate/2/0/Nameplate", result.SemanticId.Keys[0].Value);
         }
+
+    [Fact]
+    public async Task GetDataForSubmodelDescriptorByIdAsync_ReturnsSubmodelDescriptor_WhenResponseIsWrappedInResultProperty()
+    {
+        const string id = "https://mm-software.com/submodel/wrapped";
+        const string jsonResponse = """
+                                    {
+                                        "result": {
+                                            "idShort": "WrappedSubmodel",
+                                            "id": "https://mm-software.com/submodel/wrapped",
+                                            "description": [
+                                                {
+                                                    "language": "de",
+                                                    "text": "Eingewickeltes Submodell"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                    """;
+
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(jsonResponse)
+        }));
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry).Returns(httpClient);
+
+        var result = await _sut.GetDataForSubmodelDescriptorByIdAsync(id, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("WrappedSubmodel", result.IdShort);
+        Assert.Equal("https://mm-software.com/submodel/wrapped", result.Id);
+        Assert.NotNull(result.Description);
+        Assert.Single(result.Description!);
+        Assert.Equal("de", result.Description![0].Language);
+        Assert.Equal("Eingewickeltes Submodell", result.Description[0].Text);
+    }
+
+    [Fact]
+    public async Task GetDataForSubmodelDescriptorByIdAsync_ReturnsDescriptor_WhenOnlyPrimitiveFieldsArePresent()
+    {
+        const string id = "simple-id";
+        const string jsonResponse = """{ "id": "simple-id", "idShort": "SimpleSubmodel" }""";
+
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(jsonResponse)
+        }));
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry).Returns(httpClient);
+
+        var result = await _sut.GetDataForSubmodelDescriptorByIdAsync(id, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("simple-id", result.Id);
+        Assert.Equal("SimpleSubmodel", result.IdShort);
+        Assert.Null(result.Description);
+        Assert.Null(result.DisplayName);
+        Assert.Null(result.Extensions);
+        Assert.Null(result.Administration);
+        Assert.Null(result.SemanticId);
+    }
+
+    [Fact]
+    public async Task GetDataForSubmodelDescriptorByIdAsync_DeserializesSupplementalSemanticId_WhenPresent()
+    {
+        const string id = "https://mm-software.com/submodel/supplemental";
+        const string jsonResponse = """
+                                    {
+                                        "id": "https://mm-software.com/submodel/supplemental",
+                                        "idShort": "SupplementalSubmodel",
+                                        "supplementalSemanticId": [
+                                            {
+                                                "type": "ExternalReference",
+                                                "keys": [
+                                                    {
+                                                        "type": "GlobalReference",
+                                                        "value": "https://admin-shell.io/supplemental/1/0"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                    """;
+
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(jsonResponse)
+        }));
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry).Returns(httpClient);
+
+        var result = await _sut.GetDataForSubmodelDescriptorByIdAsync(id, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.SupplementalSemanticId);
+        Assert.Single(result.SupplementalSemanticId!);
+        Assert.Equal("https://admin-shell.io/supplemental/1/0", result.SupplementalSemanticId![0].Keys[0].Value);
+    }
+
+    [Fact]
+    public async Task GetDataForSubmodelDescriptorByIdAsync_UsesBase64UrlEncodedIdInRequestPath()
+    {
+        const string id = "https://mm-software.com/submodel/nameplate";
+        var requestPath = string.Empty;
+        const string jsonResponse = """{ "id": "https://mm-software.com/submodel/nameplate", "idShort": "Nameplate" }""";
+
+        using var messageHandler = new FakeHttpMessageHandler((request, _) =>
+        {
+            requestPath = request.RequestUri?.ToString() ?? string.Empty;
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(jsonResponse)
+            });
+        });
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://mm-software/fakeUrl");
+        _clientFactory.CreateClient(HttpClientNames.SubmodelRegistry).Returns(httpClient);
+
+        _ = await _sut.GetDataForSubmodelDescriptorByIdAsync(id, CancellationToken.None);
+
+        var expectedEncoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(id))
+            .TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        Assert.Contains(expectedEncoded, requestPath, StringComparison.Ordinal);
+    }
 
     [Fact]
     public async Task GetDataForSubmodelDescriptorByIdAsync_ThrowsResponseParsingException_WhenDeserializationFails()

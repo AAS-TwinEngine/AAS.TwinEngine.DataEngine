@@ -35,7 +35,7 @@ public class SerializationServiceTests
         var shell = CreateShell("validIdShort");
         var submodel = Substitute.For<ISubmodel>();
         _shellService.GetShellByIdAsync(AasId, Arg.Any<CancellationToken>()).Returns(shell);
-        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, Arg.Any<CancellationToken>()).Returns(submodel);
+        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, null, Arg.Any<CancellationToken>()).Returns(submodel);
 
         var result = await _sut.GetAasxFileStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, CancellationToken.None);
 
@@ -55,7 +55,7 @@ public class SerializationServiceTests
                          .Returns(Substitute.For<IAssetAdministrationShell>());
         }
 
-        _submodelRepositoryService.GetSubmodelAsync("sub1", Arg.Any<CancellationToken>())
+        _submodelRepositoryService.GetSubmodelAsync("sub1", null, Arg.Any<CancellationToken>())
                                   .Returns(Substitute.For<ISubmodel>());
 
         await _sut.GetAasxFileStreamAsync(aasIds, submodelIds, IncludeConceptDescriptions, CancellationToken.None);
@@ -79,7 +79,7 @@ public class SerializationServiceTests
 
         foreach (var id in submodelIds)
         {
-            _submodelRepositoryService.GetSubmodelAsync(id, Arg.Any<CancellationToken>())
+            _submodelRepositoryService.GetSubmodelAsync(id, null, Arg.Any<CancellationToken>())
                                       .Returns(Substitute.For<ISubmodel>());
         }
 
@@ -87,7 +87,7 @@ public class SerializationServiceTests
 
         foreach (var id in submodelIds)
         {
-            await _submodelRepositoryService.Received(1).GetSubmodelAsync(id, Arg.Any<CancellationToken>());
+            await _submodelRepositoryService.Received(1).GetSubmodelAsync(id, null, Arg.Any<CancellationToken>());
         }
     }
 
@@ -102,7 +102,7 @@ public class SerializationServiceTests
         var submodel = Substitute.For<ISubmodel>();
 
         _shellService.GetShellByIdAsync(AasId, Arg.Any<CancellationToken>()).Returns(shell);
-        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, Arg.Any<CancellationToken>()).Returns(submodel);
+        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, null, Arg.Any<CancellationToken>()).Returns(submodel);
 
         var result = await _sut.GetAasxFileStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, CancellationToken.None);
 
@@ -121,7 +121,7 @@ public class SerializationServiceTests
             collectionSemanticIds: ["inner-semantic-1"],
             listSemanticIds: ["inner-semantic-2"]);
 
-        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, Arg.Any<CancellationToken>())
+        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, null, Arg.Any<CancellationToken>())
                                   .Returns(submodel);
         var cd1 = Substitute.For<IConceptDescription>();
         var cd2 = Substitute.For<IConceptDescription>();

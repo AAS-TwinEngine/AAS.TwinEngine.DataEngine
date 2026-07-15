@@ -1,10 +1,11 @@
-﻿using System.Text;
+using System.Text;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -29,11 +30,46 @@ public class SubmodelRepositoryHandlerTests
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelRequest(encodedId);
         var expectedSubmodel = Substitute.For<ISubmodel>();
-        _submodelRepository.GetSubmodelAsync(SubmodelId, Arg.Any<CancellationToken>()).Returns(expectedSubmodel);
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
 
         var result = await _sut.GetSubmodel(request, CancellationToken.None);
 
         Assert.Equal(expectedSubmodel, result);
+    }
+
+    [Fact]
+    public async Task HandleSubmodel_WithLevelAndExtent_PassesQueryOptionsToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelRequest(encodedId) { Level = Level.deep, Extent = Extent.withBlobValue };
+        var expectedSubmodel = Substitute.For<ISubmodel>();
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
+
+        await _sut.GetSubmodel(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetSubmodelAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleSubmodel_WithNoLevelOrExtent_PassesNullQueryOptionsToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelRequest(encodedId);
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, (SubmodelQueryOptions?)null, Arg.Any<CancellationToken>())
+            .Returns(Substitute.For<ISubmodel>());
+
+        await _sut.GetSubmodel(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetSubmodelAsync(SubmodelId, (SubmodelQueryOptions?)null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -42,7 +78,9 @@ public class SubmodelRepositoryHandlerTests
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelRequest(encodedId);
-        _submodelRepository.GetSubmodelAsync(SubmodelId, Arg.Any<CancellationToken>())!.Returns((ISubmodel)null!);
+        _submodelRepository
+            .GetSubmodelAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())!
+            .Returns((ISubmodel)null!);
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodel(request, CancellationToken.None));
     }
@@ -233,5 +271,85 @@ public class SubmodelRepositoryHandlerTests
                                                                                 _sut.GetSubmodelElement(request, CancellationToken.None));
 
         Assert.Equal("Invalid User Input.", exception.Message);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodels_ReturnsSubmodelsDto_WhenServiceSucceeds()
+    {
+        var request = new GetAllSubmodelsRequest();
+        var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+        _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .Returns(submodelList);
+
+        var result = await _sut.GetAllSubmodels(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Empty(result.Result!);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodels_WithInvalidLimit_ThrowsInvalidUserInputException()
+    {
+        var request = new GetAllSubmodelsRequest { Limit = 0 };
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetAllSubmodels(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodels_BuildsFilterWithSemanticIdAndIdShort()
+    {
+        const string SemanticId = "https://example.com/semanticId";
+        const string IdShort = "Nameplate";
+        var request = new GetAllSubmodelsRequest { SemanticId = SemanticId, IdShort = IdShort };
+        var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+        _submodelRepository.GetAllSubmodelsAsync(
+            Arg.Is<SubmodelSearchFilter>(f => f.SemanticId == SemanticId && f.IdShort == IdShort),
+            Arg.Any<SubmodelQueryOptions?>(),
+            null,
+            null,
+            Arg.Any<CancellationToken>())
+            .Returns(submodelList);
+
+        await _sut.GetAllSubmodels(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1).GetAllSubmodelsAsync(
+            Arg.Is<SubmodelSearchFilter>(f => f.SemanticId == SemanticId && f.IdShort == IdShort),
+            Arg.Any<SubmodelQueryOptions?>(),
+            null,
+            null,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodels_WhenLevelAndExtentSet_BuildsQueryOptions()
+    {
+        var request = new GetAllSubmodelsRequest { Level = Level.deep, Extent = Extent.withBlobValue };
+        var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+        _submodelRepository.GetAllSubmodelsAsync(
+            Arg.Any<SubmodelSearchFilter?>(),
+            Arg.Is<SubmodelQueryOptions?>(q => q != null),
+            null, null,
+            Arg.Any<CancellationToken>())
+            .Returns(submodelList);
+
+        await _sut.GetAllSubmodels(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1).GetAllSubmodelsAsync(
+            Arg.Any<SubmodelSearchFilter?>(),
+            Arg.Is<SubmodelQueryOptions?>(q => q != null),
+            null, null,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodels_WhenNullRequest_ReturnsSuccessfully()
+    {
+        var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+        _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .Returns(submodelList);
+
+        var result = await _sut.GetAllSubmodels(null!, CancellationToken.None);
+
+        Assert.NotNull(result);
     }
 }

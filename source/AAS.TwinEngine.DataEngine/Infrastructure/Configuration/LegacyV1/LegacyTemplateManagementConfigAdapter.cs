@@ -112,19 +112,22 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
             {
                 Name = HttpClientNames.AasTemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
-                HeaderMappings = repoHeaders
+                HeaderMappings = repoHeaders,
+                ConcurrentOperationsLimit = 10
             };
             options.SubmodelTemplateRepository = new ServiceInstance
             {
                 Name = HttpClientNames.SubmodelTemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
-                HeaderMappings = repoHeaders
+                HeaderMappings = repoHeaders,
+                ConcurrentOperationsLimit = 10
             };
             options.ConceptDescriptionTemplateRepository = new ServiceInstance
             {
                 Name = HttpClientNames.ConceptDescriptorTemplateRepository,
                 BaseUrl = aasEnv.AasEnvironmentRepositoryBaseUrl,
-                HeaderMappings = repoHeaders
+                HeaderMappings = repoHeaders,
+                ConcurrentOperationsLimit = 10
             };
         }
 
@@ -134,7 +137,8 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
             {
                 Name = HttpClientNames.AasRegistry,
                 BaseUrl = aasEnv.AasRegistryBaseUrl,
-                HeaderMappings = headerForwarding?.HeaderMappings.TemplateRegistry ?? []
+                HeaderMappings = headerForwarding?.HeaderMappings.TemplateRegistry ?? [],
+                ConcurrentOperationsLimit = 10
             };
         }
 
@@ -144,7 +148,8 @@ public sealed class LegacyTemplateManagementConfigAdapter(IConfiguration configu
             {
                 Name = HttpClientNames.SubmodelRegistry,
                 BaseUrl = aasEnv.SubModelRegistryBaseUrl,
-                HeaderMappings = []
+                HeaderMappings = [],
+                ConcurrentOperationsLimit = 10
             };
         }
     }

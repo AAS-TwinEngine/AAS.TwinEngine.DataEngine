@@ -30,9 +30,9 @@ public class SubmodelDescriptorService(
     public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var shells = await aasRepositoryService.GetShellsByFiltersAsync(null, null, null, cancellationToken).ConfigureAwait(false);
-    
+
         var submodelIds = ExtractDistinctSubmodelIds(shells.Result);
-    
+
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
         var descriptorTasks = submodelIds.Select(async submodelId =>
         {
@@ -48,22 +48,22 @@ public class SubmodelDescriptorService(
             }
             finally
             {
-                semaphore.Release();
+                _ = semaphore.Release();
             }
         });
-    
+
         var allDescriptors = (await Task.WhenAll(descriptorTasks).ConfigureAwait(false))
             .Where(descriptor => descriptor is not null)
             .Select(descriptor => descriptor!)
             .ToList();
-    
+
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
         {
             throw new SubmodelDescriptorNotFoundException();
         }
-    
+
         var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allDescriptors, d => d.Id!, limit, cursor);
-    
+
         return new SubmodelDescriptors
         {
             PagingMetaData = pagingMetaData,

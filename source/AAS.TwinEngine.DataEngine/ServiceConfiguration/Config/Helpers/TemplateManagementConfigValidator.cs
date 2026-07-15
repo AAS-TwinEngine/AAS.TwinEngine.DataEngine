@@ -35,6 +35,11 @@ public class TemplateManagementConfigValidator : IValidateOptions<TemplateManage
             {
                 errors.Add($"{TemplateManagementConfig.Section}.{endpointName}.BaseUrl must be an absolute URI, got: '{endpoint.BaseUrl}'.");
             }
+
+            if (endpoint.ConcurrentOperationsLimit <= 0)
+            {
+                errors.Add($"{TemplateManagementConfig.Section}.{endpointName}.ConcurrentOperationsLimit is required and must be greater than 0.");
+            }
         }
 
         return errors.Count > 0

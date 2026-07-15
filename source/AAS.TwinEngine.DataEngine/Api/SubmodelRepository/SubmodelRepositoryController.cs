@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
 using AasCore.Aas3_1;
@@ -26,9 +27,57 @@ public class SubmodelRepositoryController(
     : ControllerBase
 {
     /// <summary>
+    /// Returns all Submodels.
+    /// </summary>
+    /// <param name="semanticId">The value of the semantic id reference (UTF8-BASE64-URL-encoded).</param>
+    /// <param name="idShort">The Asset Administration Shell's IdShort.</param>
+    /// <param name="limit">The maximum number of elements in the response array.</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata.</param>
+    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
+    /// <param name="extent">Determines the serialization of the returned content. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
+    /// <response code="200">Returns the requested Submodels.</response>
+    /// <response code="400">Bad Request, e.g. the request parameters or request format are invalid.</response>
+    /// <response code="404">Not Found.</response>
+    /// <response code="500">Internal Server Error.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(SubmodelsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<SubmodelsDto>> GetAllSubmodelsAsync(
+        [FromQuery] string? semanticId,
+        [FromQuery] string? idShort,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
+        [FromQuery] Level? level,
+        [FromQuery] Extent? extent,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get All Submodels");
+
+        var request = new GetAllSubmodelsRequest
+        {
+            SemanticId = semanticId,
+            IdShort = idShort,
+            Limit = limit,
+            Cursor = cursor,
+            Level = level,
+            Extent = extent
+        };
+
+        var response = await submodelRepositoryHandler
+            .GetAllSubmodels(request, cancellationToken)
+            .ConfigureAwait(false);
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Returns a specific Submodel.
     /// </summary>
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
+    /// <param name="extent">Controls how blob values are serialized. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
     /// <response code="200">Requested Submodel</response>
     /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
     /// <response code="404">Not Found</response>
@@ -38,10 +87,14 @@ public class SubmodelRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetSubmodelAsync([FromRoute] string submodelIdentifier, CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetSubmodelAsync(
+        [FromRoute] string submodelIdentifier,
+        [FromQuery] Level? level,
+        [FromQuery] Extent? extent,
+        CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel");
-        var request = new GetSubmodelRequest(submodelIdentifier);
+        var request = new GetSubmodelRequest(submodelIdentifier) { Level = level, Extent = extent };
         var response = await submodelRepositoryHandler.GetSubmodel(request, cancellationToken).ConfigureAwait(false);
         return Ok(Jsonization.Serialize.ToJsonObject(response));
     }

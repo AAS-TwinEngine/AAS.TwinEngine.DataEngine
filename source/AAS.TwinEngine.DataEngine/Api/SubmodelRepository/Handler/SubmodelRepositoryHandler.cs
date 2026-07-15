@@ -1,7 +1,10 @@
-﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.MappingProfiles;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -12,11 +15,17 @@ public class SubmodelRepositoryHandler(
     ISubmodelRepositoryService submodelRepositoryService) : ISubmodelRepositoryHandler
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
-        => GetResourceByIdAsync(
+    {
+        var queryOptions = request?.Level is not null || request?.Extent is not null
+            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
+            : null;
+
+        return GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetSubmodelAsync(id, cancellationToken)!
+            id => submodelRepositoryService.GetSubmodelAsync(id, queryOptions, cancellationToken)!
         );
+    }
 
     public Task<ISubmodelElement> GetSubmodelElement(GetSubmodelElementRequest request, CancellationToken cancellationToken)
     {
@@ -28,6 +37,28 @@ public class SubmodelRepositoryHandler(
             "submodel element",
             id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, cancellationToken)!
             );
+    }
+
+    public async Task<SubmodelsDto> GetAllSubmodels(GetAllSubmodelsRequest request, CancellationToken cancellationToken)
+    {
+        request?.Limit.ValidateLimit(logger);
+        request?.Cursor?.ValidateCursor(logger);
+
+        var filter = new SubmodelSearchFilter
+        {
+            SemanticId = request?.SemanticId,
+            IdShort = request?.IdShort
+        };
+
+        var queryOptions = request?.Level is not null || request?.Extent is not null
+            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
+            : null;
+
+        var result = await submodelRepositoryService
+            .GetAllSubmodelsAsync(filter, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
+            .ConfigureAwait(false);
+
+        return result.ToDto();
     }
 
     private async Task<T> GetResourceByIdAsync<T>(

@@ -5,6 +5,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -29,7 +30,7 @@ public partial class SubmodelTemplateService(
 
             var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
 
-            return await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
+            return await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, null, cancellationToken).ConfigureAwait(false);
         }
         catch (ResourceNotFoundException ex)
         {
@@ -58,7 +59,7 @@ public partial class SubmodelTemplateService(
                 ValidateSubmodelId(submodelId);
 
                 var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-                var submodel = await _templateProvider.GetSubmodelTemplateAsync(templateId!, cancellationToken).ConfigureAwait(false);
+                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, null, cancellationToken).ConfigureAwait(false);
 
                 return BuildSubmodel(submodel, idShortPath);
             }
@@ -80,6 +81,64 @@ public partial class SubmodelTemplateService(
             }
         }
         throw new InvalidDependencyException(nameof(idShortPath));
+    }
+
+    public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string submodelId, string filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        ValidateSubmodelId(submodelId);
+
+        string? templateId;
+        try
+        {
+            templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
+
+            if (filteredTemplateId is not null && templateId != filteredTemplateId)
+            {
+                return null;
+            }
+        }
+        catch (ResourceNotFoundException)
+        {
+            return null;
+        }
+
+        try
+        {
+            return await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, queryOptions, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new TemplateRequestFailedException(ex);
+        }
+        catch (ServiceUnavailableException ex)
+        {
+            throw new RepositoryNotAvailableException(ex);
+        }
+    }
+
+    public async Task<string?> GetFilteredSubmodelTemplateIdAsync(string semanticId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var submodelTemplate = await _templateProvider.GetFilteredSubmodelTemplateBySemanticIdAsync(semanticId, cancellationToken).ConfigureAwait(false);
+            return submodelTemplate?.Id;
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new TemplateRequestFailedException(ex);
+        }
+        catch (ServiceUnavailableException ex)
+        {
+            throw new RepositoryNotAvailableException(ex);
+        }
     }
 
     private static ISubmodel BuildSubmodel(ISubmodel submodel, string idShortPath)

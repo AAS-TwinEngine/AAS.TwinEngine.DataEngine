@@ -7,6 +7,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
@@ -15,6 +16,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AasCore.Aas3_1;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
@@ -26,15 +28,53 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     private const string SubmodelRefPath = ApiPaths.SubmodelRefs;
     private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
 
-    public async Task<ISubmodel> GetSubmodelTemplateAsync(string templateId, CancellationToken cancellationToken)
+    public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelTemplate, DataEngineTracing.Attributes.TemplateId, templateId);
 
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
 
-        var url = $"{SubModelRepositoryPath}/{encodedTemplateId}";
+        var queryParams = new List<string>();
 
-        var response = await SendGetRequestAsync(url, HttpClientNames.SubmodelTemplateRepository, cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(queryOptions?.Level))
+        {
+            queryParams.Add($"level={Uri.EscapeDataString(queryOptions.Level)}");
+        }
+
+        if (!string.IsNullOrEmpty(queryOptions?.Extent))
+        {
+            queryParams.Add($"extent={Uri.EscapeDataString(queryOptions.Extent)}");
+        }
+
+        var url = queryParams.Count > 0
+            ? $"{SubModelRepositoryPath}/{encodedTemplateId}?{string.Join("&", queryParams)}"
+            : $"{SubModelRepositoryPath}/{encodedTemplateId}";
+
+        try
+        {
+            return await GetSubmodelFromUrlAsync(
+                url,
+                templateId,
+                "Failed to parse or deserialize filtered submodel template JSON. TemplateId: {TemplateId}",
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (ResourceNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    private async Task<ISubmodel> GetSubmodelFromUrlAsync(
+        string url,
+        string templateId,
+        string errorMessage,
+        CancellationToken cancellationToken)
+    {
+        var response = await SendGetRequestAsync(
+            url,
+            HttpClientNames.SubmodelTemplateRepository,
+            cancellationToken).ConfigureAwait(false);
+
         var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
@@ -46,8 +86,37 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to parse or deserialize submodel template JSON. Submodel ID: {SubmodelId}", templateId);
-            activity.RecordError("JSON deserialization failed");
+            logger.LogError(ex, errorMessage, templateId);
+            throw new ResponseParsingException();
+        }
+    }
+
+    public async Task<ISubmodel?> GetFilteredSubmodelTemplateBySemanticIdAsync(string semanticId, CancellationToken cancellationToken)
+    {
+        var url = $"{SubModelRepositoryPath}?semanticId={Uri.EscapeDataString(semanticId)}";
+
+        var response = await SendGetRequestAsync(
+            url,
+            HttpClientNames.SubmodelTemplateRepository,
+            cancellationToken).ConfigureAwait(false);
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            var jsonNode = JsonNode.Parse(content);
+            var resultArray = jsonNode?["result"] as JsonArray;
+            var submodelNode = resultArray?.FirstOrDefault();
+            if (submodelNode is null)
+            {
+                return null;
+            }
+
+            return Jsonization.Deserialize.SubmodelFrom(submodelNode);
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Failed to parse or deserialize submodel templates JSON.");
             throw new ResponseParsingException();
         }
     }
@@ -214,7 +283,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
     private async Task<HttpResponseMessage> SendGetRequestAsync(string url, string httpClientName, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sending HTTP GET request to {Url}", url);
+        logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(url));
 
         var relativeUri = new Uri(url, UriKind.Relative);
 
@@ -234,20 +303,20 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         switch (response.StatusCode)
         {
             case System.Net.HttpStatusCode.NotFound:
-                logger.LogError("Requested resource could not be found. Endpoint: {Url}", url);
+                logger.LogError("Requested resource could not be found. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new ResourceNotFoundException();
 
             case System.Net.HttpStatusCode.Unauthorized:
             case System.Net.HttpStatusCode.Forbidden:
-                logger.LogError("Unauthorized access. Endpoint: {Url}", url);
+                logger.LogError("Unauthorized access. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new UnauthorizedAccessException();
 
             case System.Net.HttpStatusCode.RequestTimeout:
-                logger.LogError("Request timed out. Endpoint: {Url}", url);
+                logger.LogError("Request timed out. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new RequestTimeoutException();
 
             default:
-                logger.LogError("Validation error encountered. Endpoint: {Url}", url);
+                logger.LogError("Validation error encountered. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
                 throw new ValidationFailedException();
         }
     }
