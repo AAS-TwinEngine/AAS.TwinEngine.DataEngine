@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -564,7 +564,7 @@ public class TemplateProviderTests
         httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
         _httpClientFactory.CreateClient(HttpClientNames.SubmodelTemplateRepository).Returns(httpClient);
 
-        _ = await _sut.GetSubmodelTemplateAsync(TemplateIdForSpan, CancellationToken.None);
+        _ = await _sut.GetFilteredSubmodelTemplateAsync(TemplateIdForSpan, null, CancellationToken.None);
 
         var capturedActivities = fixture.Activities.ToArray();
         var span = Assert.Single(capturedActivities.Where(a => a.OperationName == DataEngineTracing.Spans.GetSubmodelTemplate));
