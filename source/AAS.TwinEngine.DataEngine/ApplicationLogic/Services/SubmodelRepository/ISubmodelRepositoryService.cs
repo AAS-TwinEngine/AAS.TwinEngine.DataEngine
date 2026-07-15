@@ -16,4 +16,11 @@ public interface ISubmodelRepositoryService
         int? limit,
         string? cursor,
         CancellationToken cancellationToken);
+
+    Task<SubmodelElementsPage> GetAllSubmodelElementsAsync(
+        string submodelId,
+        SubmodelQueryOptions? queryOptions,
+        int? limit,
+        string? cursor,
+        CancellationToken cancellationToken);
 }

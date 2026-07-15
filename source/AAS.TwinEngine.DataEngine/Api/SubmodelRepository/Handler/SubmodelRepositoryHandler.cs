@@ -61,6 +61,25 @@ public class SubmodelRepositoryHandler(
         return result.ToDto();
     }
 
+    public async Task<SubmodelElementsDto> GetAllSubmodelElements(GetAllSubmodelElementsRequest request, CancellationToken cancellationToken)
+    {
+        request?.Limit.ValidateLimit(logger);
+        request?.Cursor?.ValidateCursor(logger);
+
+        var decodedId = request?.SubmodelId?.DecodeBase64Url(logger);
+        logger.LogInformation("Start executing get all submodel elements request. ID: {DecodedId}", decodedId);
+
+        var queryOptions = request?.Level is not null || request?.Extent is not null
+            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
+            : null;
+
+        var result = await submodelRepositoryService
+            .GetAllSubmodelElementsAsync(decodedId!, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
+            .ConfigureAwait(false);
+
+        return result.ToDto();
+    }
+
     private async Task<T> GetResourceByIdAsync<T>(
         string? encodedId,
         string resourceName,
