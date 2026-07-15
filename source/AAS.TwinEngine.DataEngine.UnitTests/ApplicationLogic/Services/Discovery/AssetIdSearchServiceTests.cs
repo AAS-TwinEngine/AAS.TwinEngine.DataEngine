@@ -1,5 +1,7 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -19,11 +21,12 @@ public class AssetIdSearchServiceTests
 {
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+    private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
     private readonly AssetIdSearchService _sut;
 
     public AssetIdSearchServiceTests()
     {
-        _sut = new AssetIdSearchService(_pluginDataHandler, _pluginManifestConflictHandler);
+        _sut = new AssetIdSearchService(_pluginDataHandler, _pluginManifestConflictHandler, _aasRepositoryService);
         _ = _pluginManifestConflictHandler.Manifests.Returns(CreatePluginManifests());
     }
 
@@ -205,6 +208,70 @@ public class AssetIdSearchServiceTests
         Assert.Equal(2, result3.Result!.Count);
         Assert.Equal("urn:example:aas:001", result3.Result![0]);
         Assert.Equal("urn:example:aas:002", result3.Result![1]);
+    }
+
+    [Fact]
+    public async Task GetSpecificAssetIdByAasIdentifierAsync_WithValidInput_ReturnsSpecificAssetIds()
+    {
+        var aasIdentifier = "urn:example:aas:001";
+        var shell = Substitute.For<IAssetAdministrationShell>();
+        var assetInfo = Substitute.For<IAssetInformation>();
+        var specificAssetId = Substitute.For<ISpecificAssetId>();
+        var specificAssetIds = new List<ISpecificAssetId> { specificAssetId };
+
+        _ = assetInfo.SpecificAssetIds.Returns(specificAssetIds);
+        _ = shell.AssetInformation.Returns(assetInfo);
+        _ = _aasRepositoryService.GetShellByIdAsync(aasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(shell);
+
+        var result = await _sut.GetSpecificAssetIdByAasIdentifierAsync(aasIdentifier, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Same(specificAssetId, result[0]);
+    }
+
+    [Fact]
+    public async Task GetSpecificAssetIdByAasIdentifierAsync_WhenShellNotFound_ThrowsNotFoundException()
+    {
+        var aasIdentifier = "urn:example:aas:001";
+        _ = _aasRepositoryService.GetShellByIdAsync(aasIdentifier, Arg.Any<CancellationToken>())
+            .Returns((IAssetAdministrationShell)null!);
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            _sut.GetSpecificAssetIdByAasIdentifierAsync(aasIdentifier, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSpecificAssetIdByAasIdentifierAsync_WhenSpecificAssetIdsEmpty_ThrowsNotFoundException()
+    {
+        var aasIdentifier = "urn:example:aas:001";
+        var shell = Substitute.For<IAssetAdministrationShell>();
+        var assetInfo = Substitute.For<IAssetInformation>();
+
+        _ = assetInfo.SpecificAssetIds.Returns(new List<ISpecificAssetId>());
+        _ = shell.AssetInformation.Returns(assetInfo);
+        _ = _aasRepositoryService.GetShellByIdAsync(aasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(shell);
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            _sut.GetSpecificAssetIdByAasIdentifierAsync(aasIdentifier, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSpecificAssetIdByAasIdentifierAsync_WhenSpecificAssetIdsNull_ThrowsNotFoundException()
+    {
+        var aasIdentifier = "urn:example:aas:001";
+        var shell = Substitute.For<IAssetAdministrationShell>();
+        var assetInfo = Substitute.For<IAssetInformation>();
+
+        _ = assetInfo.SpecificAssetIds.Returns((List<ISpecificAssetId>)null!);
+        _ = shell.AssetInformation.Returns(assetInfo);
+        _ = _aasRepositoryService.GetShellByIdAsync(aasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(shell);
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            _sut.GetSpecificAssetIdByAasIdentifierAsync(aasIdentifier, CancellationToken.None));
     }
 
     private static IReadOnlyList<PluginManifest> CreatePluginManifests()

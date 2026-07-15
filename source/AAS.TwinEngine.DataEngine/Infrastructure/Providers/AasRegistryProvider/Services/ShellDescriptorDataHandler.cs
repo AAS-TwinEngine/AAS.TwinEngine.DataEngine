@@ -9,26 +9,6 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider
 
 public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logger) : IShellDescriptorDataHandler
 {
-    public IList<ShellDescriptor> FillOut(ShellDescriptor template, IList<ShellDescriptorMetaData> metaData)
-    {
-        if (template is null)
-        {
-            throw new InvalidDependencyException(nameof(template), logger);
-        }
-
-        if (metaData is null)
-        {
-            throw new InvalidDependencyException(nameof(metaData), logger);
-        }
-
-        return [.. metaData
-               .Select(value =>
-               {
-                   var clonedDescriptor = Clone(template);
-                   return FillOut(clonedDescriptor, value);
-               })];
-    }
-
     public ShellDescriptor FillOut(ShellDescriptor template, ShellDescriptorMetaData metaData)
     {
         if (template is null)
@@ -60,29 +40,18 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
         descriptor.GlobalAssetId = metaData.GlobalAssetId;
         descriptor.IdShort = metaData.IdShort;
         descriptor.Id = metaData.Id;
-        descriptor.SpecificAssetIds = metaData.SpecificAssetIds;
-    }
 
-    private ShellDescriptor Clone(ShellDescriptor shellDescriptor)
-    {
-        if (shellDescriptor is null)
+        if (metaData.SpecificAssetIds is not null && metaData.SpecificAssetIds.Count > 0)
         {
-            throw new InvalidDependencyException(nameof(shellDescriptor), logger);
-        }
+            foreach (var specificAssetIdData in metaData.SpecificAssetIds)
+            {
+                var descriptorAssetId = descriptor.SpecificAssetIds?.FirstOrDefault(x => x.Name == specificAssetIdData.Name);
 
-        try
-        {
-            var content = JsonSerializer.Serialize(shellDescriptor, JsonSerializationOptions.Serialization);
-
-            var cloned = JsonSerializer.Deserialize<ShellDescriptor>(content, JsonSerializationOptions.Serialization)
-                         ?? throw new InternalDataProcessingException();
-
-            return cloned;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Unexpected error occurred while cloning ShellDescriptor. Object: {@ShellDescriptor}", shellDescriptor);
-            throw new InternalDataProcessingException();
+                if (descriptorAssetId is not null)
+                {
+                    descriptorAssetId.Value = specificAssetIdData.Value;
+                }
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -12,6 +12,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 using AasCore.Aas3_1;
 
@@ -26,6 +27,7 @@ public abstract class DiscoveryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly IAasRepositoryTemplateService _mockTemplateService;
+    private readonly IAasRepositoryService _mockAasRepositoryService;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
     private readonly IPluginManifestConflictHandler _mockPluginManifestConflictHandler;
@@ -33,6 +35,7 @@ public abstract class DiscoveryControllerTests : IDisposable
     protected DiscoveryControllerTests(string configDir)
     {
         _mockTemplateService = Substitute.For<IAasRepositoryTemplateService>();
+        _mockAasRepositoryService = Substitute.For<IAasRepositoryService>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         _mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
@@ -43,6 +46,7 @@ public abstract class DiscoveryControllerTests : IDisposable
             _ = services.AddSingleton(_mockPluginManifestConflictHandler);
             _ = services.AddSingleton(_httpClientFactory);
             _ = services.AddSingleton(_mockTemplateService);
+            _ = services.AddSingleton(_mockAasRepositoryService);
         });
 
         _client = _factory.CreateClient();
@@ -199,6 +203,73 @@ public abstract class DiscoveryControllerTests : IDisposable
                     ])
                 ]
             });
+    }
+
+    [Fact]
+    public async Task GetSpecificAssetIdByAasIdentifier_ReturnsOkWithSpecificAssetIdsAsync()
+    {
+        // Arrange
+        var aasId = "urn:example:aas:001";
+        var encodedAasId = aasId.EncodeBase64Url();
+        var specificAssetId = new SpecificAssetId("Manufacturer", "Corp");
+        var shell = new AssetAdministrationShell(aasId, new AssetInformation(AssetKind.Instance)
+        {
+            SpecificAssetIds = [specificAssetId]
+        });
+
+        _ = _mockAasRepositoryService.GetShellByIdAsync(aasId, Arg.Any<CancellationToken>())
+            .Returns(shell);
+
+        // Act
+        var response = await _client.GetAsync($"/lookup/shells/{encodedAasId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonArray>();
+        Assert.NotNull(json);
+        Assert.Single(json);
+        var item = json[0]?.AsObject();
+        Assert.NotNull(item);
+        Assert.Equal("Manufacturer", item["name"]?.GetValue<string>());
+        Assert.Equal("Corp", item["value"]?.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task GetSpecificAssetIdByAasIdentifier_WhenShellNotFound_ReturnsNotFoundAsync()
+    {
+        // Arrange
+        var aasId = "urn:example:aas:nonexistent";
+        var encodedAasId = aasId.EncodeBase64Url();
+
+        _ = _mockAasRepositoryService.GetShellByIdAsync(aasId, Arg.Any<CancellationToken>())
+            .Returns((IAssetAdministrationShell)null!);
+
+        // Act
+        var response = await _client.GetAsync($"/lookup/shells/{encodedAasId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetSpecificAssetIdByAasIdentifier_WhenSpecificAssetIdsEmpty_ReturnsNotFoundAsync()
+    {
+        // Arrange
+        var aasId = "urn:example:aas:no-ids";
+        var encodedAasId = aasId.EncodeBase64Url();
+        var shell = new AssetAdministrationShell(aasId, new AssetInformation(AssetKind.Instance)
+        {
+            SpecificAssetIds = []
+        });
+
+        _ = _mockAasRepositoryService.GetShellByIdAsync(aasId, Arg.Any<CancellationToken>())
+            .Returns(shell);
+
+        // Act
+        var response = await _client.GetAsync($"/lookup/shells/{encodedAasId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }
 

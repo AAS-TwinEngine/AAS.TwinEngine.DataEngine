@@ -20,6 +20,7 @@ public class SubmodelTemplateServiceTests
     private readonly ITemplateProvider _templateProvider = Substitute.For<ITemplateProvider>();
     private readonly ISubmodelTemplateMappingProvider _mappingProvider = Substitute.For<ISubmodelTemplateMappingProvider>();
     private readonly ILogger<SubmodelTemplateService> _logger = Substitute.For<ILogger<SubmodelTemplateService>>();
+
     private readonly SubmodelTemplateService _sut;
     private const string SubmodelId = "Nameplate";
     private const string TemplateId = "template-Nameplate";

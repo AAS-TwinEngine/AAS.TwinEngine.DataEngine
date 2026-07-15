@@ -1,11 +1,12 @@
 using System.Net;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -15,6 +16,7 @@ using NSubstitute;
 
 using Template = AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services.TemplateProvider;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Services;
 
@@ -23,6 +25,8 @@ public class TemplateProviderTests
     private readonly ICreateClient _httpClientFactory;
     private readonly Template _sut;
     private const string TemplateId = "Nameplate";
+
+    private ActivityListenerFixture CreateFixture() => new();
 
     public TemplateProviderTests()
     {
@@ -546,6 +550,26 @@ public class TemplateProviderTests
         var result = await _sut.GetConceptDescriptionByIdAsync(CdIdentifier, CancellationToken.None);
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetSubmodelTemplateAsync_StartsFetchTemplateSpan_WithTemplateIdTag()
+    {
+        const string TemplateIdForSpan = "Nameplate";
+        using var fixture = CreateFixture();
+
+        var mockHttpResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ProviderTestData.ValidateSubmodelResponse) };
+        using var mockHttpMessageHandler = new FakeHttpMessageHandler(mockHttpResponse);
+        using var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("https://www.mm-software.com/fakeurl");
+        _httpClientFactory.CreateClient(HttpClientNames.SubmodelTemplateRepository).Returns(httpClient);
+
+        _ = await _sut.GetSubmodelTemplateAsync(TemplateIdForSpan, CancellationToken.None);
+
+        var capturedActivities = fixture.Activities.ToArray();
+        var span = Assert.Single(capturedActivities.Where(a => a.OperationName == DataEngineTracing.Spans.GetSubmodelTemplate));
+        Assert.Equal(DataEngineTracing.Spans.GetSubmodelTemplate, span.OperationName);
+        Assert.Equal(TemplateIdForSpan, span.GetTagItem(DataEngineTracing.Attributes.TemplateId));
     }
 }
 
