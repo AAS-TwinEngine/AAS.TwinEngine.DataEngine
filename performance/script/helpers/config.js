@@ -68,7 +68,7 @@ function loadDotEnv() {
 
     try {
 
-        const content = open('./.env');
+        const content = open('../.env');
         const envValues = {};
 
         content.split(/\r?\n/)
