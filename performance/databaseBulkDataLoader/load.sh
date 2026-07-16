@@ -15,14 +15,8 @@ TOTAL=$ASSET_COUNT
 
 MAX_ATTEMPTS=10
 SQL_DIR=$WORKSPACE_DIR/sql
-SCHEMA_SOURCE_DIR=$WORKSPACE_DIR/schema
 
-if [ ! -d "$SCHEMA_SOURCE_DIR" ]; then
-    echo "ERROR: schema source directory not found: $SCHEMA_SOURCE_DIR"
-    exit 1
-fi
-
-if [ ! -f "$SQL_DIR/check-schema.sql" ] || [ ! -f "$SQL_DIR/truncate-db.sql" ] || [ ! -f "$SQL_DIR/schema-generator.sql" ] || [ ! -f "$SQL_DIR/load.sql" ]; then
+if [ ! -f "$SQL_DIR/check-schema.sql" ] || [ ! -f "$SQL_DIR/truncate-db.sql" ] || [ ! -f "$SQL_DIR/load.sql" ]; then
     echo "ERROR: required SQL files not found under: $SQL_DIR"
     exit 1
 fi
@@ -60,16 +54,28 @@ done
 echo "PostgreSQL is ready."
 echo "Checking schema..."
 
-TABLE_EXISTS=$(psql_exec "$SQL_DIR/check-schema.sql" -tA)
-TABLE_EXISTS=$(printf '%s' "$TABLE_EXISTS" | tr -d '[:space:]')
+SCHEMA_STATUS=$(psql_exec "$SQL_DIR/check-schema.sql" -tA)
+SCHEMA_STATUS=$(printf '%s' "$SCHEMA_STATUS" | tr -d '[:space:]')
 
-if [ "$TABLE_EXISTS" = "t" ]; then
-    echo "Schema already exists. Truncating existing data..."
-    psql_exec "$SQL_DIR/truncate-db.sql"
-else
-    echo "Schema not found. Creating..."
-    psql_exec "$SQL_DIR/schema-generator.sql"
-fi
+case "$SCHEMA_STATUS" in
+    OK)
+        ;;
+    MISSING\|*)
+        MISSING_TABLES=${SCHEMA_STATUS#MISSING|}
+        echo "ERROR: Required schema is not present in public."
+        echo "Missing tables: $MISSING_TABLES"
+        echo "Skipping data load."
+        exit 1
+        ;;
+    *)
+        echo "ERROR: Schema validation returned unexpected result: $SCHEMA_STATUS"
+        echo "Skipping data load."
+        exit 1
+        ;;
+esac
+
+echo "Schema check passed. Truncating existing data..."
+psql_exec "$SQL_DIR/truncate-db.sql"
 
 START=1
 

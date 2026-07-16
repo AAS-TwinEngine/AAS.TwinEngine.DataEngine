@@ -8,7 +8,10 @@ The runner uses the official `postgres:16-alpine` image only as a client contain
 
 1. Docker with Compose support.
 2. A reachable PostgreSQL instance (local or remote).
-3. Valid environment values in `.env`.
+3. Pre-created schema in `public` with all required loader tables.
+4. Valid environment values in `.env`.
+
+The loader does not generate schema. It validates required tables first and exits with an error if any are missing.
 
 ## Configuration
 
@@ -39,7 +42,7 @@ The container will:
 1. Start.
 2. Execute `sh /workspace/load.sh`.
 3. Exit with code `0` on success.
-4. Exit non-zero if any SQL step fails (`set -e` and `ON_ERROR_STOP=1`).
+4. Exit non-zero if schema validation fails or any SQL step fails (`set -e` and `ON_ERROR_STOP=1`).
 
 ## Connection Setup
 
@@ -78,4 +81,4 @@ PG_CONN_STRING=postgres://username:password@your-server.postgres.database.azure.
 
 1. No extra PostgreSQL container is created in this folder.
 2. Loader SQL files are grouped under the `sql/` folder.
-3. The setup is independent from the `example` Compose project, except it reads schema include files from `example/postgres/schema`.
+3. Schema must be provisioned before running this loader (for example, via your existing migration/init workflow).
