@@ -4,7 +4,6 @@ services:
     working_dir: /workspace
     volumes:
       - ./:/workspace
-      - ../../example/postgres/schema:/workspace/schema:ro
     env_file:
       - .env
     environment:

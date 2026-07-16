@@ -1,43 +1,5 @@
--- ============================================================
--- Bulk Seed Data Generator
--- ============================================================
--- HOW TO USE:
---   Change the value of p_asset_count (line ~20) to any positive
---   integer. Re-run this script and it will INSERT that many
---   assets plus ALL related data with zero duplicate IDs.
---
--- PER ASSET this script seeds:
---   3  SpecificAssetIds
---   2  Markings            → AssetMarking (junction)
---   2  ProductImages       → AssetProductImage (junction)  [explicit IDs]
---   2  ProductClassifications → AssetProductClassifications (junction)
---   1  ProductOrSectorSpecificCarbonFootprint
---   2  MaintenanceInstructions → AssetMaintenanceInstruction (junction)
---      └─ 1 Alarm each                  → MaintenanceInstructionAlarm
---      └─ 2 Contacts each (Email+Phone+Fax)
---             → MaintenanceInstructionContactForMaintenanceAuthorization
---      └─ 2 MaintenanceSteps each
---             → MaintenanceInstructionsForSpecificIntervalMaintenanceStep
---   1  MaintenanceTool     → AssetMaintenanceTool (junction)
---   1  MaintenanceConsumable → AssetMaintenanceConsumable (junction)
---   1  MaintenanceSparePart  → AssetMaintenanceSparePart (junction)
---   2  Documents each with:
---      └─ 1 DocumentId       → DocumentDocumentId
---      └─ 1 DocumentClassification → DocumentDocumentClassification
---      └─ 1 DocumentVersion  → DocumentDocumentVersion
---         └─ 1 Language      → DocumentVersionLanguages
---
--- Asset ProductIds are generated as: 000-001, 000-002, ... 000-999,
--- then 001-000, 001-001, ... for continuous six-digit sequencing.
--- All junction IDs follow their parent sequences; no manual ID
--- bookkeeping is required beyond ProductImage / AssetProductImage
--- which have explicit (non-identity) primary keys.
--- ============================================================
-
 DO $$
 DECLARE
-    -- Value is supplied at runtime via the app.asset_count session GUC.
-    -- Fallback: defaults to 3 when no value is provided by the loader.
     p_asset_count CONSTANT INT := COALESCE(
         NULLIF(current_setting('app.asset_count', true), '')::INT,
         1000
@@ -46,7 +8,6 @@ DECLARE
     -- loop counter
     i INT;
 
-    -- captured auto-generated IDs
     asset_id          INT;
     marking_id_1      INT;
     marking_id_2      INT;
