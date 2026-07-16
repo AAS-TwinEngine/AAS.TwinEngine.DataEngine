@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -56,8 +56,16 @@ public abstract class GetAllSubmodelElementsControllerTests : IDisposable
             : EncodeBase64Url(submodelId);
         var url = $"/submodels/{encodedId}/submodel-elements";
         var queryParams = new Dictionary<string, string?>();
-        if (limit.HasValue) queryParams["limit"] = limit.Value.ToString();
-        if (cursor is not null) queryParams["cursor"] = cursor;
+        if (limit.HasValue)
+        {
+            queryParams["limit"] = limit.Value.ToString();
+        }
+
+        if (cursor is not null)
+        {
+            queryParams["cursor"] = cursor;
+        }
+
         return queryParams.Count > 0 ? QueryHelpers.AddQueryString(url, queryParams) : url;
     }
 
