@@ -57,42 +57,6 @@ public class SubmodelRepositoryService(
         }).ConfigureAwait(false);
     }
 
-    public async Task<SubmodelList> GetAllSubmodelsAsync(SubmodelSearchFilter? filter, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
-    {
-        return await ExecuteWithExceptionHandlingAsync(async () =>
-        {
-            var shellSearchFilter = new ShellSearchFilter
-            {
-                IdShort = filter?.IdShort
-            };
-
-            var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, shellSearchFilter, cancellationToken).ConfigureAwait(false);
-            var shellDescriptors = shellMetadata.ShellDescriptors ?? [];
-
-            string? filteredTemplateId = null;
-            if (filter?.SemanticId is not null)
-            {
-                filteredTemplateId = await submodelTemplateService.GetFilteredSubmodelTemplateIdAsync(filter.SemanticId, cancellationToken).ConfigureAwait(false);
-
-                if (filteredTemplateId is null)
-                {
-                    throw new SubmodelNotFoundException();
-                }
-            }
-
-            var distinctSubmodelIds = await GetDistinctSubmodelIdsAsync(shellDescriptors, cancellationToken).ConfigureAwait(false);
-
-            var (pagedIds, pagingMetaData) = PagingExtensions.GetPagedResult(distinctSubmodelIds, id => id, limit, cursor);
-
-            var submodels = await BuildSubmodelsAsync(pagedIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
-
-            return new SubmodelList
-            {
-                PagingMetaData = pagingMetaData,
-                Result = submodels
-            };
-        }).ConfigureAwait(false);
-    }
 
     public async Task<SubmodelList> GetAllSubmodelsAsync(SubmodelSearchFilter? filter, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
     {
