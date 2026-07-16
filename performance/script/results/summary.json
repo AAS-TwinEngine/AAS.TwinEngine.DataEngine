@@ -1,0 +1,442 @@
+{
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [],
+    "checks": [
+        {
+          "passes": 10,
+          "fails": 0,
+          "name": "GetSubmodelReferences status 200",
+          "path": "::GetSubmodelReferences status 200",
+          "id": "541dbdeecb777817b16599f6febaaf2b"
+        },
+        {
+          "id": "4b230d61a5c3fc26ff75690f1021eccc",
+          "passes": 10,
+          "fails": 0,
+          "name": "GetSubmodelDescriptorById status 200",
+          "path": "::GetSubmodelDescriptorById status 200"
+        },
+        {
+          "path": "::GetAssetInformation status 200",
+          "id": "8d60c8842569979c94b4b8d184f4f6ad",
+          "passes": 10,
+          "fails": 0,
+          "name": "GetAssetInformation status 200"
+        },
+        {
+          "name": "GetShellDescriptorById status 200",
+          "path": "::GetShellDescriptorById status 200",
+          "id": "aabfaf115ed05d2de48662e1e25752e2",
+          "passes": 10,
+          "fails": 0
+        },
+        {
+          "path": "::GetShellById status 200",
+          "id": "515e6c9b563169546ae6cbe770ffb5a5",
+          "passes": 10,
+          "fails": 0,
+          "name": "GetShellById status 200"
+        },
+        {
+          "name": "GetSubmodelById status 200",
+          "path": "::GetSubmodelById status 200",
+          "id": "da7982aef83208333f266f5ccc8c4359",
+          "passes": 10,
+          "fails": 0
+        },
+        {
+          "id": "4985342fa1d83287afe2007b4710cb88",
+          "passes": 10,
+          "fails": 0,
+          "name": "GetShellDescriptors status 200",
+          "path": "::GetShellDescriptors status 200"
+        },
+        {
+          "fails": 0,
+          "name": "GetSubmodelDescriptors status 200",
+          "path": "::GetSubmodelDescriptors status 200",
+          "id": "8b8374b79f361e7d342cab105f35c179",
+          "passes": 10
+        },
+        {
+          "fails": 0,
+          "name": "GetShells status 200",
+          "path": "::GetShells status 200",
+          "id": "263ac287b5bbd9339636239afdc0cfe5",
+          "passes": 10
+        }
+      ]
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "ms",
+    "noColor": false
+  },
+  "state": {
+    "isStdOutTTY": true,
+    "isStdErrTTY": true,
+    "testRunDurationMs": 99100.0588
+  },
+  "metrics": {
+    "get_submodel_descriptors_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 8808.817509999999,
+        "min": 8216.1552,
+        "med": 8740.185249999999,
+        "max": 10060.3202,
+        "p(90)": 9591.29474,
+        "p(95)": 9825.80747
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 10064.7851,
+        "p(90)": 8816.95538,
+        "p(95)": 9449.19011,
+        "avg": 2949.265445555556,
+        "min": 18.4901,
+        "med": 40.5447
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "max": 3,
+        "value": 1,
+        "min": 0
+      }
+    },
+    "http_req_failed": {
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 91
+      },
+      "type": "rate",
+      "contains": "default"
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 90,
+        "rate": 0.9081730232030901
+      }
+    },
+    "data_received": {
+      "values": {
+        "count": 5430584,
+        "rate": 54798.998767092555
+      },
+      "type": "counter",
+      "contains": "data"
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 90,
+        "fails": 0
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 91,
+        "rate": 0.9182638345720134
+      }
+    },
+    "get_submodel_descriptor_by_id_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 24.35688,
+        "min": 18.845,
+        "med": 22.9999,
+        "max": 33.5946,
+        "p(90)": 29.435249999999996,
+        "p(95)": 31.514924999999995
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "get_shell_by_id_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 25.2725,
+        "med": 33.8846,
+        "max": 120.0054,
+        "p(90)": 56.04221999999998,
+        "p(95)": 88.02380999999993,
+        "avg": 43.10615
+      }
+    },
+    "get_shell_descriptor_by_id_duration": {
+      "values": {
+        "avg": 37.53391,
+        "min": 21.1307,
+        "med": 34.1573,
+        "max": 92.1948,
+        "p(90)": 46.45634999999998,
+        "p(95)": 69.32557499999994
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "get_submodel_by_id_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 66.21362,
+        "min": 26.0423,
+        "med": 43.3578,
+        "max": 230.3169,
+        "p(90)": 127.62131999999997,
+        "p(95)": 178.9691099999999
+      }
+    },
+    "get_shells_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 9819.23394,
+        "avg": 8763.57758,
+        "min": 8153.7205,
+        "med": 8682.169600000001,
+        "max": 10062.507,
+        "p(90)": 9575.96088
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0,
+        "max": 0.5864,
+        "p(90)": 0,
+        "p(95)": 0.25425,
+        "avg": 0.02944945054945055,
+        "min": 0
+      }
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 9,
+        "min": 9,
+        "max": 9
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.15016923076923078,
+        "min": 0,
+        "med": 0,
+        "max": 2.2587,
+        "p(90)": 0.551,
+        "p(95)": 1.41435
+      }
+    },
+    "http_req_waiting": {
+      "values": {
+        "avg": 3035.4765824175824,
+        "min": 18.4902,
+        "med": 39.975,
+        "max": 10967.1635,
+        "p(90)": 8824.0779,
+        "p(95)": 9515.3902
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "get_shell_descriptors_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 9714.026424999998,
+        "avg": 8732.243359999999,
+        "min": 8163.5184,
+        "med": 8688.4055,
+        "max": 10003.3933,
+        "p(90)": 9424.659549999998
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 2.2587,
+        "p(90)": 0.6039,
+        "p(95)": 1.702,
+        "avg": 0.19296373626373625
+      }
+    },
+    "get_submodel_references_duration": {
+      "contains": "time",
+      "values": {
+        "avg": 24.184019999999997,
+        "min": 18.4902,
+        "med": 23.91225,
+        "max": 29.1602,
+        "p(90)": 28.35623,
+        "p(95)": 28.758215
+      },
+      "type": "trend"
+    },
+    "get_asset_information_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 68.63931999999994,
+        "avg": 38.04526,
+        "min": 23.7303,
+        "med": 34.31035,
+        "max": 91.1719,
+        "p(90)": 46.10673999999998
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 18.4902,
+        "med": 40.0587,
+        "max": 10983.7804,
+        "p(90)": 8825.7049,
+        "p(95)": 9530.5405,
+        "avg": 3036.9732230769237
+      }
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "rate": 115.43888206048169,
+        "count": 11440
+      }
+    },
+    "http_req_duration": {
+      "values": {
+        "p(90)": 8825.7049,
+        "p(95)": 9530.5405,
+        "avg": 3036.9732230769237,
+        "min": 18.4902,
+        "med": 40.0587,
+        "max": 10983.7804
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "http_req_receiving": {
+      "values": {
+        "p(95)": 5.59405,
+        "avg": 1.4671912087912091,
+        "min": 0,
+        "med": 0,
+        "max": 21.4377,
+        "p(90)": 2.6199
+      },
+      "type": "trend",
+      "contains": "time"
+    }
+  },
+  "setup_data": {
+    "shellIds": [
+      "https://mm-software.com/ids/aas/000-001",
+      "https://mm-software.com/ids/aas/000-002",
+      "https://mm-software.com/ids/aas/000-003",
+      "https://mm-software.com/ids/aas/000-004",
+      "https://mm-software.com/ids/aas/000-005",
+      "https://mm-software.com/ids/aas/000-006",
+      "https://mm-software.com/ids/aas/000-007",
+      "https://mm-software.com/ids/aas/000-008",
+      "https://mm-software.com/ids/aas/000-009",
+      "https://mm-software.com/ids/aas/000-010"
+    ],
+    "submodelIds": [
+      "https://mm-software.com/submodel/000-001/Nameplate",
+      "https://mm-software.com/submodel/000-001/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-001/TechnicalData",
+      "https://mm-software.com/submodel/000-001/CarbonFootprint",
+      "https://mm-software.com/submodel/000-001/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-002/Nameplate",
+      "https://mm-software.com/submodel/000-002/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-002/TechnicalData",
+      "https://mm-software.com/submodel/000-002/CarbonFootprint",
+      "https://mm-software.com/submodel/000-002/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-003/Nameplate",
+      "https://mm-software.com/submodel/000-003/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-003/TechnicalData",
+      "https://mm-software.com/submodel/000-003/CarbonFootprint",
+      "https://mm-software.com/submodel/000-003/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-004/Nameplate",
+      "https://mm-software.com/submodel/000-004/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-004/TechnicalData",
+      "https://mm-software.com/submodel/000-004/CarbonFootprint",
+      "https://mm-software.com/submodel/000-004/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-005/Nameplate",
+      "https://mm-software.com/submodel/000-005/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-005/TechnicalData",
+      "https://mm-software.com/submodel/000-005/CarbonFootprint",
+      "https://mm-software.com/submodel/000-005/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-006/Nameplate",
+      "https://mm-software.com/submodel/000-006/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-006/TechnicalData",
+      "https://mm-software.com/submodel/000-006/CarbonFootprint",
+      "https://mm-software.com/submodel/000-006/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-007/Nameplate",
+      "https://mm-software.com/submodel/000-007/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-007/TechnicalData",
+      "https://mm-software.com/submodel/000-007/CarbonFootprint",
+      "https://mm-software.com/submodel/000-007/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-008/Nameplate",
+      "https://mm-software.com/submodel/000-008/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-008/TechnicalData",
+      "https://mm-software.com/submodel/000-008/CarbonFootprint",
+      "https://mm-software.com/submodel/000-008/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-009/Nameplate",
+      "https://mm-software.com/submodel/000-009/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-009/TechnicalData",
+      "https://mm-software.com/submodel/000-009/CarbonFootprint",
+      "https://mm-software.com/submodel/000-009/HandoverDocumentation",
+      "https://mm-software.com/submodel/000-010/Nameplate",
+      "https://mm-software.com/submodel/000-010/MaintenanceInstructions",
+      "https://mm-software.com/submodel/000-010/TechnicalData",
+      "https://mm-software.com/submodel/000-010/CarbonFootprint",
+      "https://mm-software.com/submodel/000-010/HandoverDocumentation"
+    ]
+  }
+}

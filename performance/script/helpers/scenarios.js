@@ -115,6 +115,13 @@ export const endpointScenarios = [
 		name: 'GetSubmodelById',
 		metricName: 'get_submodel_by_id_duration',
 		resolveUrl: fromRandomSubmodelId(id => `/submodels/${id}`)
+	},
+	{
+		key: 'loadAllData',
+		name: 'LoadAllData',
+		metricName: 'load_all_data_duration',
+		requestMode: 'paged',
+		resolveUrl: ({ baseUrl }) => `${baseUrl}/shell-descriptors`
 	}
 ];
 
@@ -137,6 +144,7 @@ export function resolveExecutableScenarios(config, data) {
 				key: endpoint.key,
 				name: endpoint.name,
 				metricName: endpoint.metricName,
+				requestMode: endpoint.requestMode,
 				url
 			};
 		})
@@ -169,6 +177,7 @@ export function resolveScenarioByKey(config, data, endpointKey) {
 		key: endpoint.key,
 		name: endpoint.name,
 		metricName: endpoint.metricName,
+		requestMode: endpoint.requestMode,
 		url
 	};
 }

@@ -1,16 +1,15 @@
-import { sleep } from 'k6';
-
-import { config } from './config.js';
-import { discoverIds } from './setup.js';
+import { config } from './helpers/config.js';
+import { discoverIds } from './helpers/setup.js';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.4/index.js';
 import {
     getEndpointMetricNames,
     resolveScenarioByKey
-} from './scenarios.js';
+} from './helpers/scenarios.js';
 
 import {
+    executePagedRequest,
     executeRequest
-} from './requests.js';
+} from './helpers/requests.js';
 
 function buildScenarioOptions() {
 
@@ -23,12 +22,17 @@ function buildScenarioOptions() {
                 return;
             }
 
+            const scenarioMaxDuration =
+                endpointKey === 'loadAllData'
+                    ? config.load.loadAllDataMaxDuration
+                    : config.load.maxDuration;
+
             scenarios[`endpoint_${endpointKey}`] = {
                 executor: 'shared-iterations',
                 exec: 'executeEndpointScenario',
                 vus: config.load.vus,
                 iterations: requestCount,
-                maxDuration: config.load.maxDuration,
+                maxDuration: scenarioMaxDuration,
                 gracefulStop: config.load.gracefulStop,
                 env: {
                     ENDPOINT_KEY: endpointKey
@@ -50,8 +54,12 @@ if (Object.keys(configuredScenarios).length === 0) {
 }
 
 export const options = {
+    cloud: {
+        projectID: 8108924
+    },
     scenarios: configuredScenarios,
-    summaryTimeUnit: 'ms'
+    summaryTimeUnit: 'ms',
+    setupTimeout: config.load.setupTimeout
 };
 
 export function setup() {
@@ -70,6 +78,16 @@ export function executeEndpointScenario(data) {
     );
 
     if (!scenario) {
+        return;
+    }
+
+    if (scenario.requestMode === 'paged') {
+        executePagedRequest(
+            scenario.name,
+            scenario.url,
+            scenario.metricName
+        );
+
         return;
     }
 
@@ -119,10 +137,10 @@ export function handleSummary(data) {
 
     return {
         stdout: textSummary(data),
-        "summary.json":
+        "results/summary.json":
             JSON.stringify(data, null, 2),
 
-        "results.csv":
+        "results/results.csv":
             csv.join("\n")
     };
 }

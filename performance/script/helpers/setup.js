@@ -1,6 +1,9 @@
 import http from 'k6/http';
 import { config } from './config.js';
 
+const SHELLS_PATH = '/shells';
+const SAMPLE_LOG_COUNT = 10;
+
 function asArray(payload) {
 
     if (Array.isArray(payload)) {
@@ -50,12 +53,30 @@ function extractSubmodelIds(shell) {
     return submodelIds;
 }
 
+function logDiscoveredIdSamples(shellIds, submodelIds) {
+
+    const shellIdSamples = shellIds
+        .slice(0, SAMPLE_LOG_COUNT);
+
+    const submodelIdSamples = submodelIds
+        .slice(0, SAMPLE_LOG_COUNT);
+
+    console.log(
+        `Sample shellIds (${shellIdSamples.length}): ${JSON.stringify(shellIdSamples)}`
+    );
+
+    console.log(
+        `Sample submodelIds (${submodelIdSamples.length}): ${JSON.stringify(submodelIdSamples)}`
+    );
+}
+
 function discoverShellAndSubmodelIds() {
 
     const shellIds = new Set();
     const submodelIds = new Set();
     const limit = config.discovery.pageLimit;
     let cursor = null;
+    let reachedMaxDiscoveredIds = false;
 
     do {
 
@@ -67,7 +88,7 @@ function discoverShellAndSubmodelIds() {
             );
         }
 
-        const url = `${config.baseUrl}${config.discovery.shellsPath}?${queryParameters.join('&')}`;
+        const url = `${config.baseUrl}${SHELLS_PATH}?${queryParameters.join('&')}`;
 
         try {
 
@@ -103,12 +124,17 @@ function discoverShellAndSubmodelIds() {
                     config.discovery.maxDiscoveredIds > 0 &&
                     shellIds.size >= config.discovery.maxDiscoveredIds
                 ) {
-                    cursor = null;
+                    reachedMaxDiscoveredIds = true;
                     break;
                 }
             }
 
-            cursor = extractCursor(payload);
+            if (reachedMaxDiscoveredIds) {
+                cursor = null;
+            }
+            else {
+                cursor = extractCursor(payload);
+            }
 
             console.log(
                 `Discovered ${shellIds.size} shell ids and ${submodelIds.size} submodel ids so far` +
@@ -125,10 +151,18 @@ function discoverShellAndSubmodelIds() {
         }
     }
     while (cursor);
+    
+    const discoveredShellIds = [...shellIds];
+    const discoveredSubmodelIds = [...submodelIds];
+
+    logDiscoveredIdSamples(
+        discoveredShellIds,
+        discoveredSubmodelIds
+    );
 
     return {
-        shellIds: [...shellIds],
-        submodelIds: [...submodelIds]
+        shellIds: discoveredShellIds,
+        submodelIds: discoveredSubmodelIds
     };
 }
 

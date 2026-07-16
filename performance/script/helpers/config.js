@@ -4,63 +4,123 @@ const defaultConfig = {
     load: {
         vus: 1,
         maxDuration: "10m",
-        gracefulStop: "30s"
+        loadAllDataMaxDuration: "60m",
+        gracefulStop: "30s",
+        setupTimeout: "10m"
     },
 
     logRequests: false,
 
     discovery: {
-        shellsPath: "/shells",
-        submodelDescriptorsPath: "/submodel-descriptors",
         pageLimit: 1000,
-        maxDiscoveredIds: 0
+        maxDiscoveredIds: 10
     },
 
     endpoints: {
         getShells: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getShellById: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getAssetInformation: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getSubmodelReferences: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getShellDescriptors: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getShellDescriptorById: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getSubmodelDescriptors: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getSubmodelDescriptorById: {
             enabled: true,
-            requests: 100
+            requests: 10
         },
         getSubmodels: {
             enabled: false,
-            requests: 100
+            requests: 10
         },
         getSubmodelById: {
             enabled: true,
-            requests: 100
+            requests: 10
+        },
+        loadAllData: {
+            enabled: false,
+            requests: 2
         }
-    },
-
-    endpointRequests: {}
+    }
 };
+
+function loadDotEnv() {
+
+    try {
+
+        const content = open('./.env');
+        const envValues = {};
+
+        content.split(/\r?\n/)
+            .forEach(line => {
+
+                const trimmedLine = line.trim();
+
+                if (!trimmedLine || trimmedLine.startsWith('#')) {
+                    return;
+                }
+
+                const separatorIndex =
+                    trimmedLine.indexOf('=');
+
+                if (separatorIndex < 1) {
+                    return;
+                }
+
+                const key =
+                    trimmedLine.substring(0, separatorIndex).trim();
+
+                let value =
+                    trimmedLine.substring(separatorIndex + 1).trim();
+
+                if (
+                    (value.startsWith('"') && value.endsWith('"')) ||
+                    (value.startsWith("'") && value.endsWith("'"))
+                ) {
+                    value = value.substring(1, value.length - 1);
+                }
+
+                envValues[key] = value;
+            });
+
+        return envValues;
+    }
+    catch (error) {
+        return {};
+    }
+}
+
+const fileEnv =
+    loadDotEnv();
+
+function getEnvValue(key) {
+
+    if (__ENV[key] !== undefined) {
+        return __ENV[key];
+    }
+
+    return fileEnv[key];
+}
 
 function parseBoolean(value, fallback) {
 
@@ -96,6 +156,21 @@ function parsePositiveInteger(value, fallback) {
     return parsed;
 }
 
+function parseNonNegativeInteger(value, fallback) {
+
+    if (value === undefined) {
+        return fallback;
+    }
+
+    const parsed = Number.parseInt(value, 10);
+
+    if (!Number.isFinite(parsed) || parsed < 0) {
+        return fallback;
+    }
+
+    return parsed;
+}
+
 function parsePositiveNumber(value, fallback) {
 
     if (value === undefined) {
@@ -111,23 +186,19 @@ function parsePositiveNumber(value, fallback) {
     return parsed;
 }
 
-function parseCsv(value) {
-
-    if (!value) {
-        return [];
-    }
-
-    return String(value)
-        .split(",")
-        .map(item => item.trim())
-        .filter(Boolean);
-}
-
 function parseEndpointCounts(value) {
 
     const counts = {};
 
-    parseCsv(value).forEach(entry => {
+    if (!value) {
+        return counts;
+    }
+
+    String(value)
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean)
+        .forEach(entry => {
 
         const separatorIndex = entry.indexOf(':');
 
@@ -250,35 +321,15 @@ function toEndpointEnvKey(endpointKey) {
         .toUpperCase()}`;
 }
 
+function toEndpointRequestsEnvKey(endpointKey) {
+
+    return `${toEndpointEnvKey(endpointKey)}_REQUESTS`;
+}
+
 function buildEndpointConfig(defaultEndpoints) {
 
     const endpoints =
         getDefaultEndpointEnabledMap(defaultEndpoints);
-
-    const enabledEndpoints =
-        parseCsv(__ENV.ENABLED_ENDPOINTS);
-
-    if (enabledEndpoints.length > 0) {
-
-        Object.keys(endpoints).forEach(key => {
-            endpoints[key] = false;
-        });
-
-        enabledEndpoints.forEach(key => {
-
-            if (key in endpoints) {
-                endpoints[key] = true;
-            }
-        });
-    }
-
-    parseCsv(__ENV.DISABLED_ENDPOINTS)
-        .forEach(key => {
-
-            if (key in endpoints) {
-                endpoints[key] = false;
-            }
-        });
 
     Object.keys(defaultEndpoints)
         .forEach(key => {
@@ -286,7 +337,7 @@ function buildEndpointConfig(defaultEndpoints) {
             const envKey = toEndpointEnvKey(key);
 
             endpoints[key] = parseBoolean(
-                __ENV[envKey],
+                getEnvValue(envKey),
                 endpoints[key]
             );
         });
@@ -294,43 +345,64 @@ function buildEndpointConfig(defaultEndpoints) {
     return endpoints;
 }
 
+function buildEndpointRequestEnvOverrides(defaultEndpoints) {
+
+    const requestOverrides = {};
+
+    Object.keys(defaultEndpoints)
+        .forEach(key => {
+
+            const envKey =
+                toEndpointRequestsEnvKey(key);
+
+            const parsedCount = parsePositiveInteger(
+                getEnvValue(envKey),
+                undefined
+            );
+
+            if (parsedCount !== undefined) {
+                requestOverrides[key] = parsedCount;
+            }
+        });
+
+    return requestOverrides;
+}
+
 export const config = {
-    baseUrl: __ENV.BASE_URL || defaultConfig.baseUrl,
+    baseUrl: getEnvValue('BASE_URL') || defaultConfig.baseUrl,
 
     load: {
         vus: parsePositiveInteger(
-            __ENV.VUS,
+            getEnvValue('VUS'),
             defaultConfig.load.vus
         ),
         maxDuration:
-            __ENV.MAX_DURATION ||
+            getEnvValue('MAX_DURATION') ||
             defaultConfig.load.maxDuration,
+        loadAllDataMaxDuration:
+            getEnvValue('LOAD_ALL_DATA_MAX_DURATION') ||
+            defaultConfig.load.loadAllDataMaxDuration,
         gracefulStop:
-            __ENV.GRACEFUL_STOP ||
-            defaultConfig.load.gracefulStop
+            getEnvValue('GRACEFUL_STOP') ||
+            defaultConfig.load.gracefulStop,
+        setupTimeout:
+            getEnvValue('SETUP_TIMEOUT') ||
+            defaultConfig.load.setupTimeout
     },
 
     logRequests: parseBoolean(
-        __ENV.LOG_REQUESTS,
+        getEnvValue('LOG_REQUESTS'),
         defaultConfig.logRequests
     ),
 
     discovery: {
-        shellsPath:
-            __ENV.DISCOVER_SHELLS_PATH ||
-            defaultConfig.discovery.shellsPath,
-
-        submodelDescriptorsPath:
-            __ENV.DISCOVER_SUBMODEL_DESCRIPTORS_PATH ||
-            defaultConfig.discovery.submodelDescriptorsPath,
-
         pageLimit: parsePositiveInteger(
-            __ENV.DISCOVER_PAGE_LIMIT,
+            getEnvValue('DISCOVER_PAGE_LIMIT'),
             defaultConfig.discovery.pageLimit
         ),
 
-        maxDiscoveredIds: parsePositiveInteger(
-            __ENV.MAX_DISCOVERED_IDS,
+        maxDiscoveredIds: parseNonNegativeInteger(
+            getEnvValue('MAX_DISCOVERED_IDS'),
             defaultConfig.discovery.maxDiscoveredIds
         )
     },
@@ -339,9 +411,9 @@ export const config = {
         defaultConfig.endpoints,
         {
             ...getDefaultEndpointRequestsMap(defaultConfig.endpoints),
-            ...defaultConfig.endpointRequests
+            ...buildEndpointRequestEnvOverrides(defaultConfig.endpoints)
         },
-        __ENV.ENDPOINT_REQUESTS
+        getEnvValue('ENDPOINT_REQUESTS')
     ),
 
     endpoints: buildEndpointConfig(defaultConfig.endpoints)
