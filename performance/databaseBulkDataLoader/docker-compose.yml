@@ -13,7 +13,7 @@ services:
       BATCH_SIZE: ${BATCH_SIZE}
     extra_hosts:
       - host.docker.internal:host-gateway
-    command: ["sh", "-c", "sed -i 's/\r$//' /workspace/load.sh && sh /workspace/load.sh"]
+    command: ["sh", "-c", "tr -d '\r' < /workspace/load.sh > /tmp/load.sh && cp /workspace/check-schema.sql /workspace/truncate-db.sql /workspace/schema-generator.sql /workspace/load.sql /tmp/ && chmod +x /tmp/load.sh && sh /tmp/load.sh"]
     restart: "no"
 
 # Usage:
