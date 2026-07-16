@@ -13,7 +13,7 @@ services:
       BATCH_SIZE: ${BATCH_SIZE}
     extra_hosts:
       - host.docker.internal:host-gateway
-    command: ["sh", "/workspace/load.sh"]
+    command: ["sh", "-c", "sed -i 's/\r$//' /workspace/load.sh && sh /workspace/load.sh"]
     restart: "no"
 
 # Usage:
