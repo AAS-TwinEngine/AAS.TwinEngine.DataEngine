@@ -31,7 +31,7 @@ Then update at least `PG_CONN_STRING`.
 From this folder:
 
 ```bash
-docker compose up --build
+docker compose up
 ```
 
 The container will:
@@ -77,5 +77,5 @@ PG_CONN_STRING=postgres://username:password@your-server.postgres.database.azure.
 ## Notes
 
 1. No extra PostgreSQL container is created in this folder.
-2. Loader SQL and `.sql.inc` schema includes are preserved and processed as before.
+2. Loader SQL files are grouped under the `sql/` folder.
 3. The setup is independent from the `example` Compose project, except it reads schema include files from `example/postgres/schema`.

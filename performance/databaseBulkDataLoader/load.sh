@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
-REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
+WORKSPACE_DIR=/workspace
 
 PG_CONN_STRING="${PG_CONN_STRING:?PG_CONN_STRING environment variable is required}"
 ASSET_COUNT="${ASSET_COUNT:-1000}"
@@ -14,35 +14,18 @@ CONN_STRING=$PG_CONN_STRING
 TOTAL=$ASSET_COUNT
 
 MAX_ATTEMPTS=10
-STAGE_ROOT=/tmp/twinengine-loader
-SCHEMA_SOURCE_DIR=$REPO_ROOT/example/postgres/schema
+SQL_DIR=$WORKSPACE_DIR/sql
+SCHEMA_SOURCE_DIR=$WORKSPACE_DIR/schema
 
 if [ ! -d "$SCHEMA_SOURCE_DIR" ]; then
     echo "ERROR: schema source directory not found: $SCHEMA_SOURCE_DIR"
     exit 1
 fi
 
-stage_file() {
-    source_file=$1
-    target_file=$2
-    cp "$source_file" "$target_file"
-}
-
-stage_loader_files() {
-    rm -rf "$STAGE_ROOT"
-    mkdir -p "$STAGE_ROOT/loader" "$STAGE_ROOT/schema"
-
-    stage_file "$SCRIPT_DIR/check-schema.sql" "$STAGE_ROOT/loader/check-schema.sql"
-    stage_file "$SCRIPT_DIR/truncate-db.sql" "$STAGE_ROOT/loader/truncate-db.sql"
-    stage_file "$SCRIPT_DIR/schema-generator.sql" "$STAGE_ROOT/loader/schema-generator.sql"
-    stage_file "$SCRIPT_DIR/load.sql" "$STAGE_ROOT/loader/load.sql"
-
-    for schema_file in "$SCHEMA_SOURCE_DIR"/*.sql.inc
-    do
-        schema_name=$(basename "$schema_file")
-        stage_file "$schema_file" "$STAGE_ROOT/schema/$schema_name"
-    done
-}
+if [ ! -f "$SQL_DIR/check-schema.sql" ] || [ ! -f "$SQL_DIR/truncate-db.sql" ] || [ ! -f "$SQL_DIR/schema-generator.sql" ] || [ ! -f "$SQL_DIR/load.sql" ]; then
+    echo "ERROR: required SQL files not found under: $SQL_DIR"
+    exit 1
+fi
 
 psql_exec() {
     sql_file=$1
@@ -75,19 +58,17 @@ do
 done
 
 echo "PostgreSQL is ready."
-echo "Staging loader files into container..."
-stage_loader_files
 echo "Checking schema..."
 
-TABLE_EXISTS=$(psql_exec "$STAGE_ROOT/loader/check-schema.sql" -tA)
+TABLE_EXISTS=$(psql_exec "$SQL_DIR/check-schema.sql" -tA)
 TABLE_EXISTS=$(printf '%s' "$TABLE_EXISTS" | tr -d '[:space:]')
 
 if [ "$TABLE_EXISTS" = "t" ]; then
     echo "Schema already exists. Truncating existing data..."
-    psql_exec "$STAGE_ROOT/loader/truncate-db.sql"
+    psql_exec "$SQL_DIR/truncate-db.sql"
 else
     echo "Schema not found. Creating..."
-    psql_exec "$STAGE_ROOT/loader/schema-generator.sql"
+    psql_exec "$SQL_DIR/schema-generator.sql"
 fi
 
 START=1
@@ -110,7 +91,7 @@ do
         -v batch_start="$START" \
         -v batch_end="$END" \
         -c "SET app.asset_count = $CURRENT_BATCH_COUNT;" \
-        -f "$STAGE_ROOT/loader/load.sql"
+        -f "$SQL_DIR/load.sql"
 
     echo "Batch $START -> $END completed."
     START=$((END + 1))
