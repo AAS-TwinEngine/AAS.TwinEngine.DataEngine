@@ -2,7 +2,7 @@ import { config } from './helpers/config.js';
 import { discoverIds } from './helpers/setup.js';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.4/index.js';
 import {
-    getEndpointMetricNames,
+    endpointMetricNames,
     resolveScenarioByKey
 } from './helpers/scenarios.js';
 
@@ -98,30 +98,29 @@ export function executeEndpointScenario(data) {
     );
 }
 
-
 export function handleSummary(data) {
 
-    const metrics = data.metrics;
+    const output = {
+        stdout: textSummary(data)
+    };
 
     const csv = [
         [
-            "Metric",
-            "Avg(ms)",
-            "Min(ms)",
-            "Max(ms)",
-            "P90(ms)",
-            "P95(ms)"
-        ].join(",")
+            'Metric',
+            'Avg(ms)',
+            'Min(ms)',
+            'Max(ms)',
+            'P90(ms)',
+            'P95(ms)'
+        ].join(',')
     ];
 
-    const endpointMetrics =
-        [...new Set(getEndpointMetricNames())];
+    endpointMetricNames.forEach(metricName => {
 
-    endpointMetrics.forEach(metricName => {
+        const metric =
+            data.metrics[metricName];
 
-        const metric = metrics[metricName];
-
-        if (!metric || !metric.values) {
+        if (!metric?.values) {
             return;
         }
 
@@ -130,17 +129,31 @@ export function handleSummary(data) {
             metric.values.avg?.toFixed(2),
             metric.values.min?.toFixed(2),
             metric.values.max?.toFixed(2),
-            metric.values["p(90)"]?.toFixed(2),
-            metric.values["p(95)"]?.toFixed(2)
-        ].join(","));
+            metric.values['p(90)']?.toFixed(2),
+            metric.values['p(95)']?.toFixed(2)
+        ].join(','));
     });
 
-    return {
-        stdout: textSummary(data),
-        "results/summary.json":
-            JSON.stringify(data, null, 2),
+    const reportPath =
+        config.reports.outputPath;
 
-        "results/results.csv":
-            csv.join("\n")
-    };
+    if (config.reports.exportJson) {
+
+        output[
+            `${reportPath}/summary.json`
+        ] = JSON.stringify(
+            data,
+            null,
+            2
+        );
+    }
+
+    if (config.reports.exportCsv) {
+
+        output[
+            `${reportPath}/results.csv`
+        ] = csv.join('\n');
+    }
+
+    return output;
 }

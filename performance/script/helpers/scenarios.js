@@ -2,188 +2,196 @@ import encoding from 'k6/encoding';
 
 function randomItem(items) {
 
-	return items[
-		Math.floor(Math.random() * items.length)
-	];
+    return items[
+        Math.floor(
+            Math.random() * items.length
+        )
+    ];
 }
 
 function toBase64Url(value) {
 
-	return encoding.b64encode(
-		value,
-		'rawurl'
-	);
+    return encoding.b64encode(
+        value,
+        'rawurl'
+    );
 }
 
-function fromRandomShellId(pathBuilder) {
+function fromRandomId(
+    dataProperty,
+    pathBuilder
+) {
 
-	return ({ baseUrl, data }) => {
+    return ({ baseUrl, data }) => {
 
-		if (!data.shellIds || data.shellIds.length === 0) {
-			return null;
-		}
+        const ids =
+            data[dataProperty];
 
-		const id = toBase64Url(
-			randomItem(data.shellIds)
-		);
+        if (!ids || ids.length === 0) {
+            return null;
+        }
 
-		return `${baseUrl}${pathBuilder(id)}`;
-	};
-}
+        const encodedId =
+            toBase64Url(
+                randomItem(ids)
+            );
 
-function fromRandomSubmodelId(pathBuilder) {
-
-	return ({ baseUrl, data }) => {
-
-		if (!data.submodelIds || data.submodelIds.length === 0) {
-			return null;
-		}
-
-		const id = toBase64Url(
-			randomItem(data.submodelIds)
-		);
-
-		return `${baseUrl}${pathBuilder(id)}`;
-	};
+        return `${baseUrl}${pathBuilder(encodedId)}`;
+    };
 }
 
 export const endpointScenarios = [
-	{
-		key: 'getShells',
-		name: 'GetShells',
-		metricName: 'get_shells_duration',
-		resolveUrl: ({ baseUrl }) => `${baseUrl}/shells`
-	},
-	{
-		key: 'getShellById',
-		name: 'GetShellById',
-		metricName: 'get_shell_by_id_duration',
-		resolveUrl: fromRandomShellId(id => `/shells/${id}`)
-	},
-	{
-		key: 'getAssetInformation',
-		name: 'GetAssetInformation',
-		metricName: 'get_asset_information_duration',
-		resolveUrl: fromRandomShellId(
-			id => `/shells/${id}/asset-information`
-		)
-	},
-	{
-		key: 'getSubmodelReferences',
-		name: 'GetSubmodelReferences',
-		metricName: 'get_submodel_references_duration',
-		resolveUrl: fromRandomShellId(
-			id => `/shells/${id}/submodel-refs`
-		)
-	},
-	{
-		key: 'getShellDescriptors',
-		name: 'GetShellDescriptors',
-		metricName: 'get_shell_descriptors_duration',
-		resolveUrl: ({ baseUrl }) => `${baseUrl}/shell-descriptors`
-	},
-	{
-		key: 'getShellDescriptorById',
-		name: 'GetShellDescriptorById',
-		metricName: 'get_shell_descriptor_by_id_duration',
-		resolveUrl: fromRandomShellId(
-			id => `/shell-descriptors/${id}`
-		)
-	},
-	{
-		key: 'getSubmodelDescriptors',
-		name: 'GetSubmodelDescriptors',
-		metricName: 'get_submodel_descriptors_duration',
-		resolveUrl: ({ baseUrl }) => `${baseUrl}/submodel-descriptors`
-	},
-	{
-		key: 'getSubmodelDescriptorById',
-		name: 'GetSubmodelDescriptorById',
-		metricName: 'get_submodel_descriptor_by_id_duration',
-		resolveUrl: fromRandomSubmodelId(
-			id => `/submodel-descriptors/${id}`
-		)
-	},
-	{
-		key: 'getSubmodels',
-		name: 'GetSubmodels',
-		metricName: 'get_submodels_duration',
-		resolveUrl: ({ baseUrl }) => `${baseUrl}/submodels`
-	},
-	{
-		key: 'getSubmodelById',
-		name: 'GetSubmodelById',
-		metricName: 'get_submodel_by_id_duration',
-		resolveUrl: fromRandomSubmodelId(id => `/submodels/${id}`)
-	},
-	{
-		key: 'loadAllData',
-		name: 'LoadAllData',
-		metricName: 'load_all_data_duration',
-		requestMode: 'paged',
-		resolveUrl: ({ baseUrl }) => `${baseUrl}/shell-descriptors`
-	}
+
+    {
+        key: 'getShells',
+        name: 'GetShells',
+        metricName: 'get_shells_duration',
+        resolveUrl: ({ baseUrl }) =>
+            `${baseUrl}/shells`
+    },
+
+    {
+        key: 'getShellById',
+        name: 'GetShellById',
+        metricName: 'get_shell_by_id_duration',
+        resolveUrl: fromRandomId(
+            'shellIds',
+            id => `/shells/${id}`
+        )
+    },
+
+    {
+        key: 'getAssetInformation',
+        name: 'GetAssetInformation',
+        metricName: 'get_asset_information_duration',
+        resolveUrl: fromRandomId(
+            'shellIds',
+            id => `/shells/${id}/asset-information`
+        )
+    },
+
+    {
+        key: 'getSubmodelReferences',
+        name: 'GetSubmodelReferences',
+        metricName: 'get_submodel_references_duration',
+        resolveUrl: fromRandomId(
+            'shellIds',
+            id => `/shells/${id}/submodel-refs`
+        )
+    },
+
+    {
+        key: 'getShellDescriptors',
+        name: 'GetShellDescriptors',
+        metricName: 'get_shell_descriptors_duration',
+        resolveUrl: ({ baseUrl }) =>
+            `${baseUrl}/shell-descriptors`
+    },
+
+    {
+        key: 'getShellDescriptorById',
+        name: 'GetShellDescriptorById',
+        metricName: 'get_shell_descriptor_by_id_duration',
+        resolveUrl: fromRandomId(
+            'shellIds',
+            id => `/shell-descriptors/${id}`
+        )
+    },
+
+    {
+        key: 'getSubmodelDescriptors',
+        name: 'GetSubmodelDescriptors',
+        metricName: 'get_submodel_descriptors_duration',
+        resolveUrl: ({ baseUrl }) =>
+            `${baseUrl}/submodel-descriptors`
+    },
+
+    {
+        key: 'getSubmodelDescriptorById',
+        name: 'GetSubmodelDescriptorById',
+        metricName: 'get_submodel_descriptor_by_id_duration',
+        resolveUrl: fromRandomId(
+            'submodelIds',
+            id => `/submodel-descriptors/${id}`
+        )
+    },
+
+    {
+        key: 'getSubmodels',
+        name: 'GetSubmodels',
+        metricName: 'get_submodels_duration',
+        resolveUrl: ({ baseUrl }) =>
+            `${baseUrl}/submodels`
+    },
+
+    {
+        key: 'getSubmodelById',
+        name: 'GetSubmodelById',
+        metricName: 'get_submodel_by_id_duration',
+        resolveUrl: fromRandomId(
+            'submodelIds',
+            id => `/submodels/${id}`
+        )
+    },
+
+    {
+        key: 'loadAllData',
+        name: 'LoadAllData',
+        metricName: 'load_all_data_duration',
+        requestMode: 'paged',
+        resolveUrl: ({ baseUrl }) =>
+            `${baseUrl}/shell-descriptors`
+    }
 ];
 
-export function resolveExecutableScenarios(config, data) {
+const endpointScenarioMap =
+    Object.fromEntries(
+        endpointScenarios.map(
+            endpoint => [
+                endpoint.key,
+                endpoint
+            ]
+        )
+    );
 
-	return endpointScenarios
-		.filter(endpoint => config.endpoints[endpoint.key])
-		.map(endpoint => {
+export const endpointMetricNames =
+    endpointScenarios.map(
+        endpoint => endpoint.metricName
+    );
 
-			const url = endpoint.resolveUrl({
-				baseUrl: config.baseUrl,
-				data
-			});
+export function resolveScenarioByKey(
+    config,
+    data,
+    endpointKey
+) {
 
-			if (!url) {
-				return null;
-			}
+    const endpoint =
+        endpointScenarioMap[
+            endpointKey
+        ];
 
-			return {
-				key: endpoint.key,
-				name: endpoint.name,
-				metricName: endpoint.metricName,
-				requestMode: endpoint.requestMode,
-				url
-			};
-		})
-		.filter(Boolean);
-}
+    if (
+        !endpoint ||
+        !config.endpoints[
+            endpointKey
+        ]
+    ) {
+        return null;
+    }
 
-export function resolveScenarioByKey(config, data, endpointKey) {
+    const url =
+        endpoint.resolveUrl({
+            baseUrl:
+                config.baseUrl,
+            data
+        });
 
-	if (!endpointKey || !config.endpoints[endpointKey]) {
-		return null;
-	}
+    if (!url) {
+        return null;
+    }
 
-	const endpoint = endpointScenarios
-		.find(item => item.key === endpointKey);
-
-	if (!endpoint) {
-		return null;
-	}
-
-	const url = endpoint.resolveUrl({
-		baseUrl: config.baseUrl,
-		data
-	});
-
-	if (!url) {
-		return null;
-	}
-
-	return {
-		key: endpoint.key,
-		name: endpoint.name,
-		metricName: endpoint.metricName,
-		requestMode: endpoint.requestMode,
-		url
-	};
-}
-
-export function getEndpointMetricNames() {
-
-	return endpointScenarios
-		.map(endpoint => endpoint.metricName);
+    return {
+        ...endpoint,
+        url
+    };
 }

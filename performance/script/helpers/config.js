@@ -17,50 +17,24 @@ const defaultConfig = {
     },
 
     endpoints: {
-        getShells: {
-            enabled: true,
-            requests: 10
-        },
-        getShellById: {
-            enabled: true,
-            requests: 10
-        },
-        getAssetInformation: {
-            enabled: true,
-            requests: 10
-        },
-        getSubmodelReferences: {
-            enabled: true,
-            requests: 10
-        },
-        getShellDescriptors: {
-            enabled: true,
-            requests: 10
-        },
-        getShellDescriptorById: {
-            enabled: true,
-            requests: 10
-        },
-        getSubmodelDescriptors: {
-            enabled: true,
-            requests: 10
-        },
-        getSubmodelDescriptorById: {
-            enabled: true,
-            requests: 10
-        },
-        getSubmodels: {
-            enabled: false,
-            requests: 10
-        },
-        getSubmodelById: {
-            enabled: true,
-            requests: 10
-        },
-        loadAllData: {
-            enabled: false,
-            requests: 2
-        }
+        getShells: { enabled: true, requests: 10 },
+        getShellById: { enabled: true, requests: 10 },
+        getAssetInformation: { enabled: true, requests: 10 },
+        getSubmodelReferences: { enabled: true, requests: 10 },
+        getShellDescriptors: { enabled: true, requests: 10 },
+        getShellDescriptorById: { enabled: true, requests: 10 },
+        getSubmodelDescriptors: { enabled: true, requests: 10 },
+        getSubmodelDescriptorById: { enabled: true, requests: 10 },
+        getSubmodels: { enabled: false, requests: 10 },
+        getSubmodelById: { enabled: true, requests: 10 },
+        loadAllData: { enabled: false, requests: 2 }
+    },
+    reports: {
+        outputPath: "results",
+
+        exportCsv: true,
+        exportJson: true,
+        exportHtml: true
     }
 };
 
@@ -105,13 +79,12 @@ function loadDotEnv() {
 
         return envValues;
     }
-    catch (error) {
+    catch {
         return {};
     }
 }
 
-const fileEnv =
-    loadDotEnv();
+const fileEnv = loadDotEnv();
 
 function getEnvValue(key) {
 
@@ -128,7 +101,8 @@ function parseBoolean(value, fallback) {
         return fallback;
     }
 
-    const normalized = String(value).trim().toLowerCase();
+    const normalized =
+        String(value).trim().toLowerCase();
 
     if (["true", "1", "yes", "y", "on"].includes(normalized)) {
         return true;
@@ -147,7 +121,8 @@ function parsePositiveInteger(value, fallback) {
         return fallback;
     }
 
-    const parsed = Number.parseInt(value, 10);
+    const parsed =
+        Number.parseInt(value, 10);
 
     if (!Number.isFinite(parsed) || parsed < 1) {
         return fallback;
@@ -162,156 +137,14 @@ function parseNonNegativeInteger(value, fallback) {
         return fallback;
     }
 
-    const parsed = Number.parseInt(value, 10);
+    const parsed =
+        Number.parseInt(value, 10);
 
     if (!Number.isFinite(parsed) || parsed < 0) {
         return fallback;
     }
 
     return parsed;
-}
-
-function parsePositiveNumber(value, fallback) {
-
-    if (value === undefined) {
-        return fallback;
-    }
-
-    const parsed = Number.parseFloat(value);
-
-    if (!Number.isFinite(parsed) || parsed < 0) {
-        return fallback;
-    }
-
-    return parsed;
-}
-
-function parseEndpointCounts(value) {
-
-    const counts = {};
-
-    if (!value) {
-        return counts;
-    }
-
-    String(value)
-        .split(",")
-        .map(item => item.trim())
-        .filter(Boolean)
-        .forEach(entry => {
-
-        const separatorIndex = entry.indexOf(':');
-
-        if (separatorIndex < 1) {
-            return;
-        }
-
-        const endpointKey =
-            entry.substring(0, separatorIndex).trim();
-
-        const countValue =
-            entry.substring(separatorIndex + 1).trim();
-
-        const parsedCount = Number.parseInt(countValue, 10);
-
-        if (
-            !endpointKey ||
-            !Number.isFinite(parsedCount) ||
-            parsedCount < 1
-        ) {
-            return;
-        }
-
-        counts[endpointKey] = parsedCount;
-    });
-
-    return counts;
-}
-
-function endpointEnabledByDefault(endpointValue) {
-
-    if (typeof endpointValue === 'boolean') {
-        return endpointValue;
-    }
-
-    return endpointValue?.enabled !== false;
-}
-
-function endpointRequestsByDefault(endpointValue) {
-
-    if (
-        endpointValue &&
-        typeof endpointValue === 'object' &&
-        endpointValue.requests !== undefined
-    ) {
-        return endpointValue.requests;
-    }
-
-    return 1;
-}
-
-function getDefaultEndpointEnabledMap(defaultEndpoints) {
-
-    const endpointEnabled = {};
-
-    Object.keys(defaultEndpoints)
-        .forEach(key => {
-            endpointEnabled[key] = endpointEnabledByDefault(
-                defaultEndpoints[key]
-            );
-        });
-
-    return endpointEnabled;
-}
-
-function getDefaultEndpointRequestsMap(defaultEndpoints) {
-
-    const endpointRequests = {};
-
-    Object.keys(defaultEndpoints)
-        .forEach(key => {
-
-            const parsedRequestCount = Number.parseInt(
-                endpointRequestsByDefault(defaultEndpoints[key]),
-                10
-            );
-
-            if (
-                Number.isFinite(parsedRequestCount) &&
-                parsedRequestCount > 0
-            ) {
-                endpointRequests[key] = parsedRequestCount;
-            }
-        });
-
-    return endpointRequests;
-}
-
-function buildEndpointRequestConfig(defaultEndpoints, defaultRequests, envValue) {
-
-    const requests = {
-        ...defaultRequests,
-        ...parseEndpointCounts(envValue)
-    };
-
-    Object.keys(requests)
-        .forEach(key => {
-
-            const parsedCount = Number.parseInt(requests[key], 10);
-
-            if (
-                !(key in defaultEndpoints) ||
-                !Number.isFinite(parsedCount) ||
-                parsedCount < 1
-            ) {
-                delete requests[key];
-                return;
-            }
-
-            requests[key] = parsedCount;
-        });
-
-    return requests;
 }
 
 function toEndpointEnvKey(endpointKey) {
@@ -326,65 +159,67 @@ function toEndpointRequestsEnvKey(endpointKey) {
     return `${toEndpointEnvKey(endpointKey)}_REQUESTS`;
 }
 
-function buildEndpointConfig(defaultEndpoints) {
+function buildEndpoints() {
 
-    const endpoints =
-        getDefaultEndpointEnabledMap(defaultEndpoints);
+    const endpoints = {};
+    const endpointRequests = {};
 
-    Object.keys(defaultEndpoints)
+    Object.keys(defaultConfig.endpoints)
         .forEach(key => {
 
-            const envKey = toEndpointEnvKey(key);
+            const endpoint =
+                defaultConfig.endpoints[key];
 
             endpoints[key] = parseBoolean(
-                getEnvValue(envKey),
-                endpoints[key]
-            );
-        });
-
-    return endpoints;
-}
-
-function buildEndpointRequestEnvOverrides(defaultEndpoints) {
-
-    const requestOverrides = {};
-
-    Object.keys(defaultEndpoints)
-        .forEach(key => {
-
-            const envKey =
-                toEndpointRequestsEnvKey(key);
-
-            const parsedCount = parsePositiveInteger(
-                getEnvValue(envKey),
-                undefined
+                getEnvValue(
+                    toEndpointEnvKey(key)
+                ),
+                endpoint.enabled
             );
 
-            if (parsedCount !== undefined) {
-                requestOverrides[key] = parsedCount;
-            }
+            endpointRequests[key] =
+                parsePositiveInteger(
+                    getEnvValue(
+                        toEndpointRequestsEnvKey(key)
+                    ),
+                    endpoint.requests
+                );
         });
 
-    return requestOverrides;
+    return {
+        endpoints,
+        endpointRequests
+    };
 }
+
+const endpointConfig =
+    buildEndpoints();
 
 export const config = {
-    baseUrl: getEnvValue('BASE_URL') || defaultConfig.baseUrl,
+
+    baseUrl:
+        getEnvValue('BASE_URL') ||
+        defaultConfig.baseUrl,
 
     load: {
+
         vus: parsePositiveInteger(
             getEnvValue('VUS'),
             defaultConfig.load.vus
         ),
+
         maxDuration:
             getEnvValue('MAX_DURATION') ||
             defaultConfig.load.maxDuration,
+
         loadAllDataMaxDuration:
             getEnvValue('LOAD_ALL_DATA_MAX_DURATION') ||
             defaultConfig.load.loadAllDataMaxDuration,
+
         gracefulStop:
             getEnvValue('GRACEFUL_STOP') ||
             defaultConfig.load.gracefulStop,
+
         setupTimeout:
             getEnvValue('SETUP_TIMEOUT') ||
             defaultConfig.load.setupTimeout
@@ -396,6 +231,7 @@ export const config = {
     ),
 
     discovery: {
+
         pageLimit: parsePositiveInteger(
             getEnvValue('DISCOVER_PAGE_LIMIT'),
             defaultConfig.discovery.pageLimit
@@ -407,14 +243,25 @@ export const config = {
         )
     },
 
-    endpointRequests: buildEndpointRequestConfig(
-        defaultConfig.endpoints,
-        {
-            ...getDefaultEndpointRequestsMap(defaultConfig.endpoints),
-            ...buildEndpointRequestEnvOverrides(defaultConfig.endpoints)
-        },
-        getEnvValue('ENDPOINT_REQUESTS')
+   reports: {
+    outputPath:
+        getEnvValue('REPORT_OUTPUT_PATH') ||
+        'results',
+
+    exportCsv: parseBoolean(
+        getEnvValue('EXPORT_CSV'),
+        true
     ),
 
-    endpoints: buildEndpointConfig(defaultConfig.endpoints)
+    exportJson: parseBoolean(
+        getEnvValue('EXPORT_JSON'),
+        true
+    )
+    },
+
+    endpoints:
+        endpointConfig.endpoints,
+
+    endpointRequests:
+        endpointConfig.endpointRequests
 };

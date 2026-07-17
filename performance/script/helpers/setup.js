@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { config } from './config.js';
 
-const SHELLS_PATH = '/shells';
+const SHELLS_ENDPOINT = '/shells';
 const SAMPLE_LOG_COUNT = 10;
 
 function asArray(payload) {
@@ -10,11 +10,11 @@ function asArray(payload) {
         return payload;
     }
 
-    if (payload && Array.isArray(payload.result)) {
+    if (Array.isArray(payload?.result)) {
         return payload.result;
     }
 
-    if (payload && Array.isArray(payload.items)) {
+    if (Array.isArray(payload?.items)) {
         return payload.items;
     }
 
@@ -23,17 +23,21 @@ function asArray(payload) {
 
 function extractId(item) {
 
-    return item?.id ||
+    return (
+        item?.id ||
         item?.identification?.id ||
-        null;
+        null
+    );
 }
 
 function extractCursor(payload) {
 
-    return payload?.paging_metadata?.cursor ||
+    return (
+        payload?.paging_metadata?.cursor ||
         payload?.pagingMetadata?.cursor ||
         payload?.cursor ||
-        null;
+        null
+    );
 }
 
 function extractSubmodelIds(shell) {
@@ -44,7 +48,10 @@ function extractSubmodelIds(shell) {
 
         for (const key of reference?.keys || []) {
 
-            if (key?.type === 'Submodel' && key?.value) {
+            if (
+                key?.type === 'Submodel' &&
+                key?.value
+            ) {
                 submodelIds.push(key.value);
             }
         }
@@ -53,49 +60,106 @@ function extractSubmodelIds(shell) {
     return submodelIds;
 }
 
-function logDiscoveredIdSamples(shellIds, submodelIds) {
+function buildShellUrl(cursor) {
 
-    const shellIdSamples = shellIds
-        .slice(0, SAMPLE_LOG_COUNT);
+    const query = [
+        `limit=${config.discovery.pageLimit}`
+    ];
 
-    const submodelIdSamples = submodelIds
-        .slice(0, SAMPLE_LOG_COUNT);
+    if (cursor) {
 
-    console.log(
-        `Sample shellIds (${shellIdSamples.length}): ${JSON.stringify(shellIdSamples)}`
-    );
+        query.push(
+            `cursor=${encodeURIComponent(cursor)}`
+        );
+    }
 
-    console.log(
-        `Sample submodelIds (${submodelIdSamples.length}): ${JSON.stringify(submodelIdSamples)}`
+    return `${config.baseUrl}${SHELLS_ENDPOINT}?${query.join('&')}`;
+}
+
+function reachedDiscoveryLimit(shellIds) {
+
+    return (
+        config.discovery.maxDiscoveredIds > 0 &&
+        shellIds.size >= config.discovery.maxDiscoveredIds
     );
 }
 
-function discoverShellAndSubmodelIds() {
+function processShells(
+    shells,
+    shellIds,
+    submodelIds
+) {
 
-    const shellIds = new Set();
-    const submodelIds = new Set();
-    const limit = config.discovery.pageLimit;
-    let cursor = null;
-    let reachedMaxDiscoveredIds = false;
+    for (const shell of shells) {
 
-    do {
+        const shellId =
+            extractId(shell);
 
-        const queryParameters = [`limit=${limit}`];
-
-        if (cursor) {
-            queryParameters.push(
-                `cursor=${encodeURIComponent(cursor)}`
-            );
+        if (shellId) {
+            shellIds.add(shellId);
         }
 
-        const url = `${config.baseUrl}${SHELLS_PATH}?${queryParameters.join('&')}`;
+        extractSubmodelIds(shell)
+            .forEach(id =>
+                submodelIds.add(id)
+            );
+
+        if (
+            reachedDiscoveryLimit(shellIds)
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Log a sample of discovered IDs to the console for debugging purposes
+function logSamples(
+    shellIds,
+    submodelIds
+) {
+
+    console.log(
+        `Sample shellIds: ${JSON.stringify(
+            shellIds.slice(0, SAMPLE_LOG_COUNT)
+        )}`
+    );
+
+    console.log(
+        `Sample submodelIds: ${JSON.stringify(
+            submodelIds.slice(0, SAMPLE_LOG_COUNT)
+        )}`
+    );
+}
+
+export function discoverIds() {
+
+    console.log(
+        '=== Discovering IDs ==='
+    );
+
+    const shellIds =
+        new Set();
+
+    const submodelIds =
+        new Set();
+
+    let cursor = null;
+    let stopDiscovery = false;
+
+    do {
 
         try {
 
             const response =
-                http.get(url);
+                http.get(
+                    buildShellUrl(cursor)
+                );
 
-            if (response.status !== 200) {
+            if (
+                response.status !== 200
+            ) {
 
                 console.error(
                     `Failed discovering shells: ${response.status}`
@@ -104,71 +168,55 @@ function discoverShellAndSubmodelIds() {
                 break;
             }
 
-            const payload = response.json();
-            const shells = asArray(payload);
+            const payload =
+                response.json();
 
-            for (const shell of shells) {
+            const shells =
+                asArray(payload);
 
-                const shellId = extractId(shell);
+            stopDiscovery =
+                processShells(
+                    shells,
+                    shellIds,
+                    submodelIds
+                );
 
-                if (shellId) {
-                    shellIds.add(shellId);
-                }
-
-                extractSubmodelIds(shell)
-                    .forEach(submodelId => {
-                        submodelIds.add(submodelId);
-                    });
-
-                if (
-                    config.discovery.maxDiscoveredIds > 0 &&
-                    shellIds.size >= config.discovery.maxDiscoveredIds
-                ) {
-                    reachedMaxDiscoveredIds = true;
-                    break;
-                }
-            }
-
-            if (reachedMaxDiscoveredIds) {
-                cursor = null;
-            }
-            else {
-                cursor = extractCursor(payload);
-            }
+            cursor =
+                stopDiscovery
+                    ? null
+                    : extractCursor(payload);
 
             console.log(
-                `Discovered ${shellIds.size} shell ids and ${submodelIds.size} submodel ids so far` +
-                `${cursor ? `, next cursor: ${cursor}` : ''}`
+                `Discovered ${shellIds.size} shell ids and ${submodelIds.size} submodel ids` +
+                (cursor
+                    ? ` | next cursor: ${cursor}`
+                    : '')
             );
         }
         catch (error) {
 
             console.error(
-                `Exception discovering shells: ${error}`
+                `Discovery failed: ${error}`
             );
 
             break;
         }
     }
     while (cursor);
-    
-    const discoveredShellIds = [...shellIds];
-    const discoveredSubmodelIds = [...submodelIds];
 
-    logDiscoveredIdSamples(
-        discoveredShellIds,
-        discoveredSubmodelIds
-    );
+    const discoveredShellIds =
+        [...shellIds];
+
+    const discoveredSubmodelIds =
+        [...submodelIds];
+
+    // logSamples(
+    //     discoveredShellIds,
+    //     discoveredSubmodelIds
+    // ); - Commented out to reduce console output during performance tests
 
     return {
         shellIds: discoveredShellIds,
         submodelIds: discoveredSubmodelIds
     };
-}
-
-export function discoverIds() {
-
-    console.log("=== Discovering IDs ===");
-
-    return discoverShellAndSubmodelIds();
 }

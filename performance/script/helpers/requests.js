@@ -1,36 +1,38 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import { Trend, Counter } from 'k6/metrics';
+
 import { config } from './config.js';
 import { endpointScenarios } from './scenarios.js';
 
 export const requestFailures =
     new Counter('request_failures');
 
-const durationMetricsByName = {};
+const durationMetrics = {};
 
 endpointScenarios.forEach(endpoint => {
 
-    durationMetricsByName[endpoint.metricName] =
-    new Trend(endpoint.metricName, true);
+    durationMetrics[endpoint.metricName] =
+        new Trend(endpoint.metricName, true);
 });
 
 function extractCursor(payload) {
 
-    return payload?.paging_metadata?.cursor ||
+    return (
+        payload?.paging_metadata?.cursor ||
         payload?.pagingMetadata?.cursor ||
         payload?.cursor ||
-        null;
+        null
+    );
 }
 
-function addDurationMetric(metricName, duration) {
+function addDurationMetric(
+    metricName,
+    duration
+) {
 
-    const metric =
-        durationMetricsByName[metricName];
-
-    if (metric) {
-        metric.add(duration);
-    }
+    durationMetrics[metricName]
+        ?.add(duration);
 }
 
 function createRequestParams(name) {
@@ -42,7 +44,25 @@ function createRequestParams(name) {
     };
 }
 
-function logFailure(name, response) {
+function logSuccess(
+    name,
+    duration,
+    extra = ''
+) {
+
+    if (!config.logRequests) {
+        return;
+    }
+
+    console.log(
+        `[SUCCESS] ${name} | ${duration.toFixed(2)} ms ${extra}`
+    );
+}
+
+function logFailure(
+    name,
+    response
+) {
 
     requestFailures.add(1);
 
@@ -50,9 +70,47 @@ function logFailure(name, response) {
         `[FAILED] ${name} | ${response.status}`
     );
 
-    console.error(
-        response.body.substring(0, 500)
+    if (response.body) {
+
+        console.error(
+            response.body.substring(0, 500)
+        );
+    }
+}
+
+function validateResponse(
+    name,
+    response
+) {
+
+    const success = check(response, {
+        [`${name} status 200`]:
+            r => r.status === 200
+    });
+
+    if (!success) {
+        logFailure(name, response);
+    }
+
+    return success;
+}
+
+function sendRequest(
+    name,
+    url
+) {
+
+    const response = http.get(
+        url,
+        createRequestParams(name)
     );
+
+    validateResponse(
+        name,
+        response
+    );
+
+    return response;
 }
 
 export function executeRequest(
@@ -61,30 +119,18 @@ export function executeRequest(
     metricName
 ) {
 
-    const response = http.get(
-        url,
-        createRequestParams(name)
-    );
+    const response =
+        sendRequest(name, url);
 
     addDurationMetric(
         metricName,
         response.timings.duration
     );
 
-    const success = check(response, {
-        [`${name} status 200`]:
-            r => r.status === 200
-    });
-
-    if (config.logRequests && success) {
-
-        console.log(
-            `[SUCCESS] ${name} | ${response.status} | ${response.timings.duration} ms`
-        );
-    }
-    else if(!success) {
-        logFailure(name, response);
-    }
+    logSuccess(
+        name,
+        response.timings.duration
+    );
 
     return response;
 }
@@ -96,52 +142,56 @@ export function executePagedRequest(
 ) {
 
     let nextUrl = url;
+
     let totalDuration = 0;
     let pageCount = 0;
 
     while (nextUrl) {
 
-        const response = http.get(
-            nextUrl,
-            createRequestParams(name)
-        );
+        const response =
+            sendRequest(
+                name,
+                nextUrl
+            );
 
-        totalDuration += response.timings.duration;
-        pageCount += 1;
-
-        const success = check(response, {
-            [`${name} status 200`]:
-                r => r.status === 200
-        });
-
-        if (!success) {
-            logFailure(name, response);
+        if (response.status !== 200) {
             return response;
         }
 
-        const payload = response.json();
-        const cursor = extractCursor(payload);
+        totalDuration +=
+            response.timings.duration;
 
-        if (config.logRequests) {
-            console.log(
-                `[SUCCESS] ${name} | page ${pageCount} | ${response.status} | ${response.timings.duration} ms` +
-                `${cursor ? ` | next cursor: ${cursor}` : ' | completed'}`
-            );
-        }
+        pageCount++;
+
+        const payload =
+            response.json();
+
+        const cursor =
+            extractCursor(payload);
+
+        logSuccess(
+            name,
+            response.timings.duration,
+            `| page ${pageCount}`
+        );
 
         if (!cursor) {
-            nextUrl = null;
             break;
         }
 
-        nextUrl = `${url}?cursor=${encodeURIComponent(cursor)}`;
+        nextUrl =
+            `${url}?cursor=${encodeURIComponent(cursor)}`;
     }
 
-    addDurationMetric(metricName, totalDuration);
+    addDurationMetric(
+        metricName,
+        totalDuration
+    );
 
     if (config.logRequests) {
+
         console.log(
-            `[SUCCESS] ${name} | fetched ${pageCount} pages | total ${totalDuration} ms`
+            `[SUCCESS] ${name} | ${pageCount} pages | total ${totalDuration.toFixed(2)} ms`
         );
     }
 
