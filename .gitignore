@@ -43,3 +43,9 @@ www/
 TestResults/
 $RECYCLE.BIN/
 .sonarqube/
+
+# K6 generated outputs (keep folder with .gitkeep)
+performance/script/results/*.csv
+performance/script/results/*.json
+performance/script/results/*.html
+!performance/script/results/.gitkeep
