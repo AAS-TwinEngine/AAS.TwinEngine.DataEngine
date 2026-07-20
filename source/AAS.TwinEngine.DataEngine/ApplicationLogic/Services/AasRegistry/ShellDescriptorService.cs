@@ -1,8 +1,11 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -14,8 +17,10 @@ public class ShellDescriptorService(
     IShellDescriptorDataHandler shellDescriptorDataHandler,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
-    ILogger<ShellDescriptorService> logger) : IShellDescriptorService
+    ILogger<ShellDescriptorService> logger,
+    IOptions<TemplateManagementConfig> templateManagementConfig) : IShellDescriptorService
 {
+    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
     public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
@@ -26,16 +31,7 @@ public class ShellDescriptorService(
                 .ConfigureAwait(false);
 
             var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
-            var shellDescriptors = new List<ShellDescriptor>(shellDescriptorMetadataList.Count);
-
-            foreach (var shellDescriptorMetadata in shellDescriptorMetadataList)
-            {
-                var shellDescriptor = await TryBuildShellDescriptorAsync(shellDescriptorMetadata, cancellationToken).ConfigureAwait(false);
-                if (shellDescriptor is not null)
-                {
-                    shellDescriptors.Add(shellDescriptor);
-                }
-            }
+            var shellDescriptors = await BuildShellDescriptorsInParallelAsync(shellDescriptorMetadataList, cancellationToken).ConfigureAwait(false);
 
             return new ShellDescriptors
             {
@@ -117,6 +113,28 @@ public class ShellDescriptorService(
             logger.LogError(ex, "Failed to process ShellDescriptor. DescriptorId: {DescriptorId}. Reason: {Reason}. Continuing with remaining descriptors.", shellDescriptorMetadata.Id, ex.Message);
             return null;
         }
+    }
+
+    private async Task<List<ShellDescriptor>> BuildShellDescriptorsInParallelAsync(
+        List<ShellDescriptorMetaData> metadataList,
+        CancellationToken cancellationToken)
+    {
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
+        var tasks = metadataList.Select(async metadata =>
+        {
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await TryBuildShellDescriptorAsync(metadata, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _ = semaphore.Release();
+            }
+        });
+
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return [.. results.OfType<ShellDescriptor>()];
     }
 
     private async Task<ShellDescriptor> BuildShellDescriptorAsync(
