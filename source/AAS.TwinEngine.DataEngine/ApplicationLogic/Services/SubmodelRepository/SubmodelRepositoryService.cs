@@ -23,6 +23,7 @@ public class SubmodelRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryTemplateService aasRepositoryTemplateService,
+    IHttpClientFactory httpClientFactory,
     IOptions<TemplateManagementConfig> templateManagementConfig) : ISubmodelRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRepository.ConcurrentOperationsLimit;
@@ -220,5 +221,51 @@ public class SubmodelRepositoryService(
         {
             throw new InternalDataProcessingException(ex);
         }
+    }
+
+    public async Task<FileAttachmentResult> GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        return await ExecuteWithExceptionHandlingAsync(async () =>
+        {
+            // Reuse existing element resolution to validate submodel + path and extract file metadata.
+            var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+
+            if (element is not AasCore.Aas3_1.File fileElement)
+            {
+                throw new InvalidSubmodelElementTypeException(idShortPath);
+            }
+
+            var fileUrl = fileElement.Value;
+            if (string.IsNullOrWhiteSpace(fileUrl))
+            {
+                throw new SubmodelElementNotFoundException(idShortPath);
+            }
+
+            var contentType = fileElement.ContentType ?? "application/octet-stream";
+            var fileName = Path.GetFileName(fileUrl);
+
+            // Stream the binary directly from the URL provided by the plugin in the File element value.
+            var httpClient = httpClientFactory.CreateClient();
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient
+                    .GetAsync(fileUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (TaskCanceledException)
+            {
+                throw new PluginNotAvailableException();
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                response.Dispose();
+                throw new SubmodelElementNotFoundException(idShortPath);
+            }
+
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            return new FileAttachmentResult(stream, contentType, string.IsNullOrWhiteSpace(fileName) ? null : fileName);
+        }).ConfigureAwait(false);
     }
 }

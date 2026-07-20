@@ -28,5 +28,7 @@ public class GeneralConfig
     /// </summary>
     public Uri? DataEngineRepositoryBaseUrl { get; set; }
 
+    public SubmodelRepositoryConfig SubmodelRepository { get; set; } = new();
+
     // Note: Serilog reads directly from IConfiguration, not via POCO
 }

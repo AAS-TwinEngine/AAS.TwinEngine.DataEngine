@@ -23,4 +23,6 @@ public interface ISubmodelRepositoryService
         int? limit,
         string? cursor,
         CancellationToken cancellationToken);
+
+    Task<FileAttachmentResult> GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken);
 }

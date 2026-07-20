@@ -18,6 +18,8 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
+using System.Net;
+
 using ISubmodelTemplateService = AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.ISubmodelTemplateService;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository;
@@ -29,6 +31,7 @@ public class SubmodelRepositoryServiceTests
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly IAasRepositoryTemplateService _aasRepositoryTemplateService = Substitute.For<IAasRepositoryTemplateService>();
+    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly ILogger<SubmodelRepositoryService> _logger = Substitute.For<ILogger<SubmodelRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementOptions;
     private readonly SubmodelRepositoryService _sut;
@@ -53,6 +56,7 @@ public class SubmodelRepositoryServiceTests
             _pluginDataHandler,
             _pluginManifestConflictHandler,
             _aasRepositoryTemplateService,
+            _httpClientFactory,
             _templateManagementOptions);
     }
 
@@ -584,4 +588,116 @@ public class SubmodelRepositoryServiceTests
         await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
             _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
     }
+
+    // ── GetFileAttachmentAsync ────────────────────────────────────────────────
+
+    private static HttpClient CreateFakeHttpClient(HttpStatusCode statusCode, Stream? responseStream = null)
+    {
+        var content = responseStream is not null
+            ? (HttpContent)new StreamContent(responseStream)
+            : new ByteArrayContent([]);
+        var messageHandler = new FakeHttpMessageHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(statusCode) { Content = content }));
+        return new HttpClient(messageHandler) { BaseAddress = new Uri("https://fake-plugin.local") };
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_WhenElementIsFileWithContentType_ReturnsResult()
+    {
+        const string IdShortPath = "Documents.ProductImage";
+        const string ContentType = "image/png";
+        const string FileUrl = "https://fake-plugin.local/files/product.png";
+
+        var fileElement = new AasCore.Aas3_1.File(contentType: ContentType) { Value = FileUrl, IdShort = "ProductImage" };
+        var template = TestData.CreateSubmodelWithElement(fileElement, IdShortPath);
+
+        _templateService.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler.TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>()).Returns(CreateSubmodelTreeNode(""));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>(), IdShortPath).Returns(fileElement);
+
+        using var fileStream = new MemoryStream(new byte[] { 0xFF, 0xD8 });
+        _httpClientFactory.CreateClient().Returns(CreateFakeHttpClient(HttpStatusCode.OK, fileStream));
+
+        var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
+
+        Assert.Equal(ContentType, result.ContentType);
+        Assert.Equal("product.png", result.FileName);
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_WhenElementIsNotFile_ThrowsInvalidSubmodelElementTypeException()
+    {
+        const string IdShortPath = "ManufacturerName";
+        var property = new Property(DataTypeDefXsd.String) { IdShort = "ManufacturerName" };
+        var template = TestData.CreateSubmodelWithElement(property, IdShortPath);
+
+        _templateService.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler.TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>()).Returns(CreateSubmodelTreeNode(""));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>(), IdShortPath).Returns(property);
+
+        await Assert.ThrowsAsync<InvalidSubmodelElementTypeException>(() =>
+            _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_WhenSubmodelNotFound_ThrowsSubmodelNotFoundException()
+    {
+        const string IdShortPath = "Documents.ProductImage";
+
+        _templateService
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ResourceNotFoundException());
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+            _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_WhenFileValueIsEmpty_ThrowsSubmodelElementNotFoundException()
+    {
+        const string IdShortPath = "Documents.ProductImage";
+        var fileElement = new AasCore.Aas3_1.File(contentType: "image/png") { Value = "", IdShort = "ProductImage" };
+        var template = TestData.CreateSubmodelWithElement(fileElement, IdShortPath);
+
+        _templateService.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler.TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>()).Returns(CreateSubmodelTreeNode(""));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>(), IdShortPath).Returns(fileElement);
+
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
+            _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_WhenFileHasNoContentType_DefaultsToOctetStream()
+    {
+        const string IdShortPath = "Documents.ProductImage";
+        const string FileUrl = "https://fake-plugin.local/files/doc.bin";
+        var fileElement = new AasCore.Aas3_1.File(contentType: null) { Value = FileUrl, IdShort = "ProductImage" };
+        var template = TestData.CreateSubmodelWithElement(fileElement, IdShortPath);
+
+        _templateService.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler.TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>()).Returns(CreateSubmodelTreeNode(""));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(template);
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>(), IdShortPath).Returns(fileElement);
+
+        using var fileStream = new MemoryStream(new byte[] { 1 });
+        _httpClientFactory.CreateClient().Returns(CreateFakeHttpClient(HttpStatusCode.OK, fileStream));
+
+        var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
+
+        Assert.Equal("application/octet-stream", result.ContentType);
+    }
+}
+
+file sealed class FakeHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        => send(request, cancellationToken);
 }

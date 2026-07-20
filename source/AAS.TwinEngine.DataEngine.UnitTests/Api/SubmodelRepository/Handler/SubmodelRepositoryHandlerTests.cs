@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
@@ -452,4 +452,48 @@ public class SubmodelRepositoryHandlerTests
             .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>());
     }
 
+    // ── GetFileAttachment ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetFileAttachment_ReturnsResult_WhenServiceSucceeds()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        const string IdShortPath = "Documents.ProductImage";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
+        using var expectedStream = new MemoryStream(new byte[] { 1, 2, 3 });
+        var expected = new FileAttachmentResult(expectedStream, "image/jpeg", "ProductImage.jpg");
+
+        _submodelRepository
+            .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetFileAttachment(request, CancellationToken.None);
+
+        Assert.Equal(expected, result);
+        await _submodelRepository.Received(1)
+            .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileAttachment_InvalidBase64SubmodelId_ThrowsInvalidUserInputException()
+    {
+        const string InvalidEncodedId = "!!invalid_base64@@";
+        const string IdShortPath = "Documents.ProductImage";
+        var request = new GetSubmodelElementRequest(InvalidEncodedId, IdShortPath);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetFileAttachment(request, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("../../../etc/passwd")]
+    [InlineData("..\\..\\..\\windows\\system32")]
+    public async Task GetFileAttachment_PathTraversalInIdShortPath_ThrowsInvalidUserInputException(string maliciousPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, maliciousPath);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetFileAttachment(request, CancellationToken.None));
+    }
 }

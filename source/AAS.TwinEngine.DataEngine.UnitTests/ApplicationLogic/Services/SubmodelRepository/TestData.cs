@@ -703,8 +703,19 @@ internal static class TestData
         );
     }
 
-    public static Submodel CreateSubmodelWithoutExtraElementsNested()
+    /// <summary>
+    /// Creates a minimal submodel containing a single element at the given top-level idShortPath.
+    /// </summary>
+    public static Submodel CreateSubmodelWithElement(ISubmodelElement element, string idShortPath)
     {
+        return new Submodel(
+            id: "http://example.com/idta/test-submodel",
+            idShort: "TestSubmodel",
+            submodelElements: [element]
+        );
+    }
+
+    public static Submodel CreateSubmodelWithoutExtraElementsNested()    {
         return new Submodel(
           id: "http://example.com/idta/digital-nameplate",
           idShort: "DigitalNameplate",
