@@ -12,8 +12,8 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ../example/nginx/html:/usr/share/nginx/html
-      - ../example/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ../../example/nginx/html:/usr/share/nginx/html
+      - ../../example/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
     restart: always
     depends_on:
       aas-template-registry:
@@ -28,7 +28,7 @@ services:
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:develop
     build:
-      context: ../source
+      context: ../../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
     container_name: twinengine-dataengine
     depends_on:
@@ -151,8 +151,8 @@ services:
     image: eclipsebasyx/aas-environment:2.0.0-milestone-11
     container_name: template-repository
     volumes:
-      - ../example/aas:/application/aas
-      - ../example/basyx/aas-env.properties:/application/application.properties
+      - ../../example/aas:/application/aas
+      - ../../example/basyx/aas-env.properties:/application/application.properties
     environment:
       BASYX_EXTERNALURL : http://localhost:8080
     restart: always
@@ -189,7 +189,7 @@ services:
     image: eclipsebasyx/aas-gui:v2-260526
     container_name: aas-ui
     volumes:
-      - ../example/logo:/usr/src/app/dist/Logo
+      - ../../example/logo:/usr/src/app/dist/Logo
     environment:
       AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
       SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
@@ -231,7 +231,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
     volumes:
-      - ../example/postgres:/docker-entrypoint-initdb.d
+      - ../../example/postgres:/docker-entrypoint-initdb.d
       - postgres-data:/var/lib/postgresql/data
     restart: always
     healthcheck:
@@ -262,8 +262,6 @@ services:
     container_name: lgtm
     ports:
       - "3000:3000"
-      - "4317:4317"
-      - "4318:4318"
       - "9090:9090"
     volumes:
       - ./grafana/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
@@ -281,8 +279,6 @@ services:
       - TWINENGINE_CPU=${TWINENGINE_CPU:-1}
       - DPP_PLUGIN_CPU=${DPP_PLUGIN_CPU:-1}
       - POSTGRES_CPU=${POSTGRES_CPU:-1}
-    ports:
-      - "8000:8000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
@@ -293,8 +289,6 @@ services:
     image: otel/opentelemetry-collector-contrib:0.111.0
     container_name: cadvisor
     user: "0:0"
-    ports:
-      - "8082:8080"
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
