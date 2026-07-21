@@ -36,7 +36,6 @@ CMD equivalent:
 
 ```cmd
 set K6_WEB_DASHBOARD=true
-set K6_WEB_DASHBOARD_PERIOD=1s
 set K6_WEB_DASHBOARD_EXPORT=results/k6-summary-report.html
 k6 run main.js
 ```

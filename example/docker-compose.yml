@@ -116,7 +116,7 @@ services:
     restart: always
     environment:
       - OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
-      - OpenTelemetry__ServiceName=Plugin.RelationalDatabase
+      - OpenTelemetry__ServiceName=DPP-Plugin
       - Semantics__IndexContextPrefix=_aastwinengineindex_
       - Capabilities__HasShellDescriptor=true
       - Capabilities__HasAssetInformation=true
