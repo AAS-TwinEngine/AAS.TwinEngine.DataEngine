@@ -2,22 +2,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Create non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN groupadd -r appuser \
+    && useradd -r -g appuser appuser \
+    && pip install --no-cache-dir \
+        --only-binary=:all: \
+        prometheus-client==0.20.0 \
+        docker==7.0.0
 
-# Install dependencies
-RUN pip install --no-cache-dir \
-    --only-binary=:all: \
-    prometheus-client==0.20.0 \
-    docker==7.0.0
-
-# Copy exporter
 COPY cpu-limits-exporter.py .
 
-# Give ownership to non-root user
 RUN chown -R appuser:appuser /app
 
-# Switch to non-root user
 USER appuser
 
 CMD ["python", "cpu-limits-exporter.py"]
