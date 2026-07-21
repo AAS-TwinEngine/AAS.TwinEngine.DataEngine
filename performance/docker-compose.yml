@@ -1,0 +1,307 @@
+networks:
+  twinengine-network:
+    name: twinengine-network
+
+volumes:
+  postgres-data:
+
+services:
+  nginx:
+    image: nginx:1.31.2
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ../example/nginx/html:/usr/share/nginx/html
+      - ../example/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+    restart: always
+    depends_on:
+      aas-template-registry:
+        condition: service_healthy
+      sm-template-registry:
+        condition: service_healthy
+      template-repository:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  twinengine-dataengine:
+    image: ghcr.io/aas-twinengine/dataengine:develop
+    build:
+      context: ../source
+      dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
+    container_name: twinengine-dataengine
+    depends_on:
+      dpp-plugin:
+        condition: service_started
+      otel-lgtm:
+        condition: service_started
+    cpus: ${TWINENGINE_CPU:-1}
+    mem_limit: ${TWINENGINE_MEMORY:-1g}
+    restart: always
+    environment:
+      - General__DataEngineRepositoryBaseUrl=http://localhost:8080
+      - General__OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
+      - General__OpenTelemetry__ServiceName=TwinEngine
+      - General__CustomerDomainUrl=https://mm-software.com
+      - Plugins__Instances__0__Name=RelationalDatabasePlugin
+      - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
+      - Plugins__Instances__0__healthEndpoint=/healthz
+      - Plugins__MultiLanguageProperty__DefaultLanguages__0=en
+      - Plugins__MultiLanguageProperty__DefaultLanguages__1=de
+      - Plugins__Instances__0__headerMappings__0__source=Authorization
+      - Plugins__Instances__0__headerMappings__0__target=X-Auth-Token
+      - Plugins__Instances__0__headerMappings__0__required=false
+      - Plugins__Instances__0__headerMappings__1__source=X-Organization-Id
+      - Plugins__Instances__0__headerMappings__1__target=X-Tenant-Context
+      - Plugins__Instances__0__headerMappings__1__required=false
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=TechnicalData
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=Nameplate
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=MaintenanceInstructions
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__templateId=https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__pattern__0=CarbonFootprint
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=.+
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
+      - TemplateManagement__AasTemplateRepository__Name=AasTemplateRepository
+      - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository:8081
+      - TemplateManagement__AasTemplateRepository__headerMappings__0__source=Authorization
+      - TemplateManagement__AasTemplateRepository__headerMappings__0__target=Authorization
+      - TemplateManagement__AasTemplateRepository__headerMappings__0__required=false
+      - TemplateManagement__AasTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__SubmodelTemplateRepository__Name=SubmodelTemplateRepository
+      - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository:8081
+      - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__source=Authorization
+      - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__target=Authorization
+      - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__required=false
+      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__ConceptDescriptionTemplateRepository__Name=ConceptDescriptionTemplateRepository
+      - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://template-repository:8081
+      - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__source=Authorization
+      - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__target=Authorization
+      - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__required=false
+      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__AasTemplateRegistry__Name=AasTemplateRegistry
+      - TemplateManagement__AasTemplateRegistry__baseUrl=http://aas-template-registry:8080
+      - TemplateManagement__AasTemplateRegistry__headerMappings__0__source=Authorization
+      - TemplateManagement__AasTemplateRegistry__headerMappings__0__target=Authorization
+      - TemplateManagement__AasTemplateRegistry__headerMappings__0__required=false
+      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/actuator/health
+      - TemplateManagement__SubmodelTemplateRegistry__Name=SubmodelTemplateRegistry
+      - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://sm-template-registry:8080
+      - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__source=Authorization
+      - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__target=Authorization
+      - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__required=false
+      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/actuator/health
+    networks:
+      - twinengine-network
+
+  dpp-plugin:
+    image: ghcr.io/aas-twinengine/plugindpp:develop
+    container_name: dpp-plugin
+    build:
+      context: ../../AAS.TwinEngine.Plugin.DPP/source
+      dockerfile: ./AAS.TwinEngine.Plugin.RelationalDatabase/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-lgtm:
+        condition: service_started
+    cpus: ${DPP_PLUGIN_CPU:-1}
+    mem_limit: ${DPP_PLUGIN_MEMORY:-1g}
+    restart: always
+    environment:
+      - OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
+      - OpenTelemetry__ServiceName=Plugin.RelationalDatabase
+      - Semantics__IndexContextPrefix=_aastwinengineindex_
+      - Capabilities__HasShellDescriptor=true
+      - Capabilities__HasAssetInformation=true
+      - Capabilities__HasAssetIdSearch=true
+      - RelationalDatabaseConfiguration__ConnectionString=Host=postgres;Port=5432;Database=twinengine;Username=postgres;Password=admin
+      - ExtractionRules__SubmodelNameExtractionRules__0__SubmodelName=NamePlate
+      - ExtractionRules__SubmodelNameExtractionRules__0__pattern__0=Nameplate
+      - ExtractionRules__SubmodelNameExtractionRules__0__pattern__1=NamePlate
+      - ExtractionRules__SubmodelNameExtractionRules__1__SubmodelName=MaintenanceInstructions
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__0=MaintenanceInstructions
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__1=MaintenanceInstruction
+      - ExtractionRules__SubmodelNameExtractionRules__2__SubmodelName=HandoverDocumentation
+      - ExtractionRules__SubmodelNameExtractionRules__2__pattern__0=HandoverDocumentation
+      - ExtractionRules__SubmodelNameExtractionRules__2__pattern__1=HandoverDocumentations
+      - ExtractionRules__SubmodelNameExtractionRules__3__SubmodelName=TechnicalData
+      - ExtractionRules__SubmodelNameExtractionRules__3__pattern__0=TechnicalData
+      - ExtractionRules__SubmodelNameExtractionRules__4__SubmodelName=CarbonFootprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__0=CarbonFootprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__1=Footprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__2=Carbon
+      - ExtractionRules__ProductIdExtractionRules__0__Pattern=/
+      - ExtractionRules__ProductIdExtractionRules__0__Index=5
+      - ExtractionRules__ProductIdExtractionRules__0__Strategy=Split
+      - ExtractionRules__ProductIdExtractionRules__0__Description=Default split by '/' segment 5
+    networks:
+      - twinengine-network
+
+  template-repository:
+    image: eclipsebasyx/aas-environment:2.0.0-milestone-11
+    container_name: template-repository
+    volumes:
+      - ../example/aas:/application/aas
+      - ../example/basyx/aas-env.properties:/application/application.properties
+    environment:
+      BASYX_EXTERNALURL : http://localhost:8080
+    restart: always
+    depends_on:
+      aas-template-registry:
+        condition: service_healthy
+      sm-template-registry:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  aas-template-registry:
+    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-11
+    container_name: aas-template-registry
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+    networks:
+      - twinengine-network
+
+  sm-template-registry:
+    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-11
+    container_name: sm-template-registry
+    depends_on:
+      - mongo
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+    networks:
+      - twinengine-network
+
+  aas-web-ui:
+    image: eclipsebasyx/aas-gui:v2-260526
+    container_name: aas-ui
+    volumes:
+      - ../example/logo:/usr/src/app/dist/Logo
+    environment:
+      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
+      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
+      AAS_REPO_PATH: http://localhost:8080/shells
+      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
+      CD_REPO_PATH: http://localhost:8080/concept-descriptions
+      BASE_PATH: "/aas-ui"
+      LOGO_PATH: "MM_Logo.svg"
+      PRIMARY_DARK_COLOR: "#00F2E5"
+      PRIMARY_LIGHT_COLOR: "#041b2b"
+      ALLOW_EDITING: "false"
+      SM_VIEWER_EDITOR: "false"
+      ALLOW_UPLOADING: "false"
+    restart: always
+    depends_on:
+      template-repository:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  mongo:
+    image: mongo:8.0
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoAdmin
+      MONGO_INITDB_ROOT_PASSWORD: mongoPassword
+    networks:
+      - twinengine-network
+
+  postgres:
+    image: postgres:14.23-alpine3.24
+    container_name: postgres
+    cpus: ${POSTGRES_CPU:-1}
+    mem_limit: ${POSTGRES_MEMORY:-1g}
+    ports:
+      - "9999:5432"
+    environment:
+      POSTGRES_DB: twinengine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ../example/postgres:/docker-entrypoint-initdb.d
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d twinengine"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - twinengine-network
+
+  pgadmin:
+    image: dpage/pgadmin4:9.16
+    container_name: pgadmin
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - twinengine-network
+    
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: lgtm
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+      - "9090:9090"
+    volumes:
+      - ./grafana/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
+      - ./grafana/provisioning/dashboards/container-dashboard-provider.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/container-dashboard-provider.yaml:ro
+      - ./grafana/dashboards/container-observability.json:/otel-config/grafana/dashboards/container-observability.json:ro
+    networks:
+      - twinengine-network
+
+  cpu-limits-exporter:
+    build:
+      context: ./observability
+      dockerfile: Dockerfile.exporter
+    container_name: cpu-limits-exporter
+    environment:
+      - TWINENGINE_CPU=${TWINENGINE_CPU:-1}
+      - DPP_PLUGIN_CPU=${DPP_PLUGIN_CPU:-1}
+      - POSTGRES_CPU=${POSTGRES_CPU:-1}
+    ports:
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    networks:
+      - twinengine-network
+
+  cadvisor:
+    image: otel/opentelemetry-collector-contrib:0.111.0
+    container_name: cadvisor
+    user: "0:0"
+    ports:
+      - "8082:8080"
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      otel-lgtm:
+        condition: service_started
+    restart: always
+    networks:
+      - twinengine-network
