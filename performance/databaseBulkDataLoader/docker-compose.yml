@@ -14,8 +14,3 @@ services:
       - host.docker.internal:host-gateway
     command: ["sh", "-c", "tr -d '\r' < /workspace/load.sh > /tmp/load.sh && chmod +x /tmp/load.sh && sh /tmp/load.sh"]
     restart: "no"
-
-# Usage:
-# cp .env.example .env
-# Edit PG_CONN_STRING
-# docker compose up --build

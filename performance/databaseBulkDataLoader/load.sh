@@ -14,10 +14,11 @@ CONN_STRING=$PG_CONN_STRING
 TOTAL=$ASSET_COUNT
 
 MAX_ATTEMPTS=10
+SEPARATOR="=========================================="
 SQL_DIR=$WORKSPACE_DIR/sql
 
 if [ ! -f "$SQL_DIR/check-schema.sql" ] || [ ! -f "$SQL_DIR/truncate-db.sql" ] || [ ! -f "$SQL_DIR/load.sql" ]; then
-    echo "ERROR: required SQL files not found under: $SQL_DIR"
+    echo "ERROR: required SQL files not found under: $SQL_DIR" >&2
     exit 1
 fi
 
@@ -27,9 +28,9 @@ psql_exec() {
     psql "$PG_CONN_STRING" -v ON_ERROR_STOP=1 "$@" -f "$sql_file"
 }
 
-echo "========================================="
+echo "$SEPARATOR"
 echo " PostgreSQL Bulk Data Loader (via Docker)"
-echo "========================================="
+echo "$SEPARATOR"
 echo "Connection   : $CONN_STRING"
 echo "Total Assets : $TOTAL"
 echo "Batch Size   : $BATCH_SIZE"
@@ -43,7 +44,7 @@ do
     ATTEMPT=$((ATTEMPT + 1))
     if [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; then
         echo ""
-        echo "ERROR: Could not reach PostgreSQL after $MAX_ATTEMPTS attempts."
+        echo "ERROR: Could not reach PostgreSQL after $MAX_ATTEMPTS attempts." >&2
         echo "Debug with: psql \"$PG_CONN_STRING\" -c \"SELECT 1;\""
         exit 1
     fi
@@ -62,13 +63,13 @@ case "$SCHEMA_STATUS" in
         ;;
     MISSING\|*)
         MISSING_TABLES=${SCHEMA_STATUS#MISSING|}
-        echo "ERROR: Required schema is not present in public."
+        echo "ERROR: Required schema is not present in public." >&2
         echo "Missing tables: $MISSING_TABLES"
         echo "Skipping data load."
         exit 1
         ;;
     *)
-        echo "ERROR: Schema validation returned unexpected result: $SCHEMA_STATUS"
+        echo "ERROR: Schema validation returned unexpected result: $SCHEMA_STATUS" >&2
         echo "Skipping data load."
         exit 1
         ;;
@@ -88,9 +89,9 @@ do
     CURRENT_BATCH_COUNT=$((END - START + 1))
 
     echo ""
-    echo "========================================="
+    echo "$SEPARATOR"
     echo "Loading Batch : $START -> $END ($CURRENT_BATCH_COUNT assets)"
-    echo "========================================="
+    echo "$SEPARATOR"
 
     psql "$PG_CONN_STRING" \
         -v ON_ERROR_STOP=1 \
@@ -104,6 +105,6 @@ do
 done
 
 echo ""
-echo "========================================="
+echo "$SEPARATOR"
 echo "Bulk loading completed successfully."
-echo "========================================="
+echo "$SEPARATOR"
