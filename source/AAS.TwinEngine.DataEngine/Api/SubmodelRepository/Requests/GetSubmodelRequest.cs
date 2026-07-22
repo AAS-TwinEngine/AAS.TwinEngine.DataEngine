@@ -1,6 +1,6 @@
 ﻿namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 
-public class GetSubmodelRequest(string submodelId)
+public record GetSubmodelRequest(string submodelId)
 {
     public string SubmodelId { get; } = submodelId;
 
