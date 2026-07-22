@@ -15,146 +15,204 @@ public static class DescriptorSerializer
     public static string SerializeShellDescriptor(ShellDescriptor descriptor)
     {
         var node = new JsonObject();
-        if (descriptor.Description is not null)
-        {
-            node["description"] = new JsonArray(descriptor.Description.Select(Jsonization.Serialize.ToJsonObject).ToArray<JsonNode>());
-        }
-        if (descriptor.DisplayName is not null)
-        {
-            node["displayName"] = new JsonArray(descriptor.DisplayName.Select(Jsonization.Serialize.ToJsonObject).ToArray<JsonNode>());
-        }
-        if (descriptor.Extensions is not null)
-        {
-            node["extensions"] = new JsonArray(descriptor.Extensions.Select(Jsonization.Serialize.ToJsonObject).ToArray<JsonNode>());
-        }
-        if (descriptor.Administration is not null)
-        {
-            node["administration"] = Jsonization.Serialize.ToJsonObject(descriptor.Administration);
-        }
-        if (descriptor.AssetKind is not null)
-        {
-            node["assetKind"] = descriptor.AssetKind.ToString();
-        }
-        if (descriptor.AssetType is not null)
-        {
-            node["assetType"] = descriptor.AssetType.ToString();
-        }
-        if (descriptor.Endpoints is not null)
-        {
-            node["endpoints"] = JsonSerializer.SerializeToNode(descriptor.Endpoints);
-        }
-        if (descriptor.GlobalAssetId is not null)
-        {
-            node["globalAssetId"] = descriptor.GlobalAssetId;
-        }
-        if (descriptor.IdShort is not null)
-        {
-            node["idShort"] = descriptor.IdShort;
-        }
-        if (descriptor.Id is not null)
-        {
-            node["id"] = descriptor.Id;
-        }
-        if (descriptor.SpecificAssetIds is not null)
-        {
-            var array = new JsonArray();
-            foreach (var specificAssetId in descriptor.SpecificAssetIds)
-            {
-                var itemNode = Jsonization.Serialize.ToJsonObject(specificAssetId);
-                if (itemNode["semanticId"] is JsonNode semanticIdNode)
-                {
-                    _ = itemNode.Remove("semanticId");
-                    itemNode["externalSubjectId"] = semanticIdNode.DeepClone();
-                }
-                array.Add(itemNode);
-            }
-            node["specificAssetIds"] = array;
-        }
-        if (descriptor.SubmodelDescriptors is not null)
-        {
-            node["submodelDescriptors"] = new JsonArray(descriptor.SubmodelDescriptors.Select(x => JsonNode.Parse(SerializeSubmodelDescriptor(x))!).ToArray<JsonNode>());
-        }
+
+        AddArray(node, JsonPropertyNames.Description, descriptor.Description, Jsonization.Serialize.ToJsonObject);
+        AddArray(node, JsonPropertyNames.DisplayName, descriptor.DisplayName, Jsonization.Serialize.ToJsonObject);
+        AddArray(node, JsonPropertyNames.Extensions, descriptor.Extensions, Jsonization.Serialize.ToJsonObject);
+
+        AddNode(node, JsonPropertyNames.Administration, descriptor.Administration, Jsonization.Serialize.ToJsonObject);
+
+        AddValue(node, JsonPropertyNames.AssetKind, descriptor.AssetKind?.ToString());
+        AddValue(node, JsonPropertyNames.AssetType, descriptor.AssetType?.ToString());
+
+        AddSerialized(node, JsonPropertyNames.Endpoints, descriptor.Endpoints);
+
+        AddValue(node, JsonPropertyNames.GlobalAssetId, descriptor.GlobalAssetId);
+        AddValue(node, JsonPropertyNames.IdShort, descriptor.IdShort);
+        AddValue(node, JsonPropertyNames.Id, descriptor.Id);
+
+        AddSpecificAssetIds(node, descriptor.SpecificAssetIds);
+        AddSubmodelDescriptors(node, descriptor.SubmodelDescriptors);
+
         return node.ToJsonString();
     }
 
     public static ShellDescriptor DeserializeShellDescriptor(string json)
     {
         var node = JsonNode.Parse(json);
+
         return new ShellDescriptor
         {
-            Description = AasJsonNodeDeserializer.DeserializeAasArray(node?["description"], Jsonization.Deserialize.LangStringTextTypeFrom),
-            DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(node?["displayName"], Jsonization.Deserialize.LangStringNameTypeFrom),
-            Extensions = AasJsonNodeDeserializer.DeserializeAasArray(node?["extensions"], Jsonization.Deserialize.ExtensionFrom),
-            Administration = AasJsonNodeDeserializer.DeserializeAasNode(node?["administration"], Jsonization.Deserialize.AdministrativeInformationFrom),
-            AssetKind = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(node?["assetKind"]),
-            AssetType = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(node?["assetType"]),
-            Endpoints = node?["endpoints"]?.Deserialize<List<EndpointData>>(),
-            GlobalAssetId = node?["globalAssetId"]?.GetValue<string>(),
-            IdShort = node?["idShort"]?.GetValue<string>(),
-            Id = node?["id"]?.GetValue<string>(),
-            SpecificAssetIds = AasJsonNodeDeserializer.DeserializeAasArray(node?["specificAssetIds"], Jsonization.Deserialize.SpecificAssetIdFrom),
-            SubmodelDescriptors = node?["submodelDescriptors"] is JsonArray submodelArray
-                ? submodelArray.Select(x => DeserializeSubmodelDescriptor(x!.ToJsonString())).ToList()
-                : null
+            Description = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.Description], Jsonization.Deserialize.LangStringTextTypeFrom),
+
+            DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.DisplayName], Jsonization.Deserialize.LangStringNameTypeFrom),
+
+            Extensions = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.Extensions], Jsonization.Deserialize.ExtensionFrom),
+
+            Administration = AasJsonNodeDeserializer.DeserializeAasNode(node?[JsonPropertyNames.Administration], Jsonization.Deserialize.AdministrativeInformationFrom),
+
+            AssetKind = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(node?[JsonPropertyNames.AssetKind]),
+
+            AssetType = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(node?[JsonPropertyNames.AssetType]),
+
+            Endpoints = node?[JsonPropertyNames.Endpoints]?.Deserialize<List<EndpointData>>(),
+
+            GlobalAssetId = node?[JsonPropertyNames.GlobalAssetId]?.GetValue<string>(),
+            IdShort = node?[JsonPropertyNames.IdShort]?.GetValue<string>(),
+            Id = node?[JsonPropertyNames.Id]?.GetValue<string>(),
+
+            SpecificAssetIds = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.SpecificAssetIds], Jsonization.Deserialize.SpecificAssetIdFrom),
+
+            SubmodelDescriptors = DeserializeSubmodelDescriptors(node?[JsonPropertyNames.SubmodelDescriptors])
         };
     }
 
     public static string SerializeSubmodelDescriptor(SubmodelDescriptor descriptor)
     {
         var node = new JsonObject();
-        if (descriptor.Description is not null)
-        {
-            node["description"] = new JsonArray(descriptor.Description.Select(Jsonization.Serialize.ToJsonObject).ToArray<JsonNode>());
-        }
-        if (descriptor.DisplayName is not null)
-        {
-            node["displayName"] = new JsonArray(descriptor.DisplayName.Select(Jsonization.Serialize.ToJsonObject).ToArray<JsonNode>());
-        }
-        if (descriptor.Extensions is not null)
-        {
-            node["extensions"] = new JsonArray(descriptor.Extensions.Select(Jsonization.Serialize.ToJsonObject).ToArray<JsonNode>());
-        }
-        if (descriptor.Administration is not null)
-        {
-            node["administration"] = Jsonization.Serialize.ToJsonObject(descriptor.Administration);
-        }
-        if (descriptor.IdShort is not null)
-        {
-            node["idShort"] = descriptor.IdShort;
-        }
-        if (descriptor.Id is not null)
-        {
-            node["id"] = descriptor.Id;
-        }
-        if (descriptor.SemanticId is not null)
-        {
-            node["semanticId"] = Jsonization.Serialize.ToJsonObject(descriptor.SemanticId);
-        }
-        if (descriptor.SupplementalSemanticId is not null)
-        {
-            node["supplementalSemanticId"] = new JsonArray(descriptor.SupplementalSemanticId.Select(x => Jsonization.Serialize.ToJsonObject(x)).ToArray<JsonNode>());
-        }
-        if (descriptor.Endpoints is not null)
-        {
-            node["endpoints"] = JsonSerializer.SerializeToNode(descriptor.Endpoints);
-        }
+
+        AddArray(node, JsonPropertyNames.Description, descriptor.Description, Jsonization.Serialize.ToJsonObject);
+        AddArray(node, JsonPropertyNames.DisplayName, descriptor.DisplayName, Jsonization.Serialize.ToJsonObject);
+        AddArray(node, JsonPropertyNames.Extensions, descriptor.Extensions, Jsonization.Serialize.ToJsonObject);
+
+        AddNode(node, JsonPropertyNames.Administration, descriptor.Administration, Jsonization.Serialize.ToJsonObject);
+
+        AddValue(node, JsonPropertyNames.IdShort, descriptor.IdShort);
+        AddValue(node, JsonPropertyNames.Id, descriptor.Id);
+
+        AddNode(node, JsonPropertyNames.SemanticId, descriptor.SemanticId, Jsonization.Serialize.ToJsonObject);
+
+        AddArray(node, JsonPropertyNames.SupplementalSemanticId,descriptor.SupplementalSemanticId, Jsonization.Serialize.ToJsonObject);
+
+        AddSerialized(node, JsonPropertyNames.Endpoints, descriptor.Endpoints);
+
         return node.ToJsonString();
     }
 
     public static SubmodelDescriptor DeserializeSubmodelDescriptor(string json)
     {
         var node = JsonNode.Parse(json);
+
         return new SubmodelDescriptor
         {
-            Description = AasJsonNodeDeserializer.DeserializeAasArray(node?["description"], Jsonization.Deserialize.LangStringTextTypeFrom),
-            DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(node?["displayName"], Jsonization.Deserialize.LangStringNameTypeFrom),
-            Extensions = AasJsonNodeDeserializer.DeserializeAasArray(node?["extensions"], Jsonization.Deserialize.ExtensionFrom),
-            Administration = AasJsonNodeDeserializer.DeserializeAasNode(node?["administration"], Jsonization.Deserialize.AdministrativeInformationFrom),
-            IdShort = node?["idShort"]?.GetValue<string>(),
-            Id = node?["id"]?.GetValue<string>(),
-            SemanticId = AasJsonNodeDeserializer.DeserializeAasNode(node?["semanticId"], Jsonization.Deserialize.ReferenceFrom),
-            SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(node?["supplementalSemanticId"], Jsonization.Deserialize.ReferenceFrom),
-            Endpoints = node?["endpoints"]?.Deserialize<List<EndpointData>>()
+            Description = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.Description], Jsonization.Deserialize.LangStringTextTypeFrom),
+
+            DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.DisplayName], Jsonization.Deserialize.LangStringNameTypeFrom),
+
+            Extensions = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.Extensions], Jsonization.Deserialize.ExtensionFrom),
+
+            Administration = AasJsonNodeDeserializer.DeserializeAasNode(node?[JsonPropertyNames.Administration], Jsonization.Deserialize.AdministrativeInformationFrom),
+
+            IdShort = node?[JsonPropertyNames.IdShort]?.GetValue<string>(),
+            Id = node?[JsonPropertyNames.Id]?.GetValue<string>(),
+
+            SemanticId = AasJsonNodeDeserializer.DeserializeAasNode(node?[JsonPropertyNames.SemanticId], Jsonization.Deserialize.ReferenceFrom),
+
+            SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(node?[JsonPropertyNames.SupplementalSemanticId], Jsonization.Deserialize.ReferenceFrom),
+
+            Endpoints = node?[JsonPropertyNames.Endpoints]?.Deserialize<List<EndpointData>>()
         };
     }
+
+    private static void AddValue(JsonObject node, string name, string? value)
+    {
+        if (value is not null)
+        {
+            node[name] = value;
+        }
+    }
+
+    private static void AddSerialized<T>(JsonObject node, string name, T? value)
+    {
+        if (value is not null)
+        {
+            node[name] = JsonSerializer.SerializeToNode(value);
+        }
+    }
+
+    private static void AddNode<T>(JsonObject node, string name, T? value, Func<T, JsonObject> serializer) where T : class
+    {
+        if (value is not null)
+        {
+            node[name] = serializer(value);
+        }
+    }
+
+    private static void AddArray<T>(JsonObject node, string name, IEnumerable<T>? values, Func<T, JsonObject> serializer)
+    {
+        if (values is null)
+        {
+            return;
+        }
+
+        node[name] = new JsonArray(
+            values.Select(x => (JsonNode)serializer(x)).ToArray());
+    }
+
+    private static void AddSpecificAssetIds(JsonObject node, IEnumerable<ISpecificAssetId>? assetIds)
+    {
+        if (assetIds is null)
+        {
+            return;
+        }
+
+        var array = new JsonArray();
+
+        foreach (var assetId in assetIds)
+        {
+            var item = Jsonization.Serialize.ToJsonObject(assetId);
+
+            if (item[JsonPropertyNames.SemanticId] is JsonNode semanticId)
+            {
+                _ = item.Remove(JsonPropertyNames.SemanticId);
+                item[JsonPropertyNames.ExternalSubjectId] = semanticId.DeepClone();
+            }
+
+            array.Add(item);
+        }
+
+        node[JsonPropertyNames.SpecificAssetIds] = array;
+    }
+
+    private static void AddSubmodelDescriptors(JsonObject node, IEnumerable<SubmodelDescriptor>? descriptors)
+    {
+        if (descriptors is null)
+        {
+            return;
+        }
+
+        node[JsonPropertyNames.SubmodelDescriptors] = new JsonArray(
+            descriptors
+                .Select(x => JsonNode.Parse(SerializeSubmodelDescriptor(x))!)
+                .ToArray());
+    }
+
+    private static List<SubmodelDescriptor>? DeserializeSubmodelDescriptors(JsonNode? node)
+    {
+        if (node is not JsonArray array)
+        {
+            return null;
+        }
+
+        return [.. array.Select(x => DeserializeSubmodelDescriptor(x!.ToJsonString()))];
+    }
+}
+
+internal static class JsonPropertyNames
+{
+    public const string Description = "description";
+    public const string DisplayName = "displayName";
+    public const string Extensions = "extensions";
+    public const string Administration = "administration";
+    public const string AssetKind = "assetKind";
+    public const string AssetType = "assetType";
+    public const string Endpoints = "endpoints";
+    public const string GlobalAssetId = "globalAssetId";
+    public const string IdShort = "idShort";
+    public const string Id = "id";
+    public const string SpecificAssetIds = "specificAssetIds";
+    public const string SemanticId = "semanticId";
+    public const string ExternalSubjectId = "externalSubjectId";
+    public const string SubmodelDescriptors = "submodelDescriptors";
+    public const string SupplementalSemanticId = "supplementalSemanticId";
 }
