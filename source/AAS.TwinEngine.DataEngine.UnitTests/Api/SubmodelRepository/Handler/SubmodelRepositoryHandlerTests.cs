@@ -352,4 +352,104 @@ public class SubmodelRepositoryHandlerTests
 
         Assert.NotNull(result);
     }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_DecodesSubmodelIdAndPassesToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetAllSubmodelElementsRequest(encodedId, null, null);
+        var elementList = new SubmodelElementsPage { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+
+        _submodelRepository
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .Returns(elementList);
+
+        var result = await _sut.GetAllSubmodelElements(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        await _submodelRepository.Received(1)
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_PassesLimitAndCursorToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        const int Limit = 5;
+        const string Cursor = "dGVzdA==";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetAllSubmodelElementsRequest(encodedId, Limit, Cursor);
+        var elementList = new SubmodelElementsPage { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+
+        _submodelRepository
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Limit, Cursor, Arg.Any<CancellationToken>())
+            .Returns(elementList);
+
+        await _sut.GetAllSubmodelElements(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Limit, Cursor, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_ReturnsDto_WithElementsAndPagingMetadata()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetAllSubmodelElementsRequest(encodedId, null, null);
+        var element = Substitute.For<ISubmodelElement>();
+        element.IdShort.Returns("ManufacturerName");
+        var elementList = new SubmodelElementsPage
+        {
+            PagingMetaData = new DomainModel.Shared.PagingMetaData { Cursor = "nextPage" },
+            Result = [element]
+        };
+
+        _submodelRepository
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .Returns(elementList);
+
+        var result = await _sut.GetAllSubmodelElements(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("nextPage", result.PagingMetaData?.Cursor);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_WithLevelAndExtent_PassesQueryOptionsToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetAllSubmodelElementsRequest(encodedId, null, null, Level.deep, Extent.withBlobValue);
+        var elementList = new SubmodelElementsPage { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+
+        _submodelRepository
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), null, null, Arg.Any<CancellationToken>())
+            .Returns(elementList);
+
+        await _sut.GetAllSubmodelElements(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), null, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_WithNoLevelOrExtent_PassesNullQueryOptionsToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetAllSubmodelElementsRequest(encodedId, null, null);
+        var elementList = new SubmodelElementsPage { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+
+        _submodelRepository
+            .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>())
+            .Returns(elementList);
+
+        await _sut.GetAllSubmodelElements(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>());
+    }
+
 }

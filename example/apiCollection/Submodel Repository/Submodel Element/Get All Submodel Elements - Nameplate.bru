@@ -1,0 +1,27 @@
+meta {
+  name: Get All Submodel Elements - Nameplate
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+params:query {
+  ~limit: 100
+  ~cursor: 
+  ~level: deep
+  ~extent: withBlobValue
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
