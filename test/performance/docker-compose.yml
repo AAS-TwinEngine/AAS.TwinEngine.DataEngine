@@ -26,7 +26,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: dataengine:test
+    image: ghcr.io/aas-twinengine/dataengine:develop
     build:
       context: ../../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
@@ -104,7 +104,7 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: plugindpp:test
+    image: ghcr.io/aas-twinengine/plugindpp:develop
     container_name: dpp-plugin
     build:
       context: ../../AAS.TwinEngine.Plugin.DPP/source
@@ -258,7 +258,7 @@ services:
       - twinengine-network
     
   otel-lgtm:
-    image: grafana/otel-lgtm:latest
+    image: grafana/otel-lgtm:0.29.0
     container_name: lgtm
     ports:
       - "3000:3000"
@@ -285,7 +285,7 @@ services:
   otel-docker-stats-collector:
     image: otel/opentelemetry-collector-contrib:0.153.0
     container_name: otel-docker-stats-collector
-    user: "0:0"
+    user: "65534:65534"
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
