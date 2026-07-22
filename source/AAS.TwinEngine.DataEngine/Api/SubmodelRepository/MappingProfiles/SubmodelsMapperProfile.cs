@@ -31,16 +31,4 @@ public static class SubmodelsMapperProfile
             Result = [.. submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject)]
         };
     }
-
-    public static SubmodelElementsDto ToDto(this SubmodelElementsPage submodelElementsPage)
-    {
-        return new SubmodelElementsDto
-        {
-            PagingMetaData = new PagingMetaDataDto
-            {
-                Cursor = submodelElementsPage.PagingMetaData?.Cursor
-            },
-            Result = submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject).ToList()
-        };
-    }
 }
