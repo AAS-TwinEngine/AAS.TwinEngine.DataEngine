@@ -65,20 +65,17 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
             LogAndThrowException($"Failed to parse response JSON: {parseError}");
         }
 
+        using var parsedResponse = responseDoc;
+
         if (!TryNormalizeSchema(requestSchema, out var normalizedSchema, out var normalizeError))
         {
             LogAndThrowException($"Failed to normalize request schema: {normalizeError}");
         }
 
-        if (!TryRegisterJsonSchema(normalizedSchema, out var registerError))
-        {
-            LogAndThrowException($"Failed to register schema: {registerError}");
-        }
-
         try
         {
             var schema = JsonSchema.FromText(normalizedSchema.ToJsonString());
-            var result = schema.Evaluate(responseDoc!.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
+            var result = schema.Evaluate(parsedResponse!.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
             if (!result.IsValid)
             {
                 LogAndThrowException("Response did not validate against schema.");
@@ -178,24 +175,6 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
         catch (Exception ex)
         {
             error = $"Schema normalization failed: {ex.Message}";
-            return false;
-        }
-    }
-
-    private static bool TryRegisterJsonSchema(JsonObject schemaJsonObject, out string? registrationErrorMessage)
-    {
-        registrationErrorMessage = null;
-
-        try
-        {
-            var jsonSchema = JsonSchema.FromText(schemaJsonObject.ToJsonString());
-            var schemaIdentifierUri = new Uri(schemaJsonObject["$id"]!.GetValue<string>()!);
-            SchemaRegistry.Global.Register(schemaIdentifierUri, jsonSchema);
-            return true;
-        }
-        catch (Exception exception)
-        {
-            registrationErrorMessage = $"Schema registration failed: {exception.Message}";
             return false;
         }
     }
