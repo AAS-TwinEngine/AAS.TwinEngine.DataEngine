@@ -1,6 +1,6 @@
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 
-public class GetAllSubmodelElementsRequest
+public record GetAllSubmodelElementsRequest
 {
     public string? SubmodelId { get; init; }
 
