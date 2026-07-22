@@ -6,10 +6,12 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -24,9 +26,18 @@ public class ShellDescriptorServiceTests
     private readonly IShellDescriptorDataHandler _dataHandler = Substitute.For<IShellDescriptorDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly ILogger<ShellDescriptorService> _logger = Substitute.For<ILogger<ShellDescriptorService>>();
+    private readonly IOptions<TemplateManagementConfig> _templateManagementConfig;
     private readonly ShellDescriptorService _sut;
 
-    public ShellDescriptorServiceTests() => _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger);
+    public ShellDescriptorServiceTests()
+    {
+        var config = new TemplateManagementConfig
+        {
+            AasTemplateRegistry = new ServiceInstance { ConcurrentOperationsLimit = 10 }
+        };
+        _templateManagementConfig = Options.Create(config);
+        _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger, _templateManagementConfig);
+    }
 
     [Fact]
     public async Task GetAllShellDescriptorsAsync_ReturnsFilledShellDescriptors()
@@ -307,8 +318,152 @@ public class ShellDescriptorServiceTests
 
         await Assert.ThrowsAsync<ShellDescriptorNotFoundException>(() => _sut.GetShellDescriptorByIdAsync(id, cancellationToken));
     }
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_BuildsDescriptorsInParallel()
+    {
+        var cancellationToken = CancellationToken.None;
+        var metadataList = Enumerable.Range(1, 5)
+            .Select(i => new ShellDescriptorMetaData { Id = $"id{i}" })
+            .ToList();
+        var metaData = new ShellDescriptorsMetaData
+        {
+            PagingMetaData = null,
+            ShellDescriptors = metadataList
+        };
 
-    #region Test Data Helpers
+        _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
+            .Returns(metaData);
+        _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
+        _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(GetShellDescriptorTemplate());
+        _dataHandler.FillOut(Arg.Any<ShellDescriptor>(), Arg.Any<ShellDescriptorMetaData>())
+            .Returns(callInfo =>
+            {
+                var value = callInfo.ArgAt<ShellDescriptorMetaData>(1);
+                return new ShellDescriptor { Id = value.Id };
+            });
+
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Result);
+        Assert.Equal(5, result.Result.Count);
+        Assert.All(result.Result, descriptor => Assert.False(string.IsNullOrWhiteSpace(descriptor.Id)));
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_RespectsMaxConcurrency()
+    {
+        var cancellationToken = CancellationToken.None;
+        const int concurrencyLimit = 2;
+        var config = new TemplateManagementConfig
+        {
+            AasTemplateRegistry = new ServiceInstance { ConcurrentOperationsLimit = concurrencyLimit }
+        };
+        var sut = new ShellDescriptorService(
+            _templateProvider, _shellTemplateMappingProvider, _dataHandler,
+            _pluginDataHandler, _pluginManifestConflictHandler, _logger,
+            Options.Create(config));
+
+        var currentConcurrency = 0;
+        var maxObservedConcurrency = 0;
+        var lockObj = new object();
+
+        var metadataList = Enumerable.Range(1, 6)
+            .Select(i => new ShellDescriptorMetaData { Id = $"id{i}" })
+            .ToList();
+        var metaData = new ShellDescriptorsMetaData
+        {
+            PagingMetaData = null,
+            ShellDescriptors = metadataList
+        };
+
+        _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
+            .Returns(metaData);
+        _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
+
+        _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken)
+            .Returns(async callInfo =>
+            {
+                lock (lockObj)
+                {
+                    currentConcurrency++;
+                    if (currentConcurrency > maxObservedConcurrency)
+                        maxObservedConcurrency = currentConcurrency;
+                }
+
+                await Task.Delay(50, cancellationToken);
+
+                lock (lockObj)
+                {
+                    currentConcurrency--;
+                }
+
+                return GetShellDescriptorTemplate();
+            });
+
+        _dataHandler.FillOut(Arg.Any<ShellDescriptor>(), Arg.Any<ShellDescriptorMetaData>())
+            .Returns(callInfo =>
+            {
+                var value = callInfo.ArgAt<ShellDescriptorMetaData>(1);
+                return new ShellDescriptor { Id = value.Id };
+            });
+
+        var result = await sut.GetAllShellDescriptorsAsync(null, null, cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.Equal(6, result.Result!.Count);
+        Assert.True(maxObservedConcurrency <= concurrencyLimit,
+            $"Expected max concurrency <= {concurrencyLimit}, but observed {maxObservedConcurrency}");
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_SkipsFailedDescriptors_InParallelExecution()
+    {
+        var cancellationToken = CancellationToken.None;
+        var metadataList = new List<ShellDescriptorMetaData>
+        {
+            new() { Id = "good-1" },
+            new() { Id = "bad-1" },
+            new() { Id = "good-2" },
+            new() { Id = null },
+            new() { Id = "good-3" }
+        };
+        var metaData = new ShellDescriptorsMetaData
+        {
+            PagingMetaData = null,
+            ShellDescriptors = metadataList
+        };
+
+        _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
+            .Returns(metaData);
+
+        _shellTemplateMappingProvider.GetTemplateId("good-1").Returns("template-1");
+        _shellTemplateMappingProvider.GetTemplateId("good-2").Returns("template-1");
+        _shellTemplateMappingProvider.GetTemplateId("good-3").Returns("template-1");
+        _shellTemplateMappingProvider.GetTemplateId("bad-1").Throws(new ResourceNotFoundException());
+
+        _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(GetShellDescriptorTemplate());
+        _dataHandler.FillOut(Arg.Any<ShellDescriptor>(), Arg.Any<ShellDescriptorMetaData>())
+            .Returns(callInfo =>
+            {
+                var value = callInfo.ArgAt<ShellDescriptorMetaData>(1);
+                return new ShellDescriptor { Id = value.Id };
+            });
+
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Result);
+        Assert.Equal(3, result.Result.Count);
+        Assert.Contains(result.Result, d => d.Id == "good-1");
+        Assert.Contains(result.Result, d => d.Id == "good-2");
+        Assert.Contains(result.Result, d => d.Id == "good-3");
+        Assert.DoesNotContain(result.Result, d => d.Id == "bad-1");
+    }
+
 
     private static List<ShellDescriptorMetaData> GetShellDescriptorDataList()
     => [
@@ -391,6 +546,4 @@ public class ShellDescriptorServiceTests
             ]
         }
     ];
-
-    #endregion
 }
