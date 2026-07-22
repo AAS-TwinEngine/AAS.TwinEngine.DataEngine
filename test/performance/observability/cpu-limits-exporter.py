@@ -84,7 +84,7 @@ if __name__ == '__main__':
         try:
             update_metrics()
         except Exception as e:
-            logger.error(f"Error updating metrics: {e}")
+            logger.exception("Error updating metrics")
         
         # Update every 30 seconds
         time.sleep(30)
