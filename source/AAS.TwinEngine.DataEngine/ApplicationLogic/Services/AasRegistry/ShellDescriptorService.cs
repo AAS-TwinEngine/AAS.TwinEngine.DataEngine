@@ -36,7 +36,6 @@ public class ShellDescriptorService(
                     shellDescriptors.Add(shellDescriptor);
                 }
             }
-
             return new ShellDescriptors
             {
                 PagingMetaData = metadata.PagingMetaData,

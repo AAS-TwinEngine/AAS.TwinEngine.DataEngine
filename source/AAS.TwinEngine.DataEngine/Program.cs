@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration;
 
 using Asp.Versioning;
 
+using Microsoft.Extensions.Caching.Hybrid;
+
 using Serilog;
 
 namespace AAS.TwinEngine.DataEngine;
@@ -32,6 +34,15 @@ public class Program
             .AddCheck<TemplateRepositoryHealthCheck>("template_repository");
 
         _ = builder.Services.AddHttpContextAccessor();
+
+        _ = builder.Services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(5),
+                LocalCacheExpiration = TimeSpan.FromMinutes(5)
+            };
+        });
 
         var allowedHosts = builder.Configuration.GetValue<string>("General:AllowedHosts") ?? "*";
         _ = builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>

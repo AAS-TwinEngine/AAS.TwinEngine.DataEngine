@@ -41,6 +41,12 @@
           "JsonPointer.Net": "5.3.1"
         }
       },
+      "Microsoft.Extensions.Caching.Hybrid": {
+        "type": "Direct",
+        "requested": "[9.6.0, 9.6.0]",
+        "resolved": "9.6.0",
+        "contentHash": "GUNDDD/J3vX9zxt/6xAfFECdnF3Rcjn44Ksvh4Pd+8X2KH4YL5xUX80DhK1vRwF3c93b7E1YTbUCG3HdLF/QOA=="
+      },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Direct",
         "requested": "[10.0.8, 10.0.8]",

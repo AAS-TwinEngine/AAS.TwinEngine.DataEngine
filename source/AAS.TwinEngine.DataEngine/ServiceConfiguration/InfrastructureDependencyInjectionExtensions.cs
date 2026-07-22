@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -15,6 +15,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Servic
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration;
@@ -28,7 +29,12 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IRequestHeaderMapper, RequestHeaderMapper>();
 
         _ = services.AddScoped<PluginManifestInitializer>();
-        _ = services.AddScoped<ITemplateProvider, TemplateProvider>();
+        _ = services.AddScoped<TemplateProvider>();
+        _ = services.AddScoped<ITemplateProvider>(sp =>
+            new CachingTemplateProvider(
+                sp.GetRequiredService<HybridCache>(),
+                sp.GetRequiredService<IHttpContextAccessor>(),
+                sp.GetRequiredService<TemplateProvider>()));
         _ = services.AddScoped<ISubmodelTemplateMappingProvider, SubmodelTemplateMappingProvider>();
         _ = services.AddScoped<IShellTemplateMappingProvider, ShellTemplateMappingProvider>();
 
@@ -115,7 +121,12 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();
         _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
-        _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();
+        _ = services.AddScoped<SubmodelDescriptorProvider>();
+        _ = services.AddScoped<ISubmodelDescriptorProvider>(sp =>
+            new CachingSubmodelDescriptorProvider(
+                sp.GetRequiredService<HybridCache>(),
+                sp.GetRequiredService<IHttpContextAccessor>(),
+                sp.GetRequiredService<SubmodelDescriptorProvider>()));
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
     }
 }
