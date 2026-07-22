@@ -44,7 +44,7 @@ scrape_configs:
           - otel-docker-stats-collector:8080
 
   - job_name: cpu-limits
-    scrape_interval: 30s
+    scrape_interval: 5s
     static_configs:
       - targets:
           - docker-resource-exporter:8000
