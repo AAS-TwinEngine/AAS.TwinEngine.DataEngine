@@ -17,8 +17,8 @@ The stack in `docker-compose.yml` starts these main services:
 3. `postgres`
 4. `pgadmin`
 5. `otel-lgtm`
-6. `cadvisor`
-7. `cpu-limits-exporter`
+6. `otel-docker-stats-collector`
+7. `docker-resource-exporter`
 8. Supporting services (`nginx`, `mongo`, template repositories, registries, UI)
 
 ## What Is Required

@@ -26,7 +26,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:develop
+    image: dataengine:test
     build:
       context: ../../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
@@ -104,7 +104,7 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:develop
+    image: plugindpp:test
     container_name: dpp-plugin
     build:
       context: ../../AAS.TwinEngine.Plugin.DPP/source
@@ -270,24 +270,21 @@ services:
     networks:
       - twinengine-network
 
-  cpu-limits-exporter:
+  docker-resource-exporter:
     build:
       context: ./observability
       dockerfile: Dockerfile.exporter
-    container_name: cpu-limits-exporter
-    environment:
-      - TWINENGINE_CPU=${TWINENGINE_CPU:-1}
-      - DPP_PLUGIN_CPU=${DPP_PLUGIN_CPU:-1}
-      - POSTGRES_CPU=${POSTGRES_CPU:-1}
+    container_name: docker-resource-exporter
+    user: "0:0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
     networks:
       - twinengine-network
 
-  cadvisor:
-    image: otel/opentelemetry-collector-contrib:0.111.0
-    container_name: cadvisor
+  otel-docker-stats-collector:
+    image: otel/opentelemetry-collector-contrib:0.153.0
+    container_name: otel-docker-stats-collector
     user: "0:0"
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:

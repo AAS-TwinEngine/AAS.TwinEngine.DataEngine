@@ -37,14 +37,14 @@ storage:
     out_of_order_time_window: 10m
 
 scrape_configs:
-  - job_name: cadvisor
+  - job_name: otel-docker-stats
     scrape_interval: 5s
     static_configs:
       - targets:
-          - cadvisor:8080
+          - otel-docker-stats-collector:8080
 
   - job_name: cpu-limits
     scrape_interval: 30s
     static_configs:
       - targets:
-          - cpu-limits-exporter:8000
+          - docker-resource-exporter:8000
