@@ -36,7 +36,7 @@ services:
         condition: service_started
       otel-lgtm:
         condition: service_started
-    cpus: ${TWINENGINE_CPU:-1}
+    cpus: ${TWINENGINE_CPU:-0.5}
     mem_limit: ${TWINENGINE_MEMORY:-1g}
     restart: always
     environment:
@@ -114,7 +114,7 @@ services:
         condition: service_healthy
       otel-lgtm:
         condition: service_started
-    cpus: ${DPP_PLUGIN_CPU:-1}
+    cpus: ${DPP_PLUGIN_CPU:-0.5}
     mem_limit: ${DPP_PLUGIN_MEMORY:-1g}
     restart: always
     environment:
@@ -222,8 +222,8 @@ services:
   postgres:
     image: postgres:14.23-alpine3.24
     container_name: postgres
-    cpus: ${POSTGRES_CPU:-1}
-    mem_limit: ${POSTGRES_MEMORY:-1g}
+    cpus: ${POSTGRES_CPU:-4}
+    mem_limit: ${POSTGRES_MEMORY:-8g}
     ports:
       - "9999:5432"
     environment:
