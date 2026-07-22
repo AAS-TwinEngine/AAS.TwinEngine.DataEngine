@@ -16,15 +16,12 @@ public class SubmodelRepositoryHandler(
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
     {
-        var queryOptions = request?.Level is not null || request?.Extent is not null
-            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
-            : null;
+        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString()) : null;
 
         return GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetSubmodelAsync(id, queryOptions, cancellationToken)!
-        );
+            id => submodelRepositoryService.GetSubmodelAsync(id, queryOptions, cancellationToken)!);
     }
 
     public Task<ISubmodelElement> GetSubmodelElement(GetSubmodelElementRequest request, CancellationToken cancellationToken)
@@ -35,8 +32,7 @@ public class SubmodelRepositoryHandler(
         return GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel element",
-            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, cancellationToken)!
-            );
+            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, cancellationToken)!);
     }
 
     public async Task<SubmodelsDto> GetAllSubmodels(GetAllSubmodelsRequest request, CancellationToken cancellationToken)
@@ -50,20 +46,14 @@ public class SubmodelRepositoryHandler(
             IdShort = request?.IdShort
         };
 
-        var queryOptions = request?.Level is not null || request?.Extent is not null
-            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
-            : null;
+        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString()) : null;
 
-        var result = await submodelRepositoryService
-            .GetAllSubmodelsAsync(filter, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
-            .ConfigureAwait(false);
+        var result = await submodelRepositoryService.GetAllSubmodelsAsync(filter, queryOptions, request?.Limit, request?.Cursor, cancellationToken).ConfigureAwait(false);
 
         return result.ToDto();
     }
 
-    public async Task<SubmodelElementsDto> GetAllSubmodelElements(
-    GetAllSubmodelElementsRequest request,
-    CancellationToken cancellationToken)
+    public async Task<SubmodelElementsDto> GetAllSubmodelElements(GetAllSubmodelElementsRequest request, CancellationToken cancellationToken)
     {
         request?.Limit.ValidateLimit(logger);
         request?.Cursor?.ValidateCursor(logger);
@@ -75,12 +65,7 @@ public class SubmodelRepositoryHandler(
         var result = await GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetAllSubmodelElementsAsync(
-                id,
-                queryOptions,
-                request?.Limit,
-                request?.Cursor,
-                cancellationToken));
+            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
 
         return result.ToDto();
     }
