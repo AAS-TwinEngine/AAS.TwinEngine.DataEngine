@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.Api.Shared;
+﻿using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
@@ -16,7 +16,7 @@ public static class SubmodelsMapperProfile
             {
                 Cursor = submodelList.PagingMetaData?.Cursor
             },
-            Result = submodelList.Result.Select(Jsonization.Serialize.ToJsonObject).ToList()
+            Result = [.. submodelList.Result.Select(Jsonization.Serialize.ToJsonObject)]
         };
     }
 
@@ -28,7 +28,7 @@ public static class SubmodelsMapperProfile
             {
                 Cursor = submodelElementsPage.PagingMetaData?.Cursor
             },
-            Result = submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject).ToList()
+            Result = [.. submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject)]
         };
     }
 }

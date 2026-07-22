@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.MappingProfiles;
+﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -61,21 +61,26 @@ public class SubmodelRepositoryHandler(
         return result.ToDto();
     }
 
-    public async Task<SubmodelElementsDto> GetAllSubmodelElements(GetAllSubmodelElementsRequest request, CancellationToken cancellationToken)
+    public async Task<SubmodelElementsDto> GetAllSubmodelElements(
+    GetAllSubmodelElementsRequest request,
+    CancellationToken cancellationToken)
     {
         request?.Limit.ValidateLimit(logger);
         request?.Cursor?.ValidateCursor(logger);
-
-        var decodedId = request?.SubmodelId?.DecodeBase64Url(logger);
-        logger.LogInformation("Start executing get all submodel elements request. ID: {DecodedId}", decodedId);
 
         var queryOptions = request?.Level is not null || request?.Extent is not null
             ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
             : null;
 
-        var result = await submodelRepositoryService
-            .GetAllSubmodelElementsAsync(decodedId!, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
-            .ConfigureAwait(false);
+        var result = await GetResourceByIdAsync(
+            request?.SubmodelId,
+            "submodel",
+            id => submodelRepositoryService.GetAllSubmodelElementsAsync(
+                id,
+                queryOptions,
+                request?.Limit,
+                request?.Cursor,
+                cancellationToken));
 
         return result.ToDto();
     }
