@@ -114,6 +114,10 @@
     <None Update="SubmodelRepository\TestData\GetAllSubmodels_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Discovery\TestData\GetSpecificAssetIdByAasIdentifier_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+
   </ItemGroup>
 
 </Project>
