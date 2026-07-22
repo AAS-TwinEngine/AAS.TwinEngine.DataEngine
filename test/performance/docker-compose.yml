@@ -285,7 +285,7 @@ services:
   otel-docker-stats-collector:
     image: otel/opentelemetry-collector-contrib:0.153.0
     container_name: otel-docker-stats-collector
-    user: "65534:65534"
+    user: "0:0"
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
