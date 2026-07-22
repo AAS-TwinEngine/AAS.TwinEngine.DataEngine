@@ -34,7 +34,8 @@ public static class InfrastructureDependencyInjectionExtensions
             new CachingTemplateProvider(
                 sp.GetRequiredService<HybridCache>(),
                 sp.GetRequiredService<IHttpContextAccessor>(),
-                sp.GetRequiredService<TemplateProvider>()));
+                sp.GetRequiredService<TemplateProvider>(),
+                sp.GetRequiredService<IOptions<TemplateManagementConfig>>()));
         _ = services.AddScoped<ISubmodelTemplateMappingProvider, SubmodelTemplateMappingProvider>();
         _ = services.AddScoped<IShellTemplateMappingProvider, ShellTemplateMappingProvider>();
 
@@ -126,7 +127,8 @@ public static class InfrastructureDependencyInjectionExtensions
             new CachingSubmodelDescriptorProvider(
                 sp.GetRequiredService<HybridCache>(),
                 sp.GetRequiredService<IHttpContextAccessor>(),
-                sp.GetRequiredService<SubmodelDescriptorProvider>()));
+                sp.GetRequiredService<SubmodelDescriptorProvider>(),
+                sp.GetRequiredService<IOptions<TemplateManagementConfig>>()));
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
     }
 }

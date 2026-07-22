@@ -7,18 +7,29 @@ using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Caching;
 
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
 using AasCore.Aas3_1;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
 public class CachingTemplateProvider(
     HybridCache cache,
     IHttpContextAccessor httpContextAccessor,
-    ITemplateProvider innerProvider) : ITemplateProvider
+    ITemplateProvider innerProvider,
+    IOptions<TemplateManagementConfig> options) : ITemplateProvider
 {
+    private readonly TemplateManagementConfig _config = options.Value;
+
+    private HybridCacheEntryOptions GetOptions(int expirationInMinutes) => new()
+    {
+        Expiration = TimeSpan.FromMinutes(expirationInMinutes),
+        LocalCacheExpiration = TimeSpan.FromMinutes(expirationInMinutes)
+    };
     private const string MethodGetFilteredSubmodel = "GetFilteredSubmodelTemplate";
     private const string MethodGetFilteredSubmodelBySemanticId = "GetFilteredSubmodelTemplateBySemanticId";
     private const string MethodGetShellDescriptorTemplate = "GetShellDescriptorTemplate";
@@ -45,6 +56,7 @@ public class CachingTemplateProvider(
                     ? Jsonization.Serialize.ToJsonObject(result).ToJsonString()
                     : null;
             },
+            options: GetOptions(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (json is null)
@@ -73,6 +85,7 @@ public class CachingTemplateProvider(
                     ? Jsonization.Serialize.ToJsonObject(result).ToJsonString()
                     : null;
             },
+            options: GetOptions(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (json is null)
@@ -99,6 +112,7 @@ public class CachingTemplateProvider(
                 var result = await innerProvider.GetShellDescriptorTemplateAsync(templateId, token).ConfigureAwait(false);
                 return DescriptorSerializer.SerializeShellDescriptor(result);
             },
+            options: GetOptions(_config.AasTemplateRegistry.LocalCacheExpirationInMinutes),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return DescriptorSerializer.DeserializeShellDescriptor(json!);
@@ -118,6 +132,7 @@ public class CachingTemplateProvider(
                 var result = await innerProvider.GetShellTemplateAsync(templateId, token).ConfigureAwait(false);
                 return Jsonization.Serialize.ToJsonObject(result).ToJsonString();
             },
+            options: GetOptions(_config.AasTemplateRepository.LocalCacheExpirationInMinutes),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var jsonNode = JsonNode.Parse(json!);
@@ -138,6 +153,7 @@ public class CachingTemplateProvider(
                 var result = await innerProvider.GetAssetInformationTemplateAsync(templateId, token).ConfigureAwait(false);
                 return Jsonization.Serialize.ToJsonObject(result).ToJsonString();
             },
+            options: GetOptions(_config.AasTemplateRepository.LocalCacheExpirationInMinutes),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var jsonNode = JsonNode.Parse(json!);
@@ -159,6 +175,7 @@ public class CachingTemplateProvider(
                 var jsonArray = new JsonArray(result.Select(r => Jsonization.Serialize.ToJsonObject(r)).ToArray<JsonNode>());
                 return jsonArray.ToJsonString();
             },
+            options: GetOptions(_config.AasTemplateRepository.LocalCacheExpirationInMinutes),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var parsedArray = JsonNode.Parse(json!) as JsonArray;
@@ -183,6 +200,7 @@ public class CachingTemplateProvider(
                     ? Jsonization.Serialize.ToJsonObject(result).ToJsonString()
                     : null;
             },
+            options: GetOptions(_config.ConceptDescriptionTemplateRepository.LocalCacheExpirationInMinutes),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (json is null)

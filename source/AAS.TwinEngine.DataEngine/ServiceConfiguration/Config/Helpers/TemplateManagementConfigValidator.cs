@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 
 using Microsoft.Extensions.Options;
 
@@ -39,6 +39,11 @@ public class TemplateManagementConfigValidator : IValidateOptions<TemplateManage
             if (endpoint.ConcurrentOperationsLimit <= 0)
             {
                 errors.Add($"{TemplateManagementConfig.Section}.{endpointName}.ConcurrentOperationsLimit is required and must be greater than 0.");
+            }
+
+            if (endpoint.LocalCacheExpirationInMinutes <= 0)
+            {
+                errors.Add($"{TemplateManagementConfig.Section}.{endpointName}.LocalCacheExpirationInMinutes is required and must be greater than 0.");
             }
         }
 

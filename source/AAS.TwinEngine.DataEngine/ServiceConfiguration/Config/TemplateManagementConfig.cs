@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 
 namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -40,4 +40,5 @@ public class ServiceInstance
     public IList<HeaderMappingRule> HeaderMappings { get; init; } = [];
     public string HealthEndpoint { get; set; } = string.Empty;
     public int ConcurrentOperationsLimit { get; set; } = 10;
+    public int LocalCacheExpirationInMinutes { get; set; } = 5;
 }

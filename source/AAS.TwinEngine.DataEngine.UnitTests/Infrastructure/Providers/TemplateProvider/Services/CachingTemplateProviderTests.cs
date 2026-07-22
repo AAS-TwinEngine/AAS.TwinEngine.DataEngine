@@ -1,9 +1,10 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Caching;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 
@@ -43,7 +44,17 @@ public class CachingTemplateProviderTests : IDisposable
         _serviceProvider = services.BuildServiceProvider();
 
         var hybridCache = _serviceProvider.GetRequiredService<HybridCache>();
-        _sut = new CachingTemplateProvider(hybridCache, _httpContextAccessor, _innerProvider);
+        
+        var options = Substitute.For<Microsoft.Extensions.Options.IOptions<TemplateManagementConfig>>();
+        options.Value.Returns(new TemplateManagementConfig
+        {
+            SubmodelTemplateRepository = new ServiceInstance { LocalCacheExpirationInMinutes = 5 },
+            AasTemplateRegistry = new ServiceInstance { LocalCacheExpirationInMinutes = 5 },
+            AasTemplateRepository = new ServiceInstance { LocalCacheExpirationInMinutes = 5 },
+            ConceptDescriptionTemplateRepository = new ServiceInstance { LocalCacheExpirationInMinutes = 5 }
+        });
+
+        _sut = new CachingTemplateProvider(hybridCache, _httpContextAccessor, _innerProvider, options);
     }
 
     public void Dispose()

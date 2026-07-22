@@ -116,4 +116,38 @@ public class TemplateManagementConfigValidatorTests
         Assert.Contains("AasTemplateRegistry.ConcurrentOperationsLimit", result.FailureMessage);
         Assert.Contains("SubmodelTemplateRegistry.ConcurrentOperationsLimit", result.FailureMessage);
     }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Validate_AasTemplateRepository_LocalCacheExpirationInMinutesNotPositive_Fails(int limit)
+    {
+        var config = CreateValidConfig();
+        config.AasTemplateRepository.LocalCacheExpirationInMinutes = limit;
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Failed);
+        Assert.Contains("AasTemplateRepository.LocalCacheExpirationInMinutes", result.FailureMessage);
+    }
+
+    [Fact]
+    public void Validate_AllEndpoints_MissingLocalCacheExpirationInMinutes_ReportsAllErrors()
+    {
+        var config = CreateValidConfig();
+        config.AasTemplateRepository.LocalCacheExpirationInMinutes = 0;
+        config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes = 0;
+        config.ConceptDescriptionTemplateRepository.LocalCacheExpirationInMinutes = 0;
+        config.AasTemplateRegistry.LocalCacheExpirationInMinutes = 0;
+        config.SubmodelTemplateRegistry.LocalCacheExpirationInMinutes = 0;
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Failed);
+        Assert.Contains("AasTemplateRepository.LocalCacheExpirationInMinutes", result.FailureMessage);
+        Assert.Contains("SubmodelTemplateRepository.LocalCacheExpirationInMinutes", result.FailureMessage);
+        Assert.Contains("ConceptDescriptionTemplateRepository.LocalCacheExpirationInMinutes", result.FailureMessage);
+        Assert.Contains("AasTemplateRegistry.LocalCacheExpirationInMinutes", result.FailureMessage);
+        Assert.Contains("SubmodelTemplateRegistry.LocalCacheExpirationInMinutes", result.FailureMessage);
+    }
 }

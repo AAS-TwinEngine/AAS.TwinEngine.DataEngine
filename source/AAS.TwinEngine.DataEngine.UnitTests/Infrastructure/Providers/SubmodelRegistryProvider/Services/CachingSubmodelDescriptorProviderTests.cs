@@ -1,8 +1,9 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -38,7 +39,14 @@ public class CachingSubmodelDescriptorProviderTests : IDisposable
         _serviceProvider = services.BuildServiceProvider();
 
         var hybridCache = _serviceProvider.GetRequiredService<HybridCache>();
-        _sut = new CachingSubmodelDescriptorProvider(hybridCache, _httpContextAccessor, _innerProvider);
+
+        var options = Substitute.For<Microsoft.Extensions.Options.IOptions<TemplateManagementConfig>>();
+        options.Value.Returns(new TemplateManagementConfig
+        {
+            SubmodelTemplateRegistry = new ServiceInstance { LocalCacheExpirationInMinutes = 5 }
+        });
+
+        _sut = new CachingSubmodelDescriptorProvider(hybridCache, _httpContextAccessor, _innerProvider, options);
     }
 
     public void Dispose()
