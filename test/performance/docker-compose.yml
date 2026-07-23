@@ -36,7 +36,7 @@ services:
         condition: service_started
       otel-lgtm:
         condition: service_started
-    cpus: ${TWINENGINE_CPU:-1}
+    cpus: ${TWINENGINE_CPU:-0.5}
     mem_limit: ${TWINENGINE_MEMORY:-1g}
     restart: always
     environment:
@@ -114,7 +114,7 @@ services:
         condition: service_healthy
       otel-lgtm:
         condition: service_started
-    cpus: ${DPP_PLUGIN_CPU:-1}
+    cpus: ${DPP_PLUGIN_CPU:-0.5}
     mem_limit: ${DPP_PLUGIN_MEMORY:-1g}
     restart: always
     environment:
@@ -222,8 +222,8 @@ services:
   postgres:
     image: postgres:14.23-alpine3.24
     container_name: postgres
-    cpus: ${POSTGRES_CPU:-1}
-    mem_limit: ${POSTGRES_MEMORY:-1g}
+    cpus: ${POSTGRES_CPU:-4}
+    mem_limit: ${POSTGRES_MEMORY:-8g}
     ports:
       - "9999:5432"
     environment:
@@ -258,7 +258,7 @@ services:
       - twinengine-network
     
   otel-lgtm:
-    image: grafana/otel-lgtm:latest
+    image: grafana/otel-lgtm:0.29.0
     container_name: lgtm
     ports:
       - "3000:3000"
@@ -270,24 +270,21 @@ services:
     networks:
       - twinengine-network
 
-  cpu-limits-exporter:
+  docker-resource-exporter:
     build:
       context: ./observability
       dockerfile: Dockerfile.exporter
-    container_name: cpu-limits-exporter
-    environment:
-      - TWINENGINE_CPU=${TWINENGINE_CPU:-1}
-      - DPP_PLUGIN_CPU=${DPP_PLUGIN_CPU:-1}
-      - POSTGRES_CPU=${POSTGRES_CPU:-1}
+    container_name: docker-resource-exporter
+    user: "0:0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
     networks:
       - twinengine-network
 
-  cadvisor:
-    image: otel/opentelemetry-collector-contrib:0.111.0
-    container_name: cadvisor
+  otel-docker-stats-collector:
+    image: otel/opentelemetry-collector-contrib:0.153.0
+    container_name: otel-docker-stats-collector
     user: "0:0"
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:

@@ -7,7 +7,7 @@ RUN groupadd -r appuser \
     && pip install --no-cache-dir \
         --only-binary=:all: \
         prometheus-client==0.20.0 \
-        docker==7.0.0
+        docker==7.1.0
 
 COPY cpu-limits-exporter.py .
 

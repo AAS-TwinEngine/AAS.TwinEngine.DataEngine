@@ -62,8 +62,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100 * rate(container_cpu_usage_nanoseconds_total{container_name=\"twinengine-dataengine\"}[30s]) / 1e9 / on(container_name) group_left(cpu_limit) container_cpu_limit_cores{container_name=\"twinengine-dataengine\"}",
-          "interval": "10s",
+          "expr": "100 * rate(container_cpu_usage_nanoseconds_total{container_name=\"twinengine-dataengine\"}[30s]) / 1e9 / on(container_name) group_left() label_replace(container_cpu_limit_cores{container=\"twinengine-dataengine\"}, \"container_name\", \"$1\", \"container\", \"(.*)\")",
+          "interval": "5s",
           "legendFormat": "CPU",
           "range": true,
           "refId": "A"
@@ -114,7 +114,7 @@
           },
           "editorMode": "code",
           "expr": "container_memory_usage_total_bytes{container_name=\"twinengine-dataengine\"}",
-          "interval": "10s",
+          "interval": "5s",
           "legendFormat": "Memory",
           "range": true,
           "refId": "A"
@@ -164,8 +164,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100 * rate(container_cpu_usage_nanoseconds_total{container_name=\"dpp-plugin\"}[30s]) / 1e9 / on(container_name) group_left(cpu_limit) container_cpu_limit_cores{container_name=\"dpp-plugin\"}",
-          "interval": "10s",
+          "expr": "100 * rate(container_cpu_usage_nanoseconds_total{container_name=\"dpp-plugin\"}[30s]) / 1e9 / on(container_name) group_left() label_replace(container_cpu_limit_cores{container=\"dpp-plugin\"}, \"container_name\", \"$1\", \"container\", \"(.*)\")",
+          "interval": "5s",
           "legendFormat": "CPU",
           "range": true,
           "refId": "A"
@@ -216,7 +216,7 @@
           },
           "editorMode": "code",
           "expr": "container_memory_usage_total_bytes{container_name=\"dpp-plugin\"}",
-          "interval": "10s",
+          "interval": "5s",
           "legendFormat": "Memory",
           "range": true,
           "refId": "A"
@@ -266,8 +266,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100 * rate(container_cpu_usage_nanoseconds_total{container_name=\"postgres\"}[30s]) / 1e9 / on(container_name) group_left(cpu_limit) container_cpu_limit_cores{container_name=\"postgres\"}",
-          "interval": "10s",
+          "expr": "100 * rate(container_cpu_usage_nanoseconds_total{container_name=\"postgres\"}[30s]) / 1e9 / on(container_name) group_left() label_replace(container_cpu_limit_cores{container=\"postgres\"}, \"container_name\", \"$1\", \"container\", \"(.*)\")",
+          "interval": "5s",
           "legendFormat": "CPU",
           "range": true,
           "refId": "A"
@@ -318,7 +318,7 @@
           },
           "editorMode": "code",
           "expr": "container_memory_usage_total_bytes{container_name=\"postgres\"}",
-          "interval": "10s",
+          "interval": "5s",
           "legendFormat": "Memory",
           "range": true,
           "refId": "A"
@@ -331,7 +331,7 @@
   "refresh": "5s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["containers", "cadvisor", "custom"],
+  "tags": ["containers", "otel-docker-stats", "custom"],
   "templating": {
     "list": []
   },

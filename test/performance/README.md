@@ -17,8 +17,8 @@ The stack in `docker-compose.yml` starts these main services:
 3. `postgres`
 4. `pgadmin`
 5. `otel-lgtm`
-6. `cadvisor`
-7. `cpu-limits-exporter`
+6. `otel-docker-stats-collector`
+7. `docker-resource-exporter`
 8. Supporting services (`nginx`, `mongo`, template repositories, registries, UI)
 
 ## What Is Required
@@ -32,14 +32,14 @@ The stack in `docker-compose.yml` starts these main services:
 This performance stack reads CPU and memory settings from `.env`:
 
 ```env
-TWINENGINE_CPU=1
+TWINENGINE_CPU=0.5
 TWINENGINE_MEMORY=1g
 
-DPP_PLUGIN_CPU=1
+DPP_PLUGIN_CPU=0.5
 DPP_PLUGIN_MEMORY=1g
 
 POSTGRES_CPU=4
-POSTGRES_MEMORY=2g
+POSTGRES_MEMORY=8g
 ```
 
 These values are applied through `cpus` and `mem_limit` in `docker-compose.yml`.
