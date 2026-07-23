@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -24,6 +24,12 @@ public sealed class CachedGetRequestClient(
 {
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
+        if (!IsCacheEnabled(httpContextAccessor))
+        {
+            logger.LogInformation("Cache bypassed because 'isCacheEnable=false' was specified.");
+            return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
+        }
+
         var cacheKey = BuildCacheKey(httpContextAccessor, relativeUrl);
 
         var entryOptions = new HybridCacheEntryOptions
@@ -39,12 +45,12 @@ public sealed class CachedGetRequestClient(
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<string> FetchAsync(string relativeUrl, string httpClientName, CancellationToken cancellationToken)
+    private async Task<string> FetchAsync(string url, string httpClientName, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(relativeUrl));
+        logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(url));
 
         var httpClient = clientFactory.CreateClient(httpClientName);
-        var relativeUri = new Uri(relativeUrl, UriKind.Relative);
+        var relativeUri = new Uri(url, UriKind.Relative);
 
         var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);
 
@@ -100,5 +106,22 @@ public sealed class CachedGetRequestClient(
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return Convert.ToHexStringLower(bytes);
+    }
+
+    private static bool IsCacheEnabled(IHttpContextAccessor httpContextAccessor)
+    {
+        var query = httpContextAccessor.HttpContext?.Request.Query;
+
+        if (query is null)
+        {
+            return true;
+        }
+
+        if (!query.TryGetValue("isCacheEnable", out var value))
+        {
+            return true;
+        }
+
+        return !bool.TryParse(value, out var enabled) || enabled;
     }
 }
