@@ -15,7 +15,7 @@
 -- Maintenance Instructions
 -- ============================================================
 
-CREATE TABLE "MaintenanceInstructionsForSpecificInterval" (
+CREATE TABLE IF NOT EXISTS "MaintenanceInstructionsForSpecificInterval" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "MaintenanceID" VARCHAR(50),
@@ -41,7 +41,7 @@ CREATE TABLE "MaintenanceInstructionsForSpecificInterval" (
 -- Asset ↔ MaintenanceInstruction Mapping
 -- ============================================================
 
-CREATE TABLE "AssetMaintenanceInstruction" (
+CREATE TABLE IF NOT EXISTS "AssetMaintenanceInstruction" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "MaintenanceInstructionId" INT NOT NULL
@@ -52,7 +52,7 @@ CREATE TABLE "AssetMaintenanceInstruction" (
 -- Alarm Table
 -- ============================================================
 
-CREATE TABLE "Alarm" (
+CREATE TABLE IF NOT EXISTS "Alarm" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "AlarmName_en" TEXT,
@@ -65,7 +65,7 @@ CREATE TABLE "Alarm" (
 -- MaintenanceInstruction ↔ Alarm Mapping
 -- ============================================================
 
-CREATE TABLE "MaintenanceInstructionAlarm" (
+CREATE TABLE IF NOT EXISTS "MaintenanceInstructionAlarm" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "MaintenanceInstructionId" INT NOT NULL
         REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE,
@@ -76,7 +76,7 @@ CREATE TABLE "MaintenanceInstructionAlarm" (
 -- Contact For Maintenance Authorization
 -- ============================================================
 
-CREATE TABLE "ContactForMaintenanceAuthorization" (
+CREATE TABLE IF NOT EXISTS "ContactForMaintenanceAuthorization" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "Company_en" TEXT,
@@ -108,7 +108,7 @@ CREATE TABLE "ContactForMaintenanceAuthorization" (
     "RoleOfContactPerson" TEXT
 );
 
-CREATE TABLE "Email" (
+CREATE TABLE IF NOT EXISTS "Email" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "ContactForMaintenanceAuthorizationId" INT UNIQUE
         REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
@@ -120,7 +120,7 @@ CREATE TABLE "Email" (
     "TypeOfPublicKey_de" TEXT
 );
 
-CREATE TABLE "Phone" (
+CREATE TABLE IF NOT EXISTS "Phone" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "ContactForMaintenanceAuthorizationId" INT UNIQUE
         REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
@@ -131,7 +131,7 @@ CREATE TABLE "Phone" (
     "TypeOfTelephone" TEXT
 );
 
-CREATE TABLE "Fax" (
+CREATE TABLE IF NOT EXISTS "Fax" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "ContactForMaintenanceAuthorizationId" INT UNIQUE
         REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE,
@@ -140,13 +140,13 @@ CREATE TABLE "Fax" (
     "TypeOfFaxNumber" TEXT
 );
 
-CREATE TABLE "MaintenanceInstructionContactForMaintenanceAuthorization" (
+CREATE TABLE IF NOT EXISTS "MaintenanceInstructionContactForMaintenanceAuthorization" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "MaintenanceInstructionId" INT REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE,
     "ContactForMaintenanceAuthorizationId" INT REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "MaintenanceStep" (
+CREATE TABLE IF NOT EXISTS "MaintenanceStep" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "MaintenanceStepID" TEXT,
@@ -171,7 +171,7 @@ CREATE TABLE "MaintenanceStep" (
     "UnitEstimatedDurationTimeMaintenanceStep" TEXT
 );
 
-CREATE TABLE "MaintenanceInstructionsForSpecificIntervalMaintenanceStep" (
+CREATE TABLE IF NOT EXISTS "MaintenanceInstructionsForSpecificIntervalMaintenanceStep" (
     "MaintenanceInstructionsForSpecificIntervalId" INT
         REFERENCES "MaintenanceInstructionsForSpecificInterval"("Id") ON DELETE CASCADE,
     "MaintenanceStepId" INT REFERENCES "MaintenanceStep"("Id") ON DELETE CASCADE,
@@ -181,7 +181,7 @@ CREATE TABLE "MaintenanceInstructionsForSpecificIntervalMaintenanceStep" (
     )
 );
 
-CREATE TABLE "MaintenanceTool" (
+CREATE TABLE IF NOT EXISTS "MaintenanceTool" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "ToolID" TEXT,
@@ -196,13 +196,13 @@ CREATE TABLE "MaintenanceTool" (
     "MaxQuantityOfTool" INT
 );
 
-CREATE TABLE "AssetMaintenanceTool" (
+CREATE TABLE IF NOT EXISTS "AssetMaintenanceTool" (
     "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "MaintenanceToolId" INT REFERENCES "MaintenanceTool"("Id") ON DELETE CASCADE,
     PRIMARY KEY ("AssetId", "MaintenanceToolId")
 );
 
-CREATE TABLE "MaintenanceConsumable" (
+CREATE TABLE IF NOT EXISTS "MaintenanceConsumable" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "ConsumableID" TEXT,
@@ -220,7 +220,7 @@ CREATE TABLE "MaintenanceConsumable" (
     "QuantityOfConsumable" INT
 );
 
-CREATE TABLE "AssetMaintenanceConsumable" (
+CREATE TABLE IF NOT EXISTS "AssetMaintenanceConsumable" (
     "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "MaintenanceConsumableId" INT REFERENCES "MaintenanceConsumable"("Id") ON DELETE CASCADE,
     PRIMARY KEY (
@@ -229,7 +229,7 @@ CREATE TABLE "AssetMaintenanceConsumable" (
     )
 );
 
-CREATE TABLE "MaintenanceSparePart" (
+CREATE TABLE IF NOT EXISTS "MaintenanceSparePart" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "SparePartID" TEXT,
@@ -246,7 +246,7 @@ CREATE TABLE "MaintenanceSparePart" (
     "QuantityOfSparePart" INT
 );
 
-CREATE TABLE "AssetMaintenanceSparePart" (
+CREATE TABLE IF NOT EXISTS "AssetMaintenanceSparePart" (
     "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "MaintenanceSparePartId" INT REFERENCES "MaintenanceSparePart"("Id") ON DELETE CASCADE,
     PRIMARY KEY ("AssetId", "MaintenanceSparePartId")
