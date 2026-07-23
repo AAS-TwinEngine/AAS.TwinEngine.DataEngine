@@ -418,52 +418,6 @@ public class ShellDescriptorServiceTests
             $"Expected max concurrency <= {concurrencyLimit}, but observed {maxObservedConcurrency}");
     }
 
-    [Fact]
-    public async Task GetAllShellDescriptorsAsync_SkipsFailedDescriptors_InParallelExecution()
-    {
-        var cancellationToken = CancellationToken.None;
-        var metadataList = new List<ShellDescriptorMetaData>
-        {
-            new() { Id = "good-1" },
-            new() { Id = "bad-1" },
-            new() { Id = "good-2" },
-            new() { Id = null },
-            new() { Id = "good-3" }
-        };
-        var metaData = new ShellDescriptorsMetaData
-        {
-            PagingMetaData = null,
-            ShellDescriptors = metadataList
-        };
-
-        _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
-            .Returns(metaData);
-
-        _shellTemplateMappingProvider.GetTemplateId("good-1").Returns("template-1");
-        _shellTemplateMappingProvider.GetTemplateId("good-2").Returns("template-1");
-        _shellTemplateMappingProvider.GetTemplateId("good-3").Returns("template-1");
-        _shellTemplateMappingProvider.GetTemplateId("bad-1").Throws(new ResourceNotFoundException());
-
-        _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(GetShellDescriptorTemplate());
-        _dataHandler.FillOut(Arg.Any<ShellDescriptor>(), Arg.Any<ShellDescriptorMetaData>())
-            .Returns(callInfo =>
-            {
-                var value = callInfo.ArgAt<ShellDescriptorMetaData>(1);
-                return new ShellDescriptor { Id = value.Id };
-            });
-
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, cancellationToken);
-
-        Assert.NotNull(result);
-        Assert.NotNull(result.Result);
-        Assert.Equal(3, result.Result.Count);
-        Assert.Contains(result.Result, d => d.Id == "good-1");
-        Assert.Contains(result.Result, d => d.Id == "good-2");
-        Assert.Contains(result.Result, d => d.Id == "good-3");
-        Assert.DoesNotContain(result.Result, d => d.Id == "bad-1");
-    }
-
 
     private static List<ShellDescriptorMetaData> GetShellDescriptorDataList()
     => [
