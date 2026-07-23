@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -26,7 +26,7 @@ public sealed class CachedGetRequestClient(
     {
         if (!IsCacheEnabled(httpContextAccessor))
         {
-            logger.LogInformation("Cache bypassed because 'isCacheEnable=false' was specified.");
+            logger.LogInformation("Cache bypassed because 'noCache=true' was specified.");
             return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
         }
 
@@ -117,11 +117,16 @@ public sealed class CachedGetRequestClient(
             return true;
         }
 
-        if (!query.TryGetValue("isCacheEnable", out var value))
+        if (!query.TryGetValue("noCache", out var value))
         {
             return true;
         }
 
-        return !bool.TryParse(value, out var enabled) || enabled;
+        if (bool.TryParse(value, out var noCache) && noCache)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -329,11 +329,11 @@ public class CachedGetRequestClientTests
     }
 
     [Theory]
-    [InlineData("?isCacheEnable=false", true)]
-    [InlineData("?isCacheEnable=true", false)]
-    [InlineData("?isCacheEnable=invalid", false)]
+    [InlineData("?noCache=true", true)]
+    [InlineData("?noCache=false", false)]
+    [InlineData("?noCache=invalid", false)]
     [InlineData("", false)]
-    public async Task GetStringAsync_RespectsIsCacheEnabledQueryParameter(string queryString, bool expectBypass)
+    public async Task GetStringAsync_RespectsNoCacheQueryParameter(string queryString, bool expectBypass)
     {
         // Arrange
         const string RelativeUrl = "api/test";
