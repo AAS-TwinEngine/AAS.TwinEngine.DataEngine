@@ -100,6 +100,37 @@ public class SubmodelRepositoryController(
     }
 
     /// <summary>
+    /// Returns all SubmodelElements including their hierarchy.
+    /// </summary>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="limit">The maximum number of elements in the response array.</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue.</param>
+    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
+    /// <param name="extent">Determines the serialization of the returned content. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
+    /// <response code="200">List of found submodel elements</response>
+    /// <response code="400">Bad Request, e.g. the request parameters or request format are invalid.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{submodelIdentifier}/submodel-elements")]
+    [ProducesResponseType(typeof(SubmodelElementsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<SubmodelElementsDto>> GetAllSubmodelElementsAsync(
+        [FromRoute] string submodelIdentifier,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
+        [FromQuery] Level? level,
+        [FromQuery] Extent? extent,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get All Submodel Elements");
+        var request = new GetAllSubmodelElementsRequest(submodelIdentifier, limit, cursor, level, extent);
+        var response = await submodelRepositoryHandler.GetAllSubmodelElements(request, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Returns a specific submodel element from the submodel at a specified path
     /// </summary>
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>

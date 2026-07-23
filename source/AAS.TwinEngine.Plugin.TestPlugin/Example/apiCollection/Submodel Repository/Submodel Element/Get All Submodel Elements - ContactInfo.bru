@@ -1,0 +1,26 @@
+meta {
+  name: Get All Submodel Elements - ContactInfo
+  type: http
+  seq: 0
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierContact}}
+}
+
+params:query {
+  ~limit: 100
+  ~cursor: 
+  ~level: deep
+  ~extent: withBlobValue
+}
+
+settings {
+  encodeUrl: true
+}
