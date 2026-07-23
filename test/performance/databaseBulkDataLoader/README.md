@@ -13,6 +13,14 @@ The runner uses the official `postgres:16-alpine` image only as a client contain
 
 The loader does not generate schema. It validates required tables first and exits with an error if any are missing.
 
+## Example .env file
+
+```env
+PG_CONN_STRING=postgresql://postgres:admin@localhost:9999/twinengine
+ASSET_COUNT=1000
+BATCH_SIZE=100
+```
+
 ## Configuration
 
 The loader reads only environment variables:
@@ -20,14 +28,6 @@ The loader reads only environment variables:
 1. `PG_CONN_STRING` (required)
 2. `ASSET_COUNT` (optional, defaults to `1000`)
 3. `BATCH_SIZE` (optional, defaults to `100`)
-
-Create your runtime file:
-
-```bash
-cp .env.example .env
-```
-
-Then update at least `PG_CONN_STRING`.
 
 ## Run
 
