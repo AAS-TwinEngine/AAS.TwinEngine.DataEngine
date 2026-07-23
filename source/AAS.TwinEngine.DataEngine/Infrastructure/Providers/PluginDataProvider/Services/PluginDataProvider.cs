@@ -86,7 +86,7 @@ public class PluginDataProvider(
 
                 if (remainingLimit.HasValue)
                 {
-                    var itemsReceived = CountShellDescriptors(result.Last());
+                    var itemsReceived = CountShellDescriptors(result[^1]);
 
                     remainingLimit -= itemsReceived;
 
