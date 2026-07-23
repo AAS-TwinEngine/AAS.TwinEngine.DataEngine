@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -270,12 +270,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
         }
     }
 
-    private async Task<string> SendGetRequestAsync(string url, string httpClientName, int expirationTime, CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(url));
-
-        return await cachedHttp.GetStringAsync(url, httpClientName, expirationTime, cancellationToken).ConfigureAwait(false);
-    }
+    private async Task<string> SendGetRequestAsync(string url, string httpClientName, int expirationTime, CancellationToken cancellationToken) => await cachedHttp.GetStringAsync(url, httpClientName, expirationTime, cancellationToken).ConfigureAwait(false);
 
     private static ShellDescriptor? DeserializeShellDescriptor(JsonNode? descriptorNode)
     {
