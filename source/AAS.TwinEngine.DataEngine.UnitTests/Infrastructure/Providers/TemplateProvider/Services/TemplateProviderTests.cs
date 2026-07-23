@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -50,7 +50,7 @@ public class TemplateProviderTests
 
         _sut = new Template(logger, options, _cachedHttp);
     }
-    
+
     [Fact]
     public async Task GetShellDescriptorTemplateAsync_ReturnsShellDescriptor_WhenValidResponse()
     {
