@@ -51,7 +51,11 @@ public class PluginDataProvider(
         return result;
     }
 
-    public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
+    public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
+    int? limit,
+    string? cursor,
+    IList<PluginRequestMetaData> pluginRequests,
+    CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -64,6 +68,7 @@ public class PluginDataProvider(
             var url = BuildShellsUrl(remainingLimit, cursor);
 
             var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken);
+
             if (response == null)
             {
                 continue;
@@ -71,20 +76,19 @@ public class PluginDataProvider(
 
             using (response)
             {
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    exceptions.Add(HandleFailureResponse(response.StatusCode));
+                    continue;
+                }
+
+                var shouldStop = await ProcessShellDescriptorResponseAsync(response, result, remainingLimit, cancellationToken).ConfigureAwait(false);
 
                 if (remainingLimit.HasValue)
                 {
-                    var itemsReceived = CountShellDescriptors(responseContent);
-                    remainingLimit -= itemsReceived;
+                    var itemsReceived = CountShellDescriptors(result.Last());
 
-                    if (remainingLimit <= 0)
-                    {
-                        result.Add(responseContent);
-                        break;
-                    }
+                    remainingLimit -= itemsReceived;
 
                     if (itemsReceived >= 0 && remainingLimit > 0)
                     {
@@ -92,14 +96,36 @@ public class PluginDataProvider(
                     }
                 }
 
-                result.Add(responseContent);
-                continue;
-            }
-
-            exceptions.Add(HandleFailureResponse(response.StatusCode));
+                if (shouldStop)
+                {
+                    break;
+                }
             }
         }
+
         return HandleResultOrThrow(result, exceptions);
+    }
+
+    private static async Task<bool> ProcessShellDescriptorResponseAsync(
+    HttpResponseMessage response,
+    IList<string> result,
+    int? remainingLimit,
+    CancellationToken cancellationToken)
+    {
+        var responseContent = await response.Content
+            .ReadAsStringAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        result.Add(responseContent);
+
+        if (!remainingLimit.HasValue)
+        {
+            return false;
+        }
+
+        var itemsReceived = CountShellDescriptors(responseContent);
+
+        return remainingLimit - itemsReceived <= 0;
     }
 
     public Task<IList<string>> GetDataForShellDescriptorByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
@@ -205,11 +231,11 @@ public class PluginDataProvider(
 
             using (response)
             {
-            if (response.IsSuccessStatusCode)
-            {
-                logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
-                result.Add(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
-                continue;
+                if (response.IsSuccessStatusCode)
+                {
+                    logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
+                    result.Add(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+                    continue;
             }
 
             exceptions.Add(HandleFailureResponse(response.StatusCode));

@@ -4,7 +4,7 @@ const defaultConfig = {
     load: {
         vus: 1,
         maxDuration: "10m",
-        loadAllDataMaxDuration: "60m",
+        loadAllShellDescriptorsMaxDuration: "60m",
         gracefulStop: "30s",
         setupTimeout: "10m"
     },
@@ -27,7 +27,7 @@ const defaultConfig = {
         getSubmodelDescriptorById: { enabled: true, requests: 10 },
         getSubmodels: { enabled: false, requests: 10 },
         getSubmodelById: { enabled: true, requests: 10 },
-        loadAllData: { enabled: false, requests: 2 }
+        loadAllShellDescriptors: { enabled: false, requests: 2, limit: 1000 }
     },
     reports: {
         outputPath: "results",
@@ -170,20 +170,33 @@ function buildEndpoints() {
             const endpoint =
                 defaultConfig.endpoints[key];
 
-            endpoints[key] = parseBoolean(
+            let endpointEnabledValue =
                 getEnvValue(
                     toEndpointEnvKey(key)
-                ),
+                );
+
+            if (key === 'loadAllShellDescriptors' && endpointEnabledValue === undefined) {
+                endpointEnabledValue = getEnvValue('ENDPOINT_LOAD_ALL_DATA');
+            }
+
+            endpoints[key] = parseBoolean(
+                endpointEnabledValue,
                 endpoint.enabled
             );
 
-            endpointRequests[key] =
-                parsePositiveInteger(
-                    getEnvValue(
-                        toEndpointRequestsEnvKey(key)
-                    ),
-                    endpoint.requests
+            let endpointRequestsValue =
+                getEnvValue(
+                    toEndpointRequestsEnvKey(key)
                 );
+
+            if (key === 'loadAllShellDescriptors' && endpointRequestsValue === undefined) {
+                endpointRequestsValue = getEnvValue('ENDPOINT_LOAD_ALL_DATA_REQUESTS');
+            }
+
+            endpointRequests[key] = parsePositiveInteger(
+                endpointRequestsValue,
+                endpoint.requests
+            );
         });
 
     return {
@@ -212,9 +225,10 @@ export const config = {
             getEnvValue('MAX_DURATION') ||
             defaultConfig.load.maxDuration,
 
-        loadAllDataMaxDuration:
+        loadAllShellDescriptorsMaxDuration:
+            getEnvValue('LOAD_ALL_SHELL_DESCRIPTORS_MAX_DURATION') ||
             getEnvValue('LOAD_ALL_DATA_MAX_DURATION') ||
-            defaultConfig.load.loadAllDataMaxDuration,
+            defaultConfig.load.loadAllShellDescriptorsMaxDuration,
 
         gracefulStop:
             getEnvValue('GRACEFUL_STOP') ||
@@ -240,6 +254,13 @@ export const config = {
         maxDiscoveredIds: parseNonNegativeInteger(
             getEnvValue('MAX_DISCOVERED_IDS'),
             defaultConfig.discovery.maxDiscoveredIds
+        )
+    },
+
+    loadAllShellDescriptors: {
+        limit: parsePositiveInteger(
+            getEnvValue('LIMIT_FOR_ALL_SHELL_DESCRIPTORS') ?? getEnvValue('LIMIT_FOR_ALL_DATA_LOAD') ?? getEnvValue('LIMITFORALLDATALOAD'),
+            defaultConfig.endpoints.loadAllShellDescriptors.limit
         )
     },
 

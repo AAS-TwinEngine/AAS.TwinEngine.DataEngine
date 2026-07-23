@@ -135,12 +135,12 @@ export const endpointScenarios = [
     },
 
     {
-        key: 'loadAllData',
-        name: 'LoadAllData',
+        key: 'loadAllShellDescriptors',
+        name: 'LoadAllShellDescriptors',
         metricName: 'load_all_data_duration',
         requestMode: 'paged',
-        resolveUrl: ({ baseUrl }) =>
-            `${baseUrl}/shell-descriptors`
+        resolveUrl: ({ baseUrl, config }) =>
+            `${baseUrl}/shell-descriptors?limit=${config.loadAllShellDescriptors.limit}`
     }
 ];
 
@@ -183,6 +183,7 @@ export function resolveScenarioByKey(
         endpoint.resolveUrl({
             baseUrl:
                 config.baseUrl,
+            config,
             data
         });
 

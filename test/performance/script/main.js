@@ -23,8 +23,8 @@ function buildScenarioOptions() {
             }
 
             const scenarioMaxDuration =
-                endpointKey === 'loadAllData'
-                    ? config.load.loadAllDataMaxDuration
+                endpointKey === 'loadAllShellDescriptors'
+                    ? config.load.loadAllShellDescriptorsMaxDuration
                     : config.load.maxDuration;
 
             scenarios[`endpoint_${endpointKey}`] = {

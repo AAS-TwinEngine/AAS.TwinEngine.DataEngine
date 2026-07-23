@@ -179,8 +179,11 @@ export function executePagedRequest(
             break;
         }
 
+        const separator =
+            url.includes('?') ? '&' : '?';
+
         nextUrl =
-            `${url}?cursor=${encodeURIComponent(cursor)}`;
+            `${url}${separator}cursor=${encodeURIComponent(cursor)}`;
     }
 
     addDurationMetric(

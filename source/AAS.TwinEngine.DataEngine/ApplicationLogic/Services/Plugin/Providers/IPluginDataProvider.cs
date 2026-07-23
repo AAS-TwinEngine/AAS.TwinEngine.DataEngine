@@ -4,7 +4,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 
 public interface IPluginDataProvider
 {
-    Task<IList<string>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequest, string submodelId, CancellationToken cancellationToken);
+    Task<IList<string>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequests, string submodelId, CancellationToken cancellationToken);
 
     Task<IList<string>> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);
 
