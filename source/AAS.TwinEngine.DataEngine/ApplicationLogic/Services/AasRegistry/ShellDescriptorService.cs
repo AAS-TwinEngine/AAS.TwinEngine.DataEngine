@@ -97,12 +97,6 @@ public class ShellDescriptorService(
 
     private async Task<ShellDescriptor?> TryBuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetadata, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(shellDescriptorMetadata.Id))
-        {
-            logger.LogError("Failed to process ShellDescriptor. DescriptorId is missing. Continuing with remaining descriptors.");
-            return null;
-        }
-
         try
         {
             var templateId = shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetadata.Id)!;
