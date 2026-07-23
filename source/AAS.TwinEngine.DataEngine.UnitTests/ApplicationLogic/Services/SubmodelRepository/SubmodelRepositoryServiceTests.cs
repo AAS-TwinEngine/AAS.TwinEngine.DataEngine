@@ -490,4 +490,98 @@ public class SubmodelRepositoryServiceTests
         await _aasRepositoryTemplateService.Received(1).GetSubmodelRefByIdAsync(ValidShellId, Arg.Any<CancellationToken>());
         await _aasRepositoryTemplateService.DidNotReceive().GetSubmodelRefByIdAsync(null!, Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsAsync_ReturnsAllElements_WhenSubmodelExists()
+    {
+        var filledSubmodel = TestData.CreateFilledSubmodel();
+
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(filledSubmodel);
+
+        var result = await _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(filledSubmodel.SubmodelElements!.Count, result.Result.Count);
+        Assert.Null(result.PagingMetaData?.Cursor);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsAsync_ReturnsEmptyList_WhenSubmodelHasNoElements()
+    {
+        var emptySubmodel = new Submodel(
+            id: "http://example.com/idta/empty",
+            idShort: "Empty",
+            submodelElements: []);
+
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(emptySubmodel);
+
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(emptySubmodel);
+
+        var result = await _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Empty(result.Result);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsAsync_ReturnsPagedResult_WhenLimitApplied()
+    {
+        var filledSubmodel = TestData.CreateFilledSubmodel();
+
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(filledSubmodel);
+
+        var result = await _sut.GetAllSubmodelElementsAsync(SubmodelId, null, limit: 2, cursor: null, CancellationToken.None);
+
+        Assert.Equal(2, result.Result.Count);
+        Assert.NotNull(result.PagingMetaData?.Cursor);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsAsync_WhenSubmodelNotFound_ThrowsSubmodelNotFoundException()
+    {
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ResourceNotFoundException());
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsAsync_WhenResponseParsingFails_ThrowsInternalDataProcessingException()
+    {
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ResponseParsingException());
+
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
+            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
+    }
 }
