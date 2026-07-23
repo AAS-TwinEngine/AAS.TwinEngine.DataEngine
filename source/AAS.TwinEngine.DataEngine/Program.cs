@@ -41,6 +41,7 @@ public class Program
                 .ToList();
         });
 
+        _ = builder.Services.AddHybridCache();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
         builder.Services.ConfigureResponseCompression();

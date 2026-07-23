@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -7,26 +7,30 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
+using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
+using Microsoft.Extensions.Options;
+
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
-using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
-public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient clientFactory) : ITemplateProvider
+public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<TemplateManagementConfig> options, ICachedGetRequestClient cachedHttp) : ITemplateProvider
 {
     private const string SubModelRepositoryPath = ApiPaths.Submodels;
     private const string AasRegistryPath = ApiPaths.ShellDescriptors;
     private const string AasRepositoryPath = ApiPaths.Shells;
     private const string SubmodelRefPath = ApiPaths.SubmodelRefs;
     private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
+
+    private readonly TemplateManagementConfig _config = options.Value;
 
     public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
@@ -64,18 +68,13 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
     }
 
-    private async Task<ISubmodel> GetSubmodelFromUrlAsync(
-        string url,
-        string templateId,
-        string errorMessage,
-        CancellationToken cancellationToken)
+    private async Task<ISubmodel> GetSubmodelFromUrlAsync(string url, string templateId, string errorMessage, CancellationToken cancellationToken)
     {
-        var response = await SendGetRequestAsync(
+        var content = await SendGetRequestAsync(
             url,
             HttpClientNames.SubmodelTemplateRepository,
+            _config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes,
             cancellationToken).ConfigureAwait(false);
-
-        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -95,12 +94,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
     {
         var url = $"{SubModelRepositoryPath}?semanticId={Uri.EscapeDataString(semanticId)}";
 
-        var response = await SendGetRequestAsync(
-            url,
-            HttpClientNames.SubmodelTemplateRepository,
-            cancellationToken).ConfigureAwait(false);
-
-        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var content = await SendGetRequestAsync(url, HttpClientNames.SubmodelTemplateRepository, _config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -128,8 +122,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRegistryPath}/{encodedTemplateId}";
 
-        var response = await SendGetRequestAsync(url, HttpClientNames.AasRegistry, cancellationToken).ConfigureAwait(false);
-        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var content = await SendGetRequestAsync(url, HttpClientNames.AasRegistry, _config.AasTemplateRegistry.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -159,8 +152,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}";
 
-        var response = await SendGetRequestAsync(url, HttpClientNames.AasTemplateRepository, cancellationToken).ConfigureAwait(false);
-        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var content = await SendGetRequestAsync(url, HttpClientNames.AasTemplateRepository, _config.AasTemplateRepository.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -188,8 +180,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/asset-information";
 
-        var response = await SendGetRequestAsync(url, HttpClientNames.AasTemplateRepository, cancellationToken).ConfigureAwait(false);
-        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var content = await SendGetRequestAsync(url, HttpClientNames.AasTemplateRepository, _config.AasTemplateRepository.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -217,8 +208,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         var encodedTemplateId = templateId.EncodeBase64Url(logger);
         var url = $"{AasRepositoryPath}/{encodedTemplateId}/{SubmodelRefPath}";
 
-        var response = await SendGetRequestAsync(url, HttpClientNames.AasTemplateRepository, cancellationToken).ConfigureAwait(false);
-        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var content = await SendGetRequestAsync(url, HttpClientNames.AasTemplateRepository, _config.AasTemplateRepository.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -266,8 +256,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
 
         try
         {
-            var response = await SendGetRequestAsync(url, HttpClientNames.ConceptDescriptorTemplateRepository, cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var content = await SendGetRequestAsync(url, HttpClientNames.ConceptDescriptorTemplateRepository, _config.ConceptDescriptionTemplateRepository.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
             var jsonNode = JsonNode.Parse(content);
             return Jsonization.Deserialize.ConceptDescriptionFrom(jsonNode!);
         }
@@ -281,44 +270,11 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, ICreateClient cl
         }
     }
 
-    private async Task<HttpResponseMessage> SendGetRequestAsync(string url, string httpClientName, CancellationToken cancellationToken)
+    private async Task<string> SendGetRequestAsync(string url, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
         logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(url));
 
-        var relativeUri = new Uri(url, UriKind.Relative);
-
-        var httpClient = clientFactory.CreateClient(httpClientName);
-
-        var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);
-
-        if (response.IsSuccessStatusCode)
-        {
-            logger.LogInformation("Received successful HTTP response with status code: {StatusCode}", response.StatusCode);
-            return response;
-        }
-
-        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogError("Received HTTP GET response with status code: {StatusCode}. Response message: {ResponseMessage}", response.StatusCode, responseContent);
-
-        switch (response.StatusCode)
-        {
-            case System.Net.HttpStatusCode.NotFound:
-                logger.LogError("Requested resource could not be found. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
-                throw new ResourceNotFoundException();
-
-            case System.Net.HttpStatusCode.Unauthorized:
-            case System.Net.HttpStatusCode.Forbidden:
-                logger.LogError("Unauthorized access. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
-                throw new UnauthorizedAccessException();
-
-            case System.Net.HttpStatusCode.RequestTimeout:
-                logger.LogError("Request timed out. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
-                throw new RequestTimeoutException();
-
-            default:
-                logger.LogError("Validation error encountered. Endpoint: {Url}", LogSanitizerExtension.Sanitize(url));
-                throw new ValidationFailedException();
-        }
+        return await cachedHttp.GetStringAsync(url, httpClientName, expirationTime, cancellationToken).ConfigureAwait(false);
     }
 
     private static ShellDescriptor? DeserializeShellDescriptor(JsonNode? descriptorNode)
