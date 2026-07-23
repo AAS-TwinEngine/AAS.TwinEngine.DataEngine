@@ -10,10 +10,7 @@ OpenTelemetry docker_stats receiver. This exporter only exposes the
 configured resource limits obtained from Docker inspect.
 """
 
-import os
-import docker
 import logging
-from prometheus_client import start_http_server, Gauge, CollectorRegistry
 import time
 
 import docker
@@ -33,7 +30,6 @@ DOCKER_SOCKET_URL = "unix://var/run/docker.sock"
 
 registry = CollectorRegistry()
 
-# Define gauge for CPU limits
 cpu_limit_gauge = Gauge(
     "container_cpu_limit_cores",
     "Configured Docker CPU limit in cores",
@@ -52,12 +48,6 @@ client = None
 last_values = {}
 seen_series = set()
 
-    # Define container CPU limits mapping (from environment or defaults)
-    container_limits = {
-        'twinengine-dataengine': float(os.getenv('TWINENGINE_CPU', '1')),
-        'dpp-plugin': float(os.getenv('DPP_PLUGIN_CPU', '1')),
-        'postgres': float(os.getenv('POSTGRES_CPU', '1')),
-    }
 
 def connect():
     """Create Docker client using the Unix socket only."""
@@ -158,9 +148,7 @@ def main():
 
     start_http_server(EXPORTER_PORT, registry=registry)
 
-    # Update metrics periodically
     while True:
-        try:
         update_metrics()
         time.sleep(SCRAPE_INTERVAL)
 
