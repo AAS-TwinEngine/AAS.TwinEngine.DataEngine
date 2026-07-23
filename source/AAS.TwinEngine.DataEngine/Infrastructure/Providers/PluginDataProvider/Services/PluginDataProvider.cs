@@ -52,10 +52,10 @@ public class PluginDataProvider(
     }
 
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
-    int? limit,
-    string? cursor,
-    IList<PluginRequestMetaData> pluginRequests,
-    CancellationToken cancellationToken)
+        int? limit,
+        string? cursor,
+        IList<PluginRequestMetaData> pluginRequests,
+        CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -68,7 +68,6 @@ public class PluginDataProvider(
             var url = BuildShellsUrl(remainingLimit, cursor);
 
             var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken);
-
             if (response == null)
             {
                 continue;
@@ -82,50 +81,30 @@ public class PluginDataProvider(
                     continue;
                 }
 
-                var shouldStop = await ProcessShellDescriptorResponseAsync(response, result, remainingLimit, cancellationToken).ConfigureAwait(false);
+                var responseContent = await response.Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
 
-                if (remainingLimit.HasValue)
+                result.Add(responseContent);
+
+                if (!remainingLimit.HasValue)
                 {
-                    var itemsReceived = CountShellDescriptors(result[^1]);
-
-                    remainingLimit -= itemsReceived;
-
-                    if (itemsReceived >= 0 && remainingLimit > 0)
-                    {
-                        cursor = null;
-                    }
+                    continue;
                 }
 
-                if (shouldStop)
+                var itemsReceived = CountShellDescriptors(responseContent);
+                remainingLimit -= itemsReceived;
+
+                if (remainingLimit <= 0)
                 {
                     break;
                 }
+
+                cursor = null;
             }
         }
 
         return HandleResultOrThrow(result, exceptions);
-    }
-
-    private static async Task<bool> ProcessShellDescriptorResponseAsync(
-    HttpResponseMessage response,
-    IList<string> result,
-    int? remainingLimit,
-    CancellationToken cancellationToken)
-    {
-        var responseContent = await response.Content
-            .ReadAsStringAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        result.Add(responseContent);
-
-        if (!remainingLimit.HasValue)
-        {
-            return false;
-        }
-
-        var itemsReceived = CountShellDescriptors(responseContent);
-
-        return remainingLimit - itemsReceived <= 0;
     }
 
     public Task<IList<string>> GetDataForShellDescriptorByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
@@ -161,7 +140,7 @@ public class PluginDataProvider(
                 }
                 if (idShortHeaderValue is not null)
                 {
-                    _ = request.Headers.TryAddWithoutValidation(IdShortHeader , idShortHeaderValue);
+                    _ = request.Headers.TryAddWithoutValidation(IdShortHeader, idShortHeaderValue);
                 }
 
                 using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -236,11 +215,12 @@ public class PluginDataProvider(
                     logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
                     result.Add(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
                     continue;
-            }
+                }
 
-            exceptions.Add(HandleFailureResponse(response.StatusCode));
+                exceptions.Add(HandleFailureResponse(response.StatusCode));
             }
         }
+
         return HandleResultOrThrow(result, exceptions);
     }
 
