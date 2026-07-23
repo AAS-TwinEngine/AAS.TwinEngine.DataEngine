@@ -328,6 +328,74 @@ public class CachedGetRequestClientTests
         Assert.Equal(cancellationToken, capturedToken);
     }
 
+    [Theory]
+    [InlineData("?isCacheEnable=false", true)]
+    [InlineData("?isCacheEnable=true", false)]
+    [InlineData("?isCacheEnable=invalid", false)]
+    [InlineData("", false)]
+    public async Task GetStringAsync_RespectsIsCacheEnabledQueryParameter(string queryString, bool expectBypass)
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        const string HttpClientName = "TestClient";
+        const string ExpectedResponse = "Direct HTTP data";
+
+        var httpContext = new DefaultHttpContext();
+        if (!string.IsNullOrEmpty(queryString))
+        {
+            httpContext.Request.QueryString = new QueryString(queryString);
+        }
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+
+        if (expectBypass)
+        {
+            // If bypassed, cache is never called.
+            _cache.GetOrCreateAsync<string>(
+                Arg.Any<string>(),
+                Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
+                Arg.Any<HybridCacheEntryOptions>(),
+                Arg.Any<IEnumerable<string>>(),
+                Arg.Any<CancellationToken>()
+            ).Returns(new ValueTask<string>("Cached data that should be bypassed"));
+        }
+        else
+        {
+            // If cache is enabled, SetupCacheHit will return direct response.
+            SetupCacheHit(ExpectedResponse);
+        }
+
+        using var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(ExpectedResponse)
+        };
+        SetupHttpClient(HttpClientName, httpResponse);
+
+        // Act
+        var result = await _sut.GetStringAsync(RelativeUrl, HttpClientName, 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(ExpectedResponse, result);
+
+        if (expectBypass)
+        {
+            // If bypassed, HTTP client must be called directly.
+            _clientFactory.Received(1).CreateClient(HttpClientName);
+            // And cache should not be queried.
+            _cache.DidNotReceive().GetOrCreateAsync<string>(
+                Arg.Any<string>(),
+                Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
+                Arg.Any<HybridCacheEntryOptions>(),
+                Arg.Any<IEnumerable<string>>(),
+                Arg.Any<CancellationToken>()
+            );
+        }
+        else
+        {
+            // If cache was not bypassed, the HTTP client should not be called since we mocked a cache hit.
+            _clientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
+        }
+    }
+
     private static string ComputeHash(string input)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));

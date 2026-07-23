@@ -5,8 +5,11 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
+
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -16,8 +19,10 @@ public class AasRepositoryService(
     ILogger<AasRepositoryService> logger,
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
-    IPluginManifestConflictHandler pluginManifestConflictHandler) : IAasRepositoryService
+    IPluginManifestConflictHandler pluginManifestConflictHandler,
+    IOptions<TemplateManagementConfig> templateManagementConfig) : IAasRepositoryService
 {
+    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
     public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
@@ -239,30 +244,38 @@ public class AasRepositoryService(
 
     private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)
     {
-        var shells = new List<IAssetAdministrationShell>();
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
 
-        foreach (var metadata in metadataItems)
+        var tasks = metadataItems.Select(async metadata =>
         {
             if (string.IsNullOrWhiteSpace(metadata.Id))
             {
-                continue;
+                return null;
             }
 
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var shell = await templateService.GetShellTemplateAsync(metadata.Id, cancellationToken).ConfigureAwait(false);
 
                 FillShellFromMetadata(shell, metadata);
 
-                shells.Add(shell);
+                return shell;
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Failed to build AAS for id {AasId}. Skipping.", metadata.Id);
+                return null;
             }
-        }
+            finally
+            {
+                _ = semaphore.Release();
+            }
+        });
 
-        return shells;
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        return [.. results.Where(s => s is not null).Select(s => s!)];
     }
 
     private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetId>? filters)
