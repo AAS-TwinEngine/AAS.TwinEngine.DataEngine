@@ -57,6 +57,7 @@ public class SubmodelRepositoryService(
         }).ConfigureAwait(false);
     }
 
+
     public async Task<SubmodelList> GetAllSubmodelsAsync(SubmodelSearchFilter? filter, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
@@ -151,6 +152,35 @@ public class SubmodelRepositoryService(
         });
 
         return [.. (await Task.WhenAll(tasks).ConfigureAwait(false)).OfType<ISubmodel>()];
+    }
+
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsAsync(string submodelId, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        return await ExecuteWithExceptionHandlingAsync(async () =>
+        {
+            var submodelTemplate = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, null, queryOptions, cancellationToken).ConfigureAwait(false);
+
+            if (submodelTemplate is null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            var submodelWithValues = await BuildSubmodelWithValuesAsync(submodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
+
+            var allElements = submodelWithValues.SubmodelElements ?? [];
+
+            var (pagedElements, pagingMetaData) = PagingExtensions.GetPagedResult(
+                allElements,
+                element => element.IdShort ?? string.Empty,
+                limit,
+                cursor);
+
+            return new SubmodelElementsPage
+            {
+                PagingMetaData = pagingMetaData,
+                Result = pagedElements
+            };
+        }).ConfigureAwait(false);
     }
 
     private async Task<ISubmodel> BuildSubmodelWithValuesAsync(ISubmodel template, string submodelId, CancellationToken cancellationToken)
