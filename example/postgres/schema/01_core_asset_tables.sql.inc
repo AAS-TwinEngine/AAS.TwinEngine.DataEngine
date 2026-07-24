@@ -2,7 +2,7 @@
 -- Core Asset Tables
 -- ============================================================
 
-CREATE TABLE "Asset" (
+CREATE TABLE IF NOT EXISTS "Asset" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "ProductId" VARCHAR(50),
     "IdShort" VARCHAR(100),
@@ -48,10 +48,12 @@ CREATE TABLE "Asset" (
     "ExplanatoryStatement" TEXT
 );
 
-CREATE TABLE "SpecificAssetIds" (
+CREATE TABLE IF NOT EXISTS "SpecificAssetIds" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "Name" TEXT,
     "Value" TEXT
 );
 
+CREATE INDEX idx_asset_productid
+ON "Asset"("ProductId");
