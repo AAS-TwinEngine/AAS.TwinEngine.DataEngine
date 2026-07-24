@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -38,9 +39,23 @@ public sealed class CachedGetRequestClient(
             LocalCacheExpiration = TimeSpan.FromMinutes(expirationTime)
         };
 
+        var parentActivity = Activity.Current;
+
         return await cache.GetOrCreateAsync(
             cacheKey,
-            async token => await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false),
+            async token =>
+            {
+                var previous = Activity.Current;
+                Activity.Current = parentActivity;
+                try
+                {
+                    return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    Activity.Current = previous;
+                }
+            },
             options: entryOptions,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
