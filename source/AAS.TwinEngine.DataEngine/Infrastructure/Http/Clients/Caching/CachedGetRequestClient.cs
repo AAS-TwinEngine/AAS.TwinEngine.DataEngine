@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -39,22 +40,15 @@ public sealed class CachedGetRequestClient(
             LocalCacheExpiration = TimeSpan.FromMinutes(expirationTime)
         };
 
-        var parentActivity = Activity.Current;
+        using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch);
+        var parentContext = cacheLookupActivity?.Context ?? Activity.Current?.Context ?? default;
 
         return await cache.GetOrCreateAsync(
             cacheKey,
             async token =>
             {
-                var previous = Activity.Current;
-                Activity.Current = parentActivity;
-                try
-                {
-                    return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
-                }
-                finally
-                {
-                    Activity.Current = previous;
-                }
+                using var cacheFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, parentContext);
+                return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
             },
             options: entryOptions,
             cancellationToken: cancellationToken).ConfigureAwait(false);
