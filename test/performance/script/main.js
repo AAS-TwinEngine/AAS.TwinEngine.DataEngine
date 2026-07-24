@@ -56,9 +56,6 @@ if (Object.keys(configuredScenarios).length === 0) {
 }
 
 export const options = {
-    cloud: {
-        projectID: 8108924
-    },
     scenarios: configuredScenarios,
     summaryTimeUnit: 'ms',
     setupTimeout: config.load.setupTimeout
