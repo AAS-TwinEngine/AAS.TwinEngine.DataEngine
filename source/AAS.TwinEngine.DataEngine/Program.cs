@@ -90,21 +90,6 @@ public class Program
         _ = app.UseResponseCompression();
         _ = app.UseHostFiltering();
         _ = app.UseMiddleware<HeaderSanitizationMiddleware>();
-        _ = app.Use(async (context, next) =>
-        {
-            if (context.Request.Headers.TryGetValue("X-User", out var user))
-            {
-                context.User = new ClaimsPrincipal(
-                    new ClaimsIdentity(
-                    [
-                        new Claim(ClaimTypes.NameIdentifier, user!),
-                new Claim("permission", "read"),
-                new Claim("permission", "write")
-                    ], "Test"));
-            }
-
-            await next();
-        });
         _ = app.UseHttpsRedirection();
         _ = app.UseAuthorization();
         app.UseCorsServices();

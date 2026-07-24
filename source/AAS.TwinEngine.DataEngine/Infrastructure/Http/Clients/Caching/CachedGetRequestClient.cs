@@ -32,8 +32,6 @@ public sealed class CachedGetRequestClient(
 
         var cacheKey = BuildCacheKey(httpContextAccessor, relativeUrl);
 
-        Console.WriteLine($"Cache key: {cacheKey}");
-
         var entryOptions = new HybridCacheEntryOptions
         {
             Expiration = TimeSpan.FromMinutes(expirationTime),
