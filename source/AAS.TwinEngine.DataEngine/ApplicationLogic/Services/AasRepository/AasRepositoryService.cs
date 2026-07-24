@@ -275,7 +275,7 @@ public class AasRepositoryService(
 
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        return [.. results.Where(s => s is not null).Select(s => s!)];
+        return [.. results.Where(s => s is not null).Select(s => s)];
     }
 
     private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetId>? filters)
