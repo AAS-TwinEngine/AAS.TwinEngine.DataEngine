@@ -40,20 +40,43 @@ function fromRandomId(
     };
 }
 
+function appendLimitQuery(url, limit) {
+
+    const parsedLimit =
+        Number.parseInt(limit, 10);
+
+    const normalizedLimit =
+        Number.isFinite(parsedLimit) && parsedLimit > 0
+            ? parsedLimit
+            : 100;
+
+    const separator =
+        url.includes('?')
+            ? '&'
+            : '?';
+
+    return `${url}${separator}limit=${normalizedLimit}`;
+}
+
 export const endpointScenarios = [
 
     {
         key: 'getShells',
         name: 'GetShells',
         metricName: 'get_shells_duration',
-        resolveUrl: ({ baseUrl }) =>
-            `${baseUrl}/shells`
+        resolveUrl: ({ baseUrl, config }) =>
+            appendLimitQuery(
+                `${baseUrl}/shells`,
+                config.endpointLimits?.getShells
+            )
     },
 
     {
         key: 'getShellById',
         name: 'GetShellById',
         metricName: 'get_shell_by_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
         resolveUrl: fromRandomId(
             'shellIds',
             id => `/shells/${id}`
@@ -64,6 +87,8 @@ export const endpointScenarios = [
         key: 'getAssetInformation',
         name: 'GetAssetInformation',
         metricName: 'get_asset_information_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
         resolveUrl: fromRandomId(
             'shellIds',
             id => `/shells/${id}/asset-information`
@@ -74,6 +99,8 @@ export const endpointScenarios = [
         key: 'getSubmodelReferences',
         name: 'GetSubmodelReferences',
         metricName: 'get_submodel_references_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
         resolveUrl: fromRandomId(
             'shellIds',
             id => `/shells/${id}/submodel-refs`
@@ -84,14 +111,19 @@ export const endpointScenarios = [
         key: 'getShellDescriptors',
         name: 'GetShellDescriptors',
         metricName: 'get_shell_descriptors_duration',
-        resolveUrl: ({ baseUrl }) =>
-            `${baseUrl}/shell-descriptors`
+        resolveUrl: ({ baseUrl, config }) =>
+            appendLimitQuery(
+                `${baseUrl}/shell-descriptors`,
+                config.endpointLimits?.getShellDescriptors
+            )
     },
 
     {
         key: 'getShellDescriptorById',
         name: 'GetShellDescriptorById',
         metricName: 'get_shell_descriptor_by_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
         resolveUrl: fromRandomId(
             'shellIds',
             id => `/shell-descriptors/${id}`
@@ -102,14 +134,19 @@ export const endpointScenarios = [
         key: 'getSubmodelDescriptors',
         name: 'GetSubmodelDescriptors',
         metricName: 'get_submodel_descriptors_duration',
-        resolveUrl: ({ baseUrl }) =>
-            `${baseUrl}/submodel-descriptors`
+        resolveUrl: ({ baseUrl, config }) =>
+            appendLimitQuery(
+                `${baseUrl}/submodel-descriptors`,
+                config.endpointLimits?.getSubmodelDescriptors
+            )
     },
 
     {
         key: 'getSubmodelDescriptorById',
         name: 'GetSubmodelDescriptorById',
         metricName: 'get_submodel_descriptor_by_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'submodelIds',
         resolveUrl: fromRandomId(
             'submodelIds',
             id => `/submodel-descriptors/${id}`
@@ -120,14 +157,19 @@ export const endpointScenarios = [
         key: 'getSubmodels',
         name: 'GetSubmodels',
         metricName: 'get_submodels_duration',
-        resolveUrl: ({ baseUrl }) =>
-            `${baseUrl}/submodels`
+        resolveUrl: ({ baseUrl, config }) =>
+            appendLimitQuery(
+                `${baseUrl}/submodels`,
+                config.endpointLimits?.getSubmodels
+            )
     },
 
     {
         key: 'getSubmodelById',
         name: 'GetSubmodelById',
         metricName: 'get_submodel_by_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'submodelIds',
         resolveUrl: fromRandomId(
             'submodelIds',
             id => `/submodels/${id}`
@@ -158,6 +200,41 @@ export const endpointMetricNames =
     endpointScenarios.map(
         endpoint => endpoint.metricName
     );
+
+export function getEnabledIdDependentEndpointKeys(config) {
+
+    return endpointScenarios
+        .filter(endpoint =>
+            endpoint.requiresDiscoveredIds &&
+            config.endpoints[endpoint.key]
+        )
+        .map(endpoint => endpoint.key);
+}
+
+export function getEnabledDiscoveryRequirements(config) {
+
+    const requirements = {};
+
+    endpointScenarios
+        .filter(endpoint =>
+            endpoint.requiresDiscoveredIds &&
+            endpoint.requiredDataProperty &&
+            config.endpoints[endpoint.key]
+        )
+        .forEach(endpoint => {
+
+            const key =
+                endpoint.requiredDataProperty;
+
+            if (!requirements[key]) {
+                requirements[key] = [];
+            }
+
+            requirements[key].push(endpoint.key);
+        });
+
+    return requirements;
+}
 
 export function resolveScenarioByKey(
     config,

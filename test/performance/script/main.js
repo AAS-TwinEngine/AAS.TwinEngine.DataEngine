@@ -3,6 +3,8 @@ import { discoverIds } from './helpers/setup.js';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.4/index.js';
 import {
     endpointMetricNames,
+    getEnabledDiscoveryRequirements,
+    getEnabledIdDependentEndpointKeys,
     resolveScenarioByKey
 } from './helpers/scenarios.js';
 
@@ -64,7 +66,52 @@ export const options = {
 
 export function setup() {
 
-    return discoverIds();
+    const idDependentEndpoints =
+        getEnabledIdDependentEndpointKeys(config);
+
+    const shouldDiscoverIds =
+        idDependentEndpoints.length > 0;
+
+    if (!shouldDiscoverIds) {
+
+        console.log(
+            '=== Skipping ID discovery ==='
+        );
+
+        return {
+            shellIds: [],
+            submodelIds: []
+        };
+    }
+
+    const discoveredData =
+        discoverIds();
+
+    const discoveryRequirements =
+        getEnabledDiscoveryRequirements(config);
+
+    const missingRequirements =
+        Object.entries(discoveryRequirements)
+            .filter(([dataKey]) =>
+                !Array.isArray(discoveredData[dataKey]) ||
+                discoveredData[dataKey].length === 0
+            );
+
+    if (missingRequirements.length > 0) {
+
+        const details =
+            missingRequirements
+                .map(([dataKey, endpoints]) =>
+                    `${dataKey} required by: ${endpoints.join(', ')}`
+                )
+                .join(' | ');
+
+        throw new Error(
+            `Discovery completed but required IDs are missing. ${details}`
+        );
+    }
+
+    return discoveredData;
 }
 
 export function executeEndpointScenario(data) {

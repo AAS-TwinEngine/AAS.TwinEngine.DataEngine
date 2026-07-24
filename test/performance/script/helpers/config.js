@@ -17,15 +17,15 @@ const defaultConfig = {
     },
 
     endpoints: {
-        getShells: { enabled: true, requests: 10 },
+        getShells: { enabled: true, requests: 10, limit: 100 },
         getShellById: { enabled: true, requests: 10 },
         getAssetInformation: { enabled: true, requests: 10 },
         getSubmodelReferences: { enabled: true, requests: 10 },
-        getShellDescriptors: { enabled: true, requests: 10 },
+        getShellDescriptors: { enabled: true, requests: 10, limit: 100 },
         getShellDescriptorById: { enabled: true, requests: 10 },
-        getSubmodelDescriptors: { enabled: true, requests: 10 },
+        getSubmodelDescriptors: { enabled: true, requests: 10, limit: 100 },
         getSubmodelDescriptorById: { enabled: true, requests: 10 },
-        getSubmodels: { enabled: false, requests: 10 },
+        getSubmodels: { enabled: false, requests: 10, limit: 100 },
         getSubmodelById: { enabled: true, requests: 10 },
         loadAllShellDescriptors: { enabled: false, requests: 2, limit: 1000 }
     },
@@ -159,10 +159,16 @@ function toEndpointRequestsEnvKey(endpointKey) {
     return `${toEndpointEnvKey(endpointKey)}_REQUESTS`;
 }
 
+function toEndpointLimitEnvKey(endpointKey) {
+
+    return `${toEndpointEnvKey(endpointKey)}_LIMIT`;
+}
+
 function buildEndpoints() {
 
     const endpoints = {};
     const endpointRequests = {};
+    const endpointLimits = {};
 
     Object.keys(defaultConfig.endpoints)
         .forEach(key => {
@@ -197,11 +203,25 @@ function buildEndpoints() {
                 endpointRequestsValue,
                 endpoint.requests
             );
+
+            if (endpoint.limit !== undefined) {
+
+                const endpointLimitValue =
+                    getEnvValue(
+                        toEndpointLimitEnvKey(key)
+                    );
+
+                endpointLimits[key] = parsePositiveInteger(
+                    endpointLimitValue,
+                    endpoint.limit
+                );
+            }
         });
 
     return {
         endpoints,
-        endpointRequests
+        endpointRequests,
+        endpointLimits
     };
 }
 
@@ -284,5 +304,8 @@ export const config = {
         endpointConfig.endpoints,
 
     endpointRequests:
-        endpointConfig.endpointRequests
+        endpointConfig.endpointRequests,
+
+    endpointLimits:
+        endpointConfig.endpointLimits
 };
