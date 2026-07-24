@@ -7,12 +7,8 @@ using System.Text;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -26,6 +22,8 @@ public sealed class CachedGetRequestClient(
 {
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
+        var callerContext = Activity.Current?.Context ?? default;
+         using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, callerContext);
         if (!IsCacheEnabled(httpContextAccessor))
         {
             logger.LogInformation("Cache bypassed because 'noCache=true' was specified.");
@@ -40,14 +38,13 @@ public sealed class CachedGetRequestClient(
             LocalCacheExpiration = TimeSpan.FromMinutes(expirationTime)
         };
 
-        using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch);
-        var parentContext = cacheLookupActivity?.Context ?? Activity.Current?.Context ?? default;
+        var parentContext = cacheLookupActivity?.Context ?? callerContext;
 
         return await cache.GetOrCreateAsync(
             cacheKey,
             async token =>
             {
-                using var cacheFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, parentContext);
+                using var cacheFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, parentContext);
                 return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
             },
             options: entryOptions,
