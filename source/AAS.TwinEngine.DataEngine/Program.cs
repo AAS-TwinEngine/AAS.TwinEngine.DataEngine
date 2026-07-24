@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
@@ -89,6 +90,21 @@ public class Program
         _ = app.UseResponseCompression();
         _ = app.UseHostFiltering();
         _ = app.UseMiddleware<HeaderSanitizationMiddleware>();
+        _ = app.Use(async (context, next) =>
+        {
+            if (context.Request.Headers.TryGetValue("X-User", out var user))
+            {
+                context.User = new ClaimsPrincipal(
+                    new ClaimsIdentity(
+                    [
+                        new Claim(ClaimTypes.NameIdentifier, user!),
+                new Claim("permission", "read"),
+                new Claim("permission", "write")
+                    ], "Test"));
+            }
+
+            await next();
+        });
         _ = app.UseHttpsRedirection();
         _ = app.UseAuthorization();
         app.UseCorsServices();

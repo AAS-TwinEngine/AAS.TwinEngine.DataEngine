@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,6 +31,8 @@ public sealed class CachedGetRequestClient(
         }
 
         var cacheKey = BuildCacheKey(httpContextAccessor, relativeUrl);
+
+        Console.WriteLine($"Cache key: {cacheKey}");
 
         var entryOptions = new HybridCacheEntryOptions
         {
