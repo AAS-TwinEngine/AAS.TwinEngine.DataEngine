@@ -75,7 +75,7 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
         try
         {
             var schema = JsonSchema.FromText(normalizedSchema.ToJsonString());
-            var result = schema.Evaluate(parsedResponse!.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
+            var result = schema.Evaluate(parsedResponse.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
             if (!result.IsValid)
             {
                 LogAndThrowException("Response did not validate against schema.");
