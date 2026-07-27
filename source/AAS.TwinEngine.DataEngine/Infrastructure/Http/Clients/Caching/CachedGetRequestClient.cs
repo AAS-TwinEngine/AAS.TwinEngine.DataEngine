@@ -7,8 +7,10 @@ using System.Text;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -18,16 +20,17 @@ public sealed class CachedGetRequestClient(
     ICreateClient clientFactory,
     HybridCache cache,
     IHttpContextAccessor httpContextAccessor,
+    IOptions<CacheConfig> cacheOptions,
     ILogger<CachedGetRequestClient> logger) : ICachedGetRequestClient
 {
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
         var currentTraceContext = Activity.Current?.Context ?? default;
 
-        if (!IsCacheEnabled(httpContextAccessor))
+        if (!IsCacheEnabled(httpContextAccessor, cacheOptions.Value))
         {
             using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, currentTraceContext);
-            logger.LogInformation("Cache bypassed because 'noCache=true' was specified.");
+            logger.LogInformation("Cache bypassed because 'EnableCache' is false and 'noCache=true' was specified.");
             return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
         }
 
@@ -117,8 +120,13 @@ public sealed class CachedGetRequestClient(
         return Convert.ToHexStringLower(bytes);
     }
 
-    private static bool IsCacheEnabled(IHttpContextAccessor httpContextAccessor)
+    private static bool IsCacheEnabled(IHttpContextAccessor httpContextAccessor, CacheConfig cacheConfig)
     {
+        if (cacheConfig.EnableCache)
+        {
+            return true;
+        }
+
         var query = httpContextAccessor.HttpContext?.Request.Query;
 
         if (query is null)
