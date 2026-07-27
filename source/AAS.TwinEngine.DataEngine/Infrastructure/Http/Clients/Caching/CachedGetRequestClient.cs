@@ -23,7 +23,7 @@ public sealed class CachedGetRequestClient(
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
         var callerContext = Activity.Current?.Context ?? default;
-         using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, callerContext);
+        using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, callerContext);
         if (!IsCacheEnabled(httpContextAccessor))
         {
             logger.LogInformation("Cache bypassed because 'noCache=true' was specified.");
@@ -44,7 +44,7 @@ public sealed class CachedGetRequestClient(
             cacheKey,
             async token =>
             {
-                using var cacheFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, parentContext);
+                using var cacheFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, parentContext);
                 return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
             },
             options: entryOptions,
