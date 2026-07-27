@@ -30,7 +30,7 @@ public sealed class CachedGetRequestClient(
         if (!IsCacheEnabled(httpContextAccessor, cacheOptions.Value))
         {
             using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, currentTraceContext);
-            logger.LogInformation("Cache bypassed because 'EnableCache' is false and 'noCache=true' was specified.");
+            logger.LogInformation("Cache bypassed because 'EnableNoCacheParameter' is true and 'noCache=true' was specified.");
             return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
         }
 
@@ -122,28 +122,22 @@ public sealed class CachedGetRequestClient(
 
     private static bool IsCacheEnabled(IHttpContextAccessor httpContextAccessor, CacheConfig cacheConfig)
     {
-        if (cacheConfig.EnableCache)
+        // Caching is always enabled if the noCache query parameter feature is disabled.
+        if (!cacheConfig.EnableNoCacheParameter)
         {
             return true;
         }
 
         var query = httpContextAccessor.HttpContext?.Request.Query;
 
-        if (query is null)
+        // If the noCache parameter is missing or invalid, keep caching enabled.
+        if (query?.TryGetValue("noCache", out var value) != true ||
+            !bool.TryParse(value, out var noCache))
         {
             return true;
         }
 
-        if (!query.TryGetValue("noCache", out var value))
-        {
-            return true;
-        }
-
-        if (bool.TryParse(value, out var noCache) && noCache)
-        {
-            return false;
-        }
-
-        return true;
+        // Disable caching only when noCache=true.
+        return !noCache;
     }
 }

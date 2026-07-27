@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -34,7 +34,7 @@ public class CachedGetRequestClientTests
         _cache = Substitute.For<HybridCache>();
         _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
         _logger = Substitute.For<ILogger<CachedGetRequestClient>>();
-        _cacheOptions = Options.Create(new CacheConfig { EnableCache = true });
+        _cacheOptions = Options.Create(new CacheConfig());
 
         _sut = new CachedGetRequestClient(
             _clientFactory,
@@ -386,7 +386,7 @@ public class CachedGetRequestClientTests
             // If bypassed, HTTP client must be called directly.
             _clientFactory.Received(1).CreateClient(HttpClientName);
             // And cache should not be queried.
-            _cache.DidNotReceive().GetOrCreateAsync<string>(
+            _cache.DidNotReceive().GetOrCreateAsync(
                 Arg.Any<string>(),
                 Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
                 Arg.Any<HybridCacheEntryOptions>(),
@@ -402,7 +402,7 @@ public class CachedGetRequestClientTests
     }
 
     [Fact]
-    public async Task GetStringAsync_EnableCacheFalse_NoCacheNotSet_UsesCacheNormally()
+    public async Task GetStringAsync_EnableNoCacheParameterTrue_NoCacheNotSet_UsesCacheNormally()
     {
         // Arrange
         const string RelativeUrl = "api/test";
@@ -417,7 +417,7 @@ public class CachedGetRequestClientTests
             _clientFactory,
             _cache,
             _httpContextAccessor,
-            Options.Create(new CacheConfig { EnableCache = false }),
+            Options.Create(new CacheConfig { EnableNoCacheParameter = true }),
             _logger);
 
         SetupCacheHit(CachedResponse);
@@ -431,7 +431,7 @@ public class CachedGetRequestClientTests
     }
 
     [Fact]
-    public async Task GetStringAsync_EnableCacheFalse_AndNoCacheTrue_BypassesCache()
+    public async Task GetStringAsync_EnableNoCacheParameterTrue_AndNoCacheTrue_BypassesCache()
     {
         // Arrange
         const string RelativeUrl = "api/test";
@@ -446,7 +446,7 @@ public class CachedGetRequestClientTests
             _clientFactory,
             _cache,
             _httpContextAccessor,
-            Options.Create(new CacheConfig { EnableCache = false }),
+            Options.Create(new CacheConfig { EnableNoCacheParameter = true }),
             _logger);
 
         using var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -461,7 +461,7 @@ public class CachedGetRequestClientTests
         // Assert
         Assert.Equal(ExpectedResponse, result);
         _clientFactory.Received(1).CreateClient(HttpClientName);
-        _cache.DidNotReceive().GetOrCreateAsync<string>(
+        _cache.DidNotReceive().GetOrCreateAsync(
             Arg.Any<string>(),
             Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
             Arg.Any<HybridCacheEntryOptions>(),
@@ -470,7 +470,7 @@ public class CachedGetRequestClientTests
     }
 
     [Fact]
-    public async Task GetStringAsync_EnableCacheTrue_NoCacheTrue_UsesCacheNormally()
+    public async Task GetStringAsync_EnableNoCacheParameterFalse_NoCacheTrue_UsesCacheNormally()
     {
         // Arrange
         const string RelativeUrl = "api/test";
@@ -480,7 +480,7 @@ public class CachedGetRequestClientTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.QueryString = new QueryString("?noCache=true");
         _httpContextAccessor.HttpContext.Returns(httpContext);
-        // enableCache=true (default in _sut) — noCache alone is not enough to bypass
+        // EnableNoCacheParameter=false (default in _sut) — noCache param is ignored
         SetupCacheHit(CachedResponse);
 
         // Act
@@ -492,7 +492,7 @@ public class CachedGetRequestClientTests
     }
 
     [Fact]
-    public async Task GetStringAsync_EnableCacheTrue_NoCacheNotSet_UsesCacheNormally()
+    public async Task GetStringAsync_EnableNoCacheParameterFalse_NoCacheNotSet_UsesCacheNormally()
     {
         // Arrange
         const string RelativeUrl = "api/test";
@@ -529,7 +529,7 @@ public class CachedGetRequestClientTests
 
     private void SetupCacheHit(string response)
     {
-        _cache.GetOrCreateAsync<string>(
+        _cache.GetOrCreateAsync(
             Arg.Any<string>(),
             Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
             Arg.Any<HybridCacheEntryOptions>(),
@@ -540,7 +540,7 @@ public class CachedGetRequestClientTests
 
     private void SetupCacheMiss()
     {
-        _cache.GetOrCreateAsync<string>(
+        _cache.GetOrCreateAsync(
             Arg.Any<string>(),
             Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
             Arg.Any<HybridCacheEntryOptions>(),
