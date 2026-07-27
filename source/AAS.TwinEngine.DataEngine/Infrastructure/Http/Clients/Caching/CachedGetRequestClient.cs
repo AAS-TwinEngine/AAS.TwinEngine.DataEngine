@@ -22,13 +22,16 @@ public sealed class CachedGetRequestClient(
 {
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
-        var callerContext = Activity.Current?.Context ?? default;
-        using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, callerContext);
+        var currentTraceContext = Activity.Current?.Context ?? default;
+
         if (!IsCacheEnabled(httpContextAccessor))
         {
+            using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, currentTraceContext);
             logger.LogInformation("Cache bypassed because 'noCache=true' was specified.");
             return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
         }
+
+        using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, currentTraceContext);
 
         var cacheKey = BuildCacheKey(httpContextAccessor, relativeUrl);
 
@@ -38,13 +41,13 @@ public sealed class CachedGetRequestClient(
             LocalCacheExpiration = TimeSpan.FromMinutes(expirationTime)
         };
 
-        var parentContext = cacheLookupActivity?.Context ?? callerContext;
+        var httpFetchParentContext = cacheLookupActivity?.Context ?? currentTraceContext;
 
         return await cache.GetOrCreateAsync(
             cacheKey,
             async token =>
             {
-                using var cacheFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, parentContext);
+                using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, httpFetchParentContext);
                 return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
             },
             options: entryOptions,
