@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Provi
 using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
@@ -42,6 +43,10 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddOptions<GeneralConfig>()
                 .Bind(configuration.GetSection(GeneralConfig.Section))
                 .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+        _ = services.AddOptions<CacheConfig>()
+                .Bind(configuration.GetSection(CacheConfig.Section))
                 .ValidateOnStart();
 
         // MultiPluginConflictOptions: V1 config binds the old section value; V2 has no section → default ThrowError
@@ -117,5 +122,6 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
         _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
+        _ = services.AddScoped<ICachedGetRequestClient, CachedGetRequestClient>();
     }
 }

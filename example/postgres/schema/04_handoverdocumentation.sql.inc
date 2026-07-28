@@ -12,12 +12,12 @@
 -- Document Management Tables
 -- ============================================================
 
-CREATE TABLE "Document" (
+CREATE TABLE IF NOT EXISTS "Document" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT
 );
 
-CREATE TABLE "DocumentId" (
+CREATE TABLE IF NOT EXISTS "DocumentId" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "DocumentDomainId" UUID,
@@ -25,19 +25,19 @@ CREATE TABLE "DocumentId" (
     "DocumentIsPrimary" BOOLEAN
 );
 
-CREATE TABLE "AssetDocument" (
+CREATE TABLE IF NOT EXISTS "AssetDocument" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "DocumentId" INT REFERENCES "Document"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "DocumentDocumentId" (
+CREATE TABLE IF NOT EXISTS "DocumentDocumentId" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "DocumentId" INT REFERENCES "Document"("Id") ON DELETE CASCADE,
     "DocumentIdentifierId" INT REFERENCES "DocumentId"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "DocumentClassification" (
+CREATE TABLE IF NOT EXISTS "DocumentClassification" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "ClassId" TEXT,
@@ -46,13 +46,13 @@ CREATE TABLE "DocumentClassification" (
     "ClassName_de" TEXT
 );
 
-CREATE TABLE "DocumentDocumentClassification" (
+CREATE TABLE IF NOT EXISTS "DocumentDocumentClassification" (
     "Id" INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     "DocumentId" INT REFERENCES "Document"("Id") ON DELETE CASCADE,
     "DocumentClassificationId" INT REFERENCES "DocumentClassification"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "DocumentVersion" (
+CREATE TABLE IF NOT EXISTS "DocumentVersion" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "DigitalFile" TEXT,
@@ -72,19 +72,19 @@ CREATE TABLE "DocumentVersion" (
     "PreviewFile" TEXT
 );
 
-CREATE TABLE "Languages" (
+CREATE TABLE IF NOT EXISTS "Languages" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "Language" TEXT
 );
 
-CREATE TABLE "DocumentVersionLanguages" (
+CREATE TABLE IF NOT EXISTS "DocumentVersionLanguages" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "DocumentVersionId" INT REFERENCES "DocumentVersion"("Id") ON DELETE CASCADE,
     "LanguageId" INT REFERENCES "Languages"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "DocumentDocumentVersion" (
+CREATE TABLE IF NOT EXISTS "DocumentDocumentVersion" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "DocumentId" INT REFERENCES "Document"("Id") ON DELETE CASCADE,
     "DocumentVersionId" INT REFERENCES "DocumentVersion"("Id") ON DELETE CASCADE

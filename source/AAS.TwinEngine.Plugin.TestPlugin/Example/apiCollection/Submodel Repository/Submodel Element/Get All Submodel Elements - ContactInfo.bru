@@ -1,7 +1,7 @@
 meta {
   name: Get All Submodel Elements - ContactInfo
   type: http
-  seq: 2
+  seq: 0
 }
 
 get {
@@ -15,8 +15,10 @@ params:path {
 }
 
 params:query {
-  limit: 100
-  cursor: 
+  ~limit: 100
+  ~cursor: 
+  ~level: deep
+  ~extent: withBlobValue
 }
 
 settings {

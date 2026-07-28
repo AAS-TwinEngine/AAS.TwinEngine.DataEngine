@@ -103,7 +103,7 @@ public class SubmodelRepositoryController(
     /// Returns all SubmodelElements including their hierarchy.
     /// </summary>
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
-    /// <param name="limit">The maximum number of elements in the response array. Default: 100.</param>
+    /// <param name="limit">The maximum number of elements in the response array.</param>
     /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue.</param>
     /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
     /// <param name="extent">Determines the serialization of the returned content. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>

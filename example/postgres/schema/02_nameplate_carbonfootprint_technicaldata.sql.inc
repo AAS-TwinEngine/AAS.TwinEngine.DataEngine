@@ -15,7 +15,7 @@
 -- ============================================================
 
 
-CREATE TABLE "Marking" (
+CREATE TABLE IF NOT EXISTS "Marking" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "MarkingName" TEXT,
@@ -26,7 +26,7 @@ CREATE TABLE "Marking" (
     "MarkingFile" TEXT
 );
 
-CREATE TABLE "AssetMarking" (
+CREATE TABLE IF NOT EXISTS "AssetMarking" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "MarkingId" INT NOT NULL REFERENCES "Marking"("Id") ON DELETE CASCADE
@@ -36,7 +36,7 @@ CREATE TABLE "AssetMarking" (
 -- ProductImage
 -- ============================================================
 
-CREATE TABLE "ProductImage" (
+CREATE TABLE IF NOT EXISTS "ProductImage" (
     "Id" INT PRIMARY KEY,
     "Index" INT,
     "ImageFile" TEXT,
@@ -48,7 +48,7 @@ CREATE TABLE "ProductImage" (
 -- Asset ↔ ProductImage Mapping
 -- ============================================================
 
-CREATE TABLE "AssetProductImage" (
+CREATE TABLE IF NOT EXISTS "AssetProductImage" (
     "Id" INT PRIMARY KEY,
 
     "AssetId" INT NOT NULL
@@ -64,7 +64,7 @@ CREATE TABLE "AssetProductImage" (
 -- Product Classification Tables
 -- ============================================================
 
-CREATE TABLE "ProductClassifications" (
+CREATE TABLE IF NOT EXISTS "ProductClassifications" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
     "ClassificationSystem" TEXT,
@@ -76,13 +76,13 @@ CREATE TABLE "ProductClassifications" (
     "ProductClassName_de" TEXT
 );
 
-CREATE TABLE "AssetProductClassifications" (
+CREATE TABLE IF NOT EXISTS "AssetProductClassifications" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "ProductClassificationsId" INT REFERENCES "ProductClassifications"("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "ProductOrSectorSpecificCarbonFootprint" (
+CREATE TABLE IF NOT EXISTS "ProductOrSectorSpecificCarbonFootprint" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "AssetId" INT REFERENCES "Asset"("Id") ON DELETE CASCADE,
     "PcfCalculationMethod" TEXT,

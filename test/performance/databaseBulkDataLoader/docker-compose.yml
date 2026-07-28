@@ -1,0 +1,16 @@
+services:
+  loader:
+    image: postgres:16-alpine
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    env_file:
+      - .env
+    environment:
+      PG_CONN_STRING: ${PG_CONN_STRING}
+      ASSET_COUNT: ${ASSET_COUNT}
+      BATCH_SIZE: ${BATCH_SIZE}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command: ["sh", "-c", "tr -d '\r' < /workspace/load.sh > /tmp/load.sh && chmod +x /tmp/load.sh && sh /tmp/load.sh"]
+    restart: "no"
