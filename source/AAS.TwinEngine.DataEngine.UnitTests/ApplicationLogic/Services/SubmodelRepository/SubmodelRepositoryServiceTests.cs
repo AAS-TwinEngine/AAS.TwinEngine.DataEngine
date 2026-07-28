@@ -34,6 +34,7 @@ public class SubmodelRepositoryServiceTests
     private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly ILogger<SubmodelRepositoryService> _logger = Substitute.For<ILogger<SubmodelRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementOptions;
+    private readonly IOptions<GeneralConfig> _generalConfigOptions;
     private readonly SubmodelRepositoryService _sut;
 
     private const string SubmodelId = "NameplateSubmodel";
@@ -49,6 +50,14 @@ public class SubmodelRepositoryServiceTests
             }
         });
 
+        _generalConfigOptions = Options.Create(new GeneralConfig
+        {
+            SubmodelRepository = new SubmodelRepositoryConfig
+            {
+                MaxFileSizeBytes = 100 * 1024 * 1024
+            }
+        });
+
         _sut = new SubmodelRepositoryService(
             _logger,
             _templateService,
@@ -57,7 +66,8 @@ public class SubmodelRepositoryServiceTests
             _pluginManifestConflictHandler,
             _aasRepositoryTemplateService,
             _httpClientFactory,
-            _templateManagementOptions);
+                _templateManagementOptions,
+                _generalConfigOptions);
     }
 
     [Fact]
