@@ -1,8 +1,10 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -26,6 +28,7 @@ public class SubmodelRepositoryService(
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryTemplateService aasRepositoryTemplateService,
     IHttpClientFactory httpClientFactory,
+    IHttpContextAccessor httpContextAccessor,
     IOptions<TemplateManagementConfig> templateManagementConfig,
     IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
 {
@@ -199,54 +202,6 @@ public class SubmodelRepositoryService(
         return semanticIdHandler.FillOutTemplate(template, values);
     }
 
-    /// <summary>
-    /// Wraps a network stream and disposes the owning <see cref="HttpResponseMessage"/> when the stream
-    /// is disposed, preventing HTTP connection pool leaks.
-    /// Logs when the stream is fully consumed, marking the end of the proxy-stream to the client.
-    /// </summary>
-    private sealed class ResponseBoundStream(
-        Stream inner,
-        HttpResponseMessage owner,
-        ILogger logger,
-        string fileName,
-        string contentType) : Stream
-    {
-        public override bool CanRead => inner.CanRead;
-        public override bool CanSeek => inner.CanSeek;
-        public override bool CanWrite => inner.CanWrite;
-        public override long Length => inner.Length;
-        public override long Position { get => inner.Position; set => inner.Position = value; }
-        public override void Flush() => inner.Flush();
-        public override int Read(byte[] buffer, int offset, int count) => inner.Read(buffer, offset, count);
-        public override long Seek(long offset, SeekOrigin origin) => inner.Seek(offset, origin);
-        public override void SetLength(long value) => inner.SetLength(value);
-        public override void Write(byte[] buffer, int offset, int count) => inner.Write(buffer, offset, count);
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => inner.ReadAsync(buffer, offset, count, cancellationToken);
-        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => inner.ReadAsync(buffer, cancellationToken);
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                logger.LogInformation(
-                    "[ClientStream] Stage E: Proxy-stream closed (sync) - all bytes delivered to client. FileName: {FileName}, ContentType: {ContentType}",
-                    fileName, contentType);
-                inner.Dispose();
-                owner.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            logger.LogInformation(
-                "[ClientStream] Stage E: Proxy-stream closed (async) - all bytes delivered to client. FileName: {FileName}, ContentType: {ContentType}",
-                fileName, contentType);
-            await inner.DisposeAsync().ConfigureAwait(false);
-            owner.Dispose();
-            await base.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
     private static async Task<T> ExecuteWithExceptionHandlingAsync<T>(Func<Task<T>> action)
     {
         try
@@ -277,70 +232,48 @@ public class SubmodelRepositoryService(
 
     public async Task<FileAttachmentResult> GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
-        logger.LogInformation(
-            "[FileAttachment] Sequence started - SubmodelId: {SubmodelId}, IdShortPath: {IdShortPath}",
-            submodelId,
-            idShortPath);
-
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
             // Reuse existing element resolution to validate submodel + path and extract file metadata.
-            logger.LogDebug("[FileAttachment] Stage 1: Resolving submodel element from template service");
             var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
-            logger.LogDebug("[FileAttachment] Stage 1 Complete: Element type resolved - {ElementType}", element?.GetType().Name ?? "null");
 
             if (element is not AasCore.Aas3_1.File fileElement)
             {
-                logger.LogWarning(
-                    "[FileAttachment] Stage 2 Failed: Element is not File type, got {ElementType}",
-                    element?.GetType().Name ?? "null");
                 throw new InvalidSubmodelElementTypeException(idShortPath);
             }
-            logger.LogDebug("[FileAttachment] Stage 2 Complete: Validated File element type");
 
             var fileUrl = fileElement.Value;
             if (string.IsNullOrWhiteSpace(fileUrl))
             {
-                logger.LogWarning(
-                    "[FileAttachment] Stage 3 Failed: File URL is null or empty for {IdShortPath}",
-                    idShortPath);
                 throw new SubmodelElementNotFoundException(idShortPath);
             }
 
             var contentType = fileElement.ContentType ?? "application/octet-stream";
             var fileName = Path.GetFileName(fileUrl);
-            logger.LogInformation(
-                "[FileAttachment] Stage 3 Complete: File metadata extracted - FileName: {FileName}, ContentType: {ContentType}, FileUrl: {FileUrl}",
-                fileName,
-                contentType,
-                fileUrl);
 
             // Stream the binary directly from the URL provided by the plugin in the File element value.
-            logger.LogDebug("[FileAttachment] Stage 4: Creating HTTP client and initiating download");
+            using var activity = DataEngineTracing.StartSpan(
+                DataEngineTracing.Spans.LoadFileAttachment,
+                DataEngineTracing.Attributes.SubmodelId,
+                submodelId);
+            activity?.SetTag("aas.idshort_path", idShortPath);
+            activity?.SetTag("http.url", fileUrl);
+
             var httpClient = httpClientFactory.CreateClient();
             HttpResponseMessage response;
             try
             {
-                logger.LogDebug("[FileAttachment] Stage 4a: Sending GET request to {FileUrl}", fileUrl);
                 response = await httpClient
                     .GetAsync(new Uri(fileUrl), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
-                logger.LogInformation(
-                    "[FileAttachment] Stage 4b Complete: HTTP response received - StatusCode: {StatusCode}",
-                    response.StatusCode);
             }
             catch (TaskCanceledException ex)
             {
-                logger.LogError(ex, "[FileAttachment] Stage 4b Failed: HTTP request timeout/cancelled for {FileUrl}", fileUrl);
-                throw new PluginNotAvailableException();
+                throw new PluginNotAvailableException(ex);
             }
 
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning(
-                    "[FileAttachment] Stage 5 Failed: HTTP request unsuccessful - StatusCode: {StatusCode}, Reason: {ReasonPhrase}",
-                    response.StatusCode,
-                    response.ReasonPhrase);
                 response.Dispose();
                 throw new SubmodelElementNotFoundException(idShortPath);
             }
@@ -350,26 +283,14 @@ public class SubmodelRepositoryService(
             if (_maxFileSizeBytes > 0 && contentLength.HasValue && contentLength.Value > _maxFileSizeBytes)
             {
                 response.Dispose();
-                logger.LogWarning(
-                    "[FileAttachment] Stage 5 Failed: File size {ContentLength} exceeds limit {MaxFileSizeBytes} for {IdShortPath}",
-                    contentLength.Value,
-                    _maxFileSizeBytes,
-                    idShortPath);
                 throw new FileSizeExceededException(idShortPath, contentLength.Value, _maxFileSizeBytes);
             }
 
-            logger.LogDebug("[FileAttachment] Stage 5: Reading response stream");
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            logger.LogInformation(
-                "[FileAttachment] Stage 6 Complete: Stream prepared for client delivery - FileName: {FileName}, ContentType: {ContentType}, ContentLength: {ContentLength}",
-                fileName,
-                contentType,
-                contentLength?.ToString(CultureInfo.InvariantCulture) ?? "unknown");
+            httpContextAccessor.HttpContext?.Response.RegisterForDispose(response);
 
-            // Wrap the network stream so that the HttpResponseMessage is disposed together with the stream,
-            // preventing HTTP connection pool leaks, and so that we can log stream completion.
-            var boundStream = new ResponseBoundStream(stream, response, logger, fileName ?? "<unnamed>", contentType);
-            return new FileAttachmentResult(boundStream, contentType, string.IsNullOrWhiteSpace(fileName) ? null : fileName);
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+
+            return new FileAttachmentResult(stream, contentType, string.IsNullOrWhiteSpace(fileName) ? null : fileName);
         }).ConfigureAwait(false);
     }
 }
