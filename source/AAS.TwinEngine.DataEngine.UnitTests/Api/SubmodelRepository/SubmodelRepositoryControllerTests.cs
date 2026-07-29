@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -133,6 +134,39 @@ public class SubmodelRepositoryControllerTests
 
         await _handler.Received(1).GetAllSubmodels(
             Arg.Is<GetAllSubmodelsRequest>(r => r.SemanticId == SemanticId && r.IdShort == IdShort && r.Limit == Limit),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_ReturnsFileResult_WhenHandlerReturnsAttachment()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        using var content = new MemoryStream([1, 2, 3]);
+        var expected = new FileAttachmentResult(content, "image/png", "product.png");
+        _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
+
+        var fileResult = Assert.IsType<FileStreamResult>(result);
+        Assert.Equal("image/png", fileResult.ContentType);
+        Assert.Equal("product.png", fileResult.FileDownloadName);
+        Assert.Same(content, fileResult.FileStream);
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_PassesRouteValuesToHandler()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        using var content = new MemoryStream([1]);
+
+        _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(content, "application/octet-stream", string.Empty));
+
+        await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
+
+        await _handler.Received(1).GetFileAttachment(
+            Arg.Is<GetSubmodelElementRequest>(r => r.SubmodelId == encodedId && r.IdShortPath == _idShortPath),
             Arg.Any<CancellationToken>());
     }
 }
