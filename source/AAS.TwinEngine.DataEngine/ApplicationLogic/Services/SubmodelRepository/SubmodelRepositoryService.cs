@@ -1,10 +1,6 @@
-﻿using System.Diagnostics;
-using System.Globalization;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -27,13 +23,10 @@ public class SubmodelRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryTemplateService aasRepositoryTemplateService,
-    IHttpClientFactory httpClientFactory,
     IHttpContextAccessor httpContextAccessor,
-    IOptions<TemplateManagementConfig> templateManagementConfig,
-    IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
+    IOptions<TemplateManagementConfig> templateManagementConfig) : ISubmodelRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRepository.ConcurrentOperationsLimit;
-    private readonly long _maxFileSizeBytes = generalConfig.Value.SubmodelRepository.MaxFileSizeBytes;
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
@@ -248,49 +241,15 @@ public class SubmodelRepositoryService(
                 throw new SubmodelElementNotFoundException(idShortPath);
             }
 
-            var contentType = fileElement.ContentType ?? "application/octet-stream";
-            var fileName = Path.GetFileName(fileUrl);
-
-            // Stream the binary directly from the URL provided by the plugin in the File element value.
-            using var activity = DataEngineTracing.StartSpan(
-                DataEngineTracing.Spans.LoadFileAttachment,
-                DataEngineTracing.Attributes.SubmodelId,
-                submodelId);
-            activity?.SetTag("aas.idshort_path", idShortPath);
-            activity?.SetTag("http.url", fileUrl);
-
-            var httpClient = httpClientFactory.CreateClient();
-            HttpResponseMessage response;
-            try
+            // Redirect to URL if it starts with http or https
+            if (fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
-                response = await httpClient
-                    .GetAsync(new Uri(fileUrl), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (TaskCanceledException ex)
-            {
-                throw new PluginNotAvailableException(ex);
+                httpContextAccessor.HttpContext?.Response.Redirect(fileUrl);
+                return new FileAttachmentResult(Stream.Null, "application/octet-stream", string.Empty);
             }
 
-            if (!response.IsSuccessStatusCode)
-            {
-                response.Dispose();
-                throw new SubmodelElementNotFoundException(idShortPath);
-            }
-
-            // Enforce max file size using Content-Length if available (limit of 0 means disabled).
-            var contentLength = response.Content.Headers.ContentLength;
-            if (_maxFileSizeBytes > 0 && contentLength.HasValue && contentLength.Value > _maxFileSizeBytes)
-            {
-                response.Dispose();
-                throw new FileSizeExceededException(idShortPath, contentLength.Value, _maxFileSizeBytes);
-            }
-
-            httpContextAccessor.HttpContext?.Response.RegisterForDispose(response);
-
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
-            return new FileAttachmentResult(stream, contentType, string.IsNullOrWhiteSpace(fileName) ? null : fileName);
+            throw new NotImplementedException("File URL must start with http:// or https:// to be accessible.");
         }).ConfigureAwait(false);
     }
 }
