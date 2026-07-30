@@ -101,7 +101,7 @@ public class SubmodelRepositoryHandler(
         throw new SubmodelNotFoundException(decodedId);
     }
 
-    public async Task GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken)
+    public async Task<FileAttachmentResult> GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken)
     {
         var decodedSubmodelId = request?.SubmodelId?.DecodeBase64Url(logger);
         var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
@@ -109,7 +109,7 @@ public class SubmodelRepositoryHandler(
 
         logger.LogInformation("Get File Attachment. SubmodelId: {SubmodelId}, IdShortPath: {IdShortPath}", decodedSubmodelId, decodedIdShortPath);
 
-        await submodelRepositoryService
+        return await submodelRepositoryService
             .GetFileAttachmentAsync(decodedSubmodelId!, decodedIdShortPath, cancellationToken)
             .ConfigureAwait(false);
     }

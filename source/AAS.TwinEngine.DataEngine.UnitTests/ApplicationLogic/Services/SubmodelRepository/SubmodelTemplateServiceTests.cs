@@ -74,8 +74,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
-        var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
-        Assert.Equal("Internal Server Error.", exception.Message);
+        var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
 
     [Fact]
@@ -123,7 +122,7 @@ public class SubmodelTemplateServiceTests
     private static string GetSemanticId(IHasSemantics hasSemantics) => hasSemantics.SemanticId?.Keys?.FirstOrDefault()?.Value ?? string.Empty;
 
     [Fact]
-    public async Task GetSubmodelTemplateAsync_ReturnsNotFoundException_WhenNotFindTheSubmodelElement()
+    public async Task GetSubmodelTemplateAsync_ReturnsSubmodelElementNotFoundException_WhenNotFindTheSubmodelElement()
     {
         const string IdShortPath = "ContactInformation0.InvalidIdShort";
         var expectedSubmodel = TestData.CreateSubmodel();
@@ -131,7 +130,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
-        var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
 
     [Fact]
@@ -215,7 +214,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(
             () => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
     }
 
@@ -265,7 +264,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
     }
 
     [Fact]

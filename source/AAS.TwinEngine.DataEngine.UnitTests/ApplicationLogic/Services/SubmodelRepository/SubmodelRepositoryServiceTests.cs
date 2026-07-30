@@ -1,3 +1,6 @@
+using System.Net;
+using System.Text;
+
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -12,7 +15,6 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -30,7 +32,7 @@ public class SubmodelRepositoryServiceTests
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly IAasRepositoryTemplateService _aasRepositoryTemplateService = Substitute.For<IAasRepositoryTemplateService>();
-    private readonly IHttpContextAccessor _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
+    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly ILogger<SubmodelRepositoryService> _logger = Substitute.For<ILogger<SubmodelRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementOptions;
     private readonly SubmodelRepositoryService _sut;
@@ -55,8 +57,9 @@ public class SubmodelRepositoryServiceTests
             _pluginDataHandler,
             _pluginManifestConflictHandler,
             _aasRepositoryTemplateService,
-            _httpContextAccessor,
-            _templateManagementOptions);
+            _httpClientFactory,
+            _templateManagementOptions,
+            Options.Create(new GeneralConfig { FileAttachmentStreamingTimeoutSeconds = 30 }));
     }
 
     [Fact]
@@ -601,22 +604,27 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenElementIsFileWithHttpUrl_RedirectsWithoutReturningAttachment()
+    public async Task GetFileAttachmentAsync_WhenElementIsFileWithHttpUrl_ReturnsStreamWithCorrectMetadata()
     {
         const string IdShortPath = "Documents.ProductImage";
         const string FileUrl = "https://fake-plugin.local/files/product.png";
+        const string FileContent = "binary-file-data";
 
         var fileElement = new AasCore.Aas3_1.File(contentType: "image/png") { Value = FileUrl, IdShort = "ProductImage" };
         ArrangeAttachmentElement(IdShortPath, fileElement);
 
-        var mockHttpResponse = Substitute.For<HttpResponse>();
-        var mockHttpContext = Substitute.For<HttpContext>();
-        mockHttpContext.Response.Returns(mockHttpResponse);
-        _httpContextAccessor.HttpContext.Returns(mockHttpContext);
+        using var fakeHandler = new FakeHttpMessageHandler(HttpStatusCode.OK, FileContent, "image/png");
+        using var httpClient = new HttpClient(fakeHandler, disposeHandler: false);
+        _httpClientFactory.CreateClient(Arg.Any<string>()).Returns(httpClient);
 
-        await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
-
-        mockHttpResponse.Received(1).Redirect(FileUrl);
+        var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
+        await using (result.Content)
+        {
+            var body = await new StreamReader(result.Content).ReadToEndAsync();
+            Assert.Equal(FileContent, body);
+            Assert.Equal("product.png", result.FileName);
+            Assert.Contains("image/png", result.ContentType);
+        }
     }
 
     [Fact]
@@ -666,16 +674,16 @@ public class SubmodelRepositoryServiceTests
         await Assert.ThrowsAsync<NotImplementedException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
+}
 
-    [Fact]
-    public async Task GetFileAttachmentAsync_WhenHttpContextMissing_DoesNotThrow()
+internal sealed class FakeHttpMessageHandler(HttpStatusCode statusCode, string content, string contentType) : HttpMessageHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        const string IdShortPath = "Documents.ProductImage";
-        const string FileUrl = "https://fake-plugin.local/files/product.png";
-        var fileElement = new AasCore.Aas3_1.File(contentType: null) { Value = FileUrl, IdShort = "ProductImage" };
-        ArrangeAttachmentElement(IdShortPath, fileElement);
-        _httpContextAccessor.HttpContext.Returns((HttpContext?)null);
-
-        await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
+        var response = new HttpResponseMessage(statusCode)
+        {
+            Content = new StringContent(content, Encoding.UTF8, contentType)
+        };
+        return Task.FromResult(response);
     }
 }

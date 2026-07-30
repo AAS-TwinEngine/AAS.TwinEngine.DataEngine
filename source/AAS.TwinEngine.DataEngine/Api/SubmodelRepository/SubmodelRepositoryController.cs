@@ -174,7 +174,14 @@ public class SubmodelRepositoryController(
     {
         logger.LogInformation("Get File Attachment");
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
-        await submodelRepositoryHandler.GetFileAttachment(request, cancellationToken).ConfigureAwait(false);
-        return Ok(string.Empty);
+        var attachment = await submodelRepositoryHandler.GetFileAttachment(request, cancellationToken).ConfigureAwait(false);
+        foreach (var disposable in attachment.ResponseDisposables)
+        {
+            HttpContext.Response.RegisterForDispose(disposable);
+        }
+        return new FileStreamResult(attachment.Content, attachment.ContentType)
+        {
+            FileDownloadName = attachment.FileName ?? string.Empty
+        };
     }
 }

@@ -345,7 +345,7 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_WhenNullRequest_ReturnsSuccessfully()
     {
-        var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+        var submodelList = new SubmodelList { PagingMetaData = new AAS.TwinEngine.DataEngine.DomainModel.Shared.PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
@@ -462,9 +462,10 @@ public class SubmodelRepositoryHandlerTests
         const string IdShortPath = "Documents.ProductImage";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
+        var fakeResult = new FileAttachmentResult(Stream.Null, "application/octet-stream", "file.bin");
         _submodelRepository
             .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+            .Returns(fakeResult);
 
         await _sut.GetFileAttachment(request, CancellationToken.None);
 

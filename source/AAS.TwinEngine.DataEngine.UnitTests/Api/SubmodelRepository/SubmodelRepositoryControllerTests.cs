@@ -138,16 +138,17 @@ public class SubmodelRepositoryControllerTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_ReturnsOkWithEmptyString_WhenHandlerCompletes()
+    public async Task GetFileAttachmentAsync_ReturnsFileStreamResult_WhenHandlerCompletes()
     {
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
         _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+            .Returns(new FileAttachmentResult(Stream.Null, "application/pdf", "document.pdf"));
 
         var result = await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
 
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(string.Empty, okResult.Value);
+        var fileResult = Assert.IsType<FileStreamResult>(result);
+        Assert.Equal("application/pdf", fileResult.ContentType);
+        Assert.Equal("document.pdf", fileResult.FileDownloadName);
     }
 
     [Fact]
@@ -155,7 +156,7 @@ public class SubmodelRepositoryControllerTests
     {
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
         _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+            .Returns(new FileAttachmentResult(Stream.Null, "application/octet-stream", null));
 
         await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
 

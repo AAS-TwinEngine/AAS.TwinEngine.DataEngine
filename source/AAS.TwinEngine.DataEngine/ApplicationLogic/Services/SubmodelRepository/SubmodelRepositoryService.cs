@@ -23,10 +23,12 @@ public class SubmodelRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryTemplateService aasRepositoryTemplateService,
-    IHttpContextAccessor httpContextAccessor,
-    IOptions<TemplateManagementConfig> templateManagementConfig) : ISubmodelRepositoryService
+    IHttpClientFactory httpClientFactory,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRepository.ConcurrentOperationsLimit;
+    private readonly int _fileAttachmentStreamingTimeoutSeconds = generalConfig.Value.FileAttachmentStreamingTimeoutSeconds;
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
@@ -223,39 +225,10 @@ public class SubmodelRepositoryService(
         }
     }
 
-    private static async Task ExecuteWithExceptionHandlingAsync(Func<Task> action)
+    public async Task<FileAttachmentResult> GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
-        try
+        return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            await action().ConfigureAwait(false);
-        }
-        catch (ResourceNotFoundException ex)
-        {
-            throw new SubmodelNotFoundException(ex);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            throw new ServiceUnAuthorizedException(ex);
-        }
-        catch (ResponseParsingException ex)
-        {
-            throw new InternalDataProcessingException(ex);
-        }
-        catch (RequestTimeoutException ex)
-        {
-            throw new PluginNotAvailableException(ex);
-        }
-        catch (MultiPluginConflictException ex)
-        {
-            throw new InternalDataProcessingException(ex);
-        }
-    }
-
-    public async Task GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
-    {
-        await ExecuteWithExceptionHandlingAsync(async () =>
-        {
-            // Reuse existing element resolution to validate submodel + path and extract file metadata.
             var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
 
             if (element is not AasCore.Aas3_1.File fileElement)
@@ -269,15 +242,33 @@ public class SubmodelRepositoryService(
                 throw new SubmodelElementNotFoundException(idShortPath);
             }
 
-            // Redirect to URL if it starts with http or https
-            if (fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            if (!fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
-                httpContextAccessor.HttpContext?.Response.Redirect(fileUrl);
-                return;
+                throw new NotImplementedException("File URL must start with http:// or https:// to be accessible.");
             }
 
-            throw new NotImplementedException("File URL must start with http:// or https:// to be accessible.");
+            // timeoutCts is transferred to OwningStream so the timeout applies to the full streaming duration
+            var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(_fileAttachmentStreamingTimeoutSeconds));
+
+            var client = httpClientFactory.CreateClient();
+            var upstreamResponse = await client.GetAsync(new Uri(fileUrl), HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token).ConfigureAwait(false);
+            _ = upstreamResponse.EnsureSuccessStatusCode();
+
+            var contentType = upstreamResponse.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+
+            var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                fileName = fileElement.IdShort;
+            }
+
+            var contentStream = await upstreamResponse.Content.ReadAsStreamAsync(timeoutCts.Token).ConfigureAwait(false);
+            return new FileAttachmentResult(contentStream, contentType, fileName)
+            {
+                ResponseDisposables = [upstreamResponse, timeoutCts]
+            };
         }).ConfigureAwait(false);
     }
 }

@@ -17,6 +17,8 @@ public class GeneralConfig
     public OpenTelemetrySettings OpenTelemetry { get; set; } = new();
     public CacheConfig Cache { get; set; } = new();
 
+    public int FileAttachmentStreamingTimeoutSeconds { get; set; } = 30;
+
     /// <summary>
     /// Domain URL of the customer environment (V2: direct property; V1: was AasEnvironment:CustomerDomainUrl).
     /// </summary>

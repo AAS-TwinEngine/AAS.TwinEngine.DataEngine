@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -15,5 +16,5 @@ public interface ISubmodelRepositoryHandler
 
     Task<SubmodelElementsDto> GetAllSubmodelElements(GetAllSubmodelElementsRequest request, CancellationToken cancellationToken);
 
-    Task GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken);
+    Task<FileAttachmentResult> GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken);
 }
