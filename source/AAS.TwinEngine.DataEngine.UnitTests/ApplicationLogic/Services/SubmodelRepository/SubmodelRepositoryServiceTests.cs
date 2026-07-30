@@ -601,7 +601,7 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenElementIsFileWithHttpUrl_RedirectsAndReturnsPlaceholderResult()
+    public async Task GetFileAttachmentAsync_WhenElementIsFileWithHttpUrl_RedirectsWithoutReturningAttachment()
     {
         const string IdShortPath = "Documents.ProductImage";
         const string FileUrl = "https://fake-plugin.local/files/product.png";
@@ -614,12 +614,9 @@ public class SubmodelRepositoryServiceTests
         mockHttpContext.Response.Returns(mockHttpResponse);
         _httpContextAccessor.HttpContext.Returns(mockHttpContext);
 
-        var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
+        await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
 
         mockHttpResponse.Received(1).Redirect(FileUrl);
-        Assert.Equal(Stream.Null, result.Content);
-        Assert.Equal("application/octet-stream", result.ContentType);
-        Assert.Equal(string.Empty, result.FileName);
     }
 
     [Fact]
@@ -671,7 +668,7 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenHttpContextMissing_DoesNotThrowAndReturnsPlaceholderResult()
+    public async Task GetFileAttachmentAsync_WhenHttpContextMissing_DoesNotThrow()
     {
         const string IdShortPath = "Documents.ProductImage";
         const string FileUrl = "https://fake-plugin.local/files/product.png";
@@ -679,10 +676,6 @@ public class SubmodelRepositoryServiceTests
         ArrangeAttachmentElement(IdShortPath, fileElement);
         _httpContextAccessor.HttpContext.Returns((HttpContext?)null);
 
-        var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
-
-        Assert.Equal(Stream.Null, result.Content);
-        Assert.Equal("application/octet-stream", result.ContentType);
-        Assert.Equal(string.Empty, result.FileName);
+        await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
     }
 }

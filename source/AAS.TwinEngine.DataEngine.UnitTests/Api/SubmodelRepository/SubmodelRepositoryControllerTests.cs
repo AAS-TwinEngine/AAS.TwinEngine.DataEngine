@@ -138,30 +138,24 @@ public class SubmodelRepositoryControllerTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_ReturnsFileResult_WhenHandlerReturnsAttachment()
+    public async Task GetFileAttachmentAsync_ReturnsOkWithEmptyString_WhenHandlerCompletes()
     {
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
-        using var content = new MemoryStream([1, 2, 3]);
-        var expected = new FileAttachmentResult(content, "image/png", "product.png");
         _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
-            .Returns(expected);
+            .Returns(Task.CompletedTask);
 
         var result = await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
 
-        var fileResult = Assert.IsType<FileStreamResult>(result);
-        Assert.Equal("image/png", fileResult.ContentType);
-        Assert.Equal("product.png", fileResult.FileDownloadName);
-        Assert.Same(content, fileResult.FileStream);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Equal(string.Empty, okResult.Value);
     }
 
     [Fact]
     public async Task GetFileAttachmentAsync_PassesRouteValuesToHandler()
     {
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
-        using var content = new MemoryStream([1]);
-
         _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new FileAttachmentResult(content, "application/octet-stream", string.Empty));
+            .Returns(Task.CompletedTask);
 
         await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
 

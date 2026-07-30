@@ -223,9 +223,37 @@ public class SubmodelRepositoryService(
         }
     }
 
-    public async Task<FileAttachmentResult> GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    private static async Task ExecuteWithExceptionHandlingAsync(Func<Task> action)
     {
-        return await ExecuteWithExceptionHandlingAsync(async () =>
+        try
+        {
+            await action().ConfigureAwait(false);
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new SubmodelNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+    }
+
+    public async Task GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        await ExecuteWithExceptionHandlingAsync(async () =>
         {
             // Reuse existing element resolution to validate submodel + path and extract file metadata.
             var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
@@ -246,7 +274,7 @@ public class SubmodelRepositoryService(
                 fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
                 httpContextAccessor.HttpContext?.Response.Redirect(fileUrl);
-                return new FileAttachmentResult(Stream.Null, "application/octet-stream", string.Empty);
+                return;
             }
 
             throw new NotImplementedException("File URL must start with http:// or https:// to be accessible.");

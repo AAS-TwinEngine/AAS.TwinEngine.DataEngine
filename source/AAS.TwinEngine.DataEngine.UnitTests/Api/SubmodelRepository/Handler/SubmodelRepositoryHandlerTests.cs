@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Api.SubmodelRepository.Handler;
+
 public class SubmodelRepositoryHandlerTests
 {
     private readonly ISubmodelRepositoryService _submodelRepository = Substitute.For<ISubmodelRepositoryService>();
@@ -455,22 +456,18 @@ public class SubmodelRepositoryHandlerTests
     // ── GetFileAttachment ──────────────────────────────────────────────────────
 
     [Fact]
-    public async Task GetFileAttachment_ReturnsResult_WhenServiceSucceeds()
+    public async Task GetFileAttachment_CallsService_WhenServiceSucceeds()
     {
         const string SubmodelId = "NameplateSubmodel";
         const string IdShortPath = "Documents.ProductImage";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
-        using var expectedStream = new MemoryStream(new byte[] { 1, 2, 3 });
-        var expected = new FileAttachmentResult(expectedStream, "image/jpeg", "ProductImage.jpg");
-
         _submodelRepository
             .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
-            .Returns(expected);
+            .Returns(Task.CompletedTask);
 
-        var result = await _sut.GetFileAttachment(request, CancellationToken.None);
+        await _sut.GetFileAttachment(request, CancellationToken.None);
 
-        Assert.Equal(expected, result);
         await _submodelRepository.Received(1)
             .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>());
     }

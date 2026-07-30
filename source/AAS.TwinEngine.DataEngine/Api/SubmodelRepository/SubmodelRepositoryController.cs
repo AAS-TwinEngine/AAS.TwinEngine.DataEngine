@@ -174,7 +174,7 @@ public class SubmodelRepositoryController(
     {
         logger.LogInformation("Get File Attachment");
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
-        var result = await submodelRepositoryHandler.GetFileAttachment(request, cancellationToken).ConfigureAwait(false);
-        return File(result.Content, result.ContentType, result.FileName);
+        await submodelRepositoryHandler.GetFileAttachment(request, cancellationToken).ConfigureAwait(false);
+        return Ok(string.Empty);
     }
 }
