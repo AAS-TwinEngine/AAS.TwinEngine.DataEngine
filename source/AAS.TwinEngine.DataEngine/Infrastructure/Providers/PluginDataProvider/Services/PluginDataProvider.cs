@@ -105,14 +105,14 @@ public class PluginDataProvider(
     public Task<IList<HttpContent>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
         => GetAndProcessAsync(pluginRequests, AssetInformationEndpoint, cancellationToken);
 
-    public async Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, CancellationToken cancellationToken)
+    public async Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var result = new List<HttpContent>();
         var exceptions = new List<Exception>();
 
         foreach (var pluginRequest in pluginRequests)
         {
-            var url = BuildUrl(ApiPaths.PluginMetadata, ShellsEndpoint);
+            var url = BuildShellsUrl(limit, cursor);
 
             if (pluginRequest == null)
             {
