@@ -1,424 +1,311 @@
-# Submodel Pagination Cursor Design - Get All Submodels
+# Submodel Pagination Cursor Concept - Get All Submodels
 
-## 1. Problem Statement
+## Problem
+The DataEngine's `GET /submodels` and `GET /submodel-descriptors` endpoints must paginate **submodels**, but the underlying Plugin APIs paginate **products (Asset Administration Shells / AAS IDs)**. In an Asset Administration Shell ecosystem, a single product (AAS) can contain multiple submodels (a `1-to-N` expansion relationship). 
 
-The DataEngine's `GET /submodels` endpoint must paginate **submodels**, but the underlying Plugin API paginates **products (AAS IDs)**. A single product may contain multiple submodels, and a product can be only **partially consumed** within one response page. The cursor must encode enough state to resume mid-product without duplicating or skipping submodels.
+When a client requests a page of submodels with a specific `limit` (e.g., `limit=2` or `limit=100`), a single product's submodel list may be only **partially consumed** when the page limit is reached. If the pagination engine uses standard single-field or exclusive cursor pagination (which moves the underlying Plugin cursor past the product), any remaining uncollected submodels in that product are permanently skipped on subsequent page requests. 
+
+## Constraints
+- **O(limit) Memory Footprint:** The pagination engine must operate with constant memory proportional to the requested page `limit` and batch size, never loading the full dataset into memory.
+- **No Plugin API Modifications:** Underlying Plugins implement standard IDTA / BaSyx product-level cursor pagination (`limit` and `cursor`); Plugins do not support submodel-level cursors.
+- **AAS-ID-Based Exclusive Plugin Cursor:** The Plugin cursor is AAS-ID-based and uses exclusive semantics - passing an AAS ID as cursor instructs the Plugin to return all AAS strictly after that ID in its deterministic ordering.
+- **Deterministic Ordering:** Plugins return products in stable, deterministic order, and submodel references within a product maintain a deterministic order.
+- **Zero Data Loss / Zero Duplication:** Traversing all pages from start to finish must yield every submodel exactly once under static conditions.
+- **IDTA Compliance:** The pagination solution must remain fully compliant with the IDTA AAS Part 2 API specification. The DataEngine may introduce internal pagination logic and cursor management, but the externally exposed API behavior, request/response contracts must remain compliant with the IDTA specification.
+
+## Assumptions
+- Each Asset Administration Shell (`IAssetAdministrationShell`) has a unique `ID` and a deterministic list of submodel references (`Submodels`).
+- The API endpoint acts as the orchestrator over one or more external Plugin instances.
+- Submodel data is collected on-demand after identifying candidate submodel IDs from shell templates.
 
 ---
 
-## 2. Data Model
+## Considered Alternatives
 
+### 1. Submodel ID Cursor with Unbounded Plugin Fetching (No Plugin Limit/Cursor)
+- **Description:** Store only the last delivered `SubmodelId` in the client cursor token (`cursor = LastSubmodelId`). When fetching products from the Plugin (AAS Shell request), the DataEngine does **not** provide any `limit` or `cursor` to the Plugin, thereby fetching **all products (shells)** on every page request. During submodel expansion, the DataEngine iterates through all products and submodels from the beginning, skipping submodels until it matches the requested `SubmodelId` cursor, and then collects the next page of submodels up to `limit`.
+- **Pros:**
+  - Very simple and compact cursor token (only a single `SubmodelId`).
+  - Correctness is maintained (no submodels are skipped or lost across page boundaries, as all products are inspected).
+  - No complex multi-field cursor coordinate tracking required.
+- **Cons:**
+  - **High Upstream Overload & Network Waste:** Fetching *all* products from the Plugin on *every single page request* destroys scalability. If there are 100,000 products, every page request fetches all 100,000 products from the Plugin just to find where `SubmodelId` is located.
+
+### 2. Product ID Bulk Endpoint in Plugin with DataEngine Expansion
+- **Description:** Introduce a new bulk endpoint in the Plugin contract to retrieve all product IDs (or a paginated list of all product IDs). The DataEngine would retrieve these product IDs, resolve the shell template for each ID to determine the associated submodels, and then query the Plugin for the specific submodel data. Under this approach, the client cursor only needs to store the last delivered `SubmodelId`.
+- **Pros:**
+  - **Simple Cursor Token:** The pagination cursor remains simple (e.g., just the last delivered `SubmodelId` or index).
+- **Cons:**
+  - **Plugin Contract Breaking Change:** Requires updating the Plugin API contract to support the new bulk product ID endpoint.
+  - **High Architectural Complexity:** Orchestrating product ID retrieval, resolving matching shell templates, and mapping them to submodels on the fly in the DataEngine introduces significant complexity and state tracking.
+  - **Association / Resolution Difficulties:** It is difficult to map a product ID directly to its associated shell template and submodels without fetching the entire shell, which negates the performance benefits.
+
+
+### 3. Two-Field Composite Cursor (`SubmodelId` | `AasId`) (Chosen)
+- **Description:** The cursor stores exactly two lightweight coordinates: the last submodel ID delivered to the client (`SubmodelId`) and the AAS ID that serves simultaneously as both the position anchor and the next plugin request cursor (`AasId`). Because the plugin cursor is AAS-ID-based with exclusive semantics, the engine can derive the exact plugin request cursor directly from the AAS ID stored in the DataEngine cursor. A single tracking state - initialized from the cursor's `AasId` field and advanced each time an AAS is fully consumed - determines which AAS to start from on every plugin request. This eliminates the need for a separate opaque plugin cursor field.
+- **Pros:**
+  - **Guaranteed Correctness:** Eliminates data loss and duplication; fully supports `1-to-N` expansion.
+  - **Minimal Cursor Size:** Exactly 2 pipe-delimited string fields, smaller than a 3-field cursor.
+  - **Constant Memory (`O(limit)`):** Streams and collects only what is needed for the current page.
+  - **No Plugin API Changes Required:** Works seamlessly over AAS-ID-based exclusive cursor endpoints.
+  - **Bounded Skip Scan:** The `SubmodelId` skip scan is confined to the first AAS of the returned batch only, never scanning the full dataset.
+
+---
+
+### Alternative Comparison Summary
+
+| Approach | Memory Footprint | Correctness (No Data Loss) | Cursor Token Size | Plugin API Changes Required |
+|---|---|---|---|---|
+| **1. Submodel ID Cursor (Unbounded Fetch)** | `O(N)` (Unbounded Fetch) | Yes | Small (`SubmodelId`) | No |
+| **2. Product ID Bulk Endpoint** | `O(N)` (Unbounded Fetch of IDs) | Yes | Small (`SubmodelId`) | **Yes** |
+| **3. Two-Field Composite Cursor (Chosen)** | `O(limit)` (Optimal) | **Yes** | **Smallest (2 fields)** | No |
+
+---
+
+## Decision
+We adopt **Option 3: Two-Field Composite Cursor (`SubmodelId` | `AasId`)** as the standard architectural pattern for all submodel and submodel-descriptor pagination.
+
+---
+
+## Architectural Concept & Two-Field Composite Cursor
+
+### 1. The `1-to-N` Expansion Problem (`limit=2` Walkthrough)
+
+Consider an environment with 3 products (`AAS-1`, `AAS-2`, `AAS-3`), each containing 3 submodels:
 ```
 Product 1 (AAS-1)         Product 2 (AAS-2)         Product 3 (AAS-3)
 ├── SM-1                  ├── SM-4                  ├── SM-7
-├── SM-2                  ├── SM-5                  ├── SM-8
+├── SM-2                  ├── SM-5                  ├── SM-8 
 └── SM-3                  ├── SM-6                  └── SM-9
 ```
 
-- **3 products**, each with **3 submodels** → **9 submodels** total.
-- Plugin returns products in a stable, deterministic order.
-- Submodel IDs within a product are derived from Shell Templates and maintain a deterministic order.
-
----
-
-## 3. The Limit=2 Problem (Why a Simple Two-Field Cursor Fails)
-
-Consider `limit=2` with our example data:
-
+When a client executes `GET /submodels?limit=2`:
 ```
 Page 1: GET /submodels?limit=2
 
-  Expand AAS-1 → [SM-1, SM-2, SM-3]
-  Collect SM-1, SM-2. Limit reached.
-  Cursor = (AAS-1, SM-2)   ← AAS-1 is PARTIALLY consumed (SM-3 still pending)
-
-Page 2: GET /submodels?limit=2&cursor=(AAS-1, SM-2)
-
-  Need to resume inside AAS-1 to get SM-3.
-  But Plugin cursor semantics are EXCLUSIVE: passing AAS-1 returns [AAS-2, AAS-3, ...]
-  SM-3 is LOST!
+  1. API calls Plugin.GetShells(cursor=null) → returns [AAS-1, AAS-2]
+  2. Expand AAS-1 → [SM-1, SM-2, SM-3]
+  3. Collect SM-1 (Count=1), Collect SM-2 (Count=2). Page limit reached!
+  4. AAS-1 is PARTIALLY consumed (SM-3 is still pending).
 ```
 
-**Root cause:** The Plugin's cursor-based pagination uses exclusive semantics ("give me items AFTER this cursor"). Once the Plugin moves past a product, there's no way to go back using the Plugin's pagination API alone.
+If the API were to advance the Plugin cursor past AAS-1 for Page 2:
+```
+Page 2: GET /submodels?limit=2&cursor="AAS-1" (exclusive - starts after AAS-1)
 
-**The partially consumed product must be handled independently from the Plugin's forward pagination.**
+  1. API calls Plugin.GetShells(cursor="AAS-1")
+  2. Plugin returns products AFTER AAS-1 → [AAS-2, AAS-3, ...]
+  3. RESULT: SM-3 (from AAS-1) IS PERMANENTLY LOST!
+```
+
+The cursor must not advance the Plugin cursor until the current AAS is fully consumed.
+
+### 2. Logical Composition of the Two-Field Cursor
+
+The cursor stores two coordinates that together capture exact positioning across both the AAS layer and the Submodel layer:
+
+| Coordinate | Wire Field Position | Nullable | Description |
+|---|---|---|---|
+| `SubmodelId` | Index 0 (Prefix) | Yes (`null` when limit is reached exactly at an AAS boundary) | The unique identifier of the last submodel delivered to the client. On resume, the API scans only the **first AAS** of the returned batch to skip already-delivered submodels. |
+| `AasId` | Index 1 (Suffix) | Yes (`null` on first page or when no AAS has been fully consumed) | The AAS ID that is passed directly to the Plugin as an exclusive cursor on resume. The Plugin returns all AAS strictly after this ID. Advances only when an AAS is fully consumed. |
+
+#### Wire Encoding Strategy
+The logical cursor string is formatted as UTF-8 text separated by a pipe character (`|`), then encoded using standard `Base64Url` encoding (RFC 4648) without padding:
+```
+Logical Structure:  {SubmodelId}|{AasId}
+Encoded Wire Token: Base64Url( UTF-8( "{SubmodelId}|{AasId}" ) )
+```
+
+**Examples:**
+- Mid-AAS cursor, no AAS yet fully consumed (re-fetch from plugin start):
+  - Logical: `SM-2|`  (AasId is empty/null)
+  - Encoded: `U00tMnw`
+- Mid-AAS cursor, AAS-1 was fully consumed (plugin starts after AAS-1):
+  - Logical: `SM-4|AAS-1`
+  - Encoded: `U00tNHxBQVMtMQ`
+- Limit reached at AAS boundary, AAS-2 fully consumed (plugin starts after AAS-2):
+  - Logical: `|AAS-2`  (SubmodelId is empty/null)
+  - Encoded: `fEFBUy0y`
+
+### 3. The AasId Tracking Logic
+
+A single position-tracking state drives the cursor throughout a page execution. It is:
+- **Initialized** from the incoming cursor's `AasId` field (null at the very first request).
+- **Advanced** each time an AAS within the current batch is fully consumed - it is updated to that AAS's ID.
+- **Captured** as the `AasId` field of the output cursor when the page limit is reached.
+
+This guarantees the following invariant: the `AasId` in the output cursor always equals the ID of the **last fully consumed AAS at the moment the page limit was reached**, or null if no AAS was fully consumed since the current plugin batch started. On the next request, the API passes this `AasId` directly to the Plugin as an exclusive cursor, which returns all AAS strictly after that ID - precisely the position where collection should resume.
+
+When the page limit is reached **exactly at the boundary of an AAS** (i.e., the last submodel of that AAS is the last one collected): the AAS is considered fully consumed, the tracking state advances to that AAS's ID, and `SubmodelId` is set to null. On resume, the API collects from the very first submodel of the first AAS returned by the Plugin.
+
+### 4. Resume Algorithm (Conceptual)
+
+On receiving a non-null cursor:
+1. Extract `SubmodelId` and `AasId` from the cursor.
+2. Initialize the tracking state from `AasId`.
+3. Call the Plugin with the tracking state as the exclusive cursor → receives the first relevant batch.
+4. In the **first AAS of the batch**:
+   - If `SubmodelId` is set: scan this AAS to find `SubmodelId`, skip everything up to and including it, and begin collecting from the next submodel.
+   - If `SubmodelId` is null: collect from the very first submodel.
+5. For all subsequent AAS in the same batch, and for further batches: collect all submodels from their start.
+6. Each time an AAS is fully consumed, advance the tracking state to that AAS's ID.
+7. When the page limit is reached: encode the output cursor as `{SubmodelId=last_collected, AasId=current_tracking_state}`. If the limit was reached exactly at an AAS boundary: encode as `{SubmodelId=null, AasId=that_AAS_ID}`.
+8. When a batch is exhausted without reaching the page limit: request the next batch from the Plugin using the current tracking state as the exclusive cursor.
+
+The `SubmodelId` skip scan is always bounded to the **first AAS of the batch** - never a full dataset scan - because `AasId` guarantees the Plugin skips all previously fully consumed AAS before returning the batch.
 
 ---
 
-## 4. Cursor Structure (Two-Field Composite)
+## Sequence Diagram
 
-### 4.1 Logical Composition
-
-The cursor requires **two** coordinates:
-
-| Field | Type | Purpose |
-|-------|------|---------|
-| `SubmodelId` | string | The last submodel ID **included** in the previous response. Marks the exact resume point within the product. |
-| `AasId` | string | The AAS ID that serves simultaneously as the position anchor and the exclusive plugin request cursor. |
-
-### 4.2 Why Two Fields?
-
-| Scenario | What's needed |
-|----------|--------------|
-| Product partially consumed | `AasId` to re-expand the product on the first batch; `SubmodelId` to skip delivered items |
-| Exclusive plugin request | `AasId` is passed directly as the exclusive plugin cursor (`trackingAasId`) to continue forward |
-
-### 4.3 Wire Format
-
-```
-Logical:    {SubmodelId}|{AasId}
-Encoded:    Base64Url( UTF-8( "{SubmodelId}|{AasId}" ) )
-```
-
-**Example:**
-
-```
-Logical:    https://example.com/submodels/Nameplate|https://example.com/shells/001
-Encoded:    aHR0cHM6Ly9leGFtcGxlLmNvbS9zdWJtb2RlbHMvTmFtZXBsYXRlfGh0dHBzOi8vZXhhbXBsZS5jb20vc2hlbGxzLzAwMQ==
-```
-
-The cursor is **opaque** to the client - they never parse or construct it.
-
-### 4.4 Special Cases
-
-| Scenario | Cursor Value |
-|----------|-------------|
-| First page (no cursor) | `null` / absent |
-| Last page (no more data) | Response returns `cursor = null` (signals end of dataset) |
-| Limit reached mid-product or at boundary | `{LastSubmodelId}|{CurrentAasId}` |
----
-
-## 5. Pagination Algorithm
-
-### 5.1 Two-Phase Resume Strategy
-
-The key insight: **on resume, the partially consumed product is handled FIRST (Phase 1) using only its AAS ID, THEN forward pagination continues (Phase 2) using the Plugin's next cursor.**
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  PHASE 1: Complete the partially consumed product                      │
-│                                                                        │
-│  - Re-derive submodel IDs for CurrentAasId (via template expansion)    │
-│  - Skip submodels up to and including LastSubmodelId                   │
-│  - Collect remaining submodels until limit or product exhausted        │
-│                                                                        │
-│  NO Plugin pagination call needed - we already know the AAS ID.        │
-├────────────────────────────────────────────────────────────────────────┤
-│  PHASE 2: Continue with next products (if limit not yet reached)       │
-│                                                                        │
-│  - Call Plugin.GetProducts(cursor = PluginNextCursor)                  │
-│  - Expand each returned product's submodels                            │
-│  - Collect until limit reached or Plugin exhausted                     │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### 5.2 Plugin Cursor Coordination
-
-```
-┌───────────────────────────────────────────────────────────────────────────┐
-│  Page 1: GET /submodels?limit=2                                           │
-│                                                                           │
-│  Engine calls Plugin: GetProducts(limit=2, cursor=null)                   │
-│  Plugin returns: [AAS-1, AAS-2], pluginNextCursor = "C1"                  │
-│                                                                           │
-│  Expand AAS-1 → [SM-1, SM-2, SM-3]                                        │
-│  Collect SM-1, SM-2. Limit reached.                                       │
-│                                                                           │
-│  Cursor = Encode("C1", "AAS-1", "SM-2")                                   │
-│                    ▲       ▲         ▲                                    │
-│                    │       │         └── Last delivered submodel          │
-│                    │       └──────────── Product still being consumed     │
-│                    └─────────────────── Plugin cursor for NEXT products   │
-│                                         (skips AAS-1 and AAS-2)           │
-├───────────────────────────────────────────────────────────────────────────┤
-│  Page 2: Resume with cursor ("C1", "AAS-1", "SM-2")                       │
-│                                                                           │
-│  PHASE 1: Re-expand AAS-1 → [SM-1, SM-2, SM-3]                            │
-│            Skip SM-1, SM-2. Collect SM-3. Count = 1.                      │
-│                                                                           │
-│  PHASE 2: Need 1 more. But wait - AAS-2 was in the same Plugin page!      │
-│            We need AAS-2 before using "C1".                               │
-│              SEE SECTION 5.4 FOR HANDLING THIS                            │
-└───────────────────────────────────────────────────────────────────────────┘
-```
-
-### 5.3 The "Same-Page Products" Problem & Solution
-
-When the Plugin returns `[AAS-1, AAS-2]` with `nextCursor = "C1"`:
-- `"C1"` skips **both** AAS-1 and AAS-2.
-- But if we only consumed AAS-1 partially, AAS-2 hasn't been processed at all!
-
-**Solution: Store the Plugin cursor that produced the current batch, not the "next" cursor.**
-
-Revised cursor structure:
-
-| Field | Purpose |
-|-------|---------|
-| `PluginPageCursor` | The cursor that was used to **fetch the current batch** (null for the first page). On resume, re-fetch the same batch from the Plugin. |
-| `CurrentAasId` | The partially consumed product's AAS ID. |
-| `LastSubmodelId` | Last delivered submodel within that product. |
-
-### 5.4 Why Store `PluginPageCursor` (Not `PluginNextCursor`)
-
-| Stored Value | On Resume | Problem |
-|---|---|---|
-| `PluginNextCursor` | Gets products AFTER current batch | Products between `currentAasId` and end of batch are LOST |
-| **`PluginPageCursor`** | **Re-fetches the same batch** | **All products in the batch are available; skip already-consumed ones** |
-
-The trade-off: on resume, we re-fetch and re-scan some products we've already processed. But:
-- The re-scan is bounded (one Plugin page, typically small).
-- Correctness is guaranteed - no submodels are ever lost.
-- No extra Plugin endpoints required.
-
----
-
-## 6. Request/Response Examples
-
-### 6.1 Example: `limit=2` (The Tricky Case)
-
-**Page 1 - `GET /submodels?limit=2`**
-
-```
-1. No cursor → pluginPageCursor = null, no skipping.
-2. Call Plugin: GetProducts(cursor=null) → [AAS-1, AAS-2], nextPluginCursor="C1"
-3. Expand AAS-1 → [SM-1, SM-2, SM-3]
-4. Collect SM-1. Count=1.
-5. Collect SM-2. Count=2. Limit reached.
-6. Cursor = Encode(pluginPageCursor=null, AasId="AAS-1", LastSM="SM-2")
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-1" },
-    { "id": "SM-2" }
-  ],
-  "paging_metadata": { "cursor": "fEFBUy0xfFNNLTI=" }
-}
-```
-
----
-
-**Page 2 - `GET /submodels?limit=2&cursor=fEFBUy0xfFNNLTI=`**
-
-```
-1. Decode cursor → (pluginPageCursor=null, currentAasId="AAS-1", lastSM="SM-2")
-2. Call Plugin: GetProducts(cursor=null) → [AAS-1, AAS-2], nextPluginCursor="C1"
-   (Same call as Page 1 - re-fetches the same batch)
-3. Skip products before AAS-1: none to skip.
-4. Expand AAS-1 → [SM-1, SM-2, SM-3]
-5. Skip submodels up to and including SM-2.
-6. Collect SM-3. Count=1.
-7. Move to AAS-2 (next product in SAME batch).
-8. Expand AAS-2 → [SM-4, SM-5, SM-6]
-9. Collect SM-4. Count=2. Limit reached.
-10. Cursor = Encode(pluginPageCursor=null, AasId="AAS-2", LastSM="SM-4")
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-3" },
-    { "id": "SM-4" }
-  ],
-  "paging_metadata": { "cursor": "fEFBUy0yfFNNLTQ=" }
-}
-```
-
----
-
-**Page 3 - `GET /submodels?limit=2&cursor=fEFBUy0yfFNNLTQ=`**
-
-```
-1. Decode cursor → (pluginPageCursor=null, currentAasId="AAS-2", lastSM="SM-4")
-2. Call Plugin: GetProducts(cursor=null) → [AAS-1, AAS-2], nextPluginCursor="C1"
-3. Skip products before AAS-2: skip AAS-1.
-4. Expand AAS-2 → [SM-4, SM-5, SM-6]
-5. Skip submodels up to and including SM-4.
-6. Collect SM-5. Count=1.
-7. Collect SM-6. Count=2. Limit reached.
-8. Cursor = Encode(pluginPageCursor=null, AasId="AAS-2", LastSM="SM-6")
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-5" },
-    { "id": "SM-6" }
-  ],
-  "paging_metadata": { "cursor": "fEFBUy0yfFNNLTY=" }
-}
-```
-
----
-
-**Page 4 - `GET /submodels?limit=2&cursor=fEFBUy0yfFNNLTY=`**
-
-```
-1. Decode cursor → (pluginPageCursor=null, currentAasId="AAS-2", lastSM="SM-6")
-2. Call Plugin: GetProducts(cursor=null) → [AAS-1, AAS-2], nextPluginCursor="C1"
-3. Skip products before AAS-2: skip AAS-1.
-4. Expand AAS-2 → [SM-4, SM-5, SM-6]
-5. Skip SM-4, SM-5, SM-6 (all skipped - product fully consumed).
-6. No more products in this batch.
-7. Move to next Plugin page: GetProducts(cursor="C1") → [AAS-3], nextPluginCursor=null
-8. Expand AAS-3 → [SM-7, SM-8, SM-9]
-9. Collect SM-7. Count=1.
-10. Collect SM-8. Count=2. Limit reached.
-11. Cursor = Encode(pluginPageCursor="C1", AasId="AAS-3", LastSM="SM-8")
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-7" },
-    { "id": "SM-8" }
-  ],
-  "paging_metadata": { "cursor": "QzF8QUFTLTN8U00tOA==" }
-}
-```
-
----
-
-**Page 5 (Final) - `GET /submodels?limit=2&cursor=QzF8QUFTLTN8U00tOA==`**
-
-```
-1. Decode cursor → (pluginPageCursor="C1", currentAasId="AAS-3", lastSM="SM-8")
-2. Call Plugin: GetProducts(cursor="C1") → [AAS-3], nextPluginCursor=null
-3. Skip products before AAS-3: none.
-4. Expand AAS-3 → [SM-7, SM-8, SM-9]
-5. Skip SM-7, SM-8.
-6. Collect SM-9. Count=1.
-7. No more products, no more plugin pages.
-8. End of dataset → cursor = null.
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-9" }
-  ],
-  "paging_metadata": { "cursor": null }
-}
-```
-
----
-
-### 6.2 Example: `limit=4`
-
-**Page 1 - `GET /submodels?limit=4`**
-
-```
-1. Call Plugin: GetProducts(cursor=null) → [AAS-1, AAS-2, AAS-3], nextPluginCursor=null
-2. Expand AAS-1 → [SM-1, SM-2, SM-3]. Collect all. Count=3.
-3. Expand AAS-2 → [SM-4, SM-5, SM-6]. Collect SM-4. Count=4. Limit reached.
-4. Cursor = Encode(pluginPageCursor=null, AasId="AAS-2", LastSM="SM-4")
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-1" },
-    { "id": "SM-2" },
-    { "id": "SM-3" },
-    { "id": "SM-4" }
-  ],
-  "paging_metadata": { "cursor": "fEFBUy0yfFNNLTQ=" }
-}
-```
-
-**Page 2 - `GET /submodels?limit=4&cursor=fEFBUy0yfFNNLTQ=`**
-
-```
-1. Decode → (pluginPageCursor=null, currentAasId="AAS-2", lastSM="SM-4")
-2. Call Plugin: GetProducts(cursor=null) → [AAS-1, AAS-2, AAS-3], nextPluginCursor=null
-3. Skip AAS-1 (before AAS-2).
-4. Expand AAS-2 → [SM-4, SM-5, SM-6]. Skip SM-4. Collect SM-5, SM-6. Count=2.
-5. Expand AAS-3 → [SM-7, SM-8, SM-9]. Collect SM-7, SM-8. Count=4. Limit reached.
-6. Cursor = Encode(pluginPageCursor=null, AasId="AAS-3", LastSM="SM-8")
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-5" },
-    { "id": "SM-6" },
-    { "id": "SM-7" },
-    { "id": "SM-8" }
-  ],
-  "paging_metadata": { "cursor": "fEFBUy0zfFNNLTg=" }
-}
-```
-
-**Page 3 (Final) - `GET /submodels?limit=4&cursor=fEFBUy0zfFNNLTg=`**
-
-```
-1. Decode → (pluginPageCursor=null, currentAasId="AAS-3", lastSM="SM-8")
-2. Call Plugin: GetProducts(cursor=null) → [AAS-1, AAS-2, AAS-3]
-3. Skip AAS-1, AAS-2. Find AAS-3.
-4. Expand AAS-3 → [SM-7, SM-8, SM-9]. Skip SM-7, SM-8. Collect SM-9. Count=1.
-5. No more products. Plugin exhausted.
-6. cursor = null.
-```
-
-```json
-{
-  "result": [
-    { "id": "SM-9" }
-  ],
-  "paging_metadata": { "cursor": null }
-}
-```
-
----
-
-
-## 9. Sequence Diagram (limit=2)
+The following sequence diagram illustrates the end-to-end execution flow of `GET /submodels?limit=2` across two page requests, demonstrating how the tracking state advances when an AAS is fully consumed and how the two-field cursor drives the next Plugin request. The API endpoint handles pagination logic directly - no intermediate service layer is involved:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Client
     participant API as GET /submodels
-    participant Engine as Pagination Engine
-    participant Plugin as Plugin API
+    participant Plugin as Plugin / AAS Registry
 
+    Note over Client,Plugin: Page 1 Request (cursor = null)
     Client->>API: GET /submodels?limit=2
-    API->>Engine: Paginate(limit=2, cursor=null)
 
-    Engine->>Plugin: GetProducts(cursor=null)
-    Plugin-->>Engine: [AAS-1, AAS-2], nextCursor="C1"
+    Note over API: Tracking state initialized to null (AasId=null)
+    API->>Plugin: GetShells(cursor=null, limit=2)
+    Plugin-->>API: Shells: [AAS-1, AAS-2]
 
-    Note over Engine: Expand AAS-1 → [SM-1, SM-2, SM-3]
-    Engine->>Plugin: GetSubmodelData(SM-1)
-    Engine->>Plugin: GetSubmodelData(SM-2)
-    Note over Engine: Collected: 2. Limit reached.
-    Note over Engine: Cursor = Encode(null, AAS-1, SM-2)
+    Note over API: Expand AAS-1 submodel refs -> [SM-1, SM-2, SM-3]
+    API->>Plugin: GetSubmodel("SM-1")
+    Plugin-->>API: Submodel("SM-1") (Count = 1)
 
-    Engine-->>API: [SM-1, SM-2], cursor=encoded
-    API-->>Client: 200 OK
+    API->>Plugin: GetSubmodel("SM-2")
+    Plugin-->>API: Submodel("SM-2") (Count = 2 - Limit Reached!)
 
-    Client->>API: GET /submodels?limit=2&cursor=...
-    API->>Engine: Paginate(limit=2, cursor=...)
+    Note over API: AAS-1 not fully consumed. Tracking state stays null.
+    Note over API: Encode Cursor: SubmodelId="SM-2" | AasId=null
+    API-->>Client: 200 OK [SM-1, SM-2] + cursor="U00tMnw"
 
-    Note over Engine: Decode → (pluginPageCursor=null, AAS-1, SM-2)
-    Engine->>Plugin: GetProducts(cursor=null)
-    Note over Engine: Re-fetches SAME batch
-    Plugin-->>Engine: [AAS-1, AAS-2], nextCursor="C1"
+    Note over Client,Plugin: Page 2 Request (Resume from partially consumed AAS-1)
+    Client->>API: GET /submodels?limit=2&cursor=U00tMnw
 
-    Note over Engine: Find AAS-1, expand → [SM-1, SM-2, SM-3]
-    Note over Engine: Skip SM-1, SM-2 (anchor found)
-    Engine->>Plugin: GetSubmodelData(SM-3)
-    Note over Engine: Collected: 1. Need 1 more.
+    Note over API: Decode Cursor -> SubmodelId="SM-2", AasId=null
+    Note over API: Tracking state initialized to null (from AasId=null)
+    API->>Plugin: GetShells(cursor=null, limit=2)
+    Plugin-->>API: Shells: [AAS-1, AAS-2]
 
-    Note over Engine: Move to AAS-2 (same batch!)
-    Note over Engine: Expand AAS-2 → [SM-4, SM-5, SM-6]
-    Engine->>Plugin: GetSubmodelData(SM-4)
-    Note over Engine: Collected: 2. Limit reached.
-    Note over Engine: Cursor = Encode(null, AAS-2, SM-4)
+    Note over API: First AAS = AAS-1. Scan for SM-2 → skip SM-1 and SM-2
+    API->>Plugin: GetSubmodel("SM-3")
+    Plugin-->>API: Submodel("SM-3") (Count = 1, AAS-1 complete)
 
-    Engine-->>API: [SM-3, SM-4], cursor=encoded
-    API-->>Client: 200 OK
+    Note over API: AAS-1 fully consumed. Tracking state advances to AAS-1.
+    Note over API: Advance to AAS-2 in same batch -> [SM-4, SM-5, SM-6]
+    API->>Plugin: GetSubmodel("SM-4")
+    Plugin-->>API: Submodel("SM-4") (Count = 2 - Limit Reached!)
+
+    Note over API: AAS-2 not fully consumed. Tracking state = AAS-1.
+    Note over API: Encode Cursor: SubmodelId="SM-4" | AasId="AAS-1"
+    API-->>Client: 200 OK [SM-3, SM-4] + cursor="U00tNHxBQVMtMQ"
 ```
+
+On Page 3, the API calls `Plugin.GetShells(cursor="AAS-1")` - the Plugin returns `[AAS-2, AAS-3]` (all AAS strictly after `AAS-1`). The API scans `AAS-2` (the first AAS in the new batch) to find `SM-4`, skips it, and resumes collection from `SM-5`.
+
+---
+
+## Step-by-Step Examples
+
+### Example 1: `limit=2` Across 5 Consecutive Pages (The Tricky Case)
+
+Dataset:
+- `AAS-1` → `[SM-1, SM-2, SM-3]`
+- `AAS-2` → `[SM-4, SM-5, SM-6]`
+- `AAS-3` → `[SM-7, SM-8, SM-9]`
+
+Plugin batch size: 2 products per request.
+
+#### Page 1: `GET /submodels?limit=2`
+- **Request:** `limit=2`, `cursor=null`
+- **API Execution:**
+  1. Tracking state initialized to null.
+  2. Call `Plugin.GetShells(cursor=null)` → returns `[AAS-1, AAS-2]`.
+  3. First AAS is `AAS-1`. `SubmodelId` is null (no cursor) → collect from the start.
+  4. Collect `SM-1` (Count=1), `SM-2` (Count=2) → **Limit reached!** `AAS-1` is partial.
+  5. Tracking state unchanged (null). No AAS was fully consumed.
+  6. Encode cursor: `SubmodelId="SM-2"`, `AasId=null`.
+- **Response:**
+```json
+{ "paging_metadata": { "cursor": "U00tMnw" }, "result": [{ "id": "SM-1" }, { "id": "SM-2" }] }
+```
+
+#### Page 2: `GET /submodels?limit=2&cursor=U00tMnw`
+- **Request:** `limit=2`, cursor decodes to `SubmodelId="SM-2"`, `AasId=null`
+- **API Execution:**
+  1. Tracking state initialized to null (from `AasId=null`).
+  2. Call `Plugin.GetShells(cursor=null)` → returns `[AAS-1, AAS-2]`.
+  3. First AAS is `AAS-1`. Scan for `SM-2` → skip `SM-1`, `SM-2`. Collect `SM-3` (Count=1). `AAS-1` complete.
+  4. Tracking state advances to `AAS-1`.
+  5. Advance to `AAS-2` in the same batch. Collect `SM-4` (Count=2) → **Limit reached!** `AAS-2` is partial.
+  6. Tracking state = `AAS-1`. Encode cursor: `SubmodelId="SM-4"`, `AasId="AAS-1"`.
+- **Response:**
+```json
+{ "paging_metadata": { "cursor": "U00tNHxBQVMtMQ" }, "result": [{ "id": "SM-3" }, { "id": "SM-4" }] }
+```
+
+#### Page 3: `GET /submodels?limit=2&cursor=U00tNHxBQVMtMQ`
+- **Request:** `limit=2`, cursor decodes to `SubmodelId="SM-4"`, `AasId="AAS-1"`
+- **API Execution:**
+  1. Tracking state initialized to `AAS-1` (from `AasId="AAS-1"`).
+  2. Call `Plugin.GetShells(cursor="AAS-1")` → returns `[AAS-2, AAS-3]` (all AAS strictly after `AAS-1`).
+  3. First AAS is `AAS-2`. Scan for `SM-4` → skip `SM-4`. Collect `SM-5` (Count=1), `SM-6` (Count=2) → **Limit reached!** `AAS-2` is fully consumed at the limit boundary.
+  4. Tracking state advances to `AAS-2`. Since `AAS-2` is fully consumed at the boundary, `SubmodelId=null`.
+  5. Encode cursor: `SubmodelId=null`, `AasId="AAS-2"`.
+- **Response:**
+```json
+{ "paging_metadata": { "cursor": "fEFBUy0y" }, "result": [{ "id": "SM-5" }, { "id": "SM-6" }] }
+```
+
+#### Page 4: `GET /submodels?limit=2&cursor=fEFBUy0y`
+- **Request:** `limit=2`, cursor decodes to `SubmodelId=null`, `AasId="AAS-2"`
+- **API Execution:**
+  1. Tracking state initialized to `AAS-2` (from `AasId="AAS-2"`).
+  2. Call `Plugin.GetShells(cursor="AAS-2")` → returns `[AAS-3]` (all AAS strictly after `AAS-2`).
+  3. First AAS is `AAS-3`. `SubmodelId` is null → collect from the start.
+  4. Collect `SM-7` (Count=1), `SM-8` (Count=2) → **Limit reached!** `AAS-3` is partial.
+  5. Tracking state unchanged (`AAS-2`). Encode cursor: `SubmodelId="SM-8"`, `AasId="AAS-2"`.
+- **Response:**
+```json
+{ "paging_metadata": { "cursor": "U00tOHxBQVMtMg" }, "result": [{ "id": "SM-7" }, { "id": "SM-8" }] }
+```
+
+#### Page 5 (Final): `GET /submodels?limit=2&cursor=U00tOHxBQVMtMg`
+- **Request:** `limit=2`, cursor decodes to `SubmodelId="SM-8"`, `AasId="AAS-2"`
+- **API Execution:**
+  1. Tracking state initialized to `AAS-2`.
+  2. Call `Plugin.GetShells(cursor="AAS-2")` → returns `[AAS-3]`.
+  3. First AAS is `AAS-3`. Scan for `SM-8` → skip `SM-7`, `SM-8`. Collect `SM-9` (Count=1).
+  4. `AAS-3` exhausted. No more batches (`nextCursor=null`). Dataset exhausted.
+  5. Return with `cursor=null`.
+- **Response:**
+```json
+{ "paging_metadata": { "cursor": null }, "result": [{ "id": "SM-9" }] }
+```
+
+---
+
+### Example 2: `limit=4` Across 3 Pages
+
+#### Page 1: `GET /submodels?limit=4`
+- **Execution:** Tracking state=null. Plugin(null) → [AAS-1, AAS-2]. Collect all 3 of AAS-1 (tracking advances to AAS-1), then collect SM-4 from AAS-2 (limit reached, AAS-2 partial).
+- **Response Cursor:** `SubmodelId="SM-4"`, `AasId="AAS-1"` (encoded: `U00tNHxBQVMtMQ`)
+- **Result:** `[SM-1, SM-2, SM-3, SM-4]`
+
+#### Page 2: `GET /submodels?limit=4&cursor=U00tNHxBQVMtMQ`
+- **Execution:** Tracking state=AAS-1. Plugin(AAS-1) → [AAS-2, AAS-3]. Scan AAS-2 for SM-4, skip it, collect SM-5, SM-6 (AAS-2 done, tracking → AAS-2). Advance to AAS-3, collect SM-7, SM-8 (Count=4, limit reached, AAS-3 partial).
+- **Response Cursor:** `SubmodelId="SM-8"`, `AasId="AAS-2"` (encoded: `U00tOHxBQVMtMg`)
+- **Result:** `[SM-5, SM-6, SM-7, SM-8]`
+
+#### Page 3: `GET /submodels?limit=4&cursor=U00tOHxBQVMtMg`
+- **Execution:** Tracking state=AAS-2. Plugin(AAS-2) → [AAS-3]. Scan AAS-3 for SM-8, skip SM-7, SM-8, collect SM-9 (Count=1). Dataset exhausted.
+- **Response Cursor:** `null`
+- **Result:** `[SM-9]`
 
 ---
