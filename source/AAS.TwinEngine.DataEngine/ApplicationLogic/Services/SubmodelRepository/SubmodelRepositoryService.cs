@@ -5,6 +5,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -62,14 +63,6 @@ public class SubmodelRepositoryService(
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var shellSearchFilter = new ShellSearchFilter
-            {
-                IdShort = filter?.IdShort
-            };
-
-            var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, shellSearchFilter, cancellationToken).ConfigureAwait(false);
-            var shellDescriptors = shellMetadata.ShellDescriptors ?? [];
-
             string? filteredTemplateId = null;
             if (filter?.SemanticId is not null)
             {
@@ -81,49 +74,166 @@ public class SubmodelRepositoryService(
                 }
             }
 
-            var distinctSubmodelIds = await GetDistinctSubmodelIdsAsync(shellDescriptors, cancellationToken).ConfigureAwait(false);
+            var shellSearchFilter = new ShellSearchFilter
+            {
+                IdShort = filter?.IdShort
+            };
 
-            var (pagedIds, pagingMetaData) = PagingExtensions.GetPagedResult(distinctSubmodelIds, id => id, limit, cursor);
+            var pageSize = limit ?? 100;
+            var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, pageSize, cursor, cancellationToken).ConfigureAwait(false);
 
-            var submodels = await BuildSubmodelsAsync(pagedIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
+            var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
             return new SubmodelList
             {
-                PagingMetaData = pagingMetaData,
+                PagingMetaData = new PagingMetaData { Cursor = paginationResult.NextCursor },
                 Result = submodels
             };
         }).ConfigureAwait(false);
     }
 
-    private async Task<List<string>> GetDistinctSubmodelIdsAsync(List<ShellDescriptorMetaData> shellDescriptors, CancellationToken cancellationToken)
+    /// <summary>
+    /// Implements the two-field composite cursor pagination algorithm.
+    /// Iterates through plugin shell batches, expanding submodel refs per AAS,
+    /// and collects submodel IDs up to the requested page size.
+    /// </summary>
+    private async Task<SubmodelPageResult> CollectSubmodelPageAsync(
+        ShellSearchFilter shellSearchFilter,
+        int pageSize,
+        string? encodedCursor,
+        CancellationToken cancellationToken)
     {
-        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
-        var tasks = shellDescriptors.Where(shell => !string.IsNullOrWhiteSpace(shell.Id)).Select(async shell =>
+        var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
+        var state = new PaginationState(incomingCursor);
+        var pluginCursor = state.TrackingAasId;
+
+        while (state.CollectedIds.Count < pageSize)
+        {
+            var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(
+                pluginManifestConflictHandler.Manifests, shellSearchFilter, pageSize, pluginCursor, cancellationToken).ConfigureAwait(false);
+
+            var shellDescriptors = shellMetadata.ShellDescriptors?
+                .Where(s => !string.IsNullOrWhiteSpace(s.Id))
+                .ToList() ?? [];
+
+            if (shellDescriptors.Count == 0)
             {
-                await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
-                {
-                    return await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
-                }
-                catch (ResourceNotFoundException ex)
-                {
-                    logger.LogWarning(ex, "Could not retrieve submodel refs for shell {ShellId}. Skipping shell.", shell.Id);
-                    return [];
-                }
-                finally
-                {
-                    _ = semaphore.Release();
-                }
-            });
+                break;
+            }
 
-        var references = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var limitReached = await ProcessShellBatchAsync(shellDescriptors, pageSize, state, cancellationToken).ConfigureAwait(false);
 
-        return references
-            .SelectMany(x => x)
-            .Select(reference => reference.Keys.FirstOrDefault()?.Value)
-            .Where(id => !string.IsNullOrWhiteSpace(id))
-            .Distinct()
-            .ToList()!;
+            if (limitReached)
+            {
+                break;
+            }
+
+            // Batch exhausted without reaching limit — check if plugin has more data
+            if (shellMetadata.PagingMetaData?.Cursor is null)
+            {
+                break;
+            }
+
+            pluginCursor = state.TrackingAasId;
+        }
+
+        var nextCursor = state.CollectedIds.Count >= pageSize
+            ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId)
+            : null;
+
+        return new SubmodelPageResult(state.CollectedIds, nextCursor);
+    }
+
+    private async Task<bool> ProcessShellBatchAsync(
+        List<ShellDescriptorMetaData> shellDescriptors,
+        int pageSize,
+        PaginationState state,
+        CancellationToken cancellationToken)
+    {
+        foreach (var shell in shellDescriptors)
+        {
+            var submodelIds = await GetSubmodelIdsForShellAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
+
+            if (submodelIds.Count == 0)
+            {
+                state.TrackingAasId = shell.Id;
+                state.IsFirstAasInResume = false;
+                continue;
+            }
+
+            var startIndex = 0;
+
+            // Skip-scan: only on the first AAS when resuming from a cursor
+            if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
+            {
+                startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
+                state.IsFirstAasInResume = false;
+                state.SkipToSubmodelId = null;
+            }
+            else
+            {
+                state.IsFirstAasInResume = false;
+            }
+
+            for (var i = startIndex; i < submodelIds.Count; i++)
+            {
+                state.CollectedIds.Add(submodelIds[i]);
+                state.LastCollectedSubmodelId = submodelIds[i];
+
+                if (state.CollectedIds.Count >= pageSize)
+                {
+                    // If we consumed the last submodel of this AAS, advance tracking
+                    if (i == submodelIds.Count - 1)
+                    {
+                        state.TrackingAasId = shell.Id;
+                        state.LastCollectedSubmodelId = null;
+                    }
+
+                    return true;
+                }
+            }
+
+            // AAS fully consumed — advance tracking state
+            state.TrackingAasId = shell.Id;
+        }
+
+        return false;
+    }
+
+    private async Task<List<string>> GetSubmodelIdsForShellAsync(string shellId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var references = await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shellId, cancellationToken).ConfigureAwait(false);
+
+            return references
+                .Select(r => r.Keys.FirstOrDefault()?.Value)
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .ToList()!;
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Could not retrieve submodel refs for shell {ShellId}. Skipping shell.", shellId);
+            return [];
+        }
+    }
+
+    private sealed record SubmodelPageResult(List<string> SubmodelIds, string? NextCursor);
+
+    private sealed class PaginationState
+    {
+        public List<string> CollectedIds { get; } = [];
+        public string? TrackingAasId { get; set; }
+        public string? LastCollectedSubmodelId { get; set; }
+        public string? SkipToSubmodelId { get; set; }
+        public bool IsFirstAasInResume { get; set; }
+
+        public PaginationState(SubmodelPaginationCursor? cursor)
+        {
+            TrackingAasId = cursor?.AasId;
+            SkipToSubmodelId = cursor?.SubmodelId;
+            IsFirstAasInResume = cursor is not null;
+        }
     }
 
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(IEnumerable<string> submodelIds, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)

@@ -105,14 +105,14 @@ public class PluginDataProvider(
     public Task<IList<HttpContent>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
         => GetAndProcessAsync(pluginRequests, AssetInformationEndpoint, cancellationToken);
 
-    public async Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, CancellationToken cancellationToken)
+    public async Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var result = new List<HttpContent>();
         var exceptions = new List<Exception>();
 
         foreach (var pluginRequest in pluginRequests)
         {
-            var url = BuildUrl(ApiPaths.PluginMetadata, ShellsEndpoint);
+            var url = BuildShellsByAssetIdsUrl(limit, cursor);
 
             if (pluginRequest == null)
             {
@@ -251,6 +251,26 @@ public class PluginDataProvider(
     private static string BuildShellsUrl(int? limit, string? cursor)
     {
         const string BaseUrl = $"{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
+        var queryParams = new Dictionary<string, string>();
+
+        if (limit is > 0)
+        {
+            queryParams["limit"] = limit.Value.ToString();
+        }
+
+        if (!string.IsNullOrWhiteSpace(cursor))
+        {
+            queryParams["cursor"] = cursor;
+        }
+
+        return queryParams.Count > 0
+                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
+                   : BaseUrl;
+    }
+
+    private static string BuildShellsByAssetIdsUrl(int? limit, string? cursor)
+    {
+        const string BaseUrl = $"/{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
         var queryParams = new Dictionary<string, string>();
 
         if (limit is > 0)

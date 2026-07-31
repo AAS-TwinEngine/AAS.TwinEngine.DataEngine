@@ -249,7 +249,7 @@ public class SubmodelRepositoryServiceTests
     public async Task GetAllSubmodelsAsync_ReturnsEmpty_WhenNoShellsFound()
     {
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [] });
 
         var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
@@ -267,7 +267,7 @@ public class SubmodelRepositoryServiceTests
         var submodelRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId1)]);
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [new ShellDescriptorMetaData { Id = ShellId }] });
 
         _aasRepositoryTemplateService
@@ -297,7 +297,7 @@ public class SubmodelRepositoryServiceTests
         var submodelRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId1)]);
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [new ShellDescriptorMetaData { Id = ShellId }] });
 
         _aasRepositoryTemplateService
@@ -319,7 +319,7 @@ public class SubmodelRepositoryServiceTests
         const string ShellId = "https://example.com/shells/001";
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [new ShellDescriptorMetaData { Id = ShellId }] });
 
         _aasRepositoryTemplateService
@@ -339,7 +339,7 @@ public class SubmodelRepositoryServiceTests
         var filledSubmodel = TestData.CreateFilledSubmodel();
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors =
@@ -402,7 +402,7 @@ public class SubmodelRepositoryServiceTests
         var filledSubmodel = TestData.CreateFilledSubmodel();
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [new ShellDescriptorMetaData { Id = ShellId }] });
 
         _templateService
@@ -437,7 +437,7 @@ public class SubmodelRepositoryServiceTests
         var filter = new SubmodelSearchFilter { SemanticId = SemanticId };
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [new ShellDescriptorMetaData { Id = "https://example.com/shells/001" }] });
 
         // GetFilteredSubmodelTemplateIdAsync returns null — semantic ID not found in any template
@@ -458,7 +458,7 @@ public class SubmodelRepositoryServiceTests
         var filledSubmodel = TestData.CreateFilledSubmodel();
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors =

@@ -391,7 +391,7 @@ public class PluginDataProviderTests
 
         var assetIdsHeaderValue = """[{"name":"SerialNumber","value":"SN-4711"}]""";
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, null, CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result);
@@ -431,7 +431,7 @@ public class PluginDataProviderTests
 
         const string idShort = "test-idshort-value";
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, null, idShort, CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, null, idShort, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result);
