@@ -3,10 +3,10 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -24,7 +24,7 @@ public class SubmodelRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryTemplateService aasRepositoryTemplateService,
-    ICreateClient httpClientFactory,
+    IFileAttachmentStreamProvider fileAttachmentStreamProvider,
     IOptions<TemplateManagementConfig> templateManagementConfig,
     IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
 {
@@ -249,8 +249,7 @@ public class SubmodelRepositoryService(
                 throw new NotImplementedException("File URL must start with http:// or https:// to be accessible.");
             }
 
-            var client = httpClientFactory.CreateClient(Options.DefaultName);
-            var upstreamResponse = await client.GetAsync(new Uri(fileUrl), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            var upstreamResponse = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken).ConfigureAwait(false);
             _ = upstreamResponse.EnsureSuccessStatusCode();
 
             // Fast rejection if server declared a size over the limit — avoids opening the body at all.
@@ -269,7 +268,7 @@ public class SubmodelRepositoryService(
                 fileName = fileElement.IdShort;
             }
 
-            var upstreamStream = await upstreamResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var upstreamStream = await fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
 
             var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes, idShortPath);
 

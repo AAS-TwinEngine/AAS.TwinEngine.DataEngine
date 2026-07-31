@@ -6,12 +6,12 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -33,7 +33,7 @@ public class SubmodelRepositoryServiceTests
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly IAasRepositoryTemplateService _aasRepositoryTemplateService = Substitute.For<IAasRepositoryTemplateService>();
-    private readonly ICreateClient _httpClientFactory = Substitute.For<ICreateClient>();
+    private readonly IFileAttachmentStreamProvider _fileAttachmentStreamProvider = Substitute.For<IFileAttachmentStreamProvider>();
     private readonly ILogger<SubmodelRepositoryService> _logger = Substitute.For<ILogger<SubmodelRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementOptions;
     private readonly SubmodelRepositoryService _sut;
@@ -58,7 +58,7 @@ public class SubmodelRepositoryServiceTests
             _pluginDataHandler,
             _pluginManifestConflictHandler,
             _aasRepositoryTemplateService,
-            _httpClientFactory,
+            _fileAttachmentStreamProvider,
             _templateManagementOptions,
             Options.Create(new GeneralConfig { MaxFileAttachmentSizeBytes = 30 * 1024 * 1024 }));
     }
@@ -614,9 +614,13 @@ public class SubmodelRepositoryServiceTests
         var fileElement = new AasCore.Aas3_1.File(contentType: "image/png") { Value = FileUrl, IdShort = "ProductImage" };
         ArrangeAttachmentElement(IdShortPath, fileElement);
 
-        using var fakeHandler = new FakeHttpMessageHandler(HttpStatusCode.OK, FileContent, "image/png");
-        using var httpClient = new HttpClient(fakeHandler, disposeHandler: false);
-        _httpClientFactory.CreateClient(Arg.Any<string>()).Returns(httpClient);
+        using var upstreamResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(FileContent, Encoding.UTF8, "image/png")
+        };
+        _fileAttachmentStreamProvider.GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(upstreamResponse);
+        _fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, Arg.Any<CancellationToken>())
+            .Returns(await upstreamResponse.Content.ReadAsStreamAsync());
 
         var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
         await using (result.Content)
@@ -627,7 +631,7 @@ public class SubmodelRepositoryServiceTests
             Assert.Contains("image/png", result.ContentType);
         }
 
-        _httpClientFactory.Received(1).CreateClient(Options.DefaultName);
+        await _fileAttachmentStreamProvider.Received(1).GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -676,17 +680,5 @@ public class SubmodelRepositoryServiceTests
 
         await Assert.ThrowsAsync<NotImplementedException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
-    }
-}
-
-internal sealed class FakeHttpMessageHandler(HttpStatusCode statusCode, string content, string contentType) : HttpMessageHandler
-{
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        var response = new HttpResponseMessage(statusCode)
-        {
-            Content = new StringContent(content, Encoding.UTF8, contentType)
-        };
-        return Task.FromResult(response);
     }
 }

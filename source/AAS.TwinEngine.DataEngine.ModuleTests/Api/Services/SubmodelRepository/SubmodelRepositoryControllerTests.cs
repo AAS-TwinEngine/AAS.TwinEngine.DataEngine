@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -7,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 
@@ -27,6 +29,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
+    private readonly IFileAttachmentStreamProvider _fileAttachmentStreamProvider;
 
     protected SubmodelRepositoryControllerTests(string configDir)
     {
@@ -34,6 +37,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
+        _fileAttachmentStreamProvider = Substitute.For<IFileAttachmentStreamProvider>();
 
         _factory = new ConfigTestFactory(configDir, services =>
         {
@@ -41,6 +45,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
             _ = services.AddSingleton(_mockTemplateProvider);
             _ = services.AddSingleton(mockPluginManifestProvider);
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
+            _ = services.AddSingleton(_fileAttachmentStreamProvider);
         });
 
         _client = _factory.CreateClient();
@@ -178,6 +183,77 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, "Test"));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_WhenElementIsFileWithHttpUrl_StreamsContentAsync()
+    {
+        // Arrange
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string IdShortPath = "Thumbnail";
+        const string FileUrl = "https://example.com/logo.png";
+        var fileBytes = Encoding.UTF8.GetBytes("fake-image-bytes");
+
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePluginResponseForThumbnail())
+        }));
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateSubmodel());
+
+        using var upstreamResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(new MemoryStream(fileBytes))
+        };
+        upstreamResponse.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        _ = _fileAttachmentStreamProvider.GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(upstreamResponse);
+        _ = _fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, Arg.Any<CancellationToken>()).Returns(new MemoryStream(fileBytes));
+
+        // Act
+        var response = await _client.GetAsync($"/submodels/{SubmodelId}/submodel-elements/{IdShortPath}/attachment");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("image/png", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal(fileBytes, body);
+        Assert.Contains("logo.png", response.Content.Headers.ContentDisposition?.ToString(), StringComparison.Ordinal);
+        await _fileAttachmentStreamProvider.Received(1).GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_WhenElementIsNotFile_Returns400Async()
+    {
+        // Arrange
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string IdShortPath = "ContactName";
+
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePluginResponseForSubmodelElement())
+        }));
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateSubmodel());
+
+        // Act
+        var response = await _client.GetAsync($"/submodels/{SubmodelId}/submodel-elements/{IdShortPath}/attachment");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

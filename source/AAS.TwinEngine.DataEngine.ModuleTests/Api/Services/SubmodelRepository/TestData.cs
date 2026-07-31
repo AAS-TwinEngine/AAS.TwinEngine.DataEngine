@@ -144,6 +144,14 @@ internal static class TestData
     }
     """;
 
+    public static string CreatePluginResponseForThumbnail() => """
+        {
+        "http://example.com/idta/digital-nameplate/semantic-id": {
+        "http://example.com/idta/digital-nameplate/thumbnail": "https://example.com/logo.png"
+      }
+    }
+    """;
+
     public static string CreatePlugin1ResponseForSubmodel() => """
         {
         "http://example.com/idta/digital-nameplate/semantic-id": {

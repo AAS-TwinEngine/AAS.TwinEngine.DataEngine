@@ -1,8 +1,9 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
@@ -13,6 +14,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Help
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
+using AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
 
@@ -105,7 +107,7 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddHttpClientWithoutResilience(HttpClientNames.SubmodelRegistryHealthCheck, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
 
         _ = services.AddHttpClientWithoutResilience(HttpClientNames.FileAttachmentProvider,null);
- 
+
         // Plugin HttpClients (from PluginsConfig.Instances)
         if (pluginsConfig.Instances.Count > 0)
         {
@@ -118,6 +120,7 @@ public static class InfrastructureDependencyInjectionExtensions
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();
         _ = services.AddScoped<ICreateClient, HttpClientFactory>();
+        _ = services.AddScoped<IFileAttachmentStreamProvider, FileAttachmentStreamProvider>();
         _ = services.AddScoped<IPluginDataProvider, PluginDataProvider>();
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();
