@@ -104,12 +104,14 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddHttpClientWithoutResilience(HttpClientNames.AasRegistryHealthCheck, templateManagement.AasTemplateRegistry.BaseUrl!);
         _ = services.AddHttpClientWithoutResilience(HttpClientNames.SubmodelRegistryHealthCheck, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
 
+        _ = services.AddHttpClientWithoutResilience(HttpClientNames.FileAttachmentProvider,null);
+ 
         // Plugin HttpClients (from PluginsConfig.Instances)
         if (pluginsConfig.Instances.Count > 0)
         {
             foreach (var plugin in pluginsConfig.Instances)
             {
-                _ = services.AddHttpClientWithResilience(HttpClientNames.PluginDataProviderPrefix + plugin.Name, pluginsConfig.ResiliencePolicies.Retry, plugin.BaseUrl);
+                _ = services.AddHttpClientWithResilience(HttpClientNames.PluginDataProviderPrefix + plugin.Name, pluginsConfig.ResiliencePolicies.Retry, plugin.BaseUrl!);
                 _ = services.AddHttpClientWithoutResilience(HttpClientNames.PluginHealthCheckPrefix + plugin.Name, plugin.BaseUrl!);
             }
         }

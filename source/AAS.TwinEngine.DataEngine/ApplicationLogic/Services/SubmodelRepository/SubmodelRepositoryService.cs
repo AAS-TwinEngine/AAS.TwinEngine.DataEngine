@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -23,12 +24,12 @@ public class SubmodelRepositoryService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryTemplateService aasRepositoryTemplateService,
-    IHttpClientFactory httpClientFactory,
+    ICreateClient httpClientFactory,
     IOptions<TemplateManagementConfig> templateManagementConfig,
     IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRepository.ConcurrentOperationsLimit;
-    private readonly int _fileAttachmentStreamingTimeoutSeconds = generalConfig.Value.FileAttachmentStreamingTimeoutSeconds;
+    private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
@@ -248,13 +249,17 @@ public class SubmodelRepositoryService(
                 throw new NotImplementedException("File URL must start with http:// or https:// to be accessible.");
             }
 
-            // timeoutCts is transferred to OwningStream so the timeout applies to the full streaming duration
-            var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutCts.CancelAfter(TimeSpan.FromSeconds(_fileAttachmentStreamingTimeoutSeconds));
-
-            var client = httpClientFactory.CreateClient();
-            var upstreamResponse = await client.GetAsync(new Uri(fileUrl), HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token).ConfigureAwait(false);
+            var client = httpClientFactory.CreateClient(Options.DefaultName);
+            var upstreamResponse = await client.GetAsync(new Uri(fileUrl), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             _ = upstreamResponse.EnsureSuccessStatusCode();
+
+            // Fast rejection if server declared a size over the limit — avoids opening the body at all.
+            var declaredLength = upstreamResponse.Content.Headers.ContentLength;
+            if (declaredLength.HasValue && declaredLength.Value > _maxFileAttachmentSizeBytes)
+            {
+                upstreamResponse.Dispose();
+                throw new NotImplementedException($"File exceeds maximum allowed size of {_maxFileAttachmentSizeBytes} bytes.");
+            }
 
             var contentType = upstreamResponse.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
 
@@ -264,11 +269,91 @@ public class SubmodelRepositoryService(
                 fileName = fileElement.IdShort;
             }
 
-            var contentStream = await upstreamResponse.Content.ReadAsStreamAsync(timeoutCts.Token).ConfigureAwait(false);
-            return new FileAttachmentResult(contentStream, contentType, fileName)
+            var upstreamStream = await upstreamResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+
+            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes, idShortPath);
+
+            return new FileAttachmentResult(limitedStream, contentType, fileName)
             {
-                ResponseDisposables = [upstreamResponse, timeoutCts]
+                ResponseDisposables = [upstreamResponse]
             };
         }).ConfigureAwait(false);
+    }
+
+    private sealed class MaxLengthStream : Stream
+    {
+        private readonly Stream _inner;
+        private readonly long _maxBytes;
+        private readonly string _idShortPath;
+        private long _totalRead;
+
+        public MaxLengthStream(Stream inner, long maxBytes, string idShortPath)
+        {
+            _inner = inner;
+            _maxBytes = maxBytes;
+            _idShortPath = idShortPath;
+        }
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var read = _inner.Read(buffer, offset, count);
+            CheckLimit(read);
+            return read;
+        }
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            var read = await _inner.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+            CheckLimit(read);
+            return read;
+        }
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            var read = await _inner.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            CheckLimit(read);
+            return read;
+        }
+
+        private void CheckLimit(int justRead)
+        {
+            _totalRead += justRead;
+            if (_totalRead > _maxBytes)
+            {
+                throw new NotImplementedException(
+                    $"File attachment at '{_idShortPath}' exceeds the maximum allowed size of {_maxBytes} bytes.");
+            }
+        }
+
+        public override void Flush() => _inner.Flush();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _inner.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await _inner.DisposeAsync().ConfigureAwait(false);
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
     }
 }

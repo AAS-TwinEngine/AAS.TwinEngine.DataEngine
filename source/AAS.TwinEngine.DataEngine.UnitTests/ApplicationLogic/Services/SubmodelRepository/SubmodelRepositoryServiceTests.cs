@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -11,6 +11,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -32,7 +33,7 @@ public class SubmodelRepositoryServiceTests
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly IAasRepositoryTemplateService _aasRepositoryTemplateService = Substitute.For<IAasRepositoryTemplateService>();
-    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
+    private readonly ICreateClient _httpClientFactory = Substitute.For<ICreateClient>();
     private readonly ILogger<SubmodelRepositoryService> _logger = Substitute.For<ILogger<SubmodelRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementOptions;
     private readonly SubmodelRepositoryService _sut;
@@ -59,7 +60,7 @@ public class SubmodelRepositoryServiceTests
             _aasRepositoryTemplateService,
             _httpClientFactory,
             _templateManagementOptions,
-            Options.Create(new GeneralConfig { FileAttachmentStreamingTimeoutSeconds = 30 }));
+            Options.Create(new GeneralConfig { MaxFileAttachmentSizeBytes = 30 * 1024 * 1024 }));
     }
 
     [Fact]
@@ -625,6 +626,8 @@ public class SubmodelRepositoryServiceTests
             Assert.Equal("product.png", result.FileName);
             Assert.Contains("image/png", result.ContentType);
         }
+
+        _httpClientFactory.Received(1).CreateClient(Options.DefaultName);
     }
 
     [Fact]

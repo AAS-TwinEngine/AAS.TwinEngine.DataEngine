@@ -8,11 +8,14 @@ using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
+using Microsoft.AspNetCore.Http;
+
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 
 public class SubmodelRepositoryHandler(
     ILogger<SubmodelRepositoryHandler> logger,
-    ISubmodelRepositoryService submodelRepositoryService) : ISubmodelRepositoryHandler
+    ISubmodelRepositoryService submodelRepositoryService,
+    IHttpContextAccessor httpContextAccessor) : ISubmodelRepositoryHandler
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
     {
@@ -65,7 +68,7 @@ public class SubmodelRepositoryHandler(
         var result = await GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
+            async id => await submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
 
         return result.ToDto();
     }
@@ -109,8 +112,15 @@ public class SubmodelRepositoryHandler(
 
         logger.LogInformation("Get File Attachment. SubmodelId: {SubmodelId}, IdShortPath: {IdShortPath}", decodedSubmodelId, decodedIdShortPath);
 
-        return await submodelRepositoryService
+        var attachment = await submodelRepositoryService
             .GetFileAttachmentAsync(decodedSubmodelId!, decodedIdShortPath, cancellationToken)
             .ConfigureAwait(false);
+
+        foreach (var disposable in attachment.ResponseDisposables)
+        {
+            httpContextAccessor.HttpContext?.Response.RegisterForDispose(disposable);
+        }
+
+        return attachment;
     }
 }
