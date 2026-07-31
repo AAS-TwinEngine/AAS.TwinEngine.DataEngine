@@ -328,8 +328,6 @@ public class AasRepositoryServiceTests
             .GetDataForShellsByAssetIdsAsync(
                 manifests,
                 Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
                 cancellationToken)
             .Returns(new ShellDescriptorsMetaData
             {
@@ -349,7 +347,7 @@ public class AasRepositoryServiceTests
         Assert.Single(result.Result);
         Assert.Equal("aas-1", result.Result[0].Id);
         await _pluginDataHandler.Received(1)
-            .GetDataForShellsByAssetIdsAsync(manifests, Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort), Arg.Any<int?>(), Arg.Any<string?>(), cancellationToken);
+            .GetDataForShellsByAssetIdsAsync(manifests, Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort), cancellationToken);
     }
 
     [Fact]
@@ -363,7 +361,7 @@ public class AasRepositoryServiceTests
         var metadataItems = new List<ShellDescriptorMetaData>
         {
             new() { Id = "aas-1", SpecificAssetIds = [] },
-            new() { Id = "aas-2", SpecificAssetIds = [] },
+            new() { Id = "aas-2", SpecificAssetIds = [] }, 
             new() { Id = "aas-3", SpecificAssetIds = [] }
         };
 
