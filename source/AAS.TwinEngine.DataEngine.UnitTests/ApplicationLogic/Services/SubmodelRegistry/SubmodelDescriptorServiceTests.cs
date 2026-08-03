@@ -7,6 +7,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Provi
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -56,7 +57,7 @@ public class SubmodelDescriptorServiceTests
                 CreateShell("Nameplate")
             ]
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
         _submodelTemplateMappingProvider.GetTemplateId("ContactInformation").Returns("ContactInformation");
         _submodelTemplateMappingProvider.GetTemplateId("Nameplate").Returns("Nameplate");
@@ -85,7 +86,7 @@ public class SubmodelDescriptorServiceTests
                 CreateShell("MissingSubmodel")
             ]
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
         _submodelTemplateMappingProvider.GetTemplateId("ValidSubmodelId").Returns("ValidSubmodelId");
         _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel").Returns("MissingSubmodel");
@@ -111,7 +112,7 @@ public class SubmodelDescriptorServiceTests
                 CreateShell("MissingSubmodel2")
             ]
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
         _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel1").Returns("MissingSubmodel1");
         _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel2").Returns("MissingSubmodel2");
@@ -131,7 +132,7 @@ public class SubmodelDescriptorServiceTests
         {
             Result = []
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
 
         var result = await _sut.GetAllSubmodelDescriptorsAsync(5, null, CancellationToken.None);
@@ -277,10 +278,50 @@ public class SubmodelDescriptorServiceTests
         Assert.IsType<RegistryNotAvailableException>(ex);
     }
 
-    private static AssetAdministrationShell CreateShell(string submodelId)
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_ResumesCorrectly_WithTwoFieldCompositeCursor()
+    {
+        var shell1 = CreateShell("ContactInformation", "shell-1");
+        var shell2 = CreateShell("Nameplate", "shell-2");
+
+        var shellsPage1 = new Shells { Result = [shell1, shell2] };
+        var shellsPage2 = new Shells { Result = [shell2] };
+
+        _aasRepositoryService.GetShellsByFiltersAsync(null, 1, Arg.Is<string?>(s => s == null), Arg.Any<CancellationToken>())
+                             .Returns(shellsPage1);
+        _aasRepositoryService.GetShellsByFiltersAsync(null, 1, Arg.Is<string?>(s => s != null), Arg.Any<CancellationToken>())
+                             .Returns(shellsPage2);
+
+        _submodelTemplateMappingProvider.GetTemplateId("ContactInformation").Returns("ContactInformation");
+        _submodelTemplateMappingProvider.GetTemplateId("Nameplate").Returns("Nameplate");
+        _provider.GetDataForSubmodelDescriptorByIdAsync("ContactInformation", Arg.Any<CancellationToken>())
+                 .Returns(new SubmodelDescriptor { Id = "ContactInformation" });
+        _provider.GetDataForSubmodelDescriptorByIdAsync("Nameplate", Arg.Any<CancellationToken>())
+                 .Returns(new SubmodelDescriptor { Id = "Nameplate" });
+
+        var page1 = await _sut.GetAllSubmodelDescriptorsAsync(1, null, CancellationToken.None);
+
+        Assert.NotNull(page1);
+        Assert.Single(page1.Result!);
+        Assert.Equal("ContactInformation", page1.Result![0].Id);
+        Assert.NotNull(page1.PagingMetaData?.Cursor);
+
+        var decodedCursor = SubmodelPaginationCursor.Decode(page1.PagingMetaData.Cursor);
+        Assert.NotNull(decodedCursor);
+        Assert.Equal("ContactInformation", decodedCursor.SubmodelId);
+        Assert.Equal("shell-1", decodedCursor.AasId);
+
+        var page2 = await _sut.GetAllSubmodelDescriptorsAsync(1, page1.PagingMetaData.Cursor, CancellationToken.None);
+
+        Assert.NotNull(page2);
+        Assert.Single(page2.Result!);
+        Assert.Equal("Nameplate", page2.Result![0].Id);
+    }
+
+    private static AssetAdministrationShell CreateShell(string submodelId, string shellId = "shell-id")
     {
         return new AssetAdministrationShell(
-            id: "shell-id",
+            id: shellId,
             assetInformation: new AssetInformation(assetKind: AssetKind.Instance, globalAssetId: null),
             submodels:
             [
