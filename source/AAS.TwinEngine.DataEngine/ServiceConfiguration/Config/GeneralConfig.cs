@@ -17,7 +17,7 @@ public class GeneralConfig
     public OpenTelemetrySettings OpenTelemetry { get; set; } = new();
     public CacheConfig Cache { get; set; } = new();
 
-    public long MaxFileAttachmentSizeBytes { get; set; } = 100 * 1024 * 1024; // 100 MB
+    public long MaxFileAttachmentSizeBytes { get; set; } = 104857600; // 100 MB
 
     /// <summary>
     /// Domain URL of the customer environment (V2: direct property; V1: was AasEnvironment:CustomerDomainUrl).
