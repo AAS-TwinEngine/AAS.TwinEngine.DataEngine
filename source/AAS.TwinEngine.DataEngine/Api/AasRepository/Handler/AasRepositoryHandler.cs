@@ -1,13 +1,16 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.MappingProfiles;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -67,6 +70,44 @@ public class AasRepositoryHandler(
         );
     }
 
+    public Task<ISubmodel> GetSubmodelByAasIdAsync(GetSubmodelByAasRequest request, CancellationToken cancellationToken)
+    {
+        return GetResourceByIdAsync(
+            request?.AasIdentifier,
+            request?.SubmodelId,
+            "submodel By AasID",
+            (aasId, submodelId) => aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, request.Level, request.Extent, cancellationToken));
+    }
+
+    public Task<SubmodelElementsDto> GetAllSubmodelElementsByAasIdAsync(
+        GetAllSubmodelElementsByAasRequest request,
+        CancellationToken cancellationToken)
+    {
+        request?.Limit.ValidateLimit(logger);
+        request?.Cursor?.ValidateCursor(logger);
+
+        return GetResourceByIdAsync(
+            request?.AasIdentifier,
+            request?.SubmodelId,
+            "submodel elements By AasID",
+            async (aasId, submodelId) => (await aasRepositoryService
+                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, request.Level, request.Extent, request?.Limit, request?.Cursor, cancellationToken)
+                .ConfigureAwait(false)).ToDto());
+    }
+
+    public Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(
+        GetSubmodelElementByAasRequest request,
+        CancellationToken cancellationToken)
+    {
+        request?.IdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+
+        return GetResourceByIdAsync(
+            request?.AasIdentifier,
+            request?.SubmodelId,
+            "submodel element By AasID",
+            (aasId, submodelId) => aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, request?.IdShortPath, cancellationToken));
+    }
+
     private Task<T> GetResourceByIdAsync<T>(
         string? encodedId,
         string resourceName,
@@ -86,6 +127,25 @@ public class AasRepositoryHandler(
         ValidateResourceExists(result, resourceName, decodedId!);
 
         return mapFunc(result!);
+    }
+
+    private async Task<T> GetResourceByIdAsync<T>(
+    string? encodedAasId,
+    string? encodedSubmodelId,
+    string resourceName,
+     Func<string, string, Task<T?>> fetchFunc)
+    {
+        var decodedAasId = encodedAasId?.DecodeBase64Url(logger);
+        var decodedSubmodelId = encodedSubmodelId?.DecodeBase64Url(logger);
+
+        logger.LogInformation("Start executing get request for {ResourceName}. AAS: {AasId}, Submodel: {SubmodelId}", resourceName, decodedAasId, decodedSubmodelId);
+
+        var result = await fetchFunc(decodedAasId!, decodedSubmodelId!)
+            .ConfigureAwait(false);
+
+        ValidateResourceExists(result, resourceName, decodedSubmodelId!);
+
+        return result!;
     }
 
     private void ValidateResourceExists<T>(T? result, string resourceName, string decodedId)

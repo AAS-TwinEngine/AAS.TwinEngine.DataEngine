@@ -1,10 +1,13 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -20,6 +23,7 @@ public class AasRepositoryService(
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
+    ISubmodelRepositoryService submodelRepositoryService,
     IOptions<TemplateManagementConfig> templateManagementConfig) : IAasRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
@@ -122,6 +126,51 @@ public class AasRepositoryService(
             PagingMetaData = pagingMeta,
             Result = pagedItems
         };
+    }
+
+    public async Task<bool> IsSubmodelReferencedByAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
+    {
+        var submodelRef = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
+
+        return submodelRef.Result?
+            .SelectMany(r => r.Keys ?? [])
+            .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.OrdinalIgnoreCase))
+            ?? false;
+    }
+
+    public async Task<ISubmodel> GetSubmodelByAasIdAsync(string aasId, string submodelId, Level level, Extent extent, CancellationToken cancellationToken)
+    {
+        await EnsureSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+
+        var queryOptions = new SubmodelQueryOptions(level.ToString(), extent.ToString());
+
+        return await submodelRepositoryService.GetSubmodelAsync(submodelId, queryOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasId, string submodelId, Level level, Extent extent, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        await EnsureSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+
+        var queryOptions = new SubmodelQueryOptions(level.ToString(), extent.ToString());
+
+        return await submodelRepositoryService.GetAllSubmodelElementsAsync(submodelId, queryOptions, limit, cursor, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasId, string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        await EnsureSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task EnsureSubmodelBelongsToAasAsync(string aasId, string submodelId, CancellationToken cancellationToken)
+    {
+        var isReferenced = await IsSubmodelReferencedByAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+        if (!isReferenced)
+        {
+            logger.LogError("Submodel {SubmodelId} not referenced by AAS {AasId}", submodelId, aasId);
+            throw new SubmodelNotFoundException(submodelId);
+        }
     }
 
     private static IAssetInformation FillOutAssetInformation(IAssetInformation template, AssetData pluginData)

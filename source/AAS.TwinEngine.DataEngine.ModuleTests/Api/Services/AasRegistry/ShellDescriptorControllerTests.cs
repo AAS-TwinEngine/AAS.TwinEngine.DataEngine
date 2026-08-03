@@ -7,9 +7,13 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_1;
 
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,12 +27,14 @@ public abstract class ShellDescriptorControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
+    private readonly ISubmodelDescriptorProvider _mockSubmodelDescriptorProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
     protected ShellDescriptorControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
+        _mockSubmodelDescriptorProvider = Substitute.For<ISubmodelDescriptorProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
@@ -38,6 +44,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
             _ = services.AddSingleton(_httpClientFactory);
             _ = services.AddSingleton(mockPluginManifestProvider);
             _ = services.AddSingleton(_mockTemplateProvider);
+            _ = services.AddSingleton(_mockSubmodelDescriptorProvider);
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
         });
 
@@ -436,6 +443,99 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     }
 
     #endregion
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string SubmodelId = "http://example.com/submodel/Nameplate";
+
+        var submodelRefs = new List<IReference>
+        {
+            new Reference(
+                ReferenceTypes.ModelReference,
+                [new Key(KeyTypes.Submodel, SubmodelId)],
+                null)
+        };
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(submodelRefs);
+
+        _ = _mockSubmodelDescriptorProvider
+            .GetDataForSubmodelDescriptorByIdAsync(SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(new SubmodelDescriptor { Id = SubmodelId, Endpoints = [] });
+
+        // Act
+        var response = await _client.GetAsync($"/shell-descriptors/{AasIdentifier}/submodel-descriptors");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        _ = Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetSubmodelDescriptorByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string SubmodelId = "http://example.com/submodel/Nameplate";
+        var encodedSubmodelId = EncodeBase64Url(SubmodelId);
+
+        var submodelRefs = new List<IReference>
+        {
+            new Reference(
+                ReferenceTypes.ModelReference,
+                [new Key(KeyTypes.Submodel, SubmodelId)],
+                null)
+        };
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(submodelRefs);
+
+        _ = _mockSubmodelDescriptorProvider
+            .GetDataForSubmodelDescriptorByIdAsync(SubmodelId, Arg.Any<CancellationToken>())
+            .Returns(new SubmodelDescriptor { Id = SubmodelId, Endpoints = [] });
+
+        // Act
+        var response = await _client.GetAsync($"/shell-descriptors/{AasIdentifier}/submodel-descriptors/{encodedSubmodelId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+    }
+
+    [Fact]
+    public async Task GetSubmodelDescriptorByAasIdAsync_WhenSubmodelNotInAas_Returns404Async()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string OtherSubmodelId = "http://example.com/submodel/Other";
+        const string RequestedSubmodelId = "http://example.com/submodel/Missing";
+        var encodedSubmodelId = EncodeBase64Url(RequestedSubmodelId);
+
+        var submodelRefs = new List<IReference>
+        {
+            new Reference(
+                ReferenceTypes.ModelReference,
+                [new Key(KeyTypes.Submodel, OtherSubmodelId)],
+                null)
+        };
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(submodelRefs);
+
+        // Act
+        var response = await _client.GetAsync($"/shell-descriptors/{AasIdentifier}/submodel-descriptors/{encodedSubmodelId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 
     private static string EncodeBase64Url(string plainText)
     {

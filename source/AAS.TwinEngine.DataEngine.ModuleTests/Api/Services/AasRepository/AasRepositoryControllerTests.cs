@@ -8,6 +8,9 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -26,12 +29,14 @@ public abstract class AasRepositoryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
+    private readonly ISubmodelRepositoryService _mockSubmodelRepositoryService;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
     protected AasRepositoryControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
+        _mockSubmodelRepositoryService = Substitute.For<ISubmodelRepositoryService>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
@@ -42,6 +47,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
             _ = services.AddSingleton(_httpClientFactory);
             _ = services.AddSingleton(_mockTemplateProvider);
+            _ = services.AddSingleton(_mockSubmodelRepositoryService);
         });
 
         _client = _factory.CreateClient();
@@ -547,6 +553,98 @@ public abstract class AasRepositoryControllerTests : IDisposable
                     Submodels = []
                 };
             });
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string SubmodelId = "http://example.com/submodel/Nameplate";
+        var encodedSubmodelId = EncodeBase64Url(SubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetSubmodelByAasIdAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(new Submodel(id: SubmodelId));
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_WhenSubmodelNotInAas_Returns404Async()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string RequestedSubmodelId = "http://example.com/submodel/Missing";
+        var encodedSubmodelId = EncodeBase64Url(RequestedSubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "http://example.com/submodel/Other")], null)]);
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string SubmodelId = "http://example.com/submodel/Nameplate";
+        var encodedSubmodelId = EncodeBase64Url(SubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new SubmodelElementsPage { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}/submodel-elements");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.True(json.ContainsKey("result"));
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string SubmodelId = "http://example.com/submodel/Nameplate";
+        const string IdShortPath = "ManufacturerName";
+        var encodedSubmodelId = EncodeBase64Url(SubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .Returns(new Property(DataTypeDefXsd.String) { IdShort = IdShortPath });
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}/submodel-elements/{IdShortPath}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
     }
 
     private static string EncodeBase64Url(string plainText)

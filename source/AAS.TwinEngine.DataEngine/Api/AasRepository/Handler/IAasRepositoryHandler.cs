@@ -2,6 +2,7 @@
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 
 using AasCore.Aas3_1;
 
@@ -16,4 +17,10 @@ public interface IAasRepositoryHandler
     Task<IAssetInformation> GetAssetInformationByIdAsync(GetAssetInformationRequest request, CancellationToken cancellationToken);
 
     Task<JsonElement> GetSubmodelRefByIdAsync(GetSubmodelRefRequest request, CancellationToken cancellationToken);
+
+    Task<ISubmodel> GetSubmodelByAasIdAsync(GetSubmodelByAasRequest request, CancellationToken cancellationToken);
+
+    Task<SubmodelElementsDto> GetAllSubmodelElementsByAasIdAsync(GetAllSubmodelElementsByAasRequest request, CancellationToken cancellationToken);
+
+    Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(GetSubmodelElementByAasRequest request, CancellationToken cancellationToken);
 }

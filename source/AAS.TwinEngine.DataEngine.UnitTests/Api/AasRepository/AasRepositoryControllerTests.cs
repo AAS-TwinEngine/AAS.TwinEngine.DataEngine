@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -7,6 +7,8 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 using AasCore.Aas3_1;
@@ -272,6 +274,64 @@ public class AasRepositoryControllerTests
             PagingMetaData = null,
             Result = [submodelRef]
         };
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_ReturnsOkWithJson()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        var submodel = new Submodel(SubmodelId);
+        _handler.GetSubmodelByAasIdAsync(Arg.Any<GetSubmodelByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(submodel);
+
+        var result = await _sut.GetSubmodelByAasIdAsync(encodedAasId, encodedSubmodelId, null, null, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<JsonObject>(okResult.Value);
+        await _handler.Received(1).GetSubmodelByAasIdAsync(
+            Arg.Is<GetSubmodelByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelId == encodedSubmodelId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasIdAsync_ReturnsOk()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        var expected = new SubmodelElementsDto { PagingMetaData = new PagingMetaDataDto(), Result = [] };
+        _handler.GetAllSubmodelElementsByAasIdAsync(Arg.Any<GetAllSubmodelElementsByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetAllSubmodelElementsByAasIdAsync(encodedAasId, encodedSubmodelId, null, null, null, null, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<SubmodelElementsDto>(okResult.Value);
+        await _handler.Received(1).GetAllSubmodelElementsByAasIdAsync(
+            Arg.Is<GetAllSubmodelElementsByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelId == encodedSubmodelId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementByAasIdAsync_ReturnsOkWithJson()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        const string IdShortPath = "ManufacturerName";
+        var element = new Property(idShort: IdShortPath, valueType: DataTypeDefXsd.String);
+        _handler.GetSubmodelElementByAasIdAsync(Arg.Any<GetSubmodelElementByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(element);
+
+        var result = await _sut.GetSubmodelElementByAasIdAsync(encodedAasId, encodedSubmodelId, IdShortPath, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<JsonObject>(okResult.Value);
+        await _handler.Received(1).GetSubmodelElementByAasIdAsync(
+            Arg.Is<GetSubmodelElementByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelId == encodedSubmodelId && r.IdShortPath == IdShortPath),
+            Arg.Any<CancellationToken>());
     }
 
 }

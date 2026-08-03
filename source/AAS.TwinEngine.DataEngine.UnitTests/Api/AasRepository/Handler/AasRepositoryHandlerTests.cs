@@ -1,28 +1,32 @@
-using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
+﻿using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Api.AasRepository.Handler;
 
 public class AasRepositoryHandlerTests
 {
     private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
+    private readonly ISubmodelRepositoryService _submodelRepositoryService = Substitute.For<ISubmodelRepositoryService>();
     private readonly ILogger<AasRepositoryHandler> _logger = Substitute.For<ILogger<AasRepositoryHandler>>();
     private readonly AasRepositoryHandler _sut;
 
-    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService);
+    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService, _submodelRepositoryService);
 
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithNullAssetIds_ReturnsAllShells()
@@ -262,5 +266,121 @@ public class AasRepositoryHandlerTests
             defaultThumbnail: thumbnail
         );
     }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_ReturnsSubmodel_WhenSubmodelBelongsToAas()
+    {
+        const string AasId = "AasId";
+        const string SubmodelId = "SubmodelId";
+        var request = new GetSubmodelByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url());
+        var expectedSubmodel = new Submodel(SubmodelId);
+        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelRefWithId(SubmodelId));
+        _submodelRepositoryService.GetSubmodelByAasIdAsync(SubmodelId, null, Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
+
+        var result = await _sut.GetSubmodelByAasIdAsync(request, CancellationToken.None);
+
+        Assert.IsType<Submodel>(result);
+        await _submodelRepositoryService.Received(1)
+            .GetSubmodelByAasIdAsync(SubmodelId, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_SubmodelNotInAas_ThrowsSubmodelNotFoundException()
+    {
+        const string AasId = "AasId";
+        const string SubmodelId = "SubmodelId";
+        var request = new GetSubmodelByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url());
+        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelRefWithId("OtherSubmodelId"));
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(
+            () => _sut.GetSubmodelByAasIdAsync(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_AasNotFound_PropagatesException()
+    {
+        const string AasId = "AasId";
+        const string SubmodelId = "SubmodelId";
+        var request = new GetSubmodelByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url());
+        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new TemplateNotFoundException());
+
+        await Assert.ThrowsAsync<TemplateNotFoundException>(
+            () => _sut.GetSubmodelByAasIdAsync(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasIdAsync_ReturnsList_WhenSubmodelBelongsToAas()
+    {
+        const string AasId = "AasId";
+        const string SubmodelId = "SubmodelId";
+        var request = new GetAllSubmodelElementsByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), null, null);
+        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelRefWithId(SubmodelId));
+        _submodelRepositoryService.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>())
+            .Returns(new SubmodelElementsPage { PagingMetaData = new PagingMetaData(), Result = [] });
+
+        var result = await _sut.GetAllSubmodelElementsByAasIdAsync(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        await _submodelRepositoryService.Received(1)
+            .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasIdAsync_SubmodelNotInAas_ThrowsSubmodelNotFoundException()
+    {
+        const string AasId = "AasId";
+        const string SubmodelId = "SubmodelId";
+        var request = new GetAllSubmodelElementsByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), null, null);
+        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelRefWithId("OtherSubmodelId"));
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(
+            () => _sut.GetAllSubmodelElementsByAasIdAsync(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementByAasIdAsync_ReturnsElement_WhenSubmodelBelongsToAas()
+    {
+        const string AasId = "AasId";
+        const string SubmodelId = "SubmodelId";
+        const string IdShortPath = "ManufacturerName";
+        var request = new GetSubmodelElementByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), IdShortPath);
+        var expectedElement = new Property(idShort: IdShortPath, valueType: DataTypeDefXsd.String);
+        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelRefWithId(SubmodelId));
+        _submodelRepositoryService.GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .Returns(expectedElement);
+
+        var result = await _sut.GetSubmodelElementByAasIdAsync(request, CancellationToken.None);
+
+        Assert.IsType<Property>(result);
+        await _submodelRepositoryService.Received(1)
+            .GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementByAasIdAsync_SubmodelNotInAas_ThrowsSubmodelNotFoundException()
+    {
+        const string AasId = "AasId";
+        const string SubmodelId = "SubmodelId";
+        var request = new GetSubmodelElementByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), "SomePath");
+        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelRefWithId("OtherSubmodelId"));
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(
+            () => _sut.GetSubmodelElementByAasIdAsync(request, CancellationToken.None));
+    }
+
+    private static SubmodelRef CreateSubmodelRefWithId(string submodelId)
+        => new()
+        {
+            PagingMetaData = new PagingMetaData(),
+            Result = [new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelId)], null)]
+        };
 }
 
