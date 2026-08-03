@@ -105,7 +105,7 @@ public class SubmodelRepositoryService(
                 await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    return await templateServices.AasRepositoryTemplateService.GetSubmodelRefByIdAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
+                    return await templateServices.AasRepositoryTemplateService.GetSubmodelRefByIdAsync(shell.Id, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ResourceNotFoundException ex)
                 {
@@ -255,7 +255,7 @@ public class SubmodelRepositoryService(
             if (declaredLength.HasValue && declaredLength.Value > _maxFileAttachmentSizeBytes)
             {
                 upstreamResponse.Dispose();
-                throw new FileSizeExceededException(idShortPath, declaredLength ?? 0, _maxFileAttachmentSizeBytes);
+                throw new FileSizeExceededException(idShortPath, declaredLength.Value, _maxFileAttachmentSizeBytes);
             }
 
             var contentType = upstreamResponse.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
