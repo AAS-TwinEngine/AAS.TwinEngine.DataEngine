@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -14,6 +14,10 @@ using AasCore.Aas3_1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using System.Net;
+using System.Net.Http;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -26,6 +30,8 @@ public class AasRepositoryServiceTests
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly ILogger<AasRepositoryService> _logger = Substitute.For<ILogger<AasRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementConfig = Substitute.For<IOptions<TemplateManagementConfig>>();
+    private readonly IFileAttachmentStreamProvider _fileAttachmentStreamProvider = Substitute.For<IFileAttachmentStreamProvider>();
+    private readonly IOptions<GeneralConfig> _generalConfig = Substitute.For<IOptions<GeneralConfig>>();
     private readonly AasRepositoryService _sut;
     private const string AasIdentifier = "test-id";
 
@@ -38,13 +44,19 @@ public class AasRepositoryServiceTests
                 ConcurrentOperationsLimit = 10
             }
         });
+        _generalConfig.Value.Returns(new GeneralConfig
+        {
+            MaxFileAttachmentSizeBytes = 1000000
+        });
 
         _sut = new AasRepositoryService(
             _logger,
             _templateService,
             _pluginDataHandler,
             _pluginManifestConflictHandler,
-            _templateManagementConfig);
+            _fileAttachmentStreamProvider,
+            _templateManagementConfig,
+            _generalConfig);
     }
 
     [Fact]
@@ -406,6 +418,110 @@ public class AasRepositoryServiceTests
             description: [new LangStringTextType("en", "Description")],
             submodels: []
         );
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturnStream_WhenUrlIsHttp()
+    {
+        var cancellationToken = CancellationToken.None;
+        var assetInfoTemplate = CreateAssetInformationTemplate();
+        var pluginData = new AssetData
+        {
+            DefaultThumbnail = new DefaultThumbnailData
+            {
+                Path = "https://example.com/logo.png",
+                ContentType = "image/png"
+            }
+        };
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasAssetInformation = true }
+            }
+        };
+
+        _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken)
+            .Returns(assetInfoTemplate);
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler.GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(pluginData);
+
+        using var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("test-content")
+        };
+        httpResponseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+
+        _fileAttachmentStreamProvider.GetResponseHeadersAsync("https://example.com/logo.png", cancellationToken)
+            .Returns(httpResponseMessage);
+        _fileAttachmentStreamProvider.ReadStreamAsync(httpResponseMessage, cancellationToken)
+            .Returns(new MemoryStream("test-content"u8.ToArray()));
+
+        var result = await _sut.GetThumbnailAsync(AasIdentifier, cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.Equal("image/png", result.ContentType);
+        Assert.Equal("logo.png", result.FileName);
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldThrowThumbnailNotFoundException_WhenThumbnailIsMissing()
+    {
+        var cancellationToken = CancellationToken.None;
+        var assetInfoTemplate = new AssetInformation(
+            AssetKind.Instance,
+            "globalAssetId",
+            [],
+            defaultThumbnail: null
+        );
+        var pluginData = new AssetData
+        {
+            DefaultThumbnail = null
+        };
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasAssetInformation = true }
+            }
+        };
+
+        _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken)
+            .Returns(assetInfoTemplate);
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler.GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(pluginData);
+
+        await Assert.ThrowsAsync<ThumbnailNotFoundException>(() =>
+            _sut.GetThumbnailAsync(AasIdentifier, cancellationToken));
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldThrowNotImplementedException_WhenUrlIsNotHttp()
+    {
+        var cancellationToken = CancellationToken.None;
+        var assetInfoTemplate = CreateAssetInformationTemplate();
+        var pluginData = CreateAssetData();
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasAssetInformation = true }
+            }
+        };
+
+        _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken)
+            .Returns(assetInfoTemplate);
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler.GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(pluginData);
+
+        await Assert.ThrowsAsync<NotImplementedException>(() =>
+            _sut.GetThumbnailAsync(AasIdentifier, cancellationToken));
+    }
 
     private static AssetInformation CreateAssetInformationTemplate()
     {

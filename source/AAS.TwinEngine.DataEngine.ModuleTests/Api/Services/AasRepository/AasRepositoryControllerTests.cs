@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -26,12 +27,14 @@ public abstract class AasRepositoryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
+    private readonly IFileAttachmentStreamProvider _fileAttachmentStreamProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
     protected AasRepositoryControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
+        _fileAttachmentStreamProvider = Substitute.For<IFileAttachmentStreamProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
@@ -42,6 +45,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
             _ = services.AddSingleton(_httpClientFactory);
             _ = services.AddSingleton(_mockTemplateProvider);
+            _ = services.AddSingleton(_fileAttachmentStreamProvider);
         });
 
         _client = _factory.CreateClient();
@@ -547,6 +551,99 @@ public abstract class AasRepositoryControllerTests : IDisposable
                     Submodels = []
                 };
             });
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturn200OKWithStream_WhenThumbnailExists()
+    {
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+
+        var thumbnail = Substitute.For<IResource>();
+        thumbnail.Path.Returns("https://example.com/logo.png");
+        thumbnail.ContentType.Returns("image/png");
+
+        var mockAssetInformationTemplate = new AssetInformation(
+            AssetKind.Instance,
+            "https://example.com/ids/asset/123",
+            [],
+            defaultThumbnail: thumbnail
+        );
+
+        var messageHandler = new FakeHttpMessageHandler((request, token) =>
+        {
+            var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(TestData.CreatePluginResponseForAssetinformation())
+            };
+            return Task.FromResult(httpResponse);
+        });
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
+
+        var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("test-bytes")
+        };
+        httpResponseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+
+        _ = _fileAttachmentStreamProvider.GetResponseHeadersAsync("https://example.com/share/img/10080308_DE.jpg", Arg.Any<CancellationToken>())
+            .Returns(httpResponseMessage);
+        _ = _fileAttachmentStreamProvider.ReadStreamAsync(httpResponseMessage, Arg.Any<CancellationToken>())
+            .Returns(new MemoryStream("test-bytes"u8.ToArray()));
+
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("image/png", response.Content.Headers.ContentType?.MediaType);
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal("test-bytes"u8.ToArray(), bytes);
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturn404_WhenThumbnailIsMissing()
+    {
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+
+        var mockAssetInformationTemplate = new AssetInformation(
+            AssetKind.Instance,
+            "https://example.com/ids/asset/123",
+            [],
+            defaultThumbnail: null
+        );
+
+        var messageHandler = new FakeHttpMessageHandler((request, token) =>
+        {
+            var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {
+                      "assetKind": "Type",
+                      "globalAssetId": "https://example.com/ids/asset/123",
+                      "specificAssetIds": [],
+                      "defaultThumbnail": null
+                    }
+                    """)
+            };
+            return Task.FromResult(httpResponse);
+        });
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
+
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static string EncodeBase64Url(string plainText)

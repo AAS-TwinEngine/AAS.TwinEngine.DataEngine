@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -9,6 +9,10 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
+using System.Net;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
 using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
@@ -20,9 +24,12 @@ public class AasRepositoryService(
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
-    IOptions<TemplateManagementConfig> templateManagementConfig) : IAasRepositoryService
+    IFileAttachmentStreamProvider fileAttachmentStreamProvider,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    IOptions<GeneralConfig> generalConfig) : IAasRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
+    private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
     public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
@@ -122,6 +129,90 @@ public class AasRepositoryService(
             PagingMetaData = pagingMeta,
             Result = pagedItems
         };
+    }
+
+    public async Task<FileAttachmentResult> GetThumbnailAsync(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+            var thumbnail = assetInformation?.DefaultThumbnail;
+            var thumbnailUrl = thumbnail?.Path;
+
+            if (string.IsNullOrWhiteSpace(thumbnailUrl))
+            {
+                throw new ThumbnailNotFoundException(aasIdentifier);
+            }
+
+            if (!thumbnailUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !thumbnailUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotImplementedException("Thumbnail URL must start with http:// or https:// to be accessible.");
+            }
+
+            var upstreamResponse = await fileAttachmentStreamProvider.GetResponseHeadersAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
+            if (upstreamResponse.StatusCode == HttpStatusCode.NotFound)
+            {
+                upstreamResponse.Dispose();
+                throw new ThumbnailNotFoundException(aasIdentifier);
+            }
+            _ = upstreamResponse.EnsureSuccessStatusCode();
+
+            var declaredLength = upstreamResponse.Content.Headers.ContentLength;
+            if (declaredLength.HasValue && declaredLength.Value > _maxFileAttachmentSizeBytes)
+            {
+                upstreamResponse.Dispose();
+                throw new NotImplementedException($"File exceeds maximum allowed size of {_maxFileAttachmentSizeBytes} bytes.");
+            }
+
+            var contentType = upstreamResponse.Content.Headers.ContentType?.ToString()
+                ?? thumbnail?.ContentType
+                ?? "application/octet-stream";
+
+            var fileName = Path.GetFileName(new Uri(thumbnailUrl).LocalPath);
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                fileName = "thumbnail";
+            }
+
+            var upstreamStream = await fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
+
+            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes, "Thumbnail");
+
+            return new FileAttachmentResult(limitedStream, contentType, fileName)
+            {
+                ResponseDisposables = [upstreamResponse]
+            };
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new AssetInformationNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
+        catch (ValidationFailedException ex)
+        {
+            throw new TemplateNotValidException(ex);
+        }
     }
 
     private static IAssetInformation FillOutAssetInformation(IAssetInformation template, AssetData pluginData)

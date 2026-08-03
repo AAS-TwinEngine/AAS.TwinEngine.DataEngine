@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -274,5 +275,20 @@ public class AasRepositoryControllerTests
         };
     }
 
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturnFileStreamResult()
+    {
+        var expectedStream = new MemoryStream("test-image"u8.ToArray());
+        var attachmentResult = new FileAttachmentResult(expectedStream, "image/png", "thumbnail.png");
+        _handler.GetThumbnailAsync(Arg.Any<GetThumbnailRequest>(), Arg.Any<CancellationToken>())
+            .Returns(attachmentResult);
+
+        var response = await _sut.GetThumbnailAsync(AasIdentifier, CancellationToken.None);
+
+        var fileResult = Assert.IsType<FileStreamResult>(response);
+        Assert.Equal("image/png", fileResult.ContentType);
+        Assert.Equal("thumbnail.png", fileResult.FileDownloadName);
+    }
 }
+
 

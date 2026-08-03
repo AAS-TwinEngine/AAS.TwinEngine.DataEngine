@@ -1,7 +1,8 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -16,4 +17,6 @@ public interface IAasRepositoryHandler
     Task<IAssetInformation> GetAssetInformationByIdAsync(GetAssetInformationRequest request, CancellationToken cancellationToken);
 
     Task<JsonElement> GetSubmodelRefByIdAsync(GetSubmodelRefRequest request, CancellationToken cancellationToken);
+
+    Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken);
 }

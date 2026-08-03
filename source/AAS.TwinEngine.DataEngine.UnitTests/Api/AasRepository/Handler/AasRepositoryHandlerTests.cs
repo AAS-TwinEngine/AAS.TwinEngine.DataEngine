@@ -7,9 +7,11 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
@@ -20,9 +22,15 @@ public class AasRepositoryHandlerTests
 {
     private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
     private readonly ILogger<AasRepositoryHandler> _logger = Substitute.For<ILogger<AasRepositoryHandler>>();
+    private readonly IHttpContextAccessor _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
     private readonly AasRepositoryHandler _sut;
 
-    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService);
+    public AasRepositoryHandlerTests()
+    {
+        var httpContext = new DefaultHttpContext();
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+        _sut = new AasRepositoryHandler(_logger, _httpContextAccessor, _aasRepositoryService);
+    }
 
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithNullAssetIds_ReturnsAllShells()
@@ -247,6 +255,19 @@ public class AasRepositoryHandlerTests
         var request = new GetSubmodelRefRequest(InvalidEncodedId, 5, null);
 
         await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetSubmodelRefByIdAsync(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturnFileAttachmentResult()
+    {
+        var expectedResult = new FileAttachmentResult(new MemoryStream(), "image/png", "test.png");
+        _aasRepositoryService.GetThumbnailAsync("https://example.com/aas", Arg.Any<CancellationToken>())
+            .Returns(expectedResult);
+
+        var request = new GetThumbnailRequest("aHR0cHM6Ly9leGFtcGxlLmNvbS9hYXM");
+        var result = await _sut.GetThumbnailAsync(request, CancellationToken.None);
+
+        Assert.Equal(expectedResult, result);
     }
 
     private static AssetInformation CreateAssetInformation()

@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -15,6 +16,7 @@ namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 
 public class AasRepositoryHandler(
     ILogger<AasRepositoryHandler> logger,
+    IHttpContextAccessor httpContextAccessor,
     IAasRepositoryService aasRepositoryService) : IAasRepositoryHandler
 {
     public async Task<ShellsDto> GetShellsByAssetIdsAsync(
@@ -65,6 +67,23 @@ public class AasRepositoryHandler(
             id => aasRepositoryService.GetSubmodelRefByIdAsync(id!, request?.Limit, request?.Cursor, cancellationToken)!,
             submodelRef => JsonSerializer.SerializeToElement(submodelRef.ToDto(), JsonSerializationOptions.SerializeToElementWithEnum)
         );
+    }
+
+    public async Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
+    {
+        var decodedId = request?.AasIdentifier?.DecodeBase64Url(logger);
+        logger.LogInformation("Start executing get request for thumbnail. Aas Identifier: {DecodedId}", decodedId);
+
+        var attachment = await aasRepositoryService
+            .GetThumbnailAsync(decodedId!, cancellationToken)
+            .ConfigureAwait(false);
+
+        foreach (var disposable in attachment.ResponseDisposables)
+        {
+            httpContextAccessor.HttpContext?.Response.RegisterForDispose(disposable);
+        }
+
+        return attachment;
     }
 
     private Task<T> GetResourceByIdAsync<T>(
