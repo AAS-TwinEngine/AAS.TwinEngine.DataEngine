@@ -100,81 +100,36 @@ public class ShellDescriptorService(
             throw new InternalDataProcessingException(ex);
         }
     }
+
     public async Task<SubmodelDescriptor?> GetSubmodelDescriptorByAasIdAsync(string aasId, string submodelId, CancellationToken cancellationToken)
     {
-        await EnsureSubmodelBelongsToAasAsync(
-            aasId,
-            submodelId,
-            cancellationToken);
+        await aasRepositoryService.ValidateSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
 
-        return await submodelDescriptorService
-            .GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken)
-            .ConfigureAwait(false);
+        return await submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
     }
-    public async Task<SubmodelDescriptors?> GetAllSubmodelDescriptorsByAasIdAsync(
-    string aasId,
-    int? limit,
-    string? cursor,
-    CancellationToken cancellationToken)
-    {
-        var submodelRef = await aasRepositoryService
-            .GetSubmodelRefByIdAsync(
-                aasId,
-                null,
-                null,
-                cancellationToken)
-            .ConfigureAwait(false);
 
-        var submodelIds = submodelRef.Result?
-            .SelectMany(r => r.Keys ?? [])
-            .Select(k => k.Value)
+    public async Task<SubmodelDescriptors?> GetAllSubmodelDescriptorsByAasIdAsync(string aasId, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        var submodelRefs = await aasRepositoryService.GetSubmodelRefByIdAsync(aasId, null, null, cancellationToken).ConfigureAwait(false);
+
+        var submodelIds = submodelRefs.Result?
+            .SelectMany(reference => reference.Keys ?? [])
+            .Select(key => key.Value)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList() ?? [];
 
-        var descriptors = new List<SubmodelDescriptor>();
+        var descriptors = (await Task.WhenAll(submodelIds.Select(submodelId =>
+                                        GetSubmodelDescriptorByAasIdAsync(aasId, submodelId, cancellationToken))).ConfigureAwait(false))
+                                        .OfType<SubmodelDescriptor>()
+                                        .ToList();
 
-        foreach (var submodelId in submodelIds)
-        {
-            var descriptor = await GetSubmodelDescriptorByAasIdAsync(
-                aasId,
-                submodelId,
-                cancellationToken);
-
-            if (descriptor is not null)
-            {
-                descriptors.Add(descriptor);
-            }
-        }
-
-        var (items, pagingMetaData) =
-            PagingExtensions.GetPagedResult(
-                descriptors,
-                d => d.Id!,
-                limit,
-                cursor);
+        var (items, pagingMetaData) = PagingExtensions.GetPagedResult(descriptors, descriptor => descriptor.Id!, limit, cursor);
 
         return new SubmodelDescriptors
         {
             Result = items,
             PagingMetaData = pagingMetaData
         };
-    }
-
-    private async Task EnsureSubmodelBelongsToAasAsync(
-    string aasId,
-    string submodelId,
-    CancellationToken cancellationToken)
-    {
-        var isReferenced = await aasRepositoryService
-            .IsSubmodelReferencedByAasAsync(
-                aasId,
-                submodelId,
-                cancellationToken);
-
-        if (!isReferenced)
-        {
-            throw new SubmodelDescriptorNotFoundException();
-        }
     }
 
     private async Task<ShellDescriptor?> TryBuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetadata, CancellationToken cancellationToken)
