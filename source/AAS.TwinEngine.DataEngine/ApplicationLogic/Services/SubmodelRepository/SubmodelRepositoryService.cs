@@ -13,6 +13,8 @@ using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
+using Serilog.Core;
+
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
@@ -253,20 +255,30 @@ public class SubmodelRepositoryService(
         return GetFileElement(element, idShortPath);
     }
 
-    private AasCore.Aas3_1.File GetFileElement(ISubmodelElement element, string idShortPath) => element as AasCore.Aas3_1.File ?? throw new InvalidSubmodelElementTypeException();
+    private AasCore.Aas3_1.File GetFileElement(ISubmodelElement element, string idShortPath)
+    {
+        if (element is AasCore.Aas3_1.File file)
+        {
+            return file;
+        }
+        logger.LogError("Submodel element at path {IdShortPath} is not of type File. Actual type: {ActualType}", idShortPath, element.GetType().Name);
+        throw new InvalidSubmodelElementTypeException();
+    }
 
-    private static string GetValidatedFileUrl(AasCore.Aas3_1.File fileElement, string idShortPath)
+    private string GetValidatedFileUrl(AasCore.Aas3_1.File fileElement, string idShortPath)
     {
         var fileUrl = fileElement.Value;
 
         if (string.IsNullOrWhiteSpace(fileUrl))
         {
+            logger.LogError("File SubmodelElement at path {IdShortPath} has an empty or null value for the file URL.", idShortPath);
             throw new SubmodelElementNotFoundException(idShortPath);
         }
 
         if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
+            logger.LogError("File SubmodelElement at path {IdShortPath} has an invalid URL: {FileUrl}", idShortPath, fileUrl);
             throw new InvalidFileUrlException();
         }
 
