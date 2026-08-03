@@ -197,7 +197,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(TestData.CreatePluginResponseForThumbnail())
+            Content = new StringContent(TestData.CreatePluginResponseForFileAttachment())
         }));
 
         using var httpClient = new HttpClient(messageHandler);

@@ -8,8 +8,9 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 /// </summary>
 public class InvalidSubmodelElementTypeException : BadRequestException
 {
-    public const string MessageTemplate = "The SubmodelElement at path '{0}' is not a File element.";
+    public const string DefaultMessage = "The Submodel Element type.";
 
-    public InvalidSubmodelElementTypeException(string idShortPath)
-        : base(string.Format(MessageTemplate, idShortPath)) { }
+    public InvalidSubmodelElementTypeException() : base(DefaultMessage) { }
+
+    public InvalidSubmodelElementTypeException(Exception ex) : base(DefaultMessage, ex) { }
 }

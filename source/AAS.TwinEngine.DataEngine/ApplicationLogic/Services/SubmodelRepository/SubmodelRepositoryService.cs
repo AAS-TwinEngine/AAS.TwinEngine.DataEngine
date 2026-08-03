@@ -1,8 +1,6 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Dependencies;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -14,6 +12,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
+
+using Serilog.Core;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -229,47 +229,17 @@ public class SubmodelRepositoryService(
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+            var fileElement = await GetFileElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
 
-            if (element is not AasCore.Aas3_1.File fileElement)
-            {
-                throw new InvalidSubmodelElementTypeException(idShortPath);
-            }
+            var fileUrl = GetValidatedFileUrl(fileElement, idShortPath);
 
-            var fileUrl = fileElement.Value;
-            if (string.IsNullOrWhiteSpace(fileUrl))
-            {
-                throw new SubmodelElementNotFoundException(idShortPath);
-            }
-
-            if (!fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidFileUrlException(fileUrl, "File URL must start with http:// or https:// to be accessible.");
-            }
-
-            var upstreamResponse = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken).ConfigureAwait(false);
-            _ = upstreamResponse.EnsureSuccessStatusCode();
-
-            // Fast rejection if server declared a size over the limit — avoids opening the body at all.
-            var declaredLength = upstreamResponse.Content.Headers.ContentLength;
-            if (declaredLength.HasValue && declaredLength.Value > _maxFileAttachmentSizeBytes)
-            {
-                upstreamResponse.Dispose();
-                throw new FileSizeExceededException(idShortPath, declaredLength.Value, _maxFileAttachmentSizeBytes);
-            }
-
+            var upstreamResponse = await GetValidatedResponseAsync(fileUrl, cancellationToken).ConfigureAwait(false);
             var contentType = upstreamResponse.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
 
-            var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
-            if (string.IsNullOrWhiteSpace(fileName))
-            {
-                fileName = fileElement.IdShort;
-            }
+            var fileName = GetFileName(fileElement, fileUrl);
 
             var upstreamStream = await fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
-
-            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes, idShortPath);
+            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes);
 
             return new FileAttachmentResult(limitedStream, contentType, fileName)
             {
@@ -278,79 +248,63 @@ public class SubmodelRepositoryService(
         }).ConfigureAwait(false);
     }
 
-    private sealed class MaxLengthStream : Stream
+    private async Task<AasCore.Aas3_1.File> GetFileElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
-        private readonly Stream _inner;
-        private readonly long _maxBytes;
-        private readonly string _idShortPath;
-        private long _totalRead;
+        var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken);
 
-        public MaxLengthStream(Stream inner, long maxBytes, string idShortPath)
+        return GetFileElement(element, idShortPath);
+    }
+
+    private AasCore.Aas3_1.File GetFileElement(ISubmodelElement element, string idShortPath)
+    {
+        if (element is AasCore.Aas3_1.File file)
         {
-            _inner = inner;
-            _maxBytes = maxBytes;
-            _idShortPath = idShortPath;
+            return file;
+        }
+        logger.LogError("Submodel element at path {IdShortPath} is not of type File. Actual type: {ActualType}", idShortPath, element.GetType().Name);
+        throw new InvalidSubmodelElementTypeException();
+    }
+
+    private string GetValidatedFileUrl(AasCore.Aas3_1.File fileElement, string idShortPath)
+    {
+        var fileUrl = fileElement.Value;
+
+        if (string.IsNullOrWhiteSpace(fileUrl))
+        {
+            logger.LogError("File SubmodelElement at path {IdShortPath} has an empty or null value for the file URL.", idShortPath);
+            throw new SubmodelElementNotFoundException(idShortPath);
         }
 
-        public override bool CanRead => true;
-        public override bool CanSeek => false;
-        public override bool CanWrite => false;
-        public override long Length => throw new NotSupportedException();
-        public override long Position
+        if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            get => throw new NotSupportedException();
-            set => throw new NotSupportedException();
+            logger.LogError("File SubmodelElement at path {IdShortPath} has an invalid URL: {FileUrl}", idShortPath, fileUrl);
+            throw new InvalidFileUrlException();
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
+        return fileUrl;
+    }
+
+    private async Task<HttpResponseMessage> GetValidatedResponseAsync(string fileUrl, CancellationToken cancellationToken)
+    {
+        var response = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken);
+
+        _ = response.EnsureSuccessStatusCode();
+        var actualContentLength = response.Content.Headers.ContentLength ?? 0;
+        if (actualContentLength > _maxFileAttachmentSizeBytes)
         {
-            var read = _inner.Read(buffer, offset, count);
-            CheckLimit(read);
-            return read;
+            throw new FileSizeExceededException();
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            var read = await _inner.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
-            CheckLimit(read);
-            return read;
-        }
+        return response;
+    }
 
-        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            var read = await _inner.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
-            CheckLimit(read);
-            return read;
-        }
+    private static string GetFileName(AasCore.Aas3_1.File fileElement, string fileUrl)
+    {
+        var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
 
-        private void CheckLimit(int justRead)
-        {
-            _totalRead += justRead;
-            if (_totalRead > _maxBytes)
-            {
-                throw new FileSizeExceededException(_idShortPath, _totalRead, _maxBytes);
-            }
-        }
-
-        public override void Flush() => _inner.Flush();
-        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-        public override void SetLength(long value) => throw new NotSupportedException();
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _inner.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            await _inner.DisposeAsync().ConfigureAwait(false);
-            await base.DisposeAsync().ConfigureAwait(false);
-        }
+        return string.IsNullOrWhiteSpace(fileName)
+            ? fileElement.IdShort ?? string.Empty
+            : fileName;
     }
 }

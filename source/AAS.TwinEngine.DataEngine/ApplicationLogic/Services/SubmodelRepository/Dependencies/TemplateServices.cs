@@ -14,18 +14,9 @@ public class TemplateServices(
     IAasRepositoryTemplateService aasRepositoryTemplateService,
     IOptions<TemplateManagementConfig> templateManagementConfig)
 {
-    /// <summary>
-    /// Provides submodel templates.
-    /// </summary>
     public ISubmodelTemplateService SubmodelTemplateService { get; } = submodelTemplateService;
 
-    /// <summary>
-    /// Provides AAS repository templates.
-    /// </summary>
     public IAasRepositoryTemplateService AasRepositoryTemplateService { get; } = aasRepositoryTemplateService;
 
-    /// <summary>
-    /// Template management configuration.
-    /// </summary>
     public TemplateManagementConfig Config { get; } = templateManagementConfig.Value;
 }

@@ -68,9 +68,28 @@ public class SubmodelRepositoryHandler(
         var result = await GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            async id => await submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
+            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
 
         return result.ToDto();
+    }
+
+    public async Task<FileAttachmentResult> GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken)
+    {
+        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+
+        var attachment = await GetResourceByIdAsync(
+            request?.SubmodelId,
+            "file attachment",
+            id => submodelRepositoryService.GetFileAttachmentAsync(id, decodedIdShortPath, cancellationToken))
+            .ConfigureAwait(false);
+
+        foreach (var disposable in attachment.ResponseDisposables)
+        {
+            httpContextAccessor.HttpContext?.Response.RegisterForDispose(disposable);
+        }
+
+        return attachment;
     }
 
     private async Task<T> GetResourceByIdAsync<T>(
@@ -102,25 +121,5 @@ public class SubmodelRepositoryHandler(
 
         logger.LogWarning("{ResourceName} not found for ID: {DecodedId}", resourceName, decodedId);
         throw new SubmodelNotFoundException(decodedId);
-    }
-
-    public async Task<FileAttachmentResult> GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken)
-    {
-        var decodedSubmodelId = request?.SubmodelId?.DecodeBase64Url(logger);
-        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
-        decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
-
-        logger.LogInformation("Get File Attachment. SubmodelId: {SubmodelId}, IdShortPath: {IdShortPath}", decodedSubmodelId, decodedIdShortPath);
-
-        var attachment = await submodelRepositoryService
-            .GetFileAttachmentAsync(decodedSubmodelId, decodedIdShortPath, cancellationToken)
-            .ConfigureAwait(false);
-
-        foreach (var disposable in attachment.ResponseDisposables)
-        {
-            httpContextAccessor.HttpContext?.Response.RegisterForDispose(disposable);
-        }
-
-        return attachment;
     }
 }
