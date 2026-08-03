@@ -10,8 +10,9 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 /// </summary>
 public class InvalidFileUrlException : BadRequestException
 {
-    public const string MessageTemplate = "The file attachment URL '{0}' is invalid. {1}";
+    public const string DefaultMessage = "Invalid file attachment URL protocol.";
 
-    public InvalidFileUrlException(string fileUrl, string reason)
-        : base(string.Format(CultureInfo.InvariantCulture, MessageTemplate, fileUrl, reason)) { }
+    public InvalidFileUrlException() : base(DefaultMessage) { }
+
+    public InvalidFileUrlException(Exception ex) : base(DefaultMessage, ex) { }
 }

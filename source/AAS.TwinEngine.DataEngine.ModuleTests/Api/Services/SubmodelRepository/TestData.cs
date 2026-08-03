@@ -144,7 +144,7 @@ internal static class TestData
     }
     """;
 
-    public static string CreatePluginResponseForThumbnail() => """
+    public static string CreatePluginResponseForFileAttachment() => """
         {
         "http://example.com/idta/digital-nameplate/semantic-id": {
         "http://example.com/idta/digital-nameplate/thumbnail": "https://example.com/logo.png"

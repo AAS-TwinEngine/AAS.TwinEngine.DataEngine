@@ -1,17 +1,17 @@
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
 
 public sealed class MaxLengthStream : Stream
 {
     private readonly Stream _inner;
     private readonly long _maxBytes;
-    private readonly string _idShortPath;
     private long _totalRead;
 
-    public MaxLengthStream(Stream inner, long maxBytes, string idShortPath)
+    public MaxLengthStream(Stream inner, long maxBytes)
     {
         _inner = inner;
         _maxBytes = maxBytes;
-        _idShortPath = idShortPath;
     }
 
     public override bool CanRead => true;
@@ -50,8 +50,7 @@ public sealed class MaxLengthStream : Stream
         _totalRead += justRead;
         if (_totalRead > _maxBytes)
         {
-            throw new NotImplementedException(
-                $"File attachment at '{_idShortPath}' exceeds the maximum allowed size of {_maxBytes} bytes.");
+            throw new FileSizeExceededException();
         }
     }
 

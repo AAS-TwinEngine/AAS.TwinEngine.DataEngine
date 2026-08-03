@@ -703,9 +703,6 @@ internal static class TestData
         );
     }
 
-    /// <summary>
-    /// Creates a minimal submodel containing a single element at the given top-level idShortPath.
-    /// </summary>
     public static Submodel CreateSubmodelWithElement(ISubmodelElement element, string idShortPath)
     {
         return new Submodel(

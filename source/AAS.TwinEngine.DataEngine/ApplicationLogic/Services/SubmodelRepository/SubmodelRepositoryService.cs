@@ -227,52 +227,72 @@ public class SubmodelRepositoryService(
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+            var fileElement = await GetFileElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
 
-            if (element is not AasCore.Aas3_1.File fileElement)
-            {
-                throw new InvalidSubmodelElementTypeException(idShortPath);
-            }
+            var fileUrl = GetValidatedFileUrl(fileElement, idShortPath);
 
-            var fileUrl = fileElement.Value;
-            if (string.IsNullOrWhiteSpace(fileUrl))
-            {
-                throw new SubmodelElementNotFoundException(idShortPath);
-            }
-
-            if (!fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidFileUrlException(fileUrl, "File URL must start with http:// or https:// to be accessible.");
-            }
-
-            var upstreamResponse = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken).ConfigureAwait(false);
-            _ = upstreamResponse.EnsureSuccessStatusCode();
-
-            // Fast rejection if server declared a size over the limit — avoids opening the body at all.
-            var declaredLength = upstreamResponse.Content.Headers.ContentLength;
-            if (declaredLength.HasValue && declaredLength.Value > _maxFileAttachmentSizeBytes)
-            {
-                upstreamResponse.Dispose();
-                throw new FileSizeExceededException(idShortPath, declaredLength.Value, _maxFileAttachmentSizeBytes);
-            }
-
+            var upstreamResponse = await GetValidatedResponseAsync(fileUrl, cancellationToken).ConfigureAwait(false);
             var contentType = upstreamResponse.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
 
-            var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
-            if (string.IsNullOrWhiteSpace(fileName))
-            {
-                fileName = fileElement.IdShort;
-            }
+            var fileName = GetFileName(fileElement, fileUrl);
 
             var upstreamStream = await fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
-
-            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes, idShortPath);
+            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes);
 
             return new FileAttachmentResult(limitedStream, contentType, fileName)
             {
                 ResponseDisposables = [upstreamResponse]
             };
         }).ConfigureAwait(false);
+    }
+
+    private async Task<AasCore.Aas3_1.File> GetFileElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken);
+
+        return GetFileElement(element, idShortPath);
+    }
+
+    private AasCore.Aas3_1.File GetFileElement(ISubmodelElement element, string idShortPath) => element as AasCore.Aas3_1.File ?? throw new InvalidSubmodelElementTypeException();
+
+    private static string GetValidatedFileUrl(AasCore.Aas3_1.File fileElement, string idShortPath)
+    {
+        var fileUrl = fileElement.Value;
+
+        if (string.IsNullOrWhiteSpace(fileUrl))
+        {
+            throw new SubmodelElementNotFoundException(idShortPath);
+        }
+
+        if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new InvalidFileUrlException();
+        }
+
+        return fileUrl;
+    }
+
+    private async Task<HttpResponseMessage> GetValidatedResponseAsync(string fileUrl, CancellationToken cancellationToken)
+    {
+        var response = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken);
+
+        _ = response.EnsureSuccessStatusCode();
+        var actualContentLength = response.Content.Headers.ContentLength ?? 0;
+        if (actualContentLength > _maxFileAttachmentSizeBytes)
+        {
+            throw new FileSizeExceededException();
+        }
+
+        return response;
+    }
+
+    private static string GetFileName(AasCore.Aas3_1.File fileElement, string fileUrl)
+    {
+        var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+
+        return string.IsNullOrWhiteSpace(fileName)
+            ? fileElement.IdShort ?? string.Empty
+            : fileName;
     }
 }
