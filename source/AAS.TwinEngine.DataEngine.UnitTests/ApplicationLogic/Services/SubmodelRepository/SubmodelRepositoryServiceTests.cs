@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Dependencies;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
@@ -51,15 +52,15 @@ public class SubmodelRepositoryServiceTests
             }
         });
 
+        var templateServices = new TemplateServices(_templateService, _aasRepositoryTemplateService, _templateManagementOptions);
+        var pluginServices = new PluginServices(_pluginDataHandler, _pluginManifestConflictHandler);
+
         _sut = new SubmodelRepositoryService(
             _logger,
-            _templateService,
+            templateServices,
             _semanticIdHandler,
-            _pluginDataHandler,
-            _pluginManifestConflictHandler,
-            _aasRepositoryTemplateService,
+            pluginServices,
             _fileAttachmentStreamProvider,
-            _templateManagementOptions,
             Options.Create(new GeneralConfig { MaxFileAttachmentSizeBytes = 30 * 1024 * 1024 }));
     }
 
@@ -670,7 +671,7 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenFileUrlIsNotHttpOrHttps_ThrowsNotImplementedException()
+    public async Task GetFileAttachmentAsync_WhenFileUrlIsNotHttpOrHttps_ThrowsInvalidFileUrlException()
     {
         const string IdShortPath = "Documents.ProductImage";
         const string FileUrl = "ftp://fake-plugin.local/files/product.png";
@@ -678,7 +679,7 @@ public class SubmodelRepositoryServiceTests
         var fileElement = new AasCore.Aas3_1.File(contentType: "image/png") { Value = FileUrl, IdShort = "ProductImage" };
         ArrangeAttachmentElement(IdShortPath, fileElement);
 
-        await Assert.ThrowsAsync<NotImplementedException>(() =>
+        await Assert.ThrowsAsync<InvalidFileUrlException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
 }

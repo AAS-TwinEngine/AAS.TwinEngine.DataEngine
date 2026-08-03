@@ -153,14 +153,13 @@ public class SubmodelRepositoryController(
     }
 
     /// <summary>
-    /// Downloads the binary file content of a File SubmodelElement.
-    /// The Content-Type header is derived from the element's contentType attribute.
+    /// Downloads file content from a specific submodel element from the Submodel at a specified path.
     /// </summary>
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
     /// <param name="idShortPath">The IdShort path to the File SubmodelElement (dot-separated)</param>
-    /// <response code="200">Binary file content streamed from the plugin.</response>
-    /// <response code="400">The element at idShortPath is not a File SubmodelElement, or the request is malformed.</response>
-    /// <response code="404">Submodel or element not found.</response>
+    /// <response code="200">Requested File.</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
     /// <response code="500">Internal Server Error</response>
     [HttpGet("{submodelIdentifier}/submodel-elements/{idShortPath}/attachment")]
     [ProducesResponseType(typeof(FileResult), (int)HttpStatusCode.OK)]

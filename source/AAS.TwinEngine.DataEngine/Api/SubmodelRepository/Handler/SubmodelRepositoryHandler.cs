@@ -113,7 +113,7 @@ public class SubmodelRepositoryHandler(
         logger.LogInformation("Get File Attachment. SubmodelId: {SubmodelId}, IdShortPath: {IdShortPath}", decodedSubmodelId, decodedIdShortPath);
 
         var attachment = await submodelRepositoryService
-            .GetFileAttachmentAsync(decodedSubmodelId!, decodedIdShortPath, cancellationToken)
+            .GetFileAttachmentAsync(decodedSubmodelId, decodedIdShortPath, cancellationToken)
             .ConfigureAwait(false);
 
         foreach (var disposable in attachment.ResponseDisposables)
