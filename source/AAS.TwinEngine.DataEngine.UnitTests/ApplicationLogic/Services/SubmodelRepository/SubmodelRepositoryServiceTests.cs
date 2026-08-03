@@ -492,6 +492,103 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
+    public async Task GetAllSubmodelsAsync_WhenLimitReachedAtAasBoundary_CursorSubmodelIdIsLastDeliveredAndAasIdIsConsumedAas()
+    {
+        // AAS-1 has 3 submodels, AAS-2 has 2 submodels. limit=5 hits the exact end of AAS-2.
+        // AasId in the cursor must be AAS-2 (the consumed AAS), not AAS-1 (the entry cursor),
+        // so Plugin(AAS-2 exclusive) on resume skips directly to the next AAS.
+        const string Shell1Id = "https://example.com/shells/aas-1";
+        const string Shell2Id = "https://example.com/shells/aas-2";
+        const string Sm1 = "https://example.com/submodels/sm-1";
+        const string Sm2 = "https://example.com/submodels/sm-2";
+        const string Sm3 = "https://example.com/submodels/sm-3";
+        const string Sm4 = "https://example.com/submodels/sm-4";
+        const string Sm5 = "https://example.com/submodels/sm-5";
+
+        _pluginDataHandler
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new ShellDescriptorsMetaData
+            {
+                ShellDescriptors = [new ShellDescriptorMetaData { Id = Shell1Id }, new ShellDescriptorMetaData { Id = Shell2Id }]
+            });
+
+        _aasRepositoryTemplateService.GetSubmodelRefByIdAsync(Shell1Id, Arg.Any<CancellationToken>())
+            .Returns([
+                new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, Sm1)]),
+                new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, Sm2)]),
+                new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, Sm3)])
+            ]);
+
+        _aasRepositoryTemplateService.GetSubmodelRefByIdAsync(Shell2Id, Arg.Any<CancellationToken>())
+            .Returns([
+                new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, Sm4)]),
+                new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, Sm5)])
+            ]);
+
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>())
+            .Returns(TestData.CreateFilledSubmodel());
+
+        var result = await _sut.GetAllSubmodelsAsync(null, null, limit: 5, null, CancellationToken.None);
+
+        Assert.Equal(5, result.Result.Count);
+        Assert.NotNull(result.PagingMetaData?.Cursor);
+
+        var decoded = SubmodelPaginationCursor.Decode(result.PagingMetaData!.Cursor!);
+        Assert.Equal(Sm5, decoded!.SubmodelId);  // last delivered submodel
+        Assert.Equal(Shell2Id, decoded.AasId);   // the consumed AAS, not the entry cursor
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelsAsync_WhenLimitReachedAtFirstAasBoundary_CursorAasIdIsConsumedAas()
+    {
+        // AAS-1 has exactly 2 submodels, limit=2. Limit hit at the end of AAS-1.
+        // AasId must be AAS-1 (the consumed AAS) so the next request starts from after AAS-1.
+        const string Shell1Id = "https://example.com/shells/aas-1";
+        const string Sm1 = "https://example.com/submodels/sm-1";
+        const string Sm2 = "https://example.com/submodels/sm-2";
+
+        _pluginDataHandler
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new ShellDescriptorsMetaData
+            {
+                ShellDescriptors = [new ShellDescriptorMetaData { Id = Shell1Id }],
+                PagingMetaData = new PagingMetaData { Cursor = "next-page-token" }
+            });
+
+        _aasRepositoryTemplateService.GetSubmodelRefByIdAsync(Shell1Id, Arg.Any<CancellationToken>())
+            .Returns([
+                new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, Sm1)]),
+                new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, Sm2)])
+            ]);
+
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>())
+            .Returns(TestData.CreateFilledSubmodel());
+
+        var result = await _sut.GetAllSubmodelsAsync(null, null, limit: 2, null, CancellationToken.None);
+
+        Assert.Equal(2, result.Result.Count);
+        Assert.NotNull(result.PagingMetaData?.Cursor);
+
+        var decoded = SubmodelPaginationCursor.Decode(result.PagingMetaData!.Cursor!);
+        Assert.Equal(Sm2, decoded!.SubmodelId);   // last delivered submodel
+        Assert.Equal(Shell1Id, decoded.AasId);     // consumed AAS — next request starts after AAS-1
+    }
+
+    [Fact]
     public async Task GetAllSubmodelElementsAsync_ReturnsAllElements_WhenSubmodelExists()
     {
         var filledSubmodel = TestData.CreateFilledSubmodel();

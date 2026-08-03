@@ -40,8 +40,6 @@ public class SubmodelRepositoryService(
 
             var submodelWithValues = await BuildSubmodelWithValuesAsync(submodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
 
-            submodelWithValues.Id = submodelId;
-
             return submodelWithValues;
         }).ConfigureAwait(false);
     }
@@ -110,7 +108,7 @@ public class SubmodelRepositoryService(
         while (state.CollectedIds.Count < pageSize)
         {
             var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(
-                pluginManifestConflictHandler.Manifests, shellSearchFilter, pageSize, pluginCursor, cancellationToken).ConfigureAwait(false);
+                pluginManifestConflictHandler.Manifests, shellSearchFilter, pageSize, Base64UrlExtensions.EncodeBase64Url(pluginCursor), cancellationToken).ConfigureAwait(false);
 
             var shellDescriptors = shellMetadata.ShellDescriptors?
                 .Where(s => !string.IsNullOrWhiteSpace(s.Id))
@@ -182,18 +180,15 @@ public class SubmodelRepositoryService(
 
                 if (state.CollectedIds.Count >= pageSize)
                 {
-                    // If we consumed the last submodel of this AAS, advance tracking
-                    if (i == submodelIds.Count - 1)
+                    if (state.CollectedIds.Contains(submodelIds.Last()))
                     {
                         state.TrackingAasId = shell.Id;
-                        state.LastCollectedSubmodelId = null;
                     }
 
                     return true;
                 }
             }
 
-            // AAS fully consumed — advance tracking state
             state.TrackingAasId = shell.Id;
         }
 
@@ -301,7 +296,9 @@ public class SubmodelRepositoryService(
 
         var values = await pluginDataHandler.TryGetValuesAsync(pluginManifests, semanticIds, submodelId, cancellationToken).ConfigureAwait(false);
 
-        return semanticIdHandler.FillOutTemplate(template, values);
+        var submodelWithValues = semanticIdHandler.FillOutTemplate(template, values);
+        submodelWithValues.Id = submodelId;
+        return submodelWithValues;
     }
 
     private static async Task<T> ExecuteWithExceptionHandlingAsync<T>(Func<Task<T>> action)
