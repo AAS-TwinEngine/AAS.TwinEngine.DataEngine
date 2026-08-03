@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Dependencies;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
@@ -19,22 +20,19 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository
 
 public class SubmodelRepositoryService(
     ILogger<SubmodelRepositoryService> logger,
-    ISubmodelTemplateService submodelTemplateService,
+    TemplateServices templateServices,
     ISemanticIdHandler semanticIdHandler,
-    IPluginDataHandler pluginDataHandler,
-    IPluginManifestConflictHandler pluginManifestConflictHandler,
-    IAasRepositoryTemplateService aasRepositoryTemplateService,
+    PluginServices pluginServices,
     IFileAttachmentStreamProvider fileAttachmentStreamProvider,
-    IOptions<TemplateManagementConfig> templateManagementConfig,
     IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
 {
-    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRepository.ConcurrentOperationsLimit;
+    private readonly int _concurrentOperationsLimit = templateServices.Config.SubmodelTemplateRepository.ConcurrentOperationsLimit;
     private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var submodelTemplate = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, null, queryOptions, cancellationToken).ConfigureAwait(false);
+            var submodelTemplate = await templateServices.SubmodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, null, queryOptions, cancellationToken).ConfigureAwait(false);
 
             if (submodelTemplate is null)
             {
@@ -53,7 +51,7 @@ public class SubmodelRepositoryService(
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var reducedSubmodelTemplate = await submodelTemplateService.GetSubmodelTemplateAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+            var reducedSubmodelTemplate = await templateServices.SubmodelTemplateService.GetSubmodelTemplateAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
 
             var submodelWithValues = await BuildSubmodelWithValuesAsync(reducedSubmodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
 
@@ -71,13 +69,13 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
-            var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, shellSearchFilter, cancellationToken).ConfigureAwait(false);
+            var shellMetadata = await pluginServices.PluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginServices.PluginManifestConflictHandler.Manifests, shellSearchFilter, cancellationToken).ConfigureAwait(false);
             var shellDescriptors = shellMetadata.ShellDescriptors ?? [];
 
             string? filteredTemplateId = null;
             if (filter?.SemanticId is not null)
             {
-                filteredTemplateId = await submodelTemplateService.GetFilteredSubmodelTemplateIdAsync(filter.SemanticId, cancellationToken).ConfigureAwait(false);
+                filteredTemplateId = await templateServices.SubmodelTemplateService.GetFilteredSubmodelTemplateIdAsync(filter.SemanticId, cancellationToken).ConfigureAwait(false);
 
                 if (filteredTemplateId is null)
                 {
@@ -89,7 +87,7 @@ public class SubmodelRepositoryService(
 
             var (pagedIds, pagingMetaData) = PagingExtensions.GetPagedResult(distinctSubmodelIds, id => id, limit, cursor);
 
-            var submodels = await BuildSubmodelsAsync(pagedIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
+            var submodels = await BuildSubmodelsAsync(pagedIds.OfType<string>(), filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
             return new SubmodelList
             {
@@ -107,7 +105,7 @@ public class SubmodelRepositoryService(
                 await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    return await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
+                    return await templateServices.AasRepositoryTemplateService.GetSubmodelRefByIdAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ResourceNotFoundException ex)
                 {
@@ -138,7 +136,7 @@ public class SubmodelRepositoryService(
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                var template = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
+                var template = await templateServices.SubmodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
                 if (template is null)
                 {
@@ -162,7 +160,7 @@ public class SubmodelRepositoryService(
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var submodelTemplate = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, null, queryOptions, cancellationToken).ConfigureAwait(false);
+            var submodelTemplate = await templateServices.SubmodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, null, queryOptions, cancellationToken).ConfigureAwait(false);
 
             if (submodelTemplate is null)
             {
@@ -191,9 +189,9 @@ public class SubmodelRepositoryService(
     {
         var semanticIds = semanticIdHandler.Extract(template);
 
-        var pluginManifests = pluginManifestConflictHandler.Manifests;
+        var pluginManifests = pluginServices.PluginManifestConflictHandler.Manifests;
 
-        var values = await pluginDataHandler.TryGetValuesAsync(pluginManifests, semanticIds, submodelId, cancellationToken).ConfigureAwait(false);
+        var values = await pluginServices.PluginDataHandler.TryGetValuesAsync(pluginManifests, semanticIds, submodelId, cancellationToken).ConfigureAwait(false);
 
         return semanticIdHandler.FillOutTemplate(template, values);
     }
@@ -246,7 +244,7 @@ public class SubmodelRepositoryService(
             if (!fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
                 !fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotImplementedException("File URL must start with http:// or https:// to be accessible.");
+                throw new InvalidFileUrlException(fileUrl, "File URL must start with http:// or https:// to be accessible.");
             }
 
             var upstreamResponse = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken).ConfigureAwait(false);
@@ -257,7 +255,7 @@ public class SubmodelRepositoryService(
             if (declaredLength.HasValue && declaredLength.Value > _maxFileAttachmentSizeBytes)
             {
                 upstreamResponse.Dispose();
-                throw new NotImplementedException($"File exceeds maximum allowed size of {_maxFileAttachmentSizeBytes} bytes.");
+                throw new FileSizeExceededException(idShortPath, declaredLength ?? 0, _maxFileAttachmentSizeBytes);
             }
 
             var contentType = upstreamResponse.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
@@ -329,8 +327,7 @@ public class SubmodelRepositoryService(
             _totalRead += justRead;
             if (_totalRead > _maxBytes)
             {
-                throw new NotImplementedException(
-                    $"File attachment at '{_idShortPath}' exceeds the maximum allowed size of {_maxBytes} bytes.");
+                throw new FileSizeExceededException(_idShortPath, _totalRead, _maxBytes);
             }
         }
 

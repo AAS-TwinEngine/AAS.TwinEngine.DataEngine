@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Dependencies;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
@@ -51,15 +52,15 @@ public class SubmodelRepositoryServiceTests
             }
         });
 
+        var templateServices = new TemplateServices(_templateService, _aasRepositoryTemplateService, _templateManagementOptions);
+        var pluginServices = new PluginServices(_pluginDataHandler, _pluginManifestConflictHandler);
+
         _sut = new SubmodelRepositoryService(
             _logger,
-            _templateService,
+            templateServices,
             _semanticIdHandler,
-            _pluginDataHandler,
-            _pluginManifestConflictHandler,
-            _aasRepositoryTemplateService,
+            pluginServices,
             _fileAttachmentStreamProvider,
-            _templateManagementOptions,
             Options.Create(new GeneralConfig { MaxFileAttachmentSizeBytes = 30 * 1024 * 1024 }));
     }
 
