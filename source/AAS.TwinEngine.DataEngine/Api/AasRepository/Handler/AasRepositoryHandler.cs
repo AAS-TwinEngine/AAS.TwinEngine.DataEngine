@@ -75,8 +75,8 @@ public class AasRepositoryHandler(
         var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
-            request?.SubmodelId,
+            request.AasIdentifier,
+            request.SubmodelId,
             "submodel By AasID",
             (aasId, submodelId) => aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, queryOptions, cancellationToken));
     }
@@ -106,8 +106,8 @@ public class AasRepositoryHandler(
         request?.IdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
-            request?.SubmodelId,
+            request.AasIdentifier,
+            request.SubmodelId,
             "submodel element By AasID",
             (aasId, submodelId) => aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, request?.IdShortPath, cancellationToken));
     }
