@@ -286,7 +286,7 @@ public class AasRepositoryControllerTests
         _handler.GetSubmodelByAasIdAsync(Arg.Any<GetSubmodelByAasRequest>(), Arg.Any<CancellationToken>())
             .Returns(submodel);
 
-        var result = await _sut.GetSubmodelByAasIdAsync(encodedAasId, encodedSubmodelId, null, null, CancellationToken.None);
+        var result = await _sut.GetSubmodelByAasIdAsync(encodedAasId, encodedSubmodelId, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<JsonObject>(okResult.Value);
@@ -305,7 +305,7 @@ public class AasRepositoryControllerTests
         _handler.GetAllSubmodelElementsByAasIdAsync(Arg.Any<GetAllSubmodelElementsByAasRequest>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
-        var result = await _sut.GetAllSubmodelElementsByAasIdAsync(encodedAasId, encodedSubmodelId, null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelElementsByAasIdAsync(encodedAasId, encodedSubmodelId, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<SubmodelElementsDto>(okResult.Value);

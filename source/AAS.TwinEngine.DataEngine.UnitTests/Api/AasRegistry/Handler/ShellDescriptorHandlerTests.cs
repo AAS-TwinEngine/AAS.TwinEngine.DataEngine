@@ -123,16 +123,14 @@ public class ShellDescriptorHandlerTests
         const string AasId = "AasId";
         const string SubmodelId = "SubmodelId";
         var request = new GetSubmodelDescriptorByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url());
-        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
-            .Returns(CreateSubmodelRefWithId(SubmodelId));
-        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync(SubmodelId, Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetSubmodelDescriptorByAasIdAsync(AasId, SubmodelId, Arg.Any<CancellationToken>())
             .Returns(new SubmodelDescriptor { Id = SubmodelId });
 
         var result = await _sut.GetSubmodelDescriptorByAasId(request, CancellationToken.None);
 
         Assert.IsType<SubmodelDescriptorDto>(result);
-        await _submodelDescriptorService.Received(1)
-            .GetSubmodelDescriptorByIdAsync(SubmodelId, Arg.Any<CancellationToken>());
+        await _shellDescriptorService.Received(1)
+            .GetSubmodelDescriptorByAasIdAsync(AasId, SubmodelId, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -141,8 +139,8 @@ public class ShellDescriptorHandlerTests
         const string AasId = "AasId";
         const string SubmodelId = "SubmodelId";
         var request = new GetSubmodelDescriptorByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url());
-        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
-            .Returns(CreateSubmodelRefWithId("OtherSubmodelId"));
+        _shellDescriptorService.GetSubmodelDescriptorByAasIdAsync(AasId, SubmodelId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new SubmodelDescriptorNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelDescriptorNotFoundException>(
             () => _sut.GetSubmodelDescriptorByAasId(request, CancellationToken.None));
@@ -154,7 +152,7 @@ public class ShellDescriptorHandlerTests
         const string AasId = "AasId";
         const string SubmodelId = "SubmodelId";
         var request = new GetSubmodelDescriptorByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url());
-        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetSubmodelDescriptorByAasIdAsync(AasId, SubmodelId, Arg.Any<CancellationToken>())
             .ThrowsAsync(new TemplateNotFoundException());
 
         await Assert.ThrowsAsync<TemplateNotFoundException>(
@@ -165,15 +163,17 @@ public class ShellDescriptorHandlerTests
     public async Task GetAllSubmodelDescriptorsByAasId_ReturnsDescriptors_ForAllSubmodelsInAas()
     {
         const string AasId = "AasId";
-        const string SubmodelId1 = "SubmodelId1";
-        const string SubmodelId2 = "SubmodelId2";
         var request = new GetSubmodelDescriptorsByAasRequest(AasId.EncodeBase64Url(), null, null);
-        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
-            .Returns(CreateSubmodelRefWithIds(SubmodelId1, SubmodelId2));
-        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync(SubmodelId1, Arg.Any<CancellationToken>())
-            .Returns(new SubmodelDescriptor { Id = SubmodelId1 });
-        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync(SubmodelId2, Arg.Any<CancellationToken>())
-            .Returns(new SubmodelDescriptor { Id = SubmodelId2 });
+        _shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(new SubmodelDescriptors
+            {
+                PagingMetaData = new PagingMetaData(),
+                Result =
+                [
+                    new SubmodelDescriptor { Id = "SubmodelId1" },
+                    new SubmodelDescriptor { Id = "SubmodelId2" }
+                ]
+            });
 
         var result = await _sut.GetAllSubmodelDescriptorsByAasId(request, CancellationToken.None);
 
@@ -186,24 +186,10 @@ public class ShellDescriptorHandlerTests
     {
         const string AasId = "AasId";
         var request = new GetSubmodelDescriptorsByAasRequest(AasId.EncodeBase64Url(), null, null);
-        _aasRepositoryService.GetSubmodelRefByIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
             .ThrowsAsync(new TemplateNotFoundException());
 
         await Assert.ThrowsAsync<TemplateNotFoundException>(
             () => _sut.GetAllSubmodelDescriptorsByAasId(request, CancellationToken.None));
     }
-
-    private static SubmodelRef CreateSubmodelRefWithId(string submodelId)
-        => new()
-        {
-            PagingMetaData = new PagingMetaData(),
-            Result = [new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelId)], null)]
-        };
-
-    private static SubmodelRef CreateSubmodelRefWithIds(params string[] submodelIds)
-        => new()
-        {
-            PagingMetaData = new PagingMetaData(),
-            Result = submodelIds.Select(id => (IReference)new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, id)], null)).ToList()
-        };
 }

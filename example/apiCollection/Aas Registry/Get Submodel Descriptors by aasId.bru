@@ -1,18 +1,13 @@
 meta {
-  name: Get Submodel Ref By Id
+  name: Get Submodel Descriptors by aasId
   type: http
-  seq: 4
+  seq: 5
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodel-refs?limit&cursor
+  url: {{DataEngineBaseUrl}}/shell-descriptors/:aasIdentifier/submodel-descriptors
   body: none
   auth: inherit
-}
-
-params:query {
-  limit: 
-  cursor: 
 }
 
 params:path {

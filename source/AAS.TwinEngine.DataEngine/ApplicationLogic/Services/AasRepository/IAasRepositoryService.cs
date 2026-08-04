@@ -1,7 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
-using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
-using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
+﻿using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -20,9 +17,9 @@ public interface IAasRepositoryService
 
     Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken);
 
-    Task<ISubmodel> GetSubmodelByAasIdAsync(string aasIdentifier, string submodelIdentifier, Level level, Extent extent, CancellationToken cancellationToken);
+    Task<ISubmodel> GetSubmodelByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions queryOptions, CancellationToken cancellationToken);
 
-    Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, Level level, Extent extent, int? limit, string? cursor, CancellationToken cancellationToken);
+    Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions queryOptions, int? limit, string? cursor, CancellationToken cancellationToken);
 
     Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, CancellationToken cancellationToken);
 }

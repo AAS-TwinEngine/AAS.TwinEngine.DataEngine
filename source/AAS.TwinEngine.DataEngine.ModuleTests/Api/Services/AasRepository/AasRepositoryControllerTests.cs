@@ -560,15 +560,17 @@ public abstract class AasRepositoryControllerTests : IDisposable
     {
         // Arrange
         const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
-        const string SubmodelId = "http://example.com/submodel/Nameplate";
-        var encodedSubmodelId = EncodeBase64Url(SubmodelId);
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
 
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId)], null)]);
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
 
         _ = _mockSubmodelRepositoryService
-            .GetSubmodelByAasIdAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
-            .Returns(new Submodel(id: SubmodelId));
+            .GetSubmodelAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(new Submodel(id: requestedSubmodelId));
 
         // Act
         var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}");
@@ -584,11 +586,12 @@ public abstract class AasRepositoryControllerTests : IDisposable
     {
         // Arrange
         const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
-        const string RequestedSubmodelId = "http://example.com/submodel/Missing";
-        var encodedSubmodelId = EncodeBase64Url(RequestedSubmodelId);
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/Missing";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
 
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "http://example.com/submodel/Other")], null)]);
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "Other")], null)]);
 
         // Act
         var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}");
@@ -602,14 +605,16 @@ public abstract class AasRepositoryControllerTests : IDisposable
     {
         // Arrange
         const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
-        const string SubmodelId = "http://example.com/submodel/Nameplate";
-        var encodedSubmodelId = EncodeBase64Url(SubmodelId);
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
 
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId)], null)]);
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new SubmodelElementsPage { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
 
         // Act
@@ -627,15 +632,17 @@ public abstract class AasRepositoryControllerTests : IDisposable
     {
         // Arrange
         const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
-        const string SubmodelId = "http://example.com/submodel/Nameplate";
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
         const string IdShortPath = "ManufacturerName";
-        var encodedSubmodelId = EncodeBase64Url(SubmodelId);
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
 
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId)], null)]);
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
 
         _ = _mockSubmodelRepositoryService
-            .GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .GetSubmodelElementAsync(requestedSubmodelId, IdShortPath, Arg.Any<CancellationToken>())
             .Returns(new Property(DataTypeDefXsd.String) { IdShort = IdShortPath });
 
         // Act

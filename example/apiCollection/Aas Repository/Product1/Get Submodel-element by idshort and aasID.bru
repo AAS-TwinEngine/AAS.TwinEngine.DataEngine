@@ -1,0 +1,22 @@
+meta {
+  name: Get Submodel-element by idshort and aasID
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  idShortPath: ManufacturerName
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

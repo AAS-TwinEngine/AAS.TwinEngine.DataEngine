@@ -1,5 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -128,42 +127,41 @@ public class AasRepositoryService(
         };
     }
 
-    public async Task<ISubmodel> GetSubmodelByAasIdAsync(string aasId, string submodelId, Level level, Extent extent, CancellationToken cancellationToken)
+    public async Task<ISubmodel> GetSubmodelByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
-        await ValidateSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
 
-        return await submodelRepositoryService.GetSubmodelAsync(submodelId, CreateQueryOptions(level, extent), cancellationToken).ConfigureAwait(false);
+        return await submodelRepositoryService.GetSubmodelAsync(submodelIdentifier, queryOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasId, string submodelId, Level level, Extent extent, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
     {
-        await ValidateSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
 
-        return await submodelRepositoryService.GetAllSubmodelElementsAsync(submodelId, CreateQueryOptions(level, extent), limit, cursor, cancellationToken).ConfigureAwait(false);
+        return await submodelRepositoryService.GetAllSubmodelElementsAsync(submodelIdentifier, queryOptions, limit, cursor, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasId, string submodelId, string idShortPath, CancellationToken cancellationToken)
+    public async Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, CancellationToken cancellationToken)
     {
-        await ValidateSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
 
-        return await submodelRepositoryService.GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+        return await submodelRepositoryService.GetSubmodelElementAsync(submodelIdentifier, idShortPath, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task ValidateSubmodelBelongsToAasAsync(string aasId, string submodelId, CancellationToken cancellationToken)
+    public async Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
     {
-        var submodelRefs = await GetSubmodelRefByIdAsync(aasId, null, null, cancellationToken).ConfigureAwait(false);
+        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
 
         var submodelExists = submodelRefs.Result?.SelectMany(r => r.Keys ?? [])
-                               .Any(k => string.Equals(k.Value, submodelId, StringComparison.OrdinalIgnoreCase)) ?? false;
+                               .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.OrdinalIgnoreCase)) ?? false;
 
         if (!submodelExists)
         {
-            logger.LogError("Submodel {SubmodelId} not referenced by AAS {AasId}", submodelId, aasId);
-            throw new SubmodelNotFoundException(submodelId);
+            logger.LogError("Submodel {SubmodelId} not referenced by AAS {AasId}", submodelIdentifier, aasIdentifier);
+            throw new SubmodelNotFoundException(submodelIdentifier);
         }
     }
 
-    private static SubmodelQueryOptions CreateQueryOptions(Level level, Extent extent) => new(level.ToString(), extent.ToString());
     private static IAssetInformation FillOutAssetInformation(IAssetInformation template, AssetData pluginData)
     {
         if (template is null)

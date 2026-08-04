@@ -72,11 +72,13 @@ public class AasRepositoryHandler(
 
     public Task<ISubmodel> GetSubmodelByAasIdAsync(GetSubmodelByAasRequest request, CancellationToken cancellationToken)
     {
+        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString()) : null;
+
         return GetResourceByIdAsync(
             request?.AasIdentifier,
             request?.SubmodelId,
             "submodel By AasID",
-            (aasId, submodelId) => aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, request.Level, request.Extent, cancellationToken));
+            (aasId, submodelId) => aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, queryOptions, cancellationToken));
     }
 
     public Task<SubmodelElementsDto> GetAllSubmodelElementsByAasIdAsync(
@@ -86,12 +88,14 @@ public class AasRepositoryHandler(
         request?.Limit.ValidateLimit(logger);
         request?.Cursor?.ValidateCursor(logger);
 
+        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString()) : null;
+
         return GetResourceByIdAsync(
             request?.AasIdentifier,
             request?.SubmodelId,
             "submodel elements By AasID",
             async (aasId, submodelId) => (await aasRepositoryService
-                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, request.Level, request.Extent, request?.Limit, request?.Cursor, cancellationToken)
+                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
                 .ConfigureAwait(false)).ToDto());
     }
 
