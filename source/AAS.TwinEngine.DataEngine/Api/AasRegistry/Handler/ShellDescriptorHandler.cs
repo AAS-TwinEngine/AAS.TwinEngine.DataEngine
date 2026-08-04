@@ -47,7 +47,7 @@ public class ShellDescriptorHandler(
             request?.AasIdentifier,
             "submodel descriptors by AasId",
             aasId => shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(
-                aasId!,
+                aasId,
                 request.Limit,
                 request.Cursor,
                 cancellationToken),
@@ -75,9 +75,9 @@ public class ShellDescriptorHandler(
         var decodedSubmodelId = encodedSubmodelId?.DecodeBase64Url(logger);
         logger.LogInformation("Get {ResourceName} for AAS: {AasId}, Submodel: {SubmodelId}", resourceName, decodedAasId, decodedSubmodelId);
 
-        var result = await fetchFunc(decodedAasId!, decodedSubmodelId!).ConfigureAwait(false);
+        var result = await fetchFunc(decodedAasId, decodedSubmodelId).ConfigureAwait(false);
         ValidateResourceExists(result, resourceName);
-        return mapFunc(result!);
+        return mapFunc(result);
     }
 
     private async Task<TDto> GetResourceAsync<TModel, TDto>(

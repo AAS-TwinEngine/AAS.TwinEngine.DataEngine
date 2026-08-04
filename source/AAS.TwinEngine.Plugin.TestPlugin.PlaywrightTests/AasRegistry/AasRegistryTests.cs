@@ -84,4 +84,71 @@ public class AasRegistryTests : ApiTestBase
 
         await CompareJsonAsync(actualDoc, Path.Combine(Directory.GetCurrentDirectory(), "AasRegistry", "TestData", "GetShellDescriptorById_Expected.json"));
     }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsByAasId_ShouldReturnSuccess_ContentAsExpected()
+    {
+        // Arrange
+        var url = $"/shell-descriptors/{AasIdentifier}/submodel-descriptors";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var actualDoc = JsonDocument.Parse(content);
+        Assert.NotNull(actualDoc);
+
+        await CompareJsonAsync(actualDoc, Path.Combine(Directory.GetCurrentDirectory(), "AasRegistry", "TestData", "GetAllSubmodelDescriptorsByAasId_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsByAasId_WithPagination()
+    {
+        // Arrange
+        var urlLimit2 = $"/shell-descriptors/{AasIdentifier}/submodel-descriptors?limit=2";
+        var urlLimit3 = $"/shell-descriptors/{AasIdentifier}/submodel-descriptors?limit=3";
+
+        // Act
+        var responseLimit2 = await ApiContext.GetAsync(urlLimit2);
+        var responseLimit3 = await ApiContext.GetAsync(urlLimit3);
+
+        // Assert
+        AssertSuccessResponse(responseLimit2);
+        AssertSuccessResponse(responseLimit3);
+
+        var jsonLimit2 = JsonDocument.Parse(await responseLimit2.TextAsync());
+        var jsonLimit3 = JsonDocument.Parse(await responseLimit3.TextAsync());
+
+        var resultLimit2 = jsonLimit2.RootElement.GetProperty("result");
+        var resultLimit3 = jsonLimit3.RootElement.GetProperty("result");
+
+        Assert.Equal(resultLimit2.GetArrayLength() + 1, resultLimit3.GetArrayLength());
+    }
+
+    [Fact]
+    public async Task GetSubmodelDescriptorByAasId_ShouldReturnSuccess_ContentAsExpected()
+    {
+        // Arrange
+        var url =
+            $"/shell-descriptors/{AasIdentifier}/submodel-descriptors/{SubmodelIdentifierHandoverDocumentation}";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var actualDoc = JsonDocument.Parse(content);
+        Assert.NotNull(actualDoc);
+
+        await CompareJsonAsync(actualDoc, Path.Combine(Directory.GetCurrentDirectory(), "AasRegistry", "TestData", "GetSubmodelDescriptorByAasId_Expected.json"));
+    }
 }

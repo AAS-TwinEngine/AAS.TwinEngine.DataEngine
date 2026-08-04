@@ -72,7 +72,7 @@ public class AasRepositoryHandler(
 
     public Task<ISubmodel> GetSubmodelByAasIdAsync(GetSubmodelByAasRequest request, CancellationToken cancellationToken)
     {
-        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString()) : null;
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
             request?.AasIdentifier,
@@ -88,7 +88,7 @@ public class AasRepositoryHandler(
         request?.Limit.ValidateLimit(logger);
         request?.Cursor?.ValidateCursor(logger);
 
-        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString()) : null;
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
             request?.AasIdentifier,
@@ -144,12 +144,12 @@ public class AasRepositoryHandler(
 
         logger.LogInformation("Start executing get request for {ResourceName}. AAS: {AasId}, Submodel: {SubmodelId}", resourceName, decodedAasId, decodedSubmodelId);
 
-        var result = await fetchFunc(decodedAasId!, decodedSubmodelId!)
+        var result = await fetchFunc(decodedAasId, decodedSubmodelId)
             .ConfigureAwait(false);
 
-        ValidateResourceExists(result, resourceName, decodedSubmodelId!);
+        ValidateResourceExists(result, resourceName, decodedSubmodelId);
 
-        return result!;
+        return result;
     }
 
     private void ValidateResourceExists<T>(T? result, string resourceName, string decodedId)

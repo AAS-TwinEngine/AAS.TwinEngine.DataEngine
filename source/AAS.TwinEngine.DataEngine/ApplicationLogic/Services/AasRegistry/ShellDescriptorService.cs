@@ -123,7 +123,7 @@ public class ShellDescriptorService(
                                         .OfType<SubmodelDescriptor>()
                                         .ToList();
 
-        var (items, pagingMetaData) = PagingExtensions.GetPagedResult(descriptors, descriptor => descriptor.Id!, limit, cursor);
+        var (items, pagingMetaData) = PagingExtensions.GetPagedResult(descriptors, descriptor => descriptor.Id, limit, cursor);
 
         return new SubmodelDescriptors
         {
