@@ -1,7 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Dependencies;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
@@ -233,17 +232,23 @@ public class SubmodelRepositoryService(
 
             var fileUrl = GetValidatedFileUrl(fileElement, idShortPath);
 
-            var upstreamResponse = await GetValidatedResponseAsync(fileUrl, cancellationToken).ConfigureAwait(false);
-            var contentType = upstreamResponse.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+            var fileContent = await fileContentProvider.GetFileContentAsync(fileUrl, cancellationToken).ConfigureAwait(false);
+
+            if (fileContent.ContentLength.HasValue && fileContent.ContentLength.Value > _maxFileAttachmentSizeBytes)
+            {
+                await fileContent.DisposeAsync().ConfigureAwait(false);
+                throw new FileSizeExceededException();
+            }
+
+            var contentType = !string.IsNullOrWhiteSpace(fileElement.ContentType)
+                ? fileElement.ContentType
+                : fileContent.ContentType ?? "application/octet-stream";
 
             var fileName = GetFileName(fileElement, fileUrl);
 
-            var upstreamStream = await fileContentProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
-            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes);
-
-            return new FileAttachmentResult(limitedStream, contentType, fileName)
+            return new FileAttachmentResult(fileContent.Content, contentType, fileName, _maxFileAttachmentSizeBytes)
             {
-                ResponseDisposables = [upstreamResponse]
+                Upstream = fileContent
             };
         }).ConfigureAwait(false);
     }
@@ -283,20 +288,6 @@ public class SubmodelRepositoryService(
         }
 
         return fileUrl;
-    }
-
-    private async Task<HttpResponseMessage> GetValidatedResponseAsync(string fileUrl, CancellationToken cancellationToken)
-    {
-        var response = await fileContentProvider.GetResponseHeadersAsync(fileUrl, cancellationToken);
-
-        _ = response.EnsureSuccessStatusCode();
-        var actualContentLength = response.Content.Headers.ContentLength ?? 0;
-        if (actualContentLength > _maxFileAttachmentSizeBytes)
-        {
-            throw new FileSizeExceededException();
-        }
-
-        return response;
     }
 
     private static string GetFileName(AasCore.Aas3_1.File fileElement, string fileUrl)

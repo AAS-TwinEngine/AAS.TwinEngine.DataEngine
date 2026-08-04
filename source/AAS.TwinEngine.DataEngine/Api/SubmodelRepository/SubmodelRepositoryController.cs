@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Results;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
 using AasCore.Aas3_1;
@@ -174,9 +175,6 @@ public class SubmodelRepositoryController(
         logger.LogInformation("Get File Attachment");
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
         var attachment = await submodelRepositoryHandler.GetFileAttachment(request, cancellationToken).ConfigureAwait(false);
-        return new FileStreamResult(attachment.Content, attachment.ContentType)
-        {
-            FileDownloadName = attachment.FileName ?? string.Empty
-        };
+        return new LimitedFileStreamResult(attachment);
     }
 }
