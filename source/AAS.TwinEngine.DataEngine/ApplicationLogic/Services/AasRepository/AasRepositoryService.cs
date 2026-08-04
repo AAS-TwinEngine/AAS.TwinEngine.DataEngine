@@ -6,13 +6,12 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Helper;
 
 using AasCore.Aas3_1;
 
-using System.Net;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
 using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
@@ -135,50 +134,19 @@ public class AasRepositoryService(
     {
         try
         {
-            var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+            var thumbnail = await GetThumbnail(aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-            var thumbnail = assetInformation?.DefaultThumbnail;
-            var thumbnailUrl = thumbnail?.Path;
+            var thumbnailUrl = GetValidatedThumbnailUrl(thumbnail, aasIdentifier);
 
-            if (string.IsNullOrWhiteSpace(thumbnailUrl))
-            {
-                throw new ThumbnailNotFoundException(aasIdentifier);
-            }
-
-            if (!thumbnailUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !thumbnailUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new NotImplementedException("Thumbnail URL must start with http:// or https:// to be accessible.");
-            }
-
-            var upstreamResponse = await fileAttachmentStreamProvider.GetResponseHeadersAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
-            if (upstreamResponse.StatusCode == HttpStatusCode.NotFound)
-            {
-                upstreamResponse.Dispose();
-                throw new ThumbnailNotFoundException(aasIdentifier);
-            }
-            _ = upstreamResponse.EnsureSuccessStatusCode();
-
-            var declaredLength = upstreamResponse.Content.Headers.ContentLength;
-            if (declaredLength.HasValue && declaredLength.Value > _maxFileAttachmentSizeBytes)
-            {
-                upstreamResponse.Dispose();
-                throw new NotImplementedException($"File exceeds maximum allowed size of {_maxFileAttachmentSizeBytes} bytes.");
-            }
+            var upstreamResponse = await GetValidatedResponseAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
 
             var contentType = upstreamResponse.Content.Headers.ContentType?.ToString()
-                ?? thumbnail?.ContentType
                 ?? "application/octet-stream";
 
-            var fileName = Path.GetFileName(new Uri(thumbnailUrl).LocalPath);
-            if (string.IsNullOrWhiteSpace(fileName))
-            {
-                fileName = "thumbnail";
-            }
+            var fileName = GetFileName(thumbnailUrl);
 
             var upstreamStream = await fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
-
-            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes, "Thumbnail");
+            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes);
 
             return new FileAttachmentResult(limitedStream, contentType, fileName)
             {
@@ -410,5 +378,57 @@ public class AasRepositoryService(
             .All(pair =>
                 pair.First.Type == pair.Second.Type &&
                 pair.First.Value == pair.Second.Value);
+    }
+
+    private async Task<IResource> GetThumbnail(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+        var thumbnail = assetInformation?.DefaultThumbnail;
+
+        return thumbnail ?? throw new ThumbnailNotFoundException(aasIdentifier);
+    }
+
+    private string GetValidatedThumbnailUrl(IResource thumbnail, string idShortPath)
+    {
+        var thumbnailUrl = thumbnail.Path;
+
+        if (string.IsNullOrWhiteSpace(thumbnailUrl))
+        {
+            throw new SubmodelElementNotFoundException(idShortPath);
+        }
+
+        if (!Uri.TryCreate(thumbnailUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new InvalidFileUrlException();
+        }
+
+        return thumbnailUrl;
+    }
+
+    private async Task<HttpResponseMessage> GetValidatedResponseAsync(string fileUrl, CancellationToken cancellationToken)
+    {
+        var response = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken);
+
+        _ = response.EnsureSuccessStatusCode();
+        var actualContentLength = response.Content.Headers.ContentLength ?? 0;
+        if (actualContentLength > _maxFileAttachmentSizeBytes)
+        {
+            throw new FileSizeExceededException();
+        }
+
+        return response;
+    }
+
+    private static string GetFileName(string fileUrl)
+    {
+        var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = "thumbnail";
+        }
+
+        return fileName;
     }
 }

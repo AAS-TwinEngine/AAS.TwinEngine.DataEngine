@@ -101,7 +101,7 @@ public class AasRepositoryController(
     /// </summary>
     /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Requested thumbnail image</response>
+    /// <response code="200">The thumbnail of the Asset Information.</response>
     /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
     /// <response code="404">Not Found</response>
     /// <response code="500">Internal Server Error</response>
