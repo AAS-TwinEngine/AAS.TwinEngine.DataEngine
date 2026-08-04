@@ -50,13 +50,13 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(jsonSchemas);
 
-        var response = await pluginDataProvider.GetDataForSemanticIdsAsync(pluginRequests, submodelId, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForSemanticIdsAsync(pluginRequests, submodelId, cancellationToken).ConfigureAwait(false);
 
         var result = new List<SemanticTreeNode>();
 
-        for (var i = 0; i < response.Count; i++)
+        for (var i = 0; i < responses.Count; i++)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = responses[i];
 
             var schema = jsonSchemas.ElementAt(i).Value;
             jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
@@ -78,16 +78,14 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 
-        var response = await pluginDataProvider.GetDataForAllShellDescriptorsAsync(limit, cursor, pluginRequests, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForAllShellDescriptorsAsync(limit, cursor, pluginRequests, cancellationToken).ConfigureAwait(false);
 
         var result = new ShellDescriptorsMetaData();
 
         const string Url = $"{ShellsBasePath}";
 
-        foreach (var shellDiscriptor in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await shellDiscriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorsMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
@@ -138,14 +136,12 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
 
-        var response = await pluginDataProvider.GetDataForShellDescriptorByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForShellDescriptorByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
 
         var url = $"{ShellsBasePath}/{id.EncodeBase64Url()}";
 
-        foreach (var shellDescriptor in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await shellDescriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
@@ -180,14 +176,12 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
 
-        var response = await pluginDataProvider.GetDataForAssetInformationByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForAssetInformationByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
 
         var url = $"assets/{id.EncodeBase64Url()}";
 
-        foreach (var assetInfo in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await assetInfo.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var assetData = JsonSerializer.Deserialize<AssetData>(responseContent);
@@ -234,10 +228,8 @@ public class PluginDataHandler(
 
         var result = new ShellDescriptorsMetaData();
 
-        foreach (var shellDescriptor in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await shellDescriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorsMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);

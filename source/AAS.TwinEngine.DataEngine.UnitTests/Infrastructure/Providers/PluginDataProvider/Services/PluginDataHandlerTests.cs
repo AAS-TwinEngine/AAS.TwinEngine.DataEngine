@@ -135,7 +135,7 @@ public class PluginDataHandlerTests
                 Arg.Any<IList<PluginRequestSubmodel>>(),
                 Arg.Any<string>(),
                 Arg.Any<CancellationToken>())
-           .Returns(_ => Task.FromResult<IList<HttpContent>>([httpResponse.Content]));
+           .Returns(_ => Task.FromResult<IList<string>>([ExpectedJsonResponse]));
 
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
@@ -189,7 +189,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns([json]);
 
         var result = await _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None);
 
@@ -221,7 +221,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["null"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
@@ -264,7 +264,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns([json]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
@@ -316,7 +316,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns([json]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
@@ -366,7 +366,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{\n  \"id\": \"\",\n  \"idShort\": \"test\"\n}"]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForShellDescriptorAsync(manifests, RequestedId, CancellationToken.None));
@@ -411,7 +411,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns([json]);
 
         var result = await _sut.GetDataForShellDescriptorAsync(manifests, "ContactInformation", CancellationToken.None);
 
@@ -451,7 +451,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{\n  \"id\": null,\n  \"idShort\": \"test\"\n}"]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForShellDescriptorAsync(manifests, "id", CancellationToken.None));
@@ -481,7 +481,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{ invalid json }"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForShellDescriptorAsync(manifests, "id", CancellationToken.None));
@@ -514,7 +514,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns([AssetData]);
 
         var result = await _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None);
 
@@ -546,7 +546,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{ invalid json }"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None));
@@ -576,7 +576,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["null"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None));
@@ -896,7 +896,7 @@ public class PluginDataHandlerTests
         _jsonSchemaValidator.When(x => x.ValidateResponseContent(Arg.Any<string>(), Arg.Any<JsonSchema>())).Do(_ => { });
         _pluginDataProvider
             .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), SubmodelId, Arg.Any<CancellationToken>())
-            .Returns(_ => Task.FromResult<IList<HttpContent>>([new StringContent(ResponseJson, Encoding.UTF8, "application/json")]));
+            .Returns(_ => Task.FromResult<IList<string>>([ResponseJson]));
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(inputNode);

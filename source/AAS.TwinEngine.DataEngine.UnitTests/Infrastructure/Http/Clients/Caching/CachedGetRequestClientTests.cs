@@ -6,10 +6,12 @@ using System.Text;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
@@ -23,6 +25,7 @@ public class CachedGetRequestClientTests
     private readonly HybridCache _cache;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<CachedGetRequestClient> _logger;
+    private readonly IOptions<CacheConfig> _cacheOptions;
     private readonly CachedGetRequestClient _sut;
 
     public CachedGetRequestClientTests()
@@ -31,11 +34,13 @@ public class CachedGetRequestClientTests
         _cache = Substitute.For<HybridCache>();
         _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
         _logger = Substitute.For<ILogger<CachedGetRequestClient>>();
+        _cacheOptions = Options.Create(new CacheConfig());
 
         _sut = new CachedGetRequestClient(
             _clientFactory,
             _cache,
             _httpContextAccessor,
+            _cacheOptions,
             _logger);
     }
 
@@ -329,11 +334,11 @@ public class CachedGetRequestClientTests
     }
 
     [Theory]
-    [InlineData("?noCache=true", true)]
+    [InlineData("?noCache=true", false)]
     [InlineData("?noCache=false", false)]
     [InlineData("?noCache=invalid", false)]
     [InlineData("", false)]
-    public async Task GetStringAsync_RespectsNoCacheQueryParameter(string queryString, bool expectBypass)
+    public async Task GetStringAsync_NoCacheParam_AloneDoesNotBypassCache(string queryString, bool expectBypass)
     {
         // Arrange
         const string RelativeUrl = "api/test";
@@ -381,7 +386,7 @@ public class CachedGetRequestClientTests
             // If bypassed, HTTP client must be called directly.
             _clientFactory.Received(1).CreateClient(HttpClientName);
             // And cache should not be queried.
-            _cache.DidNotReceive().GetOrCreateAsync<string>(
+            _cache.DidNotReceive().GetOrCreateAsync(
                 Arg.Any<string>(),
                 Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
                 Arg.Any<HybridCacheEntryOptions>(),
@@ -394,6 +399,116 @@ public class CachedGetRequestClientTests
             // If cache was not bypassed, the HTTP client should not be called since we mocked a cache hit.
             _clientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
         }
+    }
+
+    [Fact]
+    public async Task GetStringAsync_EnableNoCacheParameterTrue_NoCacheNotSet_UsesCacheNormally()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        const string HttpClientName = "TestClient";
+        const string CachedResponse = "Cached data";
+
+        var httpContext = new DefaultHttpContext();
+        // noCache is NOT set — only one of the two conditions is met, so cache is still used
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+
+        var sut = new CachedGetRequestClient(
+            _clientFactory,
+            _cache,
+            _httpContextAccessor,
+            Options.Create(new CacheConfig { EnableNoCacheParameter = true }),
+            _logger);
+
+        SetupCacheHit(CachedResponse);
+
+        // Act
+        var result = await sut.GetStringAsync(RelativeUrl, HttpClientName, 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(CachedResponse, result);
+        _clientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetStringAsync_EnableNoCacheParameterTrue_AndNoCacheTrue_BypassesCache()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        const string HttpClientName = "TestClient";
+        const string ExpectedResponse = "Direct HTTP data";
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.QueryString = new QueryString("?noCache=true");
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+
+        var sut = new CachedGetRequestClient(
+            _clientFactory,
+            _cache,
+            _httpContextAccessor,
+            Options.Create(new CacheConfig { EnableNoCacheParameter = true }),
+            _logger);
+
+        using var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(ExpectedResponse)
+        };
+        SetupHttpClient(HttpClientName, httpResponse);
+
+        // Act
+        var result = await sut.GetStringAsync(RelativeUrl, HttpClientName, 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(ExpectedResponse, result);
+        _clientFactory.Received(1).CreateClient(HttpClientName);
+        _cache.DidNotReceive().GetOrCreateAsync(
+            Arg.Any<string>(),
+            Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
+            Arg.Any<HybridCacheEntryOptions>(),
+            Arg.Any<IEnumerable<string>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetStringAsync_EnableNoCacheParameterFalse_NoCacheTrue_UsesCacheNormally()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        const string HttpClientName = "TestClient";
+        const string CachedResponse = "Cached data";
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.QueryString = new QueryString("?noCache=true");
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+        // EnableNoCacheParameter=false (default in _sut) — noCache param is ignored
+        SetupCacheHit(CachedResponse);
+
+        // Act
+        var result = await _sut.GetStringAsync(RelativeUrl, HttpClientName, 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(CachedResponse, result);
+        _clientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetStringAsync_EnableNoCacheParameterFalse_NoCacheNotSet_UsesCacheNormally()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        const string HttpClientName = "TestClient";
+        const string CachedResponse = "Cached data";
+
+        var httpContext = new DefaultHttpContext();
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+        SetupCacheHit(CachedResponse);
+
+        // Act
+        var result = await _sut.GetStringAsync(RelativeUrl, HttpClientName, 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(CachedResponse, result);
+        _clientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
     }
 
     private static string ComputeHash(string input)
@@ -414,7 +529,7 @@ public class CachedGetRequestClientTests
 
     private void SetupCacheHit(string response)
     {
-        _cache.GetOrCreateAsync<string>(
+        _cache.GetOrCreateAsync(
             Arg.Any<string>(),
             Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
             Arg.Any<HybridCacheEntryOptions>(),
@@ -425,7 +540,7 @@ public class CachedGetRequestClientTests
 
     private void SetupCacheMiss()
     {
-        _cache.GetOrCreateAsync<string>(
+        _cache.GetOrCreateAsync(
             Arg.Any<string>(),
             Arg.Any<Func<CancellationToken, ValueTask<string>>>(),
             Arg.Any<HybridCacheEntryOptions>(),

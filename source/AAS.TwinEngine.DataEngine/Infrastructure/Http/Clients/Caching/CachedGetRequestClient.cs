@@ -1,9 +1,11 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -20,15 +22,21 @@ public sealed class CachedGetRequestClient(
     ICreateClient clientFactory,
     HybridCache cache,
     IHttpContextAccessor httpContextAccessor,
+    IOptions<CacheConfig> cacheOptions,
     ILogger<CachedGetRequestClient> logger) : ICachedGetRequestClient
 {
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
-        if (!IsCacheEnabled(httpContextAccessor))
+        var currentTraceContext = Activity.Current?.Context ?? default;
+
+        if (!IsCacheEnabled(httpContextAccessor, cacheOptions.Value))
         {
-            logger.LogInformation("Cache bypassed because 'noCache=true' was specified.");
+            using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, currentTraceContext);
+            logger.LogInformation("Cache bypassed because 'EnableNoCacheParameter' is true and 'noCache=true' was specified.");
             return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
         }
+
+        using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, currentTraceContext);
 
         var cacheKey = BuildCacheKey(httpContextAccessor, relativeUrl);
 
@@ -38,9 +46,15 @@ public sealed class CachedGetRequestClient(
             LocalCacheExpiration = TimeSpan.FromMinutes(expirationTime)
         };
 
+        var httpFetchParentContext = cacheLookupActivity?.Context ?? currentTraceContext;
+
         return await cache.GetOrCreateAsync(
             cacheKey,
-            async token => await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false),
+            async token =>
+            {
+                using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, httpFetchParentContext);
+                return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
+            },
             options: entryOptions,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
@@ -108,25 +122,24 @@ public sealed class CachedGetRequestClient(
         return Convert.ToHexStringLower(bytes);
     }
 
-    private static bool IsCacheEnabled(IHttpContextAccessor httpContextAccessor)
+    private static bool IsCacheEnabled(IHttpContextAccessor httpContextAccessor, CacheConfig cacheConfig)
     {
+        // Caching is always enabled if the noCache query parameter feature is disabled.
+        if (!cacheConfig.EnableNoCacheParameter)
+        {
+            return true;
+        }
+
         var query = httpContextAccessor.HttpContext?.Request.Query;
 
-        if (query is null)
+        // If the noCache parameter is missing or invalid, keep caching enabled.
+        if (query?.TryGetValue("noCache", out var value) != true ||
+            !bool.TryParse(value, out var noCache))
         {
             return true;
         }
 
-        if (!query.TryGetValue("noCache", out var value))
-        {
-            return true;
-        }
-
-        if (bool.TryParse(value, out var noCache) && noCache)
-        {
-            return false;
-        }
-
-        return true;
+        // Disable caching only when noCache=true.
+        return !noCache;
     }
 }

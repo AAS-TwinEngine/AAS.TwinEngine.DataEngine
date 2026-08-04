@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -76,7 +76,7 @@ public class PluginDataProviderTests
         Assert.NotNull(contentList);
         Assert.Single(contentList);
 
-        var text = await contentList[0].ReadAsStringAsync();
+        var text = contentList[0];
         Assert.Equal(SimpleResponse, text);
 
         Assert.NotNull(capturedRequest);
@@ -132,7 +132,7 @@ public class PluginDataProviderTests
         var result = await _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None);
 
         Assert.NotNull(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.ShellDescriptors.Trim(), json.Trim());
 
         Assert.NotNull(captured);
@@ -249,7 +249,7 @@ public class PluginDataProviderTests
         var result = await _sut.GetDataForShellDescriptorByIdAsync(metadata, CancellationToken.None);
 
         Assert.NotNull(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.ShellDescriptor.Trim(), json.Trim());
 
         Assert.NotNull(captured);
@@ -289,7 +289,7 @@ public class PluginDataProviderTests
         var result = await _sut.GetDataForAssetInformationByIdAsync(metadata, CancellationToken.None);
 
         Assert.NotNull(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.AssetInformation.Trim(), json.Trim());
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
@@ -395,7 +395,7 @@ public class PluginDataProviderTests
 
         Assert.NotNull(result);
         Assert.Single(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.ShellDescriptors, json);
 
         Assert.NotNull(captured);
