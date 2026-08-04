@@ -1,6 +1,4 @@
-using System.Globalization;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 

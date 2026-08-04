@@ -29,7 +29,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     private readonly ITemplateProvider _mockTemplateProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
-    private readonly IFileAttachmentStreamProvider _fileAttachmentStreamProvider;
+    private readonly IFileContentProvider _fileContentProvider;
 
     protected SubmodelRepositoryControllerTests(string configDir)
     {
@@ -37,7 +37,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
-        _fileAttachmentStreamProvider = Substitute.For<IFileAttachmentStreamProvider>();
+        _fileContentProvider = Substitute.For<IFileContentProvider>();
 
         _factory = new ConfigTestFactory(configDir, services =>
         {
@@ -45,7 +45,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
             _ = services.AddSingleton(_mockTemplateProvider);
             _ = services.AddSingleton(mockPluginManifestProvider);
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
-            _ = services.AddSingleton(_fileAttachmentStreamProvider);
+            _ = services.AddSingleton(_fileContentProvider);
         });
 
         _client = _factory.CreateClient();
@@ -213,8 +213,8 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
             Content = new StreamContent(new MemoryStream(fileBytes))
         };
         upstreamResponse.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-        _ = _fileAttachmentStreamProvider.GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(upstreamResponse);
-        _ = _fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, Arg.Any<CancellationToken>()).Returns(new MemoryStream(fileBytes));
+        _ = _fileContentProvider.GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(upstreamResponse);
+        _ = _fileContentProvider.ReadStreamAsync(upstreamResponse, Arg.Any<CancellationToken>()).Returns(new MemoryStream(fileBytes));
 
         // Act
         var response = await _client.GetAsync($"/submodels/{SubmodelId}/submodel-elements/{IdShortPath}/attachment");
@@ -225,7 +225,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var body = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal(fileBytes, body);
         Assert.Contains("logo.png", response.Content.Headers.ContentDisposition?.ToString(), StringComparison.Ordinal);
-        await _fileAttachmentStreamProvider.Received(1).GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>());
+        await _fileContentProvider.Received(1).GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>());
     }
 
     [Fact]
