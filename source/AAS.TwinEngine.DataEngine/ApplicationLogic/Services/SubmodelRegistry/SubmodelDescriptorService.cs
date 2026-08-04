@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -138,15 +138,7 @@ public class SubmodelDescriptorService(
         endpoint.ProtocolInformation.Href = href;
     }
 
-    /// <summary>
-    /// Implements the two-field composite cursor pagination algorithm.
-    /// Iterates through AAS shell batches, expanding submodel refs per AAS,
-    /// and collects submodel IDs up to the requested page size.
-    /// </summary>
-    private async Task<SubmodelDescriptorPageResult> CollectSubmodelDescriptorPageAsync(
-        int pageSize,
-        string? encodedCursor,
-        CancellationToken cancellationToken)
+    private async Task<SubmodelDescriptorPageResult> CollectSubmodelDescriptorPageAsync(int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
         var state = new PaginationState(incomingCursor);
@@ -154,12 +146,9 @@ public class SubmodelDescriptorService(
 
         while (state.CollectedIds.Count < pageSize)
         {
-            var shellsResult = await aasRepositoryService.GetShellsByFiltersAsync(
-                null, pageSize, pluginCursor?.EncodeBase64Url(), cancellationToken).ConfigureAwait(false);
+            var shellsResult = await aasRepositoryService.GetShellsByFiltersAsync(null, pageSize, pluginCursor?.EncodeBase64Url(), cancellationToken).ConfigureAwait(false);
 
-            var shellList = shellsResult?.Result?
-                .Where(s => !string.IsNullOrWhiteSpace(s.Id))
-                .ToList() ?? [];
+            var shellList = shellsResult?.Result?.Where(s => !string.IsNullOrWhiteSpace(s.Id)).ToList() ?? [];
 
             if (shellList.Count == 0)
             {
@@ -173,7 +162,6 @@ public class SubmodelDescriptorService(
                 break;
             }
 
-            // Batch exhausted without reaching limit — check if repository has more data
             if (shellsResult.PagingMetaData?.Cursor is null)
             {
                 break;
@@ -182,17 +170,12 @@ public class SubmodelDescriptorService(
             pluginCursor = state.TrackingAasId;
         }
 
-        var nextCursor = state.CollectedIds.Count >= pageSize
-            ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId)
-            : null;
+        var nextCursor = state.CollectedIds.Count >= pageSize ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId) : null;
 
         return new SubmodelDescriptorPageResult(state.CollectedIds, nextCursor);
     }
 
-    private static bool ProcessShellBatch(
-        List<AasCore.Aas3_1.IAssetAdministrationShell> shellList,
-        int pageSize,
-        PaginationState state)
+    private static bool ProcessShellBatch(List<AasCore.Aas3_1.IAssetAdministrationShell> shellList, int pageSize, PaginationState state)
     {
         foreach (var shell in shellList)
         {
@@ -207,7 +190,6 @@ public class SubmodelDescriptorService(
 
             var startIndex = 0;
 
-            // Skip-scan: only on the first AAS when resuming from a cursor
             if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
             {
                 startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
@@ -253,20 +235,13 @@ public class SubmodelDescriptorService(
 
     private sealed record SubmodelDescriptorPageResult(List<string> SubmodelIds, string? NextCursor);
 
-    private sealed class PaginationState
+    private sealed class PaginationState(SubmodelPaginationCursor? cursor)
     {
         public List<string> CollectedIds { get; } = [];
-        public string? TrackingAasId { get; set; }
+        public string? TrackingAasId { get; set; } = cursor?.AasId;
         public string? LastCollectedSubmodelId { get; set; }
-        public string? SkipToSubmodelId { get; set; }
-        public bool IsFirstAasInResume { get; set; }
-
-        public PaginationState(SubmodelPaginationCursor? cursor)
-        {
-            TrackingAasId = cursor?.AasId;
-            SkipToSubmodelId = cursor?.SubmodelId;
-            IsFirstAasInResume = cursor is not null;
-        }
+        public string? SkipToSubmodelId { get; set; } = cursor?.SubmodelId;
+        public bool IsFirstAasInResume { get; set; } = cursor is not null;
     }
 
     private string GenerateHref(string encodedId) => $"{_baseUrl}{ApiPaths.Submodels}/{encodedId}";

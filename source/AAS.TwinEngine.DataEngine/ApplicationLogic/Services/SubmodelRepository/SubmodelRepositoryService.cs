@@ -90,16 +90,7 @@ public class SubmodelRepositoryService(
         }).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Implements the two-field composite cursor pagination algorithm.
-    /// Iterates through plugin shell batches, expanding submodel refs per AAS,
-    /// and collects submodel IDs up to the requested page size.
-    /// </summary>
-    private async Task<SubmodelPageResult> CollectSubmodelPageAsync(
-        ShellSearchFilter shellSearchFilter,
-        int pageSize,
-        string? encodedCursor,
-        CancellationToken cancellationToken)
+    private async Task<SubmodelPageResult> CollectSubmodelPageAsync(ShellSearchFilter shellSearchFilter, int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
         var state = new PaginationState(incomingCursor);
@@ -110,9 +101,7 @@ public class SubmodelRepositoryService(
             var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(
                 pluginManifestConflictHandler.Manifests, shellSearchFilter, pageSize, Base64UrlExtensions.EncodeBase64Url(pluginCursor), cancellationToken).ConfigureAwait(false);
 
-            var shellDescriptors = shellMetadata.ShellDescriptors?
-                .Where(s => !string.IsNullOrWhiteSpace(s.Id))
-                .ToList() ?? [];
+            var shellDescriptors = shellMetadata.ShellDescriptors?.Where(s => !string.IsNullOrWhiteSpace(s.Id)).ToList() ?? [];
 
             if (shellDescriptors.Count == 0)
             {
@@ -126,7 +115,6 @@ public class SubmodelRepositoryService(
                 break;
             }
 
-            // Batch exhausted without reaching limit — check if plugin has more data
             if (shellMetadata.PagingMetaData?.Cursor is null)
             {
                 break;
@@ -135,18 +123,12 @@ public class SubmodelRepositoryService(
             pluginCursor = state.TrackingAasId;
         }
 
-        var nextCursor = state.CollectedIds.Count >= pageSize
-            ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId)
-            : null;
+        var nextCursor = state.CollectedIds.Count >= pageSize ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId) : null;
 
         return new SubmodelPageResult(state.CollectedIds, nextCursor);
     }
 
-    private async Task<bool> ProcessShellBatchAsync(
-        List<ShellDescriptorMetaData> shellDescriptors,
-        int pageSize,
-        PaginationState state,
-        CancellationToken cancellationToken)
+    private async Task<bool> ProcessShellBatchAsync(List<ShellDescriptorMetaData> shellDescriptors, int pageSize, PaginationState state, CancellationToken cancellationToken)
     {
         foreach (var shell in shellDescriptors)
         {
@@ -161,7 +143,6 @@ public class SubmodelRepositoryService(
 
             var startIndex = 0;
 
-            // Skip-scan: only on the first AAS when resuming from a cursor
             if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
             {
                 startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
@@ -201,10 +182,7 @@ public class SubmodelRepositoryService(
         {
             var references = await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shellId, cancellationToken).ConfigureAwait(false);
 
-            return references
-                .Select(r => r.Keys.FirstOrDefault()?.Value)
-                .Where(id => !string.IsNullOrWhiteSpace(id))
-                .ToList()!;
+            return references.Select(r => r.Keys.FirstOrDefault()?.Value).Where(id => !string.IsNullOrWhiteSpace(id)).ToList()!;
         }
         catch (ResourceNotFoundException ex)
         {
@@ -215,20 +193,13 @@ public class SubmodelRepositoryService(
 
     private sealed record SubmodelPageResult(List<string> SubmodelIds, string? NextCursor);
 
-    private sealed class PaginationState
+    private sealed class PaginationState(SubmodelPaginationCursor? cursor)
     {
         public List<string> CollectedIds { get; } = [];
-        public string? TrackingAasId { get; set; }
+        public string? TrackingAasId { get; set; } = cursor?.AasId;
         public string? LastCollectedSubmodelId { get; set; }
-        public string? SkipToSubmodelId { get; set; }
-        public bool IsFirstAasInResume { get; set; }
-
-        public PaginationState(SubmodelPaginationCursor? cursor)
-        {
-            TrackingAasId = cursor?.AasId;
-            SkipToSubmodelId = cursor?.SubmodelId;
-            IsFirstAasInResume = cursor is not null;
-        }
+        public string? SkipToSubmodelId { get; set; } = cursor?.SubmodelId;
+        public bool IsFirstAasInResume { get; set; } = cursor is not null;
     }
 
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(IEnumerable<string> submodelIds, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
