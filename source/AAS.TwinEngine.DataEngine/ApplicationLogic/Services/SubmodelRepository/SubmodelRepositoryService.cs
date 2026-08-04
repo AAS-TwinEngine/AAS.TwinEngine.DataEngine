@@ -1,12 +1,12 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Dependencies;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -24,7 +24,7 @@ public class SubmodelRepositoryService(
     TemplateServices templateServices,
     ISemanticIdHandler semanticIdHandler,
     PluginServices pluginServices,
-    IFileAttachmentStreamProvider fileAttachmentStreamProvider,
+    IFileContentProvider fileContentProvider,
     IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateServices.Config.SubmodelTemplateRepository.ConcurrentOperationsLimit;
@@ -238,7 +238,7 @@ public class SubmodelRepositoryService(
 
             var fileName = GetFileName(fileElement, fileUrl);
 
-            var upstreamStream = await fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
+            var upstreamStream = await fileContentProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
             var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes);
 
             return new FileAttachmentResult(limitedStream, contentType, fileName)
@@ -287,7 +287,7 @@ public class SubmodelRepositoryService(
 
     private async Task<HttpResponseMessage> GetValidatedResponseAsync(string fileUrl, CancellationToken cancellationToken)
     {
-        var response = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken);
+        var response = await fileContentProvider.GetResponseHeadersAsync(fileUrl, cancellationToken);
 
         _ = response.EnsureSuccessStatusCode();
         var actualContentLength = response.Content.Headers.ContentLength ?? 0;

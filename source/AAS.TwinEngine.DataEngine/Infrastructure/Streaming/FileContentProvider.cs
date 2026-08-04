@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
 
-public class FileAttachmentStreamProvider(IHttpClientFactory httpClientFactory) : IFileAttachmentStreamProvider
+public class FileContentProvider(IHttpClientFactory httpClientFactory) : IFileContentProvider
 {
     public async Task<HttpResponseMessage> GetResponseHeadersAsync(string fileUrl, CancellationToken cancellationToken)
     {

@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 
@@ -8,7 +8,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 /// </summary>
 public class InvalidSubmodelElementTypeException : BadRequestException
 {
-    public const string DefaultMessage = "The Submodel Element type.";
+    public const string DefaultMessage = "The Submodel Element type is inavalid.";
 
     public InvalidSubmodelElementTypeException() : base(DefaultMessage) { }
 

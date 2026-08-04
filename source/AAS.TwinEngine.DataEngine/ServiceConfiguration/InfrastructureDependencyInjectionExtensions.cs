@@ -120,7 +120,7 @@ public static class InfrastructureDependencyInjectionExtensions
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();
         _ = services.AddScoped<ICreateClient, HttpClientFactory>();
-        _ = services.AddScoped<IFileAttachmentStreamProvider, FileAttachmentStreamProvider>();
+        _ = services.AddScoped<IFileContentProvider, FileContentProvider>();
         _ = services.AddScoped<IPluginDataProvider, PluginDataProvider>();
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();

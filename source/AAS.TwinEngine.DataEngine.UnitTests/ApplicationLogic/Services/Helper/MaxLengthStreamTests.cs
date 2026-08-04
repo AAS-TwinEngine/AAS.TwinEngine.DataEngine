@@ -1,9 +1,9 @@
 using System.Text;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Helper;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Streaming;
+namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.Helper;
 
 public class MaxLengthStreamTests
 {

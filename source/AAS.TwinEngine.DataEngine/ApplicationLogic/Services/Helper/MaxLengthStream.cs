@@ -1,6 +1,6 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 
-namespace AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
+namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Helper;
 
 public sealed class MaxLengthStream : Stream
 {

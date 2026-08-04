@@ -1,6 +1,6 @@
 ﻿namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 
-public interface IFileAttachmentStreamProvider
+public interface IFileContentProvider
 {
     Task<HttpResponseMessage> GetResponseHeadersAsync(string fileUrl, CancellationToken cancellationToken);
 

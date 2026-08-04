@@ -8,7 +8,7 @@ using NSubstitute;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Streaming;
 
-public class FileAttachmentStreamProviderTests
+public class FileContentProviderTests
 {
     [Fact]
     public async Task GetResponseHeadersAsync_UsesNamedClientAndReturnsResponse()
@@ -29,7 +29,7 @@ public class FileAttachmentStreamProviderTests
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
         httpClientFactory.CreateClient(HttpClientNames.FileAttachmentProvider).Returns(client);
 
-        var sut = new FileAttachmentStreamProvider(httpClientFactory);
+        var sut = new FileContentProvider(httpClientFactory);
 
         var result = await sut.GetResponseHeadersAsync(expectedUrl, CancellationToken.None);
 
@@ -46,7 +46,7 @@ public class FileAttachmentStreamProviderTests
             Content = new StringContent(payload, Encoding.UTF8, "text/plain")
         };
 
-        var sut = new FileAttachmentStreamProvider(Substitute.For<IHttpClientFactory>());
+        var sut = new FileContentProvider(Substitute.For<IHttpClientFactory>());
 
         await using var stream = await sut.ReadStreamAsync(response, CancellationToken.None);
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, leaveOpen: false);
