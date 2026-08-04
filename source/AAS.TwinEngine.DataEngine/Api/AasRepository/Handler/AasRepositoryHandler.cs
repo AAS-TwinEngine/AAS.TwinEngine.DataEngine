@@ -91,8 +91,8 @@ public class AasRepositoryHandler(
         var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
-            request?.SubmodelId,
+            request.AasIdentifier,
+            request.SubmodelId,
             "submodel elements By AasID",
             async (aasId, submodelId) => (await aasRepositoryService
                 .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
