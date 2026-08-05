@@ -5,11 +5,11 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
@@ -21,13 +21,11 @@ public class SubmodelRepositoryHandlerTests
 {
     private readonly ISubmodelRepositoryService _submodelRepository = Substitute.For<ISubmodelRepositoryService>();
     private readonly ILogger<SubmodelRepositoryHandler> _logger = Substitute.For<ILogger<SubmodelRepositoryHandler>>();
-    private readonly IHttpContextAccessor _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
     private readonly SubmodelRepositoryHandler _sut;
 
     public SubmodelRepositoryHandlerTests()
     {
-        _httpContextAccessor.HttpContext.Returns(new DefaultHttpContext());
-        _sut = new SubmodelRepositoryHandler(_logger, _submodelRepository, _httpContextAccessor);
+        _sut = new SubmodelRepositoryHandler(_logger, _submodelRepository);
     }
 
     [Fact]
@@ -468,7 +466,7 @@ public class SubmodelRepositoryHandlerTests
         const string IdShortPath = "Documents.ProductImage";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
-        var fakeResult = new FileAttachmentResult(Stream.Null, "application/octet-stream", "file.bin");
+        var fakeResult = new FileAttachmentResult(Stream.Null, "application/octet-stream", "file.bin", 100 * 1024 * 1024);
         _submodelRepository
             .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
             .Returns(fakeResult);
@@ -480,18 +478,14 @@ public class SubmodelRepositoryHandlerTests
     }
 
     [Fact]
-    public async Task GetFileAttachment_WithResponseDisposables_DoesNotThrow_WhenHttpContextIsAvailable()
+    public async Task GetFileAttachment_ReturnsServiceResult_WhenServiceSucceeds()
     {
         const string SubmodelId = "NameplateSubmodel";
         const string IdShortPath = "Documents.ProductImage";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
 
-        using var disposable = new MemoryStream();
-        var fakeResult = new FileAttachmentResult(Stream.Null, "application/octet-stream", "file.bin")
-        {
-            ResponseDisposables = [disposable]
-        };
+        var fakeResult = new FileAttachmentResult(Stream.Null, "application/octet-stream", "file.bin", 100 * 1024 * 1024);
 
         _submodelRepository
             .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())

@@ -10,7 +10,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Discovery;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Dependencies;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Extraction;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.FillOut;
@@ -54,8 +53,6 @@ public static class ApplicationDependencyInjectionExtensions
         _ = services.AddScoped<ISemanticTreeExtractor, SemanticTreeExtractor>();
         _ = services.AddScoped<ISubmodelFiller, SubmodelFiller>();
         _ = services.AddScoped<ISemanticIdHandler, SemanticIdHandler>();
-        _ = services.AddScoped<PluginServices>();
-        _ = services.AddScoped<TemplateServices>();
         _ = services.AddScoped<ISubmodelRepositoryService, SubmodelRepositoryService>();
         _ = services.AddScoped<IConceptDescriptionService, ConceptDescriptionService>();
         _ = services.AddScoped<ISubmodelTemplateService, SubmodelTemplateService>();

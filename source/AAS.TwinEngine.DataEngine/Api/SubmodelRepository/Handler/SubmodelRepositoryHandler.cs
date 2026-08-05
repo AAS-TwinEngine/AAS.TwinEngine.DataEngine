@@ -4,18 +4,16 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
-
-using Microsoft.AspNetCore.Http;
 
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 
 public class SubmodelRepositoryHandler(
     ILogger<SubmodelRepositoryHandler> logger,
-    ISubmodelRepositoryService submodelRepositoryService,
-    IHttpContextAccessor httpContextAccessor) : ISubmodelRepositoryHandler
+    ISubmodelRepositoryService submodelRepositoryService) : ISubmodelRepositoryHandler
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
     {
@@ -78,18 +76,11 @@ public class SubmodelRepositoryHandler(
         var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
-        var attachment = await GetResourceByIdAsync(
+        return await GetResourceByIdAsync(
             request?.SubmodelId,
             "file attachment",
             id => submodelRepositoryService.GetFileAttachmentAsync(id, decodedIdShortPath, cancellationToken))
             .ConfigureAwait(false);
-
-        foreach (var disposable in attachment.ResponseDisposables)
-        {
-            httpContextAccessor.HttpContext?.Response.RegisterForDispose(disposable);
-        }
-
-        return attachment;
     }
 
     private async Task<T> GetResourceByIdAsync<T>(

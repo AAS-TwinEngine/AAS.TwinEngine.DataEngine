@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;

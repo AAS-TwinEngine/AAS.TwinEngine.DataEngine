@@ -42,7 +42,7 @@ public static class HttpClientRegistrationExtensions
     public static IServiceCollection AddHttpClientWithoutResilience(
         this IServiceCollection services,
         string clientName,
-        Uri baseUrl,
+        Uri? baseUrl = null,
         TimeSpan? timeout = null)
     {
         _ = services.AddHttpClient(clientName, client =>

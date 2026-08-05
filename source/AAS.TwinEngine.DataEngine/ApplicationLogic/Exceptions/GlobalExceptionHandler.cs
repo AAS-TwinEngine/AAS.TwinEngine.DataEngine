@@ -27,6 +27,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             TimeoutException => StatusCodes.Status408RequestTimeout,
             ServiceUnavailableException => StatusCodes.Status503ServiceUnavailable,
             NotImplementedException => StatusCodes.Status501NotImplemented,
+            ContentTooLargeException => StatusCodes.Status413PayloadTooLarge,
             _ => StatusCodes.Status500InternalServerError
         };
 
