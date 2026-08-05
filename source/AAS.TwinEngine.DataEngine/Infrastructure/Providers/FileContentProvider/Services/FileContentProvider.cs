@@ -18,13 +18,15 @@ public class FileContentProvider(ICreateClient httpClientFactory, IOptions<Gener
 
         try
         {
-            _ = response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InternalDataProcessingException();
+            }
 
             var contentLength = response.Content.Headers.ContentLength;
             var contentType = response.Content.Headers.ContentType?.ToString();
             if (contentLength.HasValue && contentLength.Value > _maxFileAttachmentSizeBytes)
             {
-                response.Dispose();
                 throw new FileSizeExceededException();
             }
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
