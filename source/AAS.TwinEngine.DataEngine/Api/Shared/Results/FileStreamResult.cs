@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AAS.TwinEngine.DataEngine.Api.Shared.Results;
 
-public class LimitedFileStreamResult(FileAttachmentResult attachment) : IActionResult
+public class FileStreamResult(FileAttachmentResult attachment) : IActionResult
 {
     public async Task ExecuteResultAsync(ActionContext context)
     {

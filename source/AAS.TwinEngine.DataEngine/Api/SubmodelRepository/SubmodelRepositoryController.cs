@@ -175,6 +175,6 @@ public class SubmodelRepositoryController(
         logger.LogInformation("Get File Attachment");
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
         var attachment = await submodelRepositoryHandler.GetFileAttachment(request, cancellationToken).ConfigureAwait(false);
-        return new LimitedFileStreamResult(attachment);
+        return new FileStreamResult(attachment);
     }
 }
