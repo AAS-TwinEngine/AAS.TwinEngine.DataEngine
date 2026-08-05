@@ -591,8 +591,6 @@ public class SubmodelRepositoryServiceTests
             _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
     }
 
-    // ── GetFileAttachmentAsync ────────────────────────────────────────────────
-
     private void ArrangeAttachmentElement(string idShortPath, ISubmodelElement element)
     {
         var template = TestData.CreateSubmodelWithElement(element, idShortPath);
@@ -630,14 +628,14 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenElementIsNotFile_ThrowsInvalidDataException()
+    public async Task GetFileAttachmentAsync_WhenElementIsNotFile_ThrowsInvalidUserInputException()
     {
         const string IdShortPath = "ManufacturerName";
         var property = new Property(DataTypeDefXsd.String) { IdShort = "ManufacturerName" };
         ArrangeAttachmentElement(IdShortPath, property);
-
-        await Assert.ThrowsAsync<InvalidDataException>(() =>
+        var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
+        Assert.Equal("Invalid IdShortPath for file attachment.", ex.Message);
     }
 
     [Fact]

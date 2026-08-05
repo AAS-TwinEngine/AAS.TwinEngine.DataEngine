@@ -93,7 +93,7 @@ public class SubmodelRepositoryService(
 
             var (pagedIds, pagingMetaData) = PagingExtensions.GetPagedResult(distinctSubmodelIds, id => id, limit, cursor);
 
-            var submodels = await BuildSubmodelsAsync(pagedIds.OfType<string>(), filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
+            var submodels = await BuildSubmodelsAsync(pagedIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
             return new SubmodelList
             {
@@ -267,7 +267,7 @@ public class SubmodelRepositoryService(
             return file;
         }
         logger.LogError("Submodel element at path {IdShortPath} is not of type File. Actual type: {ActualType}", idShortPath, element.GetType().Name);
-        throw new InvalidDataException();
+        throw new InvalidUserInputException("Invalid IdShortPath for file attachment.");
     }
 
     private string GetValidatedFileUrl(AasCore.Aas3_1.File fileElement, string idShortPath)

@@ -457,8 +457,6 @@ public class SubmodelRepositoryHandlerTests
             .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>());
     }
 
-    // ── GetFileAttachment ──────────────────────────────────────────────────────
-
     [Fact]
     public async Task GetFileAttachment_CallsService_WhenServiceSucceeds()
     {
