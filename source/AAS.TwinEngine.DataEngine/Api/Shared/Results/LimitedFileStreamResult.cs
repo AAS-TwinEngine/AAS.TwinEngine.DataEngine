@@ -1,11 +1,11 @@
 using System.Buffers;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Results;
+namespace AAS.TwinEngine.DataEngine.Api.Shared.Results;
 
 public class LimitedFileStreamResult(FileAttachmentResult attachment) : IActionResult
 {

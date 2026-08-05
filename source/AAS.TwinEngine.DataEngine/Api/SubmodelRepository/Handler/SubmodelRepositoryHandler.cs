@@ -4,6 +4,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;

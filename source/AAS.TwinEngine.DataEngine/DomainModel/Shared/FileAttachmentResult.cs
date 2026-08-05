@@ -1,4 +1,4 @@
-namespace AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+namespace AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 public sealed class FileAttachmentResult(Stream content, string contentType, string? fileName, long maxAllowedBytes) : IAsyncDisposable
 {

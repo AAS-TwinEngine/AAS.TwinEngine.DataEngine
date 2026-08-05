@@ -2,7 +2,7 @@
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 
-public class FileSizeExceededException : BadRequestException
+public class FileSizeExceededException : ContentTooLargeException
 {
     public const string DefaultMessage = "The file attachment exceeds the maximum allowed size.";
 

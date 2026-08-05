@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+﻿using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 

@@ -1,11 +1,16 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-namespace AAS.TwinEngine.DataEngine.Infrastructure.Streaming;
+using Microsoft.Extensions.Options;
 
-public class FileContentProvider(IHttpClientFactory httpClientFactory) : IFileContentProvider
+namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentProvider.Services;
+
+public class FileContentProvider(ICreateClient httpClientFactory, IOptions<GeneralConfig> generalConfig) : IFileContentProvider
 {
+    private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
     public async Task<FileContentResponse> GetFileContentAsync(string fileUrl, CancellationToken cancellationToken)
     {
         var client = httpClientFactory.CreateClient(HttpClientNames.FileAttachmentProvider);
@@ -17,6 +22,11 @@ public class FileContentProvider(IHttpClientFactory httpClientFactory) : IFileCo
 
             var contentLength = response.Content.Headers.ContentLength;
             var contentType = response.Content.Headers.ContentType?.ToString();
+            if (contentLength.HasValue && contentLength.Value > _maxFileAttachmentSizeBytes)
+            {
+                response.Dispose();
+                throw new FileSizeExceededException();
+            }
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             return new FileContentResponse(stream, contentLength, contentType)
