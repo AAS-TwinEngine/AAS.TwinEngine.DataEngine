@@ -138,7 +138,7 @@ public class SubmodelRepositoryControllerTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_ReturnsFileStreamResult_WhenHandlerCompletes()
+    public async Task GetFileAttachmentAsync_ReturnsFileContentStreamResult_WhenHandlerCompletes()
     {
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
         _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
@@ -146,7 +146,7 @@ public class SubmodelRepositoryControllerTests
 
         var result = await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
 
-        Assert.IsType<FileStreamResult>(result);
+        Assert.IsType<FileContentStreamResult>(result);
     }
 
     [Fact]

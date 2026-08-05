@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AAS.TwinEngine.DataEngine.Api.Shared.Results;
 
-public class FileStreamResult(FileAttachmentResult attachment) : IActionResult
+public class FileContentStreamResult(FileAttachmentResult attachment) : IActionResult
 {
     public async Task ExecuteResultAsync(ActionContext context)
     {
