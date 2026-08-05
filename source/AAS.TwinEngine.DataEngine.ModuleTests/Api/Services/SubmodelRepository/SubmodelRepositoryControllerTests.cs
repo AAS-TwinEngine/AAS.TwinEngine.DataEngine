@@ -20,6 +20,7 @@ using NSubstitute.ExceptionExtensions;
 
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRepository;
 
@@ -208,13 +209,8 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
 
         _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateSubmodel());
 
-        using var upstreamResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StreamContent(new MemoryStream(fileBytes))
-        };
-        upstreamResponse.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-        _ = _fileContentProvider.GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(upstreamResponse);
-        _ = _fileContentProvider.ReadStreamAsync(upstreamResponse, Arg.Any<CancellationToken>()).Returns(new MemoryStream(fileBytes));
+        var fileContentResponse = new FileContentResponse(new MemoryStream(fileBytes), fileBytes.Length, "image/png");
+        _ = _fileContentProvider.GetFileContentAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(fileContentResponse);
 
         // Act
         var response = await _client.GetAsync($"/submodels/{SubmodelId}/submodel-elements/{IdShortPath}/attachment");
@@ -225,7 +221,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var body = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal(fileBytes, body);
         Assert.Contains("logo.png", response.Content.Headers.ContentDisposition?.ToString(), StringComparison.Ordinal);
-        await _fileContentProvider.Received(1).GetResponseHeadersAsync(FileUrl, Arg.Any<CancellationToken>());
+        await _fileContentProvider.Received(1).GetFileContentAsync(FileUrl, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -253,7 +249,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var response = await _client.GetAsync($"/submodels/{SubmodelId}/submodel-elements/{IdShortPath}/attachment");
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]

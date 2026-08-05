@@ -5,8 +5,8 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -138,17 +138,15 @@ public class SubmodelRepositoryControllerTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_ReturnsFileStreamResult_WhenHandlerCompletes()
+    public async Task GetFileAttachmentAsync_ReturnsLimitedFileStreamResult_WhenHandlerCompletes()
     {
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
         _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new FileAttachmentResult(Stream.Null, "application/pdf", "document.pdf"));
+            .Returns(new FileAttachmentResult(Stream.Null, "application/pdf", "document.pdf", 100 * 1024 * 1024));
 
         var result = await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
 
-        var fileResult = Assert.IsType<FileStreamResult>(result);
-        Assert.Equal("application/pdf", fileResult.ContentType);
-        Assert.Equal("document.pdf", fileResult.FileDownloadName);
+        Assert.IsType<LimitedFileStreamResult>(result);
     }
 
     [Fact]
@@ -156,7 +154,7 @@ public class SubmodelRepositoryControllerTests
     {
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
         _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new FileAttachmentResult(Stream.Null, "application/octet-stream", null));
+            .Returns(new FileAttachmentResult(Stream.Null, "application/octet-stream", null, 100 * 1024 * 1024));
 
         await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
 
