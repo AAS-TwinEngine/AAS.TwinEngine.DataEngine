@@ -8,13 +8,13 @@ using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Helper;
 
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentProvider.Services;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
@@ -23,7 +23,7 @@ public class AasRepositoryService(
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
-    IFileAttachmentStreamProvider fileAttachmentStreamProvider,
+    IFileContentProvider fileContentProvider,
     IOptions<TemplateManagementConfig> templateManagementConfig,
     IOptions<GeneralConfig> generalConfig) : IAasRepositoryService
 {
@@ -138,20 +138,16 @@ public class AasRepositoryService(
 
             var thumbnailUrl = GetValidatedThumbnailUrl(thumbnail, aasIdentifier);
 
-            var upstreamResponse = await GetValidatedResponseAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
+            var thumbnailContent = await fileContentProvider.GetFileContentAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
 
-            var contentType = upstreamResponse.Content.Headers.ContentType?.ToString()
-                ?? "application/octet-stream";
-
+            var contentType = "application/octet-stream";
             var fileName = GetFileName(thumbnailUrl);
 
-            var upstreamStream = await fileAttachmentStreamProvider.ReadStreamAsync(upstreamResponse, cancellationToken).ConfigureAwait(false);
-            var limitedStream = new MaxLengthStream(upstreamStream, _maxFileAttachmentSizeBytes);
-
-            return new FileAttachmentResult(limitedStream, contentType, fileName)
+            return new FileAttachmentResult(thumbnailContent.Content, contentType, fileName, _maxFileAttachmentSizeBytes)
             {
-                ResponseDisposables = [upstreamResponse]
+                Upstream = thumbnailContent
             };
+
         }
         catch (ResourceNotFoundException ex)
         {
@@ -401,24 +397,11 @@ public class AasRepositoryService(
         if (!Uri.TryCreate(thumbnailUrl, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            throw new InvalidFileUrlException();
+            logger.LogError("Thumbnail URL is invalid. FileUrl: {FileUrl}", idShortPath, thumbnailUrl);
+            throw new InternalDataProcessingException();
         }
 
         return thumbnailUrl;
-    }
-
-    private async Task<HttpResponseMessage> GetValidatedResponseAsync(string fileUrl, CancellationToken cancellationToken)
-    {
-        var response = await fileAttachmentStreamProvider.GetResponseHeadersAsync(fileUrl, cancellationToken);
-
-        _ = response.EnsureSuccessStatusCode();
-        var actualContentLength = response.Content.Headers.ContentLength ?? 0;
-        if (actualContentLength > _maxFileAttachmentSizeBytes)
-        {
-            throw new FileSizeExceededException();
-        }
-
-        return response;
     }
 
     private static string GetFileName(string fileUrl)

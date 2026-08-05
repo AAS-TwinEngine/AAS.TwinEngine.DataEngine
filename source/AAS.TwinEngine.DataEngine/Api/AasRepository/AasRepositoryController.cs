@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
 using AasCore.Aas3_1;
@@ -116,7 +117,7 @@ public class AasRepositoryController(
         var request = new GetThumbnailRequest(aasIdentifier);
         var response = await aasRepositoryHandler.GetThumbnailAsync(request, cancellationToken).ConfigureAwait(false);
 
-        return File(response.Content, response.ContentType, response.FileName);
+        return new FileContentStreamResult(response);
     }
 
     /// <summary>

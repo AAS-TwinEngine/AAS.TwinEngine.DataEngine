@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ public class FileContentStreamResult(FileAttachmentResult attachment) : IActionR
 
         await using (attachment)
         {
+            using var activity = DataEngineTracing.Source.StartActivity(DataEngineTracing.Spans.StreamResponse);
             var buffer = ArrayPool<byte>.Shared.Rent(81920);
             try
             {

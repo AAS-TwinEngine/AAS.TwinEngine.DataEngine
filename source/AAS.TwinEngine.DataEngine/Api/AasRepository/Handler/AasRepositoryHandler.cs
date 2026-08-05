@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -74,16 +75,11 @@ public class AasRepositoryHandler(
         var decodedId = request?.AasIdentifier?.DecodeBase64Url(logger);
         logger.LogInformation("Start executing get request for thumbnail. Aas Identifier: {DecodedId}", decodedId);
 
-        var attachment = await aasRepositoryService
-            .GetThumbnailAsync(decodedId!, cancellationToken)
+        return await GetResourceByIdAsync(
+            request?.AasIdentifier,
+            "thumbnail",
+            id => aasRepositoryService.GetThumbnailAsync(decodedId!, cancellationToken))
             .ConfigureAwait(false);
-
-        foreach (var disposable in attachment.ResponseDisposables)
-        {
-            httpContextAccessor.HttpContext?.Response.RegisterForDispose(disposable);
-        }
-
-        return attachment;
     }
 
     private Task<T> GetResourceByIdAsync<T>(
