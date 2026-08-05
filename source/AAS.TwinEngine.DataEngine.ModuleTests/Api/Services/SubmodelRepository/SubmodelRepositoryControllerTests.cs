@@ -249,7 +249,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var response = await _client.GetAsync($"/submodels/{SubmodelId}/submodel-elements/{IdShortPath}/attachment");
 
         // Assert
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
