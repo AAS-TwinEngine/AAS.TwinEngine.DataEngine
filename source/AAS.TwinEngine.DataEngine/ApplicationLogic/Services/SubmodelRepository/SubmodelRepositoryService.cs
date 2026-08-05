@@ -1,8 +1,9 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Pagination;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
@@ -78,7 +79,19 @@ public class SubmodelRepositoryService(
             };
 
             var pageSize = limit ?? 100;
-            var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, pageSize, cursor, cancellationToken).ConfigureAwait(false);
+            var paginationResult = await SubmodelPaginationHelper.CollectSubmodelPageAsync(
+                pageSize,
+                cursor,
+                async (batchSize, aasCursor, ct) =>
+                {
+                    var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(
+                        pluginManifestConflictHandler.Manifests, shellSearchFilter, batchSize, Base64UrlExtensions.EncodeBase64Url(aasCursor), ct).ConfigureAwait(false);
+                    var items = shellMetadata.ShellDescriptors?.ToList() ?? [];
+                    return (items, shellMetadata.PagingMetaData?.Cursor);
+                },
+                shell => shell.Id,
+                (shell, ct) => GetSubmodelIdsForShellAsync(shell.Id!, ct),
+                cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
@@ -88,92 +101,6 @@ public class SubmodelRepositoryService(
                 Result = submodels
             };
         }).ConfigureAwait(false);
-    }
-
-    private async Task<SubmodelPageResult> CollectSubmodelPageAsync(ShellSearchFilter shellSearchFilter, int pageSize, string? encodedCursor, CancellationToken cancellationToken)
-    {
-        var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
-        var state = new PaginationState(incomingCursor);
-        var pluginCursor = state.TrackingAasId;
-
-        while (state.CollectedIds.Count < pageSize)
-        {
-            var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(
-                pluginManifestConflictHandler.Manifests, shellSearchFilter, pageSize, Base64UrlExtensions.EncodeBase64Url(pluginCursor), cancellationToken).ConfigureAwait(false);
-
-            var shellDescriptors = shellMetadata.ShellDescriptors?.Where(s => !string.IsNullOrWhiteSpace(s.Id)).ToList() ?? [];
-
-            if (shellDescriptors.Count == 0)
-            {
-                break;
-            }
-
-            var limitReached = await ProcessShellBatchAsync(shellDescriptors, pageSize, state, cancellationToken).ConfigureAwait(false);
-
-            if (limitReached)
-            {
-                break;
-            }
-
-            if (shellMetadata.PagingMetaData?.Cursor is null)
-            {
-                break;
-            }
-
-            pluginCursor = state.TrackingAasId;
-        }
-
-        var nextCursor = state.CollectedIds.Count >= pageSize ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId) : null;
-
-        return new SubmodelPageResult(state.CollectedIds, nextCursor);
-    }
-
-    private async Task<bool> ProcessShellBatchAsync(List<ShellDescriptorMetaData> shellDescriptors, int pageSize, PaginationState state, CancellationToken cancellationToken)
-    {
-        foreach (var shell in shellDescriptors)
-        {
-            var submodelIds = await GetSubmodelIdsForShellAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
-
-            if (submodelIds.Count == 0)
-            {
-                state.TrackingAasId = shell.Id;
-                state.IsFirstAasInResume = false;
-                continue;
-            }
-
-            var startIndex = 0;
-
-            if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
-            {
-                startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
-                state.IsFirstAasInResume = false;
-                state.SkipToSubmodelId = null;
-            }
-            else
-            {
-                state.IsFirstAasInResume = false;
-            }
-
-            for (var i = startIndex; i < submodelIds.Count; i++)
-            {
-                state.CollectedIds.Add(submodelIds[i]);
-                state.LastCollectedSubmodelId = submodelIds[i];
-
-                if (state.CollectedIds.Count >= pageSize)
-                {
-                    if (state.CollectedIds.Contains(submodelIds.Last()))
-                    {
-                        state.TrackingAasId = shell.Id;
-                    }
-
-                    return true;
-                }
-            }
-
-            state.TrackingAasId = shell.Id;
-        }
-
-        return false;
     }
 
     private async Task<List<string>> GetSubmodelIdsForShellAsync(string shellId, CancellationToken cancellationToken)
@@ -191,16 +118,7 @@ public class SubmodelRepositoryService(
         }
     }
 
-    private sealed record SubmodelPageResult(List<string> SubmodelIds, string? NextCursor);
 
-    private sealed class PaginationState(SubmodelPaginationCursor? cursor)
-    {
-        public List<string> CollectedIds { get; } = [];
-        public string? TrackingAasId { get; set; } = cursor?.AasId;
-        public string? LastCollectedSubmodelId { get; set; }
-        public string? SkipToSubmodelId { get; set; } = cursor?.SubmodelId;
-        public bool IsFirstAasInResume { get; set; } = cursor is not null;
-    }
 
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(IEnumerable<string> submodelIds, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {

@@ -378,6 +378,8 @@ public class SubmodelRepositoryServiceTests
             .GetDataForShellsByAssetIdsAsync(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Is<ShellSearchFilter?>(f => f != null && f.IdShort == IdShort),
+                Arg.Any<int?>(),
+                Arg.Any<string?>(),
                 Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [] });
 
@@ -387,6 +389,8 @@ public class SubmodelRepositoryServiceTests
             .GetDataForShellsByAssetIdsAsync(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Is<ShellSearchFilter?>(f => f != null && f.IdShort == IdShort),
+                Arg.Any<int?>(),
+                Arg.Any<string?>(),
                 Arg.Any<CancellationToken>());
     }
 
@@ -526,7 +530,7 @@ public class SubmodelRepositoryServiceTests
             ]);
 
         _templateService
-            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Is<string?>(default(string)), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(TestData.CreateSubmodel());
         _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
         _pluginDataHandler
@@ -569,7 +573,7 @@ public class SubmodelRepositoryServiceTests
             ]);
 
         _templateService
-            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Is<string?>(default(string)), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(TestData.CreateSubmodel());
         _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
         _pluginDataHandler

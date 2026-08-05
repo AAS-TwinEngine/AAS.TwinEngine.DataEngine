@@ -1,14 +1,14 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Pagination;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
@@ -31,7 +31,19 @@ public class SubmodelDescriptorService(
     public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var pageSize = limit ?? 100;
-        var paginationResult = await CollectSubmodelDescriptorPageAsync(pageSize, cursor, cancellationToken).ConfigureAwait(false);
+        var paginationResult = await SubmodelPaginationHelper.CollectSubmodelPageAsync(
+            pageSize,
+            cursor,
+            async (batchSize, aasCursor, ct) =>
+            {
+                var shellsResult = await aasRepositoryService.GetShellsByFiltersAsync(null, batchSize, aasCursor?.EncodeBase64Url(), ct).ConfigureAwait(false);
+                var items = shellsResult?.Result?.ToList() ?? [];
+                return (items, shellsResult?.PagingMetaData?.Cursor);
+            },
+            shell => shell.Id,
+            (shell, _) => Task.FromResult(GetSubmodelIdsForShell(shell)),
+            cancellationToken).ConfigureAwait(false);
+
         var submodelIds = paginationResult.SubmodelIds;
 
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
@@ -75,14 +87,13 @@ public class SubmodelDescriptorService(
         try
         {
             var templateId = submodelTemplateMappingProvider.GetTemplateId(id);
+            var descriptor = await submodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(templateId, cancellationToken).ConfigureAwait(false);
 
-            var submodelDescriptorData = await submodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(templateId, cancellationToken).ConfigureAwait(false);
+            UpdateEndpointsHref(descriptor, id);
 
-            SetHref(submodelDescriptorData, id);
+            descriptor.Id = id;
 
-            submodelDescriptorData.Id = id;
-
-            return submodelDescriptorData;
+            return descriptor;
         }
         catch (ResourceNotFoundException)
         {
@@ -106,9 +117,19 @@ public class SubmodelDescriptorService(
         }
     }
 
-    private void SetHref(SubmodelDescriptor descriptor, string id)
+    private static List<string> GetSubmodelIdsForShell(AasCore.Aas3_1.IAssetAdministrationShell shell)
     {
-        var encodedId = id.EncodeBase64Url();
+        return shell.Submodels?
+            .SelectMany(reference => reference.Keys ?? [])
+            .Select(key => key.Value)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList() ?? [];
+    }
+
+    private void UpdateEndpointsHref(SubmodelDescriptor descriptor, string id)
+    {
+        var encodedId = Base64UrlExtensions.EncodeBase64Url(id);
         var href = GenerateHref(encodedId);
 
         if (descriptor.Endpoints == null || descriptor.Endpoints.Count == 0)
@@ -136,112 +157,6 @@ public class SubmodelDescriptorService(
     {
         endpoint.ProtocolInformation ??= new ProtocolInformationData();
         endpoint.ProtocolInformation.Href = href;
-    }
-
-    private async Task<SubmodelDescriptorPageResult> CollectSubmodelDescriptorPageAsync(int pageSize, string? encodedCursor, CancellationToken cancellationToken)
-    {
-        var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
-        var state = new PaginationState(incomingCursor);
-        var pluginCursor = state.TrackingAasId;
-
-        while (state.CollectedIds.Count < pageSize)
-        {
-            var shellsResult = await aasRepositoryService.GetShellsByFiltersAsync(null, pageSize, pluginCursor?.EncodeBase64Url(), cancellationToken).ConfigureAwait(false);
-
-            var shellList = shellsResult?.Result?.Where(s => !string.IsNullOrWhiteSpace(s.Id)).ToList() ?? [];
-
-            if (shellList.Count == 0)
-            {
-                break;
-            }
-
-            var limitReached = ProcessShellBatch(shellList, pageSize, state);
-
-            if (limitReached)
-            {
-                break;
-            }
-
-            if (shellsResult.PagingMetaData?.Cursor is null)
-            {
-                break;
-            }
-
-            pluginCursor = state.TrackingAasId;
-        }
-
-        var nextCursor = state.CollectedIds.Count >= pageSize ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId) : null;
-
-        return new SubmodelDescriptorPageResult(state.CollectedIds, nextCursor);
-    }
-
-    private static bool ProcessShellBatch(List<AasCore.Aas3_1.IAssetAdministrationShell> shellList, int pageSize, PaginationState state)
-    {
-        foreach (var shell in shellList)
-        {
-            var submodelIds = GetSubmodelIdsForShell(shell);
-
-            if (submodelIds.Count == 0)
-            {
-                state.TrackingAasId = shell.Id;
-                state.IsFirstAasInResume = false;
-                continue;
-            }
-
-            var startIndex = 0;
-
-            if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
-            {
-                startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
-                state.IsFirstAasInResume = false;
-                state.SkipToSubmodelId = null;
-            }
-            else
-            {
-                state.IsFirstAasInResume = false;
-            }
-
-            for (var i = startIndex; i < submodelIds.Count; i++)
-            {
-                state.CollectedIds.Add(submodelIds[i]);
-                state.LastCollectedSubmodelId = submodelIds[i];
-
-                if (state.CollectedIds.Count >= pageSize)
-                {
-                    if (state.CollectedIds.Contains(submodelIds.Last()))
-                    {
-                        state.TrackingAasId = shell.Id;
-                    }
-
-                    return true;
-                }
-            }
-
-            state.TrackingAasId = shell.Id;
-        }
-
-        return false;
-    }
-
-    private static List<string> GetSubmodelIdsForShell(AasCore.Aas3_1.IAssetAdministrationShell shell)
-    {
-        return shell.Submodels?
-            .SelectMany(reference => reference.Keys ?? [])
-            .Select(key => key.Value)
-            .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList() ?? [];
-    }
-
-    private sealed record SubmodelDescriptorPageResult(List<string> SubmodelIds, string? NextCursor);
-
-    private sealed class PaginationState(SubmodelPaginationCursor? cursor)
-    {
-        public List<string> CollectedIds { get; } = [];
-        public string? TrackingAasId { get; set; } = cursor?.AasId;
-        public string? LastCollectedSubmodelId { get; set; }
-        public string? SkipToSubmodelId { get; set; } = cursor?.SubmodelId;
-        public bool IsFirstAasInResume { get; set; } = cursor is not null;
     }
 
     private string GenerateHref(string encodedId) => $"{_baseUrl}{ApiPaths.Submodels}/{encodedId}";
