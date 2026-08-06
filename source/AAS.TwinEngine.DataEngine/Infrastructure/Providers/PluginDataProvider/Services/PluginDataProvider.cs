@@ -295,7 +295,7 @@ public class PluginDataProvider(
         }
 
         return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
+                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams)
                    : BaseUrl;
     }
 

@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -90,7 +90,7 @@ public class SubmodelRepositoryService(
                     return (items, shellMetadata.PagingMetaData?.Cursor);
                 },
                 shell => shell.Id,
-                (shell, ct) => GetSubmodelIdsForShellAsync(shell.Id!, ct),
+                (shell, ct) => GetSubmodelIdsForShellAsync(shell.Id, ct),
                 cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
@@ -109,7 +109,7 @@ public class SubmodelRepositoryService(
         {
             var references = await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shellId, cancellationToken).ConfigureAwait(false);
 
-            return references.Select(r => r.Keys.FirstOrDefault()?.Value).Where(id => !string.IsNullOrWhiteSpace(id)).ToList()!;
+            return references.Select(r => r.Keys.FirstOrDefault()?.Value).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
         }
         catch (ResourceNotFoundException ex)
         {

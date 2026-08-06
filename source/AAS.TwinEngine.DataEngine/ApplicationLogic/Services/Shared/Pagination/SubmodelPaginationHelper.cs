@@ -75,40 +75,61 @@ public static class SubmodelPaginationHelper
                 continue;
             }
 
-            var startIndex = 0;
+            var startIndex = ResolveStartIndex(state, submodelIds);
 
-            if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
+            if (CollectSubmodelIdsForShell(submodelIds, startIndex, pageSize, shellId, state))
             {
-                startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
-                state.IsFirstAasInResume = false;
-                state.SkipToSubmodelId = null;
-            }
-            else
-            {
-                state.IsFirstAasInResume = false;
-            }
-
-            for (var i = startIndex; i < submodelIds.Count; i++)
-            {
-                var submodelId = submodelIds[i];
-                if (!state.CollectedIds.Contains(submodelId, StringComparer.OrdinalIgnoreCase))
-                {
-                    state.CollectedIds.Add(submodelId);
-                }
-                state.LastCollectedSubmodelId = submodelId;
-
-                if (state.CollectedIds.Count >= pageSize)
-                {
-                    if (state.CollectedIds.Contains(submodelIds.Last(), StringComparer.OrdinalIgnoreCase))
-                    {
-                        state.TrackingAasId = shellId;
-                    }
-
-                    return true;
-                }
+                return true;
             }
 
             state.TrackingAasId = shellId;
+        }
+
+        return false;
+    }
+
+    private static int ResolveStartIndex(SubmodelPaginationState state, List<string> submodelIds)
+    {
+        state.IsFirstAasInResume = false;
+
+        if (state.SkipToSubmodelId is null)
+        {
+            return 0;
+        }
+
+        var index = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
+        state.SkipToSubmodelId = null;
+        return index;
+    }
+
+    private static bool CollectSubmodelIdsForShell(
+        List<string> submodelIds,
+        int startIndex,
+        int pageSize,
+        string? shellId,
+        SubmodelPaginationState state)
+    {
+        for (var i = startIndex; i < submodelIds.Count; i++)
+        {
+            var submodelId = submodelIds[i];
+            if (!state.CollectedIds.Contains(submodelId, StringComparer.OrdinalIgnoreCase))
+            {
+                state.CollectedIds.Add(submodelId);
+            }
+
+            state.LastCollectedSubmodelId = submodelId;
+
+            if (state.CollectedIds.Count < pageSize)
+            {
+                continue;
+            }
+
+            if (state.CollectedIds.Contains(submodelIds[^1], StringComparer.OrdinalIgnoreCase))
+            {
+                state.TrackingAasId = shellId;
+            }
+
+            return true;
         }
 
         return false;
