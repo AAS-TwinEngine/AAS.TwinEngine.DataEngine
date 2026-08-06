@@ -37,33 +37,23 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
     {
         return exception switch
         {
-            BadRequestException =>
-                (StatusCodes.Status400BadRequest, exception.Message),
+            BadRequestException => (StatusCodes.Status400BadRequest, exception.Message),
 
-            ForbiddenException =>
-                (StatusCodes.Status403Forbidden, exception.Message),
+            ForbiddenException => (StatusCodes.Status403Forbidden, exception.Message),
 
-            NotFoundException =>
-                (StatusCodes.Status404NotFound, exception.Message),
+            NotFoundException => (StatusCodes.Status404NotFound, exception.Message),
 
-            UnauthorizedAccessException =>
-                (StatusCodes.Status401Unauthorized, exception.Message),
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, exception.Message),
 
-            TimeoutException =>
-                (StatusCodes.Status408RequestTimeout, exception.Message),
+            TimeoutException => (StatusCodes.Status408RequestTimeout, exception.Message),
 
-            ServiceUnavailableException =>
-                (StatusCodes.Status503ServiceUnavailable, exception.Message),
+            ServiceUnavailableException => (StatusCodes.Status503ServiceUnavailable, exception.Message),
 
-            NotImplementedException =>
-                (StatusCodes.Status501NotImplemented, exception.Message),
+            NotImplementedException => (StatusCodes.Status501NotImplemented, exception.Message),
 
-            InternalServerException =>
-                (StatusCodes.Status500InternalServerError, exception.Message),
+            InternalServerException => (StatusCodes.Status500InternalServerError, exception.Message),
 
-            _ =>
-                (StatusCodes.Status500InternalServerError,
-                 "An unexpected error occurred while processing your request.")
+            _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred while processing your request.")
         };
     }
 }
