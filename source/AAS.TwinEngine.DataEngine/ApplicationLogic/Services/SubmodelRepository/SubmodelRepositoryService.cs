@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 
 using Serilog.Core;
 
+using File = AasCore.Aas3_1.File;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
@@ -50,7 +51,7 @@ public class SubmodelRepositoryService(
             submodelWithValues.Id = submodelId;
 
             return submodelWithValues;
-        }).ConfigureAwait(false);
+        }, ex => new SubmodelNotFoundException(ex)).ConfigureAwait(false);
     }
 
     public async Task<ISubmodelElement> GetSubmodelElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
@@ -62,7 +63,7 @@ public class SubmodelRepositoryService(
             var submodelWithValues = await BuildSubmodelWithValuesAsync(reducedSubmodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
 
             return semanticIdHandler.Extract(submodelWithValues, idShortPath);
-        }).ConfigureAwait(false);
+        }, ex => new SubmodelElementNotFoundException(ex)).ConfigureAwait(false);
     }
 
 
@@ -100,7 +101,7 @@ public class SubmodelRepositoryService(
                 PagingMetaData = pagingMetaData,
                 Result = submodels
             };
-        }).ConfigureAwait(false);
+        }, ex => new SubmodelNotFoundException(ex)).ConfigureAwait(false);
     }
 
     private async Task<List<string>> GetDistinctSubmodelIdsAsync(List<ShellDescriptorMetaData> shellDescriptors, CancellationToken cancellationToken)
@@ -188,7 +189,7 @@ public class SubmodelRepositoryService(
                 PagingMetaData = pagingMetaData,
                 Result = pagedElements
             };
-        }).ConfigureAwait(false);
+        }, ex => new SubmodelElementNotFoundException(ex)).ConfigureAwait(false);
     }
 
     private async Task<ISubmodel> BuildSubmodelWithValuesAsync(ISubmodel template, string submodelId, CancellationToken cancellationToken)
@@ -202,7 +203,9 @@ public class SubmodelRepositoryService(
         return semanticIdHandler.FillOutTemplate(template, values);
     }
 
-    private static async Task<T> ExecuteWithExceptionHandlingAsync<T>(Func<Task<T>> action)
+    private static async Task<T> ExecuteWithExceptionHandlingAsync<T>(
+        Func<Task<T>> action,
+        Func<ResourceNotFoundException, Exception> resourceNotFoundExceptionFactory)
     {
         try
         {
@@ -210,7 +213,7 @@ public class SubmodelRepositoryService(
         }
         catch (ResourceNotFoundException ex)
         {
-            throw new SubmodelNotFoundException(ex);
+            throw resourceNotFoundExceptionFactory(ex);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -240,9 +243,7 @@ public class SubmodelRepositoryService(
 
             var fileContent = await fileContentProvider.GetFileContentAsync(fileUrl, cancellationToken).ConfigureAwait(false);
 
-            var contentType = !string.IsNullOrWhiteSpace(fileElement.ContentType)
-                ? fileElement.ContentType
-                : "application/octet-stream";
+            var contentType = !string.IsNullOrWhiteSpace(fileElement.ContentType) ? fileElement.ContentType : "application/octet-stream";
 
             var fileName = GetFileName(fileElement, fileUrl);
 
@@ -250,27 +251,28 @@ public class SubmodelRepositoryService(
             {
                 Upstream = fileContent
             };
-        }).ConfigureAwait(false);
+        }, ex => new SubmodelElementNotFoundException(ex)).ConfigureAwait(false);
     }
 
-    private async Task<AasCore.Aas3_1.File> GetFileElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    private async Task<File> GetFileElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
         var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken);
 
         return GetFileElement(element, idShortPath);
     }
 
-    private AasCore.Aas3_1.File GetFileElement(ISubmodelElement element, string idShortPath)
+    private File GetFileElement(ISubmodelElement element, string idShortPath)
     {
-        if (element is AasCore.Aas3_1.File file)
+        if (element is File file)
         {
             return file;
         }
+
         logger.LogError("Submodel element at path {IdShortPath} is not of type File. Actual type: {ActualType}", idShortPath, element.GetType().Name);
         throw new InvalidUserInputException("Invalid IdShortPath for file attachment.");
     }
 
-    private string GetValidatedFileUrl(AasCore.Aas3_1.File fileElement, string idShortPath)
+    private string GetValidatedFileUrl(File fileElement, string idShortPath)
     {
         var fileUrl = fileElement.Value;
 
@@ -290,12 +292,10 @@ public class SubmodelRepositoryService(
         return fileUrl;
     }
 
-    private static string GetFileName(AasCore.Aas3_1.File fileElement, string fileUrl)
+    private static string GetFileName(File fileElement, string fileUrl)
     {
         var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
 
-        return string.IsNullOrWhiteSpace(fileName)
-            ? fileElement.IdShort ?? string.Empty
-            : fileName;
+        return string.IsNullOrWhiteSpace(fileName) ? fileElement.IdShort ?? string.Empty : fileName;
     }
 }

@@ -209,13 +209,13 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelElementAsync_WhenResourceNotFound_ThrowsPluginRequestFailedException()
+    public async Task GetSubmodelElementAsync_WhenResourceNotFound_ThrowsSubmodelElementNotFoundException()
     {
         _templateService
             .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
 
@@ -565,13 +565,13 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetAllSubmodelElementsAsync_WhenSubmodelNotFound_ThrowsSubmodelNotFoundException()
+    public async Task GetAllSubmodelElementsAsync_WhenSubmodelNotFound_ThrowsSubmodelElementNotFoundException()
     {
         _templateService
             .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
     }
 
@@ -639,7 +639,7 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenSubmodelNotFound_ThrowsSubmodelNotFoundException()
+    public async Task GetFileAttachmentAsync_WhenSubmodelNotFound_ThrowsSubmodelElementNotFoundException()
     {
         const string IdShortPath = "Documents.ProductImage";
 
@@ -647,7 +647,7 @@ public class SubmodelRepositoryServiceTests
             .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
 
