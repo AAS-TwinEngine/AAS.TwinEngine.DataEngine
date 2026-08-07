@@ -53,6 +53,8 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
 
             InternalServerException => (StatusCodes.Status500InternalServerError, exception.Message),
 
+            ContentTooLargeException => (StatusCodes.Status413PayloadTooLarge, exception.Message),
+
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred while processing your request.")
         };
     }

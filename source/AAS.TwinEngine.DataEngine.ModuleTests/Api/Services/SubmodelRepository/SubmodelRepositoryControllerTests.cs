@@ -209,7 +209,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
 
         _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateSubmodel());
 
-        var fileContentResponse = new FileContentResponse(new MemoryStream(fileBytes), fileBytes.Length, "image/png");
+        var fileContentResponse = new FileContentResponse(new MemoryStream(fileBytes));
         _ = _fileContentProvider.GetFileContentAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(fileContentResponse);
 
         // Act

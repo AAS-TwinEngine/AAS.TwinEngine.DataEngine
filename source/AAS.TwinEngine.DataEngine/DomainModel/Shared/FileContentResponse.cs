@@ -1,6 +1,6 @@
 namespace AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
-public sealed class FileContentResponse(Stream content, long? contentLength, string? contentType) : IAsyncDisposable
+public sealed class FileContentResponse(Stream content) : IAsyncDisposable
 {
     public Stream Content { get; } = content;
 

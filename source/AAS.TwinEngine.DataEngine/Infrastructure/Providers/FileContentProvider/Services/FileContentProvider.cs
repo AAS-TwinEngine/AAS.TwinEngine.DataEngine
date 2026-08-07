@@ -31,7 +31,7 @@ public class FileContentProvider(ICreateClient httpClientFactory, IOptions<Gener
             }
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-            return new FileContentResponse(stream, contentLength, contentType)
+            return new FileContentResponse(stream)
             {
                 OnDispose = response.Dispose
             };

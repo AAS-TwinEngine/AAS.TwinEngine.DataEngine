@@ -612,7 +612,7 @@ public class SubmodelRepositoryServiceTests
         ArrangeAttachmentElement(IdShortPath, fileElement);
 
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
-        var fileContentResponse = new FileContentResponse(stream, stream.Length, "image/png");
+        var fileContentResponse = new FileContentResponse(stream);
         _fileAttachmentStreamProvider.GetFileContentAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(fileContentResponse);
 
         var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
