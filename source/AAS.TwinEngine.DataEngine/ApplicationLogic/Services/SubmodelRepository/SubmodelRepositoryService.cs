@@ -94,7 +94,7 @@ public class SubmodelRepositoryService(
 
             var (pagedIds, pagingMetaData) = PagingExtensions.GetPagedResult(distinctSubmodelIds, id => id, limit, cursor);
 
-            var submodels = await BuildSubmodelsAsync(pagedIds.OfType<string>(), filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
+            var submodels = await BuildSubmodelsAsync(pagedIds, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
             return new SubmodelList
             {

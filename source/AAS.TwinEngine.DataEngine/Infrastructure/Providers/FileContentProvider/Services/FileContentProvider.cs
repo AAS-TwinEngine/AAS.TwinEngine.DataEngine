@@ -24,7 +24,6 @@ public class FileContentProvider(ICreateClient httpClientFactory, IOptions<Gener
             }
 
             var contentLength = response.Content.Headers.ContentLength;
-            var contentType = response.Content.Headers.ContentType?.ToString();
             if (contentLength.HasValue && contentLength.Value > _maxFileAttachmentSizeBytes)
             {
                 throw new FileSizeExceededException();
