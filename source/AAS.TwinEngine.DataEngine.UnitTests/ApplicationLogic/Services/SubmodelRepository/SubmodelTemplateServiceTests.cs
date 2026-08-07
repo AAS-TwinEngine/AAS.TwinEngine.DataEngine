@@ -75,6 +75,7 @@ public class SubmodelTemplateServiceTests
             .Returns(expectedSubmodel);
 
         var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
+        Assert.Equal("Submodel Element not found.", exception.Message);
     }
 
     [Fact]

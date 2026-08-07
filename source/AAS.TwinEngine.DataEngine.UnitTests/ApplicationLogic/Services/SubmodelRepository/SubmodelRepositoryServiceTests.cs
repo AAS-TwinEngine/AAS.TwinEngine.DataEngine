@@ -209,13 +209,13 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelElementAsync_WhenResourceNotFound_ThrowsPluginRequestFailedException()
+    public async Task GetSubmodelElementAsync_WhenResourceNotFound_ThrowsSubmodelElementNotFoundException()
     {
         _templateService
             .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
 
@@ -565,13 +565,13 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetAllSubmodelElementsAsync_WhenSubmodelNotFound_ThrowsSubmodelNotFoundException()
+    public async Task GetAllSubmodelElementsAsync_WhenSubmodelNotFound_ThrowsSubmodelElementNotFoundException()
     {
         _templateService
             .GetFilteredSubmodelTemplateAsync(SubmodelId, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
     }
 
@@ -590,8 +590,6 @@ public class SubmodelRepositoryServiceTests
         await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
             _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
     }
-
-    // ── GetFileAttachmentAsync ────────────────────────────────────────────────
 
     private void ArrangeAttachmentElement(string idShortPath, ISubmodelElement element)
     {
@@ -614,7 +612,7 @@ public class SubmodelRepositoryServiceTests
         ArrangeAttachmentElement(IdShortPath, fileElement);
 
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
-        var fileContentResponse = new FileContentResponse(stream, stream.Length, "image/png");
+        var fileContentResponse = new FileContentResponse(stream);
         _fileAttachmentStreamProvider.GetFileContentAsync(FileUrl, Arg.Any<CancellationToken>()).Returns(fileContentResponse);
 
         var result = await _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None);
@@ -630,18 +628,18 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenElementIsNotFile_ThrowsInvalidDataException()
+    public async Task GetFileAttachmentAsync_WhenElementIsNotFile_ThrowsInvalidUserInputException()
     {
         const string IdShortPath = "ManufacturerName";
         var property = new Property(DataTypeDefXsd.String) { IdShort = "ManufacturerName" };
         ArrangeAttachmentElement(IdShortPath, property);
-
-        await Assert.ThrowsAsync<InvalidDataException>(() =>
+        var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
+        Assert.Equal("Invalid IdShortPath for file attachment.", ex.Message);
     }
 
     [Fact]
-    public async Task GetFileAttachmentAsync_WhenSubmodelNotFound_ThrowsSubmodelNotFoundException()
+    public async Task GetFileAttachmentAsync_WhenSubmodelNotFound_ThrowsSubmodelElementNotFoundException()
     {
         const string IdShortPath = "Documents.ProductImage";
 
@@ -649,7 +647,7 @@ public class SubmodelRepositoryServiceTests
             .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
-        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
     }
 

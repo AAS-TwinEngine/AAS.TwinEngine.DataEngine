@@ -349,7 +349,7 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_WhenNullRequest_ReturnsSuccessfully()
     {
-        var submodelList = new SubmodelList { PagingMetaData = new AAS.TwinEngine.DataEngine.DomainModel.Shared.PagingMetaData(), Result = [] };
+        var submodelList = new SubmodelList { PagingMetaData = new PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
@@ -456,8 +456,6 @@ public class SubmodelRepositoryHandlerTests
         await _submodelRepository.Received(1)
             .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>());
     }
-
-    // ── GetFileAttachment ──────────────────────────────────────────────────────
 
     [Fact]
     public async Task GetFileAttachment_CallsService_WhenServiceSucceeds()
