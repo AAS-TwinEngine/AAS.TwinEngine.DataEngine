@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -30,7 +30,7 @@ public class AasRepositoryServiceTests
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly ILogger<AasRepositoryService> _logger = Substitute.For<ILogger<AasRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementConfig = Substitute.For<IOptions<TemplateManagementConfig>>();
-    private readonly IFileAttachmentStreamProvider _fileAttachmentStreamProvider = Substitute.For<IFileAttachmentStreamProvider>();
+    private readonly IFileContentProvider _fileContentProvider = Substitute.For<IFileContentProvider>();
     private readonly IOptions<GeneralConfig> _generalConfig = Substitute.For<IOptions<GeneralConfig>>();
     private readonly AasRepositoryService _sut;
     private const string AasIdentifier = "test-id";
@@ -54,7 +54,7 @@ public class AasRepositoryServiceTests
             _templateService,
             _pluginDataHandler,
             _pluginManifestConflictHandler,
-            _fileAttachmentStreamProvider,
+            _fileContentProvider,
             _templateManagementConfig,
             _generalConfig);
     }
@@ -68,15 +68,15 @@ public class AasRepositoryServiceTests
         var assetInfoTemplate = CreateAssetInformationTemplate();
         var pluginData = CreateAssetData();
         var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "PluginA",
-                PluginUrl = new Uri("http://plugin-a"),
-                SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities { HasAssetInformation = true }
-            }
-        };
+       {
+           new()
+           {
+               PluginName = "PluginA",
+               PluginUrl = new Uri("http://plugin-a"),
+               SupportedSemanticIds = ["id-1"],
+               Capabilities = new Capabilities { HasAssetInformation = true }
+           }
+       };
 
         _templateService.GetShellTemplateAsync(AasIdentifier, cancellationToken).Returns(shellTemplate);
         _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken).Returns(assetInfoTemplate);
@@ -100,15 +100,15 @@ public class AasRepositoryServiceTests
         var template = CreateAssetInformationTemplate();
         var pluginData = CreateAssetData();
         var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "PluginB",
-                PluginUrl = new Uri("http://plugin-b"),
-                SupportedSemanticIds = ["id-2"],
-                Capabilities = new Capabilities { HasAssetInformation = true }
-            }
-        };
+       {
+           new()
+           {
+               PluginName = "PluginB",
+               PluginUrl = new Uri("http://plugin-b"),
+               SupportedSemanticIds = ["id-2"],
+               Capabilities = new Capabilities { HasAssetInformation = true }
+           }
+       };
 
         _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken)
             .Returns(template);
@@ -275,8 +275,8 @@ public class AasRepositoryServiceTests
                 specificAssetIds:
                 [
                     new SpecificAssetId("ManufacturerId", "OldManufacturer"),
-                    new SpecificAssetId("SerialNumber", "OldSerial"),
-                    new SpecificAssetId("AssetTag", "Asset-001")
+                   new SpecificAssetId("SerialNumber", "OldSerial"),
+                   new SpecificAssetId("AssetTag", "Asset-001")
                 ]),
             submodels: []);
 
@@ -286,7 +286,7 @@ public class AasRepositoryServiceTests
             SpecificAssetIds =
             [
                 new SpecificAssetId("ManufacturerId", "NewManufacturer"),
-                new SpecificAssetId("SerialNumber", "NewSerial")
+               new SpecificAssetId("SerialNumber", "NewSerial")
             ]
         };
 
@@ -371,11 +371,11 @@ public class AasRepositoryServiceTests
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
 
         var metadataItems = new List<ShellDescriptorMetaData>
-        {
-            new() { Id = "aas-1", SpecificAssetIds = [] },
-            new() { Id = "aas-2", SpecificAssetIds = [] }, 
-            new() { Id = "aas-3", SpecificAssetIds = [] }
-        };
+       {
+           new() { Id = "aas-1", SpecificAssetIds = [] },
+           new() { Id = "aas-2", SpecificAssetIds = [] },
+           new() { Id = "aas-3", SpecificAssetIds = [] }
+       };
 
         _pluginDataHandler
             .GetDataForAllShellDescriptorsAsync(null, null, manifests, cancellationToken)
@@ -433,13 +433,13 @@ public class AasRepositoryServiceTests
             }
         };
         var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities { HasAssetInformation = true }
-            }
-        };
+       {
+           new()
+           {
+               SupportedSemanticIds = ["id-1"],
+               Capabilities = new Capabilities { HasAssetInformation = true }
+           }
+       };
 
         _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken)
             .Returns(assetInfoTemplate);
@@ -447,22 +447,20 @@ public class AasRepositoryServiceTests
         _pluginDataHandler.GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
             .Returns(pluginData);
 
-        using var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("test-content")
-        };
-        httpResponseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
-
-        _fileAttachmentStreamProvider.GetResponseHeadersAsync("https://example.com/logo.png", cancellationToken)
-            .Returns(httpResponseMessage);
-        _fileAttachmentStreamProvider.ReadStreamAsync(httpResponseMessage, cancellationToken)
-            .Returns(new MemoryStream("test-content"u8.ToArray()));
+        var stream = new MemoryStream("test-content"u8.ToArray());
+        var fileContentResponse = new FileContentResponse(stream);
+        _fileContentProvider.GetFileContentAsync("https://example.com/logo.png", cancellationToken)
+            .Returns(fileContentResponse);
 
         var result = await _sut.GetThumbnailAsync(AasIdentifier, cancellationToken);
 
         Assert.NotNull(result);
-        Assert.Equal("image/png", result.ContentType);
+        Assert.Equal("application/octet-stream", result.ContentType);
         Assert.Equal("logo.png", result.FileName);
+
+        using var reader = new StreamReader(result.Content);
+        var body = await reader.ReadToEndAsync();
+        Assert.Equal("test-content", body);
     }
 
     [Fact]
@@ -480,13 +478,13 @@ public class AasRepositoryServiceTests
             DefaultThumbnail = null
         };
         var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities { HasAssetInformation = true }
-            }
-        };
+       {
+           new()
+           {
+               SupportedSemanticIds = ["id-1"],
+               Capabilities = new Capabilities { HasAssetInformation = true }
+           }
+       };
 
         _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken)
             .Returns(assetInfoTemplate);
@@ -499,19 +497,19 @@ public class AasRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetThumbnailAsync_ShouldThrowNotImplementedException_WhenUrlIsNotHttp()
+    public async Task GetThumbnailAsync_ShouldThrowInternalDataProcessingException_WhenUrlIsNotHttp()
     {
         var cancellationToken = CancellationToken.None;
         var assetInfoTemplate = CreateAssetInformationTemplate();
         var pluginData = CreateAssetData();
         var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                SupportedSemanticIds = ["id-1"],
-                Capabilities = new Capabilities { HasAssetInformation = true }
-            }
-        };
+       {
+           new()
+           {
+               SupportedSemanticIds = ["id-1"],
+               Capabilities = new Capabilities { HasAssetInformation = true }
+           }
+       };
 
         _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken)
             .Returns(assetInfoTemplate);
@@ -519,7 +517,7 @@ public class AasRepositoryServiceTests
         _pluginDataHandler.GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
             .Returns(pluginData);
 
-        await Assert.ThrowsAsync<NotImplementedException>(() =>
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
             _sut.GetThumbnailAsync(AasIdentifier, cancellationToken));
     }
 
@@ -544,8 +542,8 @@ public class AasRepositoryServiceTests
             GlobalAssetId = "urn:my-company:asset:9999",
             SpecificAssetIds = new List<SpecificAssetIdsData>
             {
-                new() { Name = "ManufacturerId", Value = "12345" },
-                new() { Name = "SerialNumber", Value = "SN-0001" }
+               new() { Name = "ManufacturerId", Value = "12345" },
+               new() { Name = "SerialNumber", Value = "SN-0001" }
             },
             DefaultThumbnail = new DefaultThumbnailData
             {
@@ -564,9 +562,9 @@ public class AasRepositoryServiceTests
                 ReferenceTypes.ModelReference,
                 [
                      new Key(
-                             KeyTypes.Submodel,
-                             $"urn:uuid:submodel-{i}"
-                             )
+                            KeyTypes.Submodel,
+                            $"urn:uuid:submodel-{i}"
+                            )
                       ],
                  null
             ));

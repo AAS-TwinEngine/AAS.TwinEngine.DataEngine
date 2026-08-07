@@ -260,7 +260,7 @@ public class AasRepositoryHandlerTests
     [Fact]
     public async Task GetThumbnailAsync_ShouldReturnFileAttachmentResult()
     {
-        var expectedResult = new FileAttachmentResult(new MemoryStream(), "image/png", "test.png");
+        var expectedResult = new FileAttachmentResult(new MemoryStream(), "image/png", "test.png", 100 * 1024 * 1024);
         _aasRepositoryService.GetThumbnailAsync("https://example.com/aas", Arg.Any<CancellationToken>())
             .Returns(expectedResult);
 
@@ -268,6 +268,59 @@ public class AasRepositoryHandlerTests
         var result = await _sut.GetThumbnailAsync(request, CancellationToken.None);
 
         Assert.Equal(expectedResult, result);
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_CallsServiceWithDecodedAasIdentifier_WhenInputIsValid()
+    {
+        const string aasIdentifier = "https://example.com/aas";
+        var encodedId = aasIdentifier.EncodeBase64Url();
+        var request = new GetThumbnailRequest(encodedId);
+        var expectedResult = new FileAttachmentResult(Stream.Null, "image/png", "thumbnail.png", 100 * 1024 * 1024);
+
+        _aasRepositoryService
+            .GetThumbnailAsync(aasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(expectedResult);
+
+        await _sut.GetThumbnailAsync(request, CancellationToken.None);
+
+        await _aasRepositoryService.Received(1)
+            .GetThumbnailAsync(aasIdentifier, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_InvalidBase64AasIdentifier_ThrowsInvalidUserInputException()
+    {
+        const string invalidEncodedId = "!!invalid_base64@@";
+        var request = new GetThumbnailRequest(invalidEncodedId);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+            _sut.GetThumbnailAsync(request, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("../../../etc/passwd")]
+    [InlineData("..\\..\\..\\windows\\system32")]
+    public async Task GetThumbnailAsync_MaliciousDecodedIdentifier_ThrowsInvalidUserInputException(string maliciousIdentifier)
+    {
+        var request = new GetThumbnailRequest(maliciousIdentifier.EncodeBase64Url());
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+            _sut.GetThumbnailAsync(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ServiceReturnsNull_ThrowsTemplateNotFoundException()
+    {
+        const string aasIdentifier = "https://example.com/aas";
+        var request = new GetThumbnailRequest(aasIdentifier.EncodeBase64Url());
+
+        _aasRepositoryService
+            .GetThumbnailAsync(aasIdentifier, Arg.Any<CancellationToken>())!
+            .Returns((FileAttachmentResult)null!);
+
+        await Assert.ThrowsAsync<TemplateNotFoundException>(() =>
+            _sut.GetThumbnailAsync(request, CancellationToken.None));
     }
 
     private static AssetInformation CreateAssetInformation()

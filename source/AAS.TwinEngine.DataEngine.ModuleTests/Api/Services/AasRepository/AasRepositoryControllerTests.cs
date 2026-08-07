@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -27,14 +27,14 @@ public abstract class AasRepositoryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
-    private readonly IFileAttachmentStreamProvider _fileAttachmentStreamProvider;
+    private readonly IFileContentProvider _fileContentProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
     protected AasRepositoryControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
-        _fileAttachmentStreamProvider = Substitute.For<IFileAttachmentStreamProvider>();
+        _fileContentProvider = Substitute.For<IFileContentProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
@@ -45,7 +45,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
             _ = services.AddSingleton(_httpClientFactory);
             _ = services.AddSingleton(_mockTemplateProvider);
-            _ = services.AddSingleton(_fileAttachmentStreamProvider);
+            _ = services.AddSingleton(_fileContentProvider);
         });
 
         _client = _factory.CreateClient();
@@ -592,10 +592,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         };
         httpResponseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
 
-        _ = _fileAttachmentStreamProvider.GetResponseHeadersAsync("https://example.com/share/img/10080308_DE.jpg", Arg.Any<CancellationToken>())
-            .Returns(httpResponseMessage);
-        _ = _fileAttachmentStreamProvider.ReadStreamAsync(httpResponseMessage, Arg.Any<CancellationToken>())
-            .Returns(new MemoryStream("test-bytes"u8.ToArray()));
+        _ = _fileContentProvider.GetFileContentAsync("https://example.com/share/img/10080308_DE.jpg", Arg.Any<CancellationToken>());
 
         var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
 
