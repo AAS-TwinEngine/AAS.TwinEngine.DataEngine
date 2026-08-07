@@ -110,7 +110,7 @@ public class SubmodelElementTests : ApiTestBase
     public async Task GetAllSubmodelElements_ContactInfo_WithLimit1AndCursor_ShouldReturnAtMostOneResult()
     {
         // Arrange
-        var cursor = Uri.EscapeDataString("Q29udGFjdEluZm9ybWF0aW9uMQ==");
+        var cursor = "Q29udGFjdEluZm9ybWF0aW9uMA";
         var url = $"/submodels/{SubmodelIdentifierContact}/submodel-elements?limit=1&cursor={cursor}";
 
         // Act
@@ -130,7 +130,7 @@ public class SubmodelElementTests : ApiTestBase
     public async Task GetAllSubmodelElements_ContactInfo_WithCursor_ShouldReturnSuccess_WithPagedResultShape()
     {
         // Arrange
-        var cursor = Uri.EscapeDataString("Q29udGFjdEluZm9ybWF0aW9uMQ==");
+        var cursor = "Q29udGFjdEluZm9ybWF0aW9uMA";
         var url = $"/submodels/{SubmodelIdentifierContact}/submodel-elements?cursor={cursor}";
 
         // Act
