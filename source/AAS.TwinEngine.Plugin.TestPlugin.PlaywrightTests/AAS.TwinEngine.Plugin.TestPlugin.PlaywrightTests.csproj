@@ -114,6 +114,18 @@
     <None Update="SubmodelRepository\TestData\GetAllSubmodels_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_WithLimit100_LevelDeep_ExtentWithBlobValue_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_With_Limit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_With_Limit1_And_Cursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_With_Cursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Discovery\TestData\GetSpecificAssetIdByAasIdentifier_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

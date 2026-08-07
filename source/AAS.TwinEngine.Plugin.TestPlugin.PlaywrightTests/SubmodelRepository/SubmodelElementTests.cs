@@ -66,4 +66,83 @@ public class SubmodelElementTests : ApiTestBase
 
         await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetSubmodelElement_CustomSubmodel_OperatingConditionsOfReliabilityCharacteristics.json"));
     }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_ContactInfo_WithLimit100_LevelDeep_ExtentWithBlobValue_ShouldReturnSuccess_WithPagedResultShape()
+    {
+        // Arrange
+        var url = $"/submodels/{SubmodelIdentifierContact}/submodel-elements?limit=100&level=deep&extent=withBlobValue";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetAllSubmodelElements_ContactInfo_WithLimit100_LevelDeep_ExtentWithBlobValue_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_ContactInfo_WithLimit1_ShouldReturnAtMostOneResult()
+    {
+        // Arrange
+        var url = $"/submodels/{SubmodelIdentifierContact}/submodel-elements?limit=1";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetAllSubmodelElements_ContactInfo_With_Limit1_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_ContactInfo_WithLimit1AndCursor_ShouldReturnAtMostOneResult()
+    {
+        // Arrange
+        var cursor = Uri.EscapeDataString("Q29udGFjdEluZm9ybWF0aW9uMQ==");
+        var url = $"/submodels/{SubmodelIdentifierContact}/submodel-elements?limit=1&cursor={cursor}";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetAllSubmodelElements_ContactInfo_With_Limit1_And_Cursor_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElements_ContactInfo_WithCursor_ShouldReturnSuccess_WithPagedResultShape()
+    {
+        // Arrange
+        var cursor = Uri.EscapeDataString("Q29udGFjdEluZm9ybWF0aW9uMQ==");
+        var url = $"/submodels/{SubmodelIdentifierContact}/submodel-elements?cursor={cursor}";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetAllSubmodelElements_ContactInfo_With_Cursor_Expected.json"));
+    }
 }
