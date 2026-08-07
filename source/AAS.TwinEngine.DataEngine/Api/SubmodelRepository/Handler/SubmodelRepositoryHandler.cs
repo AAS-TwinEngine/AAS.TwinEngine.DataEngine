@@ -4,6 +4,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -68,6 +69,18 @@ public class SubmodelRepositoryHandler(
             id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
 
         return result.ToDto();
+    }
+
+    public async Task<FileAttachmentResult> GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken)
+    {
+        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+
+        return await GetResourceByIdAsync(
+            request?.SubmodelId,
+            "file attachment",
+            id => submodelRepositoryService.GetFileAttachmentAsync(id, decodedIdShortPath, cancellationToken))
+            .ConfigureAwait(false);
     }
 
     private async Task<T> GetResourceByIdAsync<T>(

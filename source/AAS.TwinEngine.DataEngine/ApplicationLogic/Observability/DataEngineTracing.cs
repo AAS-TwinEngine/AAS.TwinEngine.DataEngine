@@ -29,6 +29,8 @@ public static class DataEngineTracing
         public const string CacheFetch = "Cache Fetch";
 
         public const string HttpFetch = "Http Fetch";
+        public const string LoadFileAttachment = "Load File Attachment";
+        public const string StreamResponse = "Stream Response";
     }
 
     public static class Attributes

@@ -189,14 +189,14 @@ public partial class SubmodelTemplateService(
                                           ?? throw new InternalDataProcessingException();
         }
 
-        throw new NotFoundException("Template not found");
+        throw new TemplateNotFoundException();
     }
 
     private static ISubmodelElement FindMatchingElement(IEnumerable<ISubmodelElement> submodelElements, string idShort)
     {
         var idShortWithoutIndex = SubmodelElementCollectionIndex().Replace(idShort, "");
         return submodelElements.FirstOrDefault(e => e.IdShort == idShort || e.IdShort == idShortWithoutIndex)
-               ?? throw new InternalDataProcessingException();
+               ?? throw new SubmodelElementNotFoundException();
     }
 
     private static bool TryParseIdShortWithBracketIndex(string idShort, out string idShortWithoutIndex, out int index)
