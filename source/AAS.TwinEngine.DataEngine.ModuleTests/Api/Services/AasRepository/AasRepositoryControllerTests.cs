@@ -9,6 +9,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Provide
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -586,18 +587,15 @@ public abstract class AasRepositoryControllerTests : IDisposable
 
         _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
 
-        var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("test-bytes")
-        };
-        httpResponseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
-
-        _ = _fileContentProvider.GetFileContentAsync("https://example.com/share/img/10080308_DE.jpg", Arg.Any<CancellationToken>());
+        var stream = new MemoryStream("test-bytes"u8.ToArray());
+        var fileContentResponse = new FileContentResponse(stream);
+        _ = _fileContentProvider.GetFileContentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(fileContentResponse);
 
         var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("image/png", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("application/octet-stream", response.Content.Headers.ContentType?.MediaType);
         var bytes = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal("test-bytes"u8.ToArray(), bytes);
     }
