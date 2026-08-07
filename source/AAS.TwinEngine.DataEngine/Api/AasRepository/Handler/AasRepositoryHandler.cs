@@ -108,7 +108,7 @@ public class AasRepositoryHandler(
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
         return GetResourceByIdAsync(
-            request!.AasIdentifier,
+            request.AasIdentifier,
             request.SubmodelId,
             "submodel element By AasID",
             async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, request?.IdShortPath, cancellationToken).ConfigureAwait(false));
@@ -122,7 +122,7 @@ public class AasRepositoryHandler(
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
         return GetResourceByIdAsync(
-            request!.AasIdentifier,
+            request.AasIdentifier,
             request.SubmodelIdentifier,
             "file By AasID",
             async (aasId, submodelId) => await aasRepositoryService.GetFileAttachmentByAasIdAsync(aasId, submodelId, decodedIdShortPath, cancellationToken).ConfigureAwait(false));

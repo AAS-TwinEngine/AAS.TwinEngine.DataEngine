@@ -1667,7 +1667,7 @@
                               "value": "DigitalFile[\\d{2,3}]"
                             }
                           ],
-                          "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                           "contentType": "application/pdf",
                           "modelType": "File"
                         }
@@ -2656,7 +2656,7 @@
                               "value": "DigitalFile[\\d{2,3}]"
                             }
                           ],
-                          "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                           "contentType": "application/pdf",
                           "modelType": "File"
                         }
@@ -4425,7 +4425,7 @@
                               "value": "DigitalFile[\\d{2,3}]"
                             }
                           ],
-                          "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                           "contentType": "application/pdf",
                           "modelType": "File"
                         }
@@ -6194,7 +6194,7 @@
                               "value": "DigitalFile[\\d{2,3}]"
                             }
                           ],
-                          "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                           "contentType": "application/pdf",
                           "modelType": "File"
                         }
