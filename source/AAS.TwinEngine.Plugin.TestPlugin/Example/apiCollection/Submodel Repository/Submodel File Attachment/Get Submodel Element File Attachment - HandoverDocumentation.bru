@@ -1,0 +1,21 @@
+meta {
+  name: Get Submodel Element File Attachment - HandoverDocumentation
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/attachment
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation}}
+  idShortPath: Documents[0].DocumentVersions[0].DigitalFiles[0]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

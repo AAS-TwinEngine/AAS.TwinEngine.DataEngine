@@ -1,4 +1,4 @@
-﻿namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 
 public record GetAllSubmodelElementsRequest
 {

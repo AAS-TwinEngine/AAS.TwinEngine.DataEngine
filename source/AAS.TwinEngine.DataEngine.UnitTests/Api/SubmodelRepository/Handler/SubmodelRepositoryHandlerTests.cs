@@ -1,10 +1,11 @@
-using System.Text;
+﻿using System.Text;
 
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -15,13 +16,17 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Api.SubmodelRepository.Handler;
+
 public class SubmodelRepositoryHandlerTests
 {
     private readonly ISubmodelRepositoryService _submodelRepository = Substitute.For<ISubmodelRepositoryService>();
     private readonly ILogger<SubmodelRepositoryHandler> _logger = Substitute.For<ILogger<SubmodelRepositoryHandler>>();
     private readonly SubmodelRepositoryHandler _sut;
 
-    public SubmodelRepositoryHandlerTests() => _sut = new SubmodelRepositoryHandler(_logger, _submodelRepository);
+    public SubmodelRepositoryHandlerTests()
+    {
+        _sut = new SubmodelRepositoryHandler(_logger, _submodelRepository);
+    }
 
     [Fact]
     public async Task HandleSubmodel_ReturnsSubmodel_WhenSubmodelExists()
@@ -344,7 +349,7 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_WhenNullRequest_ReturnsSuccessfully()
     {
-        var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
+        var submodelList = new SubmodelList { PagingMetaData = new PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
@@ -452,4 +457,62 @@ public class SubmodelRepositoryHandlerTests
             .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task GetFileAttachment_CallsService_WhenServiceSucceeds()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        const string IdShortPath = "Documents.ProductImage";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
+        var fakeResult = new FileAttachmentResult(Stream.Null, "application/octet-stream", "file.bin", 100 * 1024 * 1024);
+        _submodelRepository
+            .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .Returns(fakeResult);
+
+        await _sut.GetFileAttachment(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileAttachment_ReturnsServiceResult_WhenServiceSucceeds()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        const string IdShortPath = "Documents.ProductImage";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
+
+        var fakeResult = new FileAttachmentResult(Stream.Null, "application/octet-stream", "file.bin", 100 * 1024 * 1024);
+
+        _submodelRepository
+            .GetFileAttachmentAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .Returns(fakeResult);
+
+        var result = await _sut.GetFileAttachment(request, CancellationToken.None);
+
+        Assert.Equal(fakeResult, result);
+    }
+
+    [Fact]
+    public async Task GetFileAttachment_InvalidBase64SubmodelId_ThrowsInvalidUserInputException()
+    {
+        const string InvalidEncodedId = "!!invalid_base64@@";
+        const string IdShortPath = "Documents.ProductImage";
+        var request = new GetSubmodelElementRequest(InvalidEncodedId, IdShortPath);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetFileAttachment(request, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("../../../etc/passwd")]
+    [InlineData("..\\..\\..\\windows\\system32")]
+    public async Task GetFileAttachment_PathTraversalInIdShortPath_ThrowsInvalidUserInputException(string maliciousPath)
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        var encodedId = SubmodelId.EncodeBase64Url();
+        var request = new GetSubmodelElementRequest(encodedId, maliciousPath);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetFileAttachment(request, CancellationToken.None));
+    }
 }

@@ -5,6 +5,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_1;
@@ -133,6 +134,32 @@ public class SubmodelRepositoryControllerTests
 
         await _handler.Received(1).GetAllSubmodels(
             Arg.Is<GetAllSubmodelsRequest>(r => r.SemanticId == SemanticId && r.IdShort == IdShort && r.Limit == Limit),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_ReturnsFileContentStreamResult_WhenHandlerCompletes()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(Stream.Null, "application/pdf", "document.pdf", 100 * 1024 * 1024));
+
+        var result = await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
+
+        Assert.IsType<FileContentStreamResult>(result);
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_PassesRouteValuesToHandler()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(Stream.Null, "application/octet-stream", null, 100 * 1024 * 1024));
+
+        await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
+
+        await _handler.Received(1).GetFileAttachment(
+            Arg.Is<GetSubmodelElementRequest>(r => r.SubmodelId == encodedId && r.IdShortPath == _idShortPath),
             Arg.Any<CancellationToken>());
     }
 }
