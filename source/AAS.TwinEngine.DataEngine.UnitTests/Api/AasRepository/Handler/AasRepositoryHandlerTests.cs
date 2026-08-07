@@ -7,7 +7,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -22,14 +21,11 @@ public class AasRepositoryHandlerTests
 {
     private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
     private readonly ILogger<AasRepositoryHandler> _logger = Substitute.For<ILogger<AasRepositoryHandler>>();
-    private readonly IHttpContextAccessor _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
     private readonly AasRepositoryHandler _sut;
 
     public AasRepositoryHandlerTests()
     {
-        var httpContext = new DefaultHttpContext();
-        _httpContextAccessor.HttpContext.Returns(httpContext);
-        _sut = new AasRepositoryHandler(_logger, _httpContextAccessor, _aasRepositoryService);
+        _sut = new AasRepositoryHandler(_logger, _aasRepositoryService);
     }
 
     [Fact]

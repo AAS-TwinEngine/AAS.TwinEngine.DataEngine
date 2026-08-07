@@ -6,15 +6,13 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentProvider.Services;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 

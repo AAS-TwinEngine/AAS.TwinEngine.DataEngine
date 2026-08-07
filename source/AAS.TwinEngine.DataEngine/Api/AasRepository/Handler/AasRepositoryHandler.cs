@@ -9,7 +9,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
 
@@ -17,7 +16,6 @@ namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 
 public class AasRepositoryHandler(
     ILogger<AasRepositoryHandler> logger,
-    IHttpContextAccessor httpContextAccessor,
     IAasRepositoryService aasRepositoryService) : IAasRepositoryHandler
 {
     public async Task<ShellsDto> GetShellsByAssetIdsAsync(
@@ -78,7 +76,7 @@ public class AasRepositoryHandler(
         return await GetResourceByIdAsync(
             request?.AasIdentifier,
             "thumbnail",
-            id => aasRepositoryService.GetThumbnailAsync(decodedId!, cancellationToken))
+            id => aasRepositoryService.GetThumbnailAsync(decodedId, cancellationToken))
             .ConfigureAwait(false);
     }
 

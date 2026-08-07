@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
@@ -14,10 +15,6 @@ using AasCore.Aas3_1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using System.Net;
-using System.Net.Http;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
