@@ -5,6 +5,8 @@ using System.Text.Json.Nodes;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
@@ -216,5 +218,33 @@ public class AasRepositoryController(
         var request = new GetSubmodelElementByAasRequest(aasIdentifier, submodelIdentifier, idShortPath, level, extent);
         var response = await aasRepositoryHandler.GetSubmodelElementByAasIdAsync(request, cancellationToken).ConfigureAwait(false);
         return Ok(Jsonization.Serialize.ToJsonObject(response));
+    }
+
+    /// <summary>
+    /// Downloads file content from a specific submodel element from the Submodel at a specified path
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="idShortPath">IdShort path to the submodel element (dot-notation)</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Requested file</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/{idShortPath}/attachment")]
+    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetFileByPathByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get File through superpath for AAS");
+        var request = new GetFileByPathByAasIdRequest(aasIdentifier, submodelIdentifier, idShortPath);
+        var attachment = await aasRepositoryHandler.GetFileByPathByAasIdAsync(request, cancellationToken).ConfigureAwait(false);
+        return new FileContentStreamResult(attachment);
     }
 }

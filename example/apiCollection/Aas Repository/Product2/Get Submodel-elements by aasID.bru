@@ -5,14 +5,16 @@ meta {
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements?cursor=&limit=
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements
   body: none
   auth: inherit
 }
 
 params:query {
-  cursor: 
-  limit: 
+  ~limit: 
+  ~cursor: 
+  ~level: 
+  ~extent: 
 }
 
 params:path {

@@ -5,9 +5,14 @@ meta {
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/:idShortPath?level=&extent=
   body: none
   auth: inherit
+}
+
+params:query {
+  level: 
+  extent: 
 }
 
 params:path {

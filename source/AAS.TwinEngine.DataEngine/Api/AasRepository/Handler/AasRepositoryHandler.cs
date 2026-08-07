@@ -10,6 +10,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -78,7 +79,7 @@ public class AasRepositoryHandler(
             request.AasIdentifier,
             request.SubmodelId,
             "submodel By AasID",
-            (aasId, submodelId) => aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, queryOptions, cancellationToken));
+            async (aasId, submodelId) => await aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, queryOptions, cancellationToken).ConfigureAwait(false));
     }
 
     public Task<SubmodelElementsDto> GetAllSubmodelElementsByAasIdAsync(
@@ -103,13 +104,28 @@ public class AasRepositoryHandler(
         GetSubmodelElementByAasRequest request,
         CancellationToken cancellationToken)
     {
-        request?.IdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
         return GetResourceByIdAsync(
             request.AasIdentifier,
             request.SubmodelId,
             "submodel element By AasID",
-            (aasId, submodelId) => aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, request?.IdShortPath, cancellationToken));
+            async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, request?.IdShortPath, cancellationToken).ConfigureAwait(false));
+    }
+
+    public Task<FileAttachmentResult> GetFileByPathByAasIdAsync(
+        GetFileByPathByAasIdRequest request,
+        CancellationToken cancellationToken)
+    {
+        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+
+        return GetResourceByIdAsync(
+            request.AasIdentifier,
+            request.SubmodelIdentifier,
+            "file By AasID",
+            async (aasId, submodelId) => await aasRepositoryService.GetFileAttachmentByAasIdAsync(aasId, submodelId, decodedIdShortPath, cancellationToken).ConfigureAwait(false));
     }
 
     private Task<T> GetResourceByIdAsync<T>(

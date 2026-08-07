@@ -413,6 +413,19 @@ public class AasRepositoryTests : ApiTestBase
         Assert.Equal(400, response.Status);
     }
 
+    [Fact]
+    public async Task GetFileByPathByAasId_WithUnknownElement_ShouldReturnNotFound()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierContact}/submodel-elements/ContactName/attachment";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        Assert.Equal(404, response.Status);
+    }
+
     private static async Task<JsonElement> ParseResponseRootAsync(Microsoft.Playwright.IAPIResponse response)
     {
         var content = await response.TextAsync();

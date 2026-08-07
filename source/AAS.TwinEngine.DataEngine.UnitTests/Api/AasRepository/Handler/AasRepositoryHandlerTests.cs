@@ -456,5 +456,55 @@ public class AasRepositoryHandlerTests
         await Assert.ThrowsAsync<InvalidUserInputException>(() =>
             _sut.GetSubmodelElementByAasIdAsync(request, CancellationToken.None));
     }
+
+    [Fact]
+    public async Task GetFileByPathByAasIdAsync_ReturnsAttachment_WhenInputIsValid()
+    {
+        const string aasId = "https://example.com/aas/1";
+        const string submodelId = "https://example.com/submodels/contact";
+        const string idShortPath = "Thumbnail";
+
+        var request = new GetFileByPathByAasIdRequest(
+            aasId.EncodeBase64Url(),
+            submodelId.EncodeBase64Url(),
+            idShortPath);
+
+        var expected = new FileAttachmentResult(Stream.Null, "image/png", "thumbnail.png", 100 * 1024 * 1024);
+
+        _aasRepositoryService.GetFileAttachmentByAasIdAsync(
+            aasId,
+            submodelId,
+            idShortPath,
+            Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetFileByPathByAasIdAsync(request, CancellationToken.None);
+
+        Assert.Same(expected, result);
+        await _aasRepositoryService.Received(1).GetFileAttachmentByAasIdAsync(
+            aasId,
+            submodelId,
+            idShortPath,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("../../../etc/passwd")]
+    [InlineData(@"..\\..\\windows\\system32")]
+    [InlineData("element/../otherElement")]
+    [InlineData("%2e%2e/config")]
+    public async Task GetFileByPathByAasIdAsync_InvalidIdShortPath_ThrowsInvalidUserInputException(string maliciousPath)
+    {
+        const string aasId = "https://example.com/aas/1";
+        const string submodelId = "https://example.com/submodels/contact";
+
+        var request = new GetFileByPathByAasIdRequest(
+            aasId.EncodeBase64Url(),
+            submodelId.EncodeBase64Url(),
+            maliciousPath);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() =>
+            _sut.GetFileByPathByAasIdAsync(request, CancellationToken.None));
+    }
 }
 

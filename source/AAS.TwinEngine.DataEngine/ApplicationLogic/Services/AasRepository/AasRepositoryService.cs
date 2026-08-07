@@ -148,6 +148,13 @@ public class AasRepositoryService(
         return await submodelRepositoryService.GetSubmodelElementAsync(submodelIdentifier, idShortPath, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<FileAttachmentResult> GetFileAttachmentByAasIdAsync(string aasIdentifier, string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelId, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetFileAttachmentAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
     {
         var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);

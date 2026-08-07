@@ -7,9 +7,11 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_1;
 
@@ -331,6 +333,25 @@ public class AasRepositoryControllerTests
         Assert.IsType<JsonObject>(okResult.Value);
         await _handler.Received(1).GetSubmodelElementByAasIdAsync(
             Arg.Is<GetSubmodelElementByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelId == encodedSubmodelId && r.IdShortPath == IdShortPath),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileByPathByAasIdAsync_ReturnsFileContentStreamResult()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        const string IdShortPath = "Thumbnail";
+
+        _handler.GetFileByPathByAasIdAsync(Arg.Any<GetFileByPathByAasIdRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(Stream.Null, "image/png", "logo.png", 100 * 1024 * 1024));
+
+        var result = await _sut.GetFileByPathByAasIdAsync(encodedAasId, encodedSubmodelId, IdShortPath, CancellationToken.None);
+
+        Assert.IsType<FileContentStreamResult>(result);
+        await _handler.Received(1).GetFileByPathByAasIdAsync(
+            Arg.Is<GetFileByPathByAasIdRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelIdentifier == encodedSubmodelId && r.IdShortPath == IdShortPath),
             Arg.Any<CancellationToken>());
     }
 

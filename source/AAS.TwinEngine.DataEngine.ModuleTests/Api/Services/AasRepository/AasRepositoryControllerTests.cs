@@ -654,6 +654,37 @@ public abstract class AasRepositoryControllerTests : IDisposable
         Assert.NotNull(json);
     }
 
+    [Fact]
+    public async Task GetFileByPathByAasIdAsync_ReturnsAttachmentStreamAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
+        const string idShortPath = "Thumbnail";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
+        var fileBytes = Encoding.UTF8.GetBytes("fake-image-bytes");
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetFileAttachmentAsync(requestedSubmodelId, idShortPath, Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(new MemoryStream(fileBytes), "image/png", "logo.png", 100 * 1024 * 1024));
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}/submodel-elements/{idShortPath}/attachment");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("image/png", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal(fileBytes, body);
+        Assert.Contains("logo.png", response.Content.Headers.ContentDisposition?.ToString(), StringComparison.Ordinal);
+        await _mockSubmodelRepositoryService.Received(1).GetFileAttachmentAsync(requestedSubmodelId, idShortPath, Arg.Any<CancellationToken>());
+    }
+
     private static string EncodeBase64Url(string plainText)
     {
         if (string.IsNullOrWhiteSpace(plainText))
