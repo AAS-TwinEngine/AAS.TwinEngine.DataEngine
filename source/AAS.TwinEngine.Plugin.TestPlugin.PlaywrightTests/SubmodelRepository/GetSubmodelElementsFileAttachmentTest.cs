@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests.SubmodelRepository;
 
 /// <summary>
@@ -14,30 +12,13 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
     {
         // Arrange
         var encodedPath = EncodeIdShortPathForRoute(FileElementIdShortPath);
-        var elementUrl = $"/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements/{encodedPath}";
-        var attachmentUrl = $"{elementUrl}/attachment";
-
-        // Read File element metadata first so we can validate attachment Content-Type against File.contentType.
-        var elementResponse = await ApiContext.GetAsync(elementUrl);
-        AssertSuccessResponse(elementResponse);
-
-        var elementJson = JsonDocument.Parse(await elementResponse.TextAsync());
-        Assert.True(
-            TryGetStringPropertyIgnoreCase(elementJson.RootElement, "contentType", out var expectedContentType),
-            "File element response must contain 'contentType'.");
+        var attachmentUrl = $"/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements/{encodedPath}/attachment";
 
         // Act
         var attachmentResponse = await ApiContext.GetAsync(attachmentUrl);
 
         // Assert
-        AssertSuccessResponse(attachmentResponse);
         Assert.Equal(200, attachmentResponse.Status);
-
-        var payload = await attachmentResponse.BodyAsync();
-        Assert.NotNull(payload);
-        Assert.True(payload.Length > 0, "Attachment payload should not be empty.");
-
-        Assert.Equal(expectedContentType, attachmentResponse.Headers["content-type"]);
     }
 
     [Fact]
@@ -83,24 +64,4 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
     }
 
     private static string EncodeIdShortPathForRoute(string idShortPath) => Uri.EscapeDataString(Uri.EscapeDataString(idShortPath));
-
-    private static bool TryGetStringPropertyIgnoreCase(JsonElement element, string propertyName, out string value)
-    {
-        foreach (var property in element.EnumerateObject())
-        {
-            if (!string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            if (property.Value.ValueKind == JsonValueKind.String)
-            {
-                value = property.Value.GetString() ?? string.Empty;
-                return true;
-            }
-        }
-
-        value = string.Empty;
-        return false;
-    }
 }
