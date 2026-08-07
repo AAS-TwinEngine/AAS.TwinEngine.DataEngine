@@ -11,7 +11,7 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
     public async Task GetSubmodelElementFileAttachment_HandoverDocumentation_ShouldReturnBinary_WithContentTypeFromFileElement()
     {
         // Arrange
-        var encodedPath = EncodeIdShortPathForRoute(FileElementIdShortPath);
+        var encodedPath = FileElementIdShortPath;
         var attachmentUrl = $"/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements/{encodedPath}/attachment";
 
         // Act
@@ -38,7 +38,7 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
     public async Task GetSubmodelElementFileAttachment_WhenElementPathDoesNotExist_ShouldReturn404()
     {
         // Arrange
-        var missingPath = EncodeIdShortPathForRoute("Documents[999].DocumentVersions[0].DigitalFiles[0]");
+        var missingPath = "Documents[999].DocumentVersions[0].DigitalFiles[0]";
         var url = $"/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements/{missingPath}/attachment";
 
         // Act
@@ -53,7 +53,7 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
     {
         // Arrange
         var missingSubmodel = Base64EncodeUrl("https://mm-software.com/submodel/000-001/DoesNotExist");
-        var path = EncodeIdShortPathForRoute(FileElementIdShortPath);
+        var path = FileElementIdShortPath;
         var url = $"/submodels/{missingSubmodel}/submodel-elements/{path}/attachment";
 
         // Act
@@ -62,6 +62,4 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
         // Assert
         Assert.Equal(404, response.Status);
     }
-
-    private static string EncodeIdShortPathForRoute(string idShortPath) => Uri.EscapeDataString(Uri.EscapeDataString(idShortPath));
 }
