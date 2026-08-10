@@ -559,17 +559,6 @@ public abstract class AasRepositoryControllerTests : IDisposable
     {
         const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
 
-        var thumbnail = Substitute.For<IResource>();
-        thumbnail.Path.Returns("https://example.com/logo.png");
-        thumbnail.ContentType.Returns("image/png");
-
-        var mockAssetInformationTemplate = new AssetInformation(
-            AssetKind.Instance,
-            "https://example.com/ids/asset/123",
-            [],
-            defaultThumbnail: thumbnail
-        );
-
         var messageHandler = new FakeHttpMessageHandler((request, token) =>
         {
             var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -585,7 +574,8 @@ public abstract class AasRepositoryControllerTests : IDisposable
         const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
         _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
 
-        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
+        var expectedAssetInformation = TestData.CreateAssetInformationTemplate();
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(expectedAssetInformation);
 
         var stream = new MemoryStream("test-bytes"u8.ToArray());
         var fileContentResponse = new FileContentResponse(stream);
@@ -595,7 +585,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("application/octet-stream", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(expectedAssetInformation.DefaultThumbnail.ContentType, response.Content.Headers.ContentType?.MediaType);
         var bytes = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal("test-bytes"u8.ToArray(), bytes);
     }
