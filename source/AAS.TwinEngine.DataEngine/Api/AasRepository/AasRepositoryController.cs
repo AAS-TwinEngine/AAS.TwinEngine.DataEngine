@@ -1,12 +1,10 @@
-﻿using System.ComponentModel;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared.Results;
-using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
@@ -52,7 +50,8 @@ public class AasRepositoryController(
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to get shells (assetIds/idShort filters)");
-        var response = await aasRepositoryHandler.GetShellsByAssetIdsAsync(assetIds, idShort, limit, cursor, cancellationToken).ConfigureAwait(false);
+        var request = new GetShellsByAssetIdsRequest(assetIds, idShort, limit, cursor);
+        var response = await aasRepositoryHandler.GetShellsByAssetIdsAsync(request, cancellationToken).ConfigureAwait(false);
         return Ok(response);
     }
 

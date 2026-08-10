@@ -11,7 +11,7 @@ namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 
 public interface IAasRepositoryHandler
 {
-    Task<ShellsDto> GetShellsByAssetIdsAsync(string[]? assetIds, string? idShort, int? limit, string? cursor, CancellationToken cancellationToken);
+    Task<ShellsDto> GetShellsByAssetIdsAsync(GetShellsByAssetIdsRequest request, CancellationToken cancellationToken);
 
     Task<IAssetAdministrationShell> GetShellByIdAsync(GetShellRequest request, CancellationToken cancellationToken);
 
