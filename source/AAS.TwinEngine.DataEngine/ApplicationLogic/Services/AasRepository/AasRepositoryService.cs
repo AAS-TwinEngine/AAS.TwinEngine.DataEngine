@@ -138,7 +138,9 @@ public class AasRepositoryService(
 
             var thumbnailContent = await fileContentProvider.GetFileContentAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
 
-            var contentType = "application/octet-stream";
+            var contentType = string.IsNullOrWhiteSpace(thumbnail.ContentType)
+                ? "application/octet-stream"
+                : thumbnail.ContentType;
             var fileName = GetFileName(thumbnailUrl);
 
             return new FileAttachmentResult(thumbnailContent.Content, contentType, fileName, _maxFileAttachmentSizeBytes)
@@ -380,22 +382,22 @@ public class AasRepositoryService(
 
         var thumbnail = assetInformation?.DefaultThumbnail;
 
-        return thumbnail ?? throw new ThumbnailNotFoundException(aasIdentifier);
+        return thumbnail ?? throw new AssetInformationNotFoundException(aasIdentifier);
     }
 
-    private string GetValidatedThumbnailUrl(IResource thumbnail, string idShortPath)
+    private string GetValidatedThumbnailUrl(IResource thumbnail, string aasIdentifier)
     {
         var thumbnailUrl = thumbnail.Path;
 
         if (string.IsNullOrWhiteSpace(thumbnailUrl))
         {
-            throw new SubmodelElementNotFoundException(idShortPath);
+            throw new AssetInformationNotFoundException(aasIdentifier);
         }
 
         if (!Uri.TryCreate(thumbnailUrl, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            logger.LogError("Thumbnail URL is invalid. FileUrl: {FileUrl}", idShortPath, thumbnailUrl);
+            logger.LogError("Thumbnail URL is invalid. FileUrl: {FileUrl}", thumbnailUrl);
             throw new InternalDataProcessingException();
         }
 

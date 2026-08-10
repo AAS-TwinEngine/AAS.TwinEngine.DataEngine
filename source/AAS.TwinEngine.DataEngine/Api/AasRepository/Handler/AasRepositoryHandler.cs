@@ -71,7 +71,6 @@ public class AasRepositoryHandler(
     public async Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
     {
         var decodedId = request?.AasIdentifier?.DecodeBase64Url(logger);
-        logger.LogInformation("Start executing get request for thumbnail. Aas Identifier: {DecodedId}", decodedId);
 
         return await GetResourceByIdAsync(
             request?.AasIdentifier,

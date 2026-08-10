@@ -269,7 +269,7 @@ public class SubmodelRepositoryService(
         }
 
         logger.LogError("Submodel element at path {IdShortPath} is not of type File. Actual type: {ActualType}", idShortPath, element.GetType().Name);
-        throw new InvalidUserInputException("Invalid IdShortPath for file attachment.");
+        throw new InvalidUserInputException();
     }
 
     private string GetValidatedFileUrl(File fileElement, string idShortPath)

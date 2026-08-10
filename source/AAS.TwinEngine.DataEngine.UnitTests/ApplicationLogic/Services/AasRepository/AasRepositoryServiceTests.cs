@@ -452,7 +452,7 @@ public class AasRepositoryServiceTests
         var result = await _sut.GetThumbnailAsync(AasIdentifier, cancellationToken);
 
         Assert.NotNull(result);
-        Assert.Equal("application/octet-stream", result.ContentType);
+        Assert.Equal(pluginData.DefaultThumbnail.ContentType, result.ContentType);
         Assert.Equal("logo.png", result.FileName);
 
         using var reader = new StreamReader(result.Content);
@@ -461,15 +461,10 @@ public class AasRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetThumbnailAsync_ShouldThrowThumbnailNotFoundException_WhenThumbnailIsMissing()
+    public async Task GetThumbnailAsync_ShouldThrowAssetInformationNotFoundException_WhenThumbnailIsMissing()
     {
         var cancellationToken = CancellationToken.None;
-        var assetInfoTemplate = new AssetInformation(
-            AssetKind.Instance,
-            "globalAssetId",
-            [],
-            defaultThumbnail: null
-        );
+        var assetInfoTemplate = new AssetInformation(AssetKind.Instance, "globalAssetId", [], defaultThumbnail: null);
         var pluginData = new AssetData
         {
             DefaultThumbnail = null
@@ -489,7 +484,7 @@ public class AasRepositoryServiceTests
         _pluginDataHandler.GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
             .Returns(pluginData);
 
-        await Assert.ThrowsAsync<ThumbnailNotFoundException>(() =>
+        await Assert.ThrowsAsync<AssetInformationNotFoundException>(() =>
             _sut.GetThumbnailAsync(AasIdentifier, cancellationToken));
     }
 

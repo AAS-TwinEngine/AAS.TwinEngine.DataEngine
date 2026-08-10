@@ -635,7 +635,7 @@ public class SubmodelRepositoryServiceTests
         ArrangeAttachmentElement(IdShortPath, property);
         var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
-        Assert.Equal("Invalid IdShortPath for file attachment.", ex.Message);
+        Assert.Equal("Invalid User Input.", ex.Message);
     }
 
     [Fact]

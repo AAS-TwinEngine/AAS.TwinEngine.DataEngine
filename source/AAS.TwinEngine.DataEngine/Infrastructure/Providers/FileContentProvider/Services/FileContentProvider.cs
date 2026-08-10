@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentProvider.Services;
 
-public class FileContentProvider(ICreateClient httpClientFactory, IOptions<GeneralConfig> generalConfig) : IFileContentProvider
+public class FileContentProvider(ICreateClient httpClientFactory, IOptions<GeneralConfig> generalConfig, ILogger<FileContentProvider> logger) : IFileContentProvider
 {
     private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
     public async Task<FileContentResponse> GetFileContentAsync(string fileUrl, CancellationToken cancellationToken)
@@ -20,6 +20,7 @@ public class FileContentProvider(ICreateClient httpClientFactory, IOptions<Gener
         {
             if (!response.IsSuccessStatusCode)
             {
+                logger.LogError("Failed to retrieve file content. FileUrl: {FileUrl}, StatusCode: {StatusCode}", fileUrl, response.StatusCode);
                 throw new InternalDataProcessingException();
             }
 

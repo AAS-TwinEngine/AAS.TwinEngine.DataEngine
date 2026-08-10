@@ -23,10 +23,7 @@ public class AasRepositoryHandlerTests
     private readonly ILogger<AasRepositoryHandler> _logger = Substitute.For<ILogger<AasRepositoryHandler>>();
     private readonly AasRepositoryHandler _sut;
 
-    public AasRepositoryHandlerTests()
-    {
-        _sut = new AasRepositoryHandler(_logger, _aasRepositoryService);
-    }
+    public AasRepositoryHandlerTests() => _sut = new AasRepositoryHandler(_logger, _aasRepositoryService);
 
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithNullAssetIds_ReturnsAllShells()
