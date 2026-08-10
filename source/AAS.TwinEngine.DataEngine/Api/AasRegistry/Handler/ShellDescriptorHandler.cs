@@ -73,6 +73,7 @@ public class ShellDescriptorHandler(
     {
         var decodedAasId = encodedAasId?.DecodeBase64Url(logger);
         var decodedSubmodelId = encodedSubmodelId?.DecodeBase64Url(logger);
+
         logger.LogInformation("Get {ResourceName} for AAS: {AasId}, Submodel: {SubmodelId}", resourceName, decodedAasId, decodedSubmodelId);
 
         var result = await fetchFunc(decodedAasId, decodedSubmodelId).ConfigureAwait(false);
@@ -97,13 +98,13 @@ public class ShellDescriptorHandler(
 
     private void LogRequestStart(string resourceName, string? decodedId)
     {
-        if (resourceName is not "shell descriptor")
+        if (resourceName is "shell descriptors")
         {
-            logger.LogInformation("Start executing get request for {ResourceName} for AAS Identifier: {AasIdentifier}", resourceName, decodedId);
+            logger.LogInformation("Start executing get request for {ResourceName}", resourceName);
         }
         else
         {
-            logger.LogInformation("Start executing get request for {ResourceName}", resourceName);
+            logger.LogInformation("Start executing get request for {ResourceName} for AAS Identifier: {AasIdentifier}", resourceName, decodedId);
         }
     }
 
