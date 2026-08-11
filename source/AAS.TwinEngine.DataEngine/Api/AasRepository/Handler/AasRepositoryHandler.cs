@@ -69,7 +69,7 @@ public class AasRepositoryHandler(
     }
 
     public Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
-  => GetResourceByIdAsync(
+    => GetResourceByIdAsync(
       request?.AasIdentifier,
       "thumbnail",
       id => aasRepositoryService.GetThumbnailAsync(id, cancellationToken));
