@@ -15,6 +15,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 using NSwag.Annotations;
+using AAS.TwinEngine.DataEngine.Api.Shared;
 
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
 
