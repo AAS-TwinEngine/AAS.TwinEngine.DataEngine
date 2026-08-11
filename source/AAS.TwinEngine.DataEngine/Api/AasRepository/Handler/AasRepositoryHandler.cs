@@ -68,16 +68,11 @@ public class AasRepositoryHandler(
         );
     }
 
-    public async Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
-    {
-        var decodedId = request?.AasIdentifier?.DecodeBase64Url(logger);
-
-        return await GetResourceByIdAsync(
-            request?.AasIdentifier,
-            "thumbnail",
-            id => aasRepositoryService.GetThumbnailAsync(decodedId, cancellationToken))
-            .ConfigureAwait(false);
-    }
+    public Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
+  => GetResourceByIdAsync(
+      request?.AasIdentifier,
+      "thumbnail",
+      id => aasRepositoryService.GetThumbnailAsync(id, cancellationToken));
 
     private Task<T> GetResourceByIdAsync<T>(
         string? encodedId,

@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Net;
 using System.Text.Json.Nodes;
 
@@ -117,7 +116,7 @@ public class AasRepositoryController(
         var request = new GetThumbnailRequest(aasIdentifier);
         var response = await aasRepositoryHandler.GetThumbnailAsync(request, cancellationToken).ConfigureAwait(false);
 
-        return new FileContentStreamResult(response);
+        return new FileContentStreamResult(response, ContentDispositionType.inline);
     }
 
     /// <summary>

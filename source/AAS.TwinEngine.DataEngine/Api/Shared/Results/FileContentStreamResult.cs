@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
@@ -8,14 +9,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AAS.TwinEngine.DataEngine.Api.Shared.Results;
 
-public class FileContentStreamResult(FileAttachmentResult attachment) : IActionResult
+public class FileContentStreamResult(FileAttachmentResult attachment, ContentDispositionType contentDispositionType) : IActionResult
 {
     public async Task ExecuteResultAsync(ActionContext context)
     {
         var response = context.HttpContext.Response;
         response.ContentType = attachment.ContentType;
-        response.Headers.ContentDisposition = $"attachment; filename=\"{attachment.FileName ?? string.Empty}\"";
-
+        if (contentDispositionType == ContentDispositionType.attachment)
+        {
+            response.Headers.ContentDisposition = $"attachment; filename=\"{attachment.FileName}\"";
+        }
+        else
+        {
+            response.Headers.ContentDisposition = "inline";
+        }
         await using (attachment)
         {
             using var activity = DataEngineTracing.Source.StartActivity(DataEngineTracing.Spans.StreamResponse);
