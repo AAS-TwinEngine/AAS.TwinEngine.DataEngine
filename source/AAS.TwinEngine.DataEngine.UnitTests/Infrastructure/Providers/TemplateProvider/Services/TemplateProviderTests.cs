@@ -268,7 +268,7 @@ public class TemplateProviderTests
 
         Assert.NotNull(result);
         Assert.Equal(AssetKind.Type, result.AssetKind);
-        Assert.Equal(AssetKind.Instance, result.AssetType);
+        Assert.Equal("Instance", result.AssetType);
     }
 
     [Fact]
@@ -287,7 +287,7 @@ public class TemplateProviderTests
         var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.Null(result.AssetKind);
+        Assert.Equal(AssetKind.Type, result.AssetKind);
         Assert.Null(result.AssetType);
         Assert.Null(result.GlobalAssetId);
         Assert.Null(result.Description);

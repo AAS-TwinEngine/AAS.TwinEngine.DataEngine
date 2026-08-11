@@ -18,7 +18,7 @@ public class ManifestControllerTests
     [Fact]
     public async Task RetrieveManifestDataAsync_ShouldReturnOk_WhenDataIsAvailable()
     {
-        var expectedManifest = new ManifestDto { Capabilities = new CapabilitiesDto(), SupportedSemanticIds = ["abc"] };
+        var expectedManifest = new ManifestDto { Capabilities = new CapabilitiesDto { HasAssetKindTypeFilter = true }, SupportedSemanticIds = ["abc"] };
         _manifestHandler.GetManifestData(Arg.Any<CancellationToken>())
                         .Returns(Task.FromResult(expectedManifest));
 

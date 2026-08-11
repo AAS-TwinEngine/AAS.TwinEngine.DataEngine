@@ -7,6 +7,8 @@ public static class TestData
          ""globalAssetId"": ""WeatherStation"",
          ""idShort"": ""SensorWeatherStationExample"",
          ""id"": ""WeatherStation"",
+         ""assetKind"": ""Instance"",
+         ""assetType"": ""Attribute"",
          ""specificAssetIds"": [],
          ""assetInformationData"": {
          ""defaultThumbnail"": {
@@ -19,6 +21,7 @@ public static class TestData
          ""globalAssetId"": ""mm-2206-1631"",
          ""idShort"": ""2206-1631/1000-859"",
          ""id"": ""mm-2206-1631/1000-859"",
+         ""assetKind"": ""Instance"",
          ""specificAssetIds"": [],
          ""assetInformationData"": {
            ""defaultThumbnail"": {
@@ -31,6 +34,7 @@ public static class TestData
          ""globalAssetId"": ""100-859"",
          ""idShort"": """",
          ""id"": ""1000-859"",
+         ""assetKind"": ""Instance"",
          ""specificAssetIds"": [],
          ""assetInformationData"": {
            ""defaultThumbnail"": {
@@ -49,12 +53,15 @@ public static class TestData
          ""globalAssetId"": ""SoftwareNameplate"",
          ""idShort"": ""SoftwareNameplateAAS"",
          ""id"": ""SoftwareNameplate/1/0"",
+         ""assetKind"": ""Type"",
          ""specificAssetIds"": []
        },
        {
          ""globalAssetId"": ""ContactInformation"",
          ""idShort"": ""ContactInformationAAS"",
          ""id"": ""ContactInformation"",
+         ""assetKind"": ""Instance"",
+         ""assetType"": ""Attribute"",
          ""specificAssetIds"": [
            {
              ""name"": ""SerialNumber"",
@@ -72,6 +79,8 @@ public static class TestData
          ""globalAssetId"": ""DigitalNameplate"",
          ""idShort"": ""DigitalNameplateAAS"",
          ""id"": ""DigitalNameplate/3/0"",
+         ""assetKind"": ""Type"",
+         ""assetType"": ""Template"",
          ""specificAssetIds"": null
        }
      ]";

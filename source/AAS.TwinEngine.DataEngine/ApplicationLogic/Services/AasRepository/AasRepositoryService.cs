@@ -188,9 +188,20 @@ public class AasRepositoryService(
             throw new TemplateNotValidException();
         }
 
+        // Plugin values override template values when provided; otherwise template stays as fallback.
+        if (metadata.ParsedAssetKind.HasValue)
+        {
+            shell.AssetInformation.AssetKind = metadata.ParsedAssetKind.Value;
+        }
+
+        if (!string.IsNullOrWhiteSpace(metadata.AssetType))
+        {
+            shell.AssetInformation.AssetType = metadata.AssetType;
+        }
+
         shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
 
-        foreach (var assetId in metadata.SpecificAssetIds)
+        foreach (var assetId in metadata.SpecificAssetIds ?? [])
         {
             var existingAssetId = shell.AssetInformation.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
 
@@ -215,7 +226,7 @@ public class AasRepositoryService(
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(limit, cursor, null, null, pluginManifestConflictHandler.Manifests, cancellationToken)
             .ConfigureAwait(false);
 
         return (

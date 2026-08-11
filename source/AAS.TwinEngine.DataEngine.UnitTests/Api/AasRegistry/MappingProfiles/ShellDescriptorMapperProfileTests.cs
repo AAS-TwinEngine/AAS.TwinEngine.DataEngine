@@ -22,7 +22,7 @@ public class ShellDescriptorMapperProfileTests
         Assert.Equal("shell-001", dto.Id);
         Assert.Equal("ShellShort", dto.IdShort);
         Assert.Equal(AssetKind.Type, dto.AssetKind);
-        Assert.Equal(AssetKind.Type, dto.AssetType);
+        Assert.Equal("Type", dto.AssetType);
         Assert.Equal("global-asset-id", dto.GlobalAssetId);
 
         Assert.NotNull(dto.Description);
@@ -69,7 +69,7 @@ public class ShellDescriptorMapperProfileTests
         Assert.Equal("shell-001", dto.Id);
         Assert.Equal("ShellShort", dto.IdShort);
         Assert.Equal(AssetKind.Type, dto.AssetKind);
-        Assert.Equal(AssetKind.Type, dto.AssetType);
+        Assert.Equal("Type", dto.AssetType);
         Assert.Equal("global-asset-id", dto.GlobalAssetId);
         Assert.NotNull(dto.Description);
         Assert.Single(dto.Description);

@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using AasCore.Aas3_1;
+
 using Microsoft.AspNetCore.WebUtilities;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
@@ -23,6 +25,8 @@ public class PluginDataProvider(
     private const string DataEndpoint = "data";
     public const string AssetIdsHeader = "aastwinengine-assetids";
     public const string IdShortHeader = "aastwinengine-idshort";
+    public const string AssetKindHeader = "aastwinengine-assetkind";
+    public const string AssetTypeHeader = "aastwinengine-assettype";
 
     public async Task<IList<string>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequests, string submodelId, CancellationToken cancellationToken)
     {
@@ -54,6 +58,8 @@ public class PluginDataProvider(
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
         int? limit,
         string? cursor,
+        AssetKind? assetKind,
+        string? assetType,
         IList<PluginRequestMetaData> pluginRequests,
         CancellationToken cancellationToken)
     {
@@ -67,7 +73,18 @@ public class PluginDataProvider(
         {
             var url = BuildShellsUrl(remainingLimit, cursor);
 
-            var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken);
+            var requestHeaders = new Dictionary<string, string>();
+            if (assetKind.HasValue)
+            {
+                requestHeaders[AssetKindHeader] = assetKind.Value.ToString();
+            }
+
+            if (!string.IsNullOrWhiteSpace(assetType))
+            {
+                requestHeaders[AssetTypeHeader] = assetType.DecodeBase64Url(logger);
+            }
+
+            var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken, requestHeaders);
             if (response == null)
             {
                 continue;
@@ -224,7 +241,12 @@ public class PluginDataProvider(
         return HandleResultOrThrow(result, exceptions);
     }
 
-    private async Task<HttpResponseMessage?> SendPluginRequestAsync(PluginRequestMetaData pluginRequest, string url, IList<Exception> exceptions, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage?> SendPluginRequestAsync(
+        PluginRequestMetaData pluginRequest,
+        string url,
+        IList<Exception> exceptions,
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? requestHeaders = null)
     {
         if (pluginRequest == null)
         {
@@ -237,7 +259,17 @@ public class PluginDataProvider(
 
         try
         {
-            return await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (requestHeaders != null)
+            {
+                foreach (var (headerName, headerValue) in requestHeaders)
+                {
+                    _ = request.Headers.TryAddWithoutValidation(headerName, headerValue);
+                }
+            }
+
+            return await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {

@@ -1,3 +1,5 @@
-﻿namespace AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
+﻿using AasCore.Aas3_1;
 
-public record GetShellDescriptorsRequest(int? Limit, string? Cursor);
+namespace AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
+
+public record GetShellDescriptorsRequest(int? Limit, string? Cursor, AssetKind? AssetKind, string? AssetType);

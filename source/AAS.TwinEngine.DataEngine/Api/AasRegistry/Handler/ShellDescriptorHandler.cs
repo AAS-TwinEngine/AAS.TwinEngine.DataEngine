@@ -15,11 +15,12 @@ public class ShellDescriptorHandler(
     {
         request?.Limit.ValidateLimit(logger);
         request?.Cursor?.ValidateCursor(logger);
+        request?.AssetType?.DecodeBase64Url(logger);
 
         return GetShellDescriptorResourceAsync(
             null,
             "shell descriptors",
-            _ => shellDescriptorService.GetAllShellDescriptorsAsync(request.Limit, request.Cursor, cancellationToken),
+            _ => shellDescriptorService.GetAllShellDescriptorsAsync(request.Limit, request.Cursor, request.AssetKind, request.AssetType, cancellationToken),
             descriptors => descriptors.ToDto()
         );
     }

@@ -288,6 +288,8 @@ public class AasRepositoryServiceTests
             .GetDataForAllShellDescriptorsAsync(
                 null,
                 null,
+                null,
+                null,
                 manifests,
                 cancellationToken)
             .Returns(new ShellDescriptorsMetaData
@@ -361,12 +363,12 @@ public class AasRepositoryServiceTests
         var metadataItems = new List<ShellDescriptorMetaData>
         {
             new() { Id = "aas-1", SpecificAssetIds = [] },
-            new() { Id = "aas-2", SpecificAssetIds = [] }, 
+            new() { Id = "aas-2", SpecificAssetIds = [] },
             new() { Id = "aas-3", SpecificAssetIds = [] }
         };
 
         _pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(null, null, manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, cancellationToken)
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors = metadataItems,
@@ -394,6 +396,78 @@ public class AasRepositoryServiceTests
         await _templateService.Received(1).GetShellTemplateAsync("aas-1", cancellationToken);
         await _templateService.Received(1).GetShellTemplateAsync("aas-2", cancellationToken);
         await _templateService.Received(1).GetShellTemplateAsync("aas-3", cancellationToken);
+    }
+
+    [Fact]
+    public async Task GetShellsByFiltersAsync_WhenMetadataProvidesAssetKindAndType_OverridesTemplateValues()
+    {
+        var cancellationToken = CancellationToken.None;
+        var manifests = new List<PluginManifest>();
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+
+        var metadata = new ShellDescriptorMetaData
+        {
+            Id = "aas-1",
+            AssetKind = "Instance",
+            AssetType = "Attribute",
+            SpecificAssetIds = []
+        };
+
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, cancellationToken)
+            .Returns(new ShellDescriptorsMetaData
+            {
+                ShellDescriptors = [metadata],
+                PagingMetaData = new PagingMetaData()
+            });
+
+        var templateShell = new AssetAdministrationShell(
+            "aas-1",
+            new AssetInformation(AssetKind.Type, assetType: "Template", specificAssetIds: []));
+
+        _templateService.GetShellTemplateAsync("aas-1", cancellationToken).Returns(templateShell);
+
+        var result = await _sut.GetShellsByFiltersAsync(null, null, null, cancellationToken);
+
+        var shell = Assert.Single(result.Result);
+        Assert.Equal(AssetKind.Instance, shell.AssetInformation?.AssetKind);
+        Assert.Equal("Attribute", shell.AssetInformation?.AssetType);
+    }
+
+    [Fact]
+    public async Task GetShellsByFiltersAsync_WhenMetadataOmitsAssetKindAndType_KeepsTemplateValues()
+    {
+        var cancellationToken = CancellationToken.None;
+        var manifests = new List<PluginManifest>();
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+
+        var metadata = new ShellDescriptorMetaData
+        {
+            Id = "aas-1",
+            AssetKind = null,
+            AssetType = null,
+            SpecificAssetIds = []
+        };
+
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, cancellationToken)
+            .Returns(new ShellDescriptorsMetaData
+            {
+                ShellDescriptors = [metadata],
+                PagingMetaData = new PagingMetaData()
+            });
+
+        var templateShell = new AssetAdministrationShell(
+            "aas-1",
+            new AssetInformation(AssetKind.Type, assetType: "Template", specificAssetIds: []));
+
+        _templateService.GetShellTemplateAsync("aas-1", cancellationToken).Returns(templateShell);
+
+        var result = await _sut.GetShellsByFiltersAsync(null, null, null, cancellationToken);
+
+        var shell = Assert.Single(result.Result);
+        Assert.Equal(AssetKind.Type, shell.AssetInformation?.AssetKind);
+        Assert.Equal("Template", shell.AssetInformation?.AssetType);
     }
 
     private static AssetAdministrationShell CreateShellTemplate()

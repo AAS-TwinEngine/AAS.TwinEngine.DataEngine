@@ -1,9 +1,14 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
@@ -20,14 +25,25 @@ public class ShellDescriptorService(
     ILogger<ShellDescriptorService> logger,
     IOptions<TemplateManagementConfig> templateManagementConfig) : IShellDescriptorService
 {
+    private const int DefaultFallbackPluginPageSize = 100;
+    private const int FallbackPluginPageSizeMultiplier = 10;
+    private const int MaxFallbackPluginPageSize = 10_000;
+
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
-    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+
+    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, AssetKind? assetKind, string? assetType, CancellationToken cancellationToken)
     {
         try
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
+
+            if (ShouldUseClientSideAssetKindTypeFallback(pluginManifests, assetKind, assetType))
+            {
+                return await GetAllShellDescriptorsWithClientSideAssetFilterAsync(limit, cursor, assetKind, assetType, pluginManifests, cancellationToken).ConfigureAwait(false);
+            }
+
             var metadata = await pluginDataHandler
-                .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken)
+                .GetDataForAllShellDescriptorsAsync(limit, cursor, assetKind, assetType, pluginManifests, cancellationToken)
                 .ConfigureAwait(false);
 
             var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
@@ -59,6 +75,67 @@ public class ShellDescriptorService(
         {
             throw new ServiceUnAuthorizedException();
         }
+    }
+
+    private async Task<ShellDescriptors> GetAllShellDescriptorsWithClientSideAssetFilterAsync(
+        int? limit,
+        string? cursor,
+        AssetKind? assetKind,
+        string? assetType,
+        IReadOnlyList<PluginManifest> pluginManifests,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Falling back to client-side asset kind/type filtering for shell descriptors.");
+
+        var decodedAssetType = string.IsNullOrWhiteSpace(assetType)
+            ? null
+            : assetType.DecodeBase64Url(logger);
+
+        var collectedDescriptors = new List<ShellDescriptor>();
+        var pluginLimit = limit is > 0 ? limit.Value : DefaultFallbackPluginPageSize;
+        var pluginCursor = cursor;
+        var pagingMetaData = new PagingMetaData();
+
+        while (true)
+        {
+            var metadata = await pluginDataHandler
+                .GetDataForAllShellDescriptorsAsync(pluginLimit, pluginCursor, null, null, pluginManifests, cancellationToken)
+                .ConfigureAwait(false);
+
+            var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
+            var shellDescriptors = await BuildShellDescriptorsInParallelAsync(shellDescriptorMetadataList, cancellationToken).ConfigureAwait(false);
+
+            foreach (var descriptor in shellDescriptors.Where(descriptor => MatchesAssetKindTypeFilter(descriptor, assetKind, decodedAssetType)))
+            {
+                collectedDescriptors.Add(descriptor);
+
+                if (limit.HasValue && collectedDescriptors.Count >= limit.Value)
+                {
+                    break;
+                }
+            }
+
+            pagingMetaData = metadata.PagingMetaData ?? new PagingMetaData();
+
+            if (limit.HasValue && collectedDescriptors.Count >= limit.Value)
+            {
+                break;
+            }
+
+            pluginCursor = metadata.PagingMetaData?.Cursor;
+            if (string.IsNullOrWhiteSpace(pluginCursor))
+            {
+                break;
+            }
+
+            pluginLimit = Math.Min(pluginLimit * FallbackPluginPageSizeMultiplier, MaxFallbackPluginPageSize);
+        }
+
+        return new ShellDescriptors
+        {
+            PagingMetaData = pagingMetaData,
+            Result = limit.HasValue ? [.. collectedDescriptors.Take(limit.Value)] : collectedDescriptors
+        };
     }
 
     public async Task<ShellDescriptor?> GetShellDescriptorByIdAsync(string id, CancellationToken cancellationToken)
@@ -141,5 +218,38 @@ public class ShellDescriptorService(
             .ConfigureAwait(false);
 
         return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
+    }
+
+    private static bool ShouldUseClientSideAssetKindTypeFallback(
+        IReadOnlyList<PluginManifest> pluginManifests,
+        AssetKind? assetKind,
+        string? assetType)
+    {
+        var requiresFilter = assetKind.HasValue || !string.IsNullOrWhiteSpace(assetType);
+        if (!requiresFilter)
+        {
+            return false;
+        }
+
+        var hasShellDescriptorPlugin = pluginManifests.Any(m => m.Capabilities.HasShellDescriptor);
+        var hasFilterCapablePlugin = pluginManifests.Any(m => m.Capabilities.HasShellDescriptor && m.Capabilities.HasAssetKindTypeFilter == true);
+
+        return hasShellDescriptorPlugin && !hasFilterCapablePlugin;
+    }
+
+    private static bool MatchesAssetKindTypeFilter(ShellDescriptor descriptor, AssetKind? assetKind, string? decodedAssetType)
+    {
+        if (assetKind.HasValue && descriptor.AssetKind != assetKind.Value)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(decodedAssetType)
+            && !string.Equals(descriptor.AssetType, decodedAssetType, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

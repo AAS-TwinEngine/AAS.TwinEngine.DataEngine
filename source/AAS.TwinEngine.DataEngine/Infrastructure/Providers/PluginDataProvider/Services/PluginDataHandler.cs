@@ -15,6 +15,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using AasCore.Aas3_1;
+
 using Json.Schema;
 
 using Microsoft.Extensions.Options;
@@ -70,15 +72,23 @@ public class PluginDataHandler(
         return mergedValues;
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
-        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+        var requiresAssetKindTypeFilter = assetKind.HasValue || !string.IsNullOrWhiteSpace(assetType);
+        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor && (!requiresAssetKindTypeFilter || c.HasAssetKindTypeFilter == true));
+        var usingFilterCapablePlugins = requiresAssetKindTypeFilter && availablePlugins.Count > 0;
+
+        if (requiresAssetKindTypeFilter && availablePlugins.Count == 0)
+        {
+            logger.LogWarning("No plugins available that support asset kind/type filtering. Falling back to plugins with shell descriptor capability.");
+            availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+        }
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 
-        var responses = await pluginDataProvider.GetDataForAllShellDescriptorsAsync(limit, cursor, pluginRequests, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForAllShellDescriptorsAsync(limit, cursor, assetKind, assetType, pluginRequests, cancellationToken).ConfigureAwait(false);
 
         var result = new ShellDescriptorsMetaData();
 
@@ -96,6 +106,11 @@ public class PluginDataHandler(
                 }
 
                 var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
+
+                if (usingFilterCapablePlugins)
+                {
+                    ValidateAssetKindTypeFilterResponse(shellDescriptors, assetKind, assetType);
+                }
 
                 var invalidDescriptors = shellDescriptors
                                          .Where(x => string.IsNullOrWhiteSpace(x.Id))
@@ -126,6 +141,35 @@ public class PluginDataHandler(
         }
 
         return result;
+    }
+
+    private void ValidateAssetKindTypeFilterResponse(IList<ShellDescriptorMetaData> shellDescriptors, AssetKind? assetKind, string? encodedAssetType)
+    {
+        var requestedAssetType = string.IsNullOrWhiteSpace(encodedAssetType)
+            ? null
+            : encodedAssetType.DecodeBase64Url(logger);
+
+        foreach (var descriptor in shellDescriptors)
+        {
+            if (assetKind.HasValue && !string.Equals(descriptor.AssetKind, assetKind.Value.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogError("Plugin returned mismatched assetKind. Requested: {RequestedAssetKind}, Actual: {ActualAssetKind}, DescriptorId: {DescriptorId}",
+                    assetKind.Value,
+                    descriptor.AssetKind,
+                    descriptor.Id);
+                throw new ValidationFailedException();
+            }
+
+            if (!string.IsNullOrWhiteSpace(requestedAssetType)
+                && !string.Equals(descriptor.AssetType, requestedAssetType, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogError("Plugin returned mismatched assetType. Requested: {RequestedAssetType}, Actual: {ActualAssetType}, DescriptorId: {DescriptorId}",
+                    requestedAssetType,
+                    descriptor.AssetType,
+                    descriptor.Id);
+                throw new ValidationFailedException();
+            }
+        }
     }
 
     public async Task<ShellDescriptorMetaData> GetDataForShellDescriptorAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken)

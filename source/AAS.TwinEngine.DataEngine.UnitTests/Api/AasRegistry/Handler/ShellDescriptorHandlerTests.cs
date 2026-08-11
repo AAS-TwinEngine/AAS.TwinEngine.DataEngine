@@ -7,6 +7,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.UnitTests.Api.Shared.MappingProfiles;
 
+using AasCore.Aas3_1;
+
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
@@ -25,8 +27,8 @@ public class ShellDescriptorHandlerTests
     public async Task GetAllShellDescriptors_ReturnsAllShellDescriptors_WhenExists()
     {
         var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
-        var request = new GetShellDescriptorsRequest(null, null);
-        _shellDescriptorService.GetAllShellDescriptorsAsync(null, null, Arg.Any<CancellationToken>()).Returns(expectedShellDescriptors);
+        var request = new GetShellDescriptorsRequest(null, null, null, null);
+        _shellDescriptorService.GetAllShellDescriptorsAsync(null, null, null, null, Arg.Any<CancellationToken>()).Returns(expectedShellDescriptors);
 
         var result = await _sut.GetAllShellDescriptors(request, CancellationToken.None);
 
@@ -37,23 +39,23 @@ public class ShellDescriptorHandlerTests
     public async Task GetAllShellDescriptors_WithLimitAndCursor_PassesCorrectValuesToService()
     {
         var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
-        var request = new GetShellDescriptorsRequest(50, "aGVsbG8=");
+        var request = new GetShellDescriptorsRequest(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl");
 
-        _shellDescriptorService.GetAllShellDescriptorsAsync(50, "aGVsbG8=", Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetAllShellDescriptorsAsync(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<CancellationToken>())
                                .Returns(expectedShellDescriptors);
 
         var result = await _sut.GetAllShellDescriptors(request, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.IsType<ShellDescriptorsDto>(result);
-        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(50, "aGVsbG8=", Arg.Any<CancellationToken>());
+        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task GetAllShellDescriptors_ShellDescriptorsIsNull_ThrowsShellDescriptorNotFoundException()
     {
-        _shellDescriptorService.GetAllShellDescriptorsAsync(null, null, Arg.Any<CancellationToken>())!.Returns((ShellDescriptors)null!);
-        var request = new GetShellDescriptorsRequest(null, null);
+        _shellDescriptorService.GetAllShellDescriptorsAsync(null, null, null, null, Arg.Any<CancellationToken>())!.Returns((ShellDescriptors)null!);
+        var request = new GetShellDescriptorsRequest(null, null, null, null);
 
         await Assert.ThrowsAsync<ShellDescriptorNotFoundException>(() => _sut.GetAllShellDescriptors(request, CancellationToken.None));
     }
