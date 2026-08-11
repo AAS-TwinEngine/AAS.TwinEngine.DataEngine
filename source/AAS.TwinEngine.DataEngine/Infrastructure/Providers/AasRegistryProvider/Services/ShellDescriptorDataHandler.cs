@@ -42,7 +42,6 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
         descriptor.GlobalAssetId = metaData.GlobalAssetId;
         descriptor.IdShort = metaData.IdShort;
         descriptor.Id = metaData.Id;
-
         if (metaData.ParsedAssetKind.HasValue)
         {
             descriptor.AssetKind = metaData.ParsedAssetKind.Value;
@@ -59,10 +58,7 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
             {
                 var descriptorAssetId = descriptor.SpecificAssetIds?.FirstOrDefault(x => x.Name == specificAssetIdData.Name);
 
-                if (descriptorAssetId is not null)
-                {
-                    descriptorAssetId.Value = specificAssetIdData.Value;
-                }
+                descriptorAssetId?.Value = specificAssetIdData.Value;
             }
         }
     }

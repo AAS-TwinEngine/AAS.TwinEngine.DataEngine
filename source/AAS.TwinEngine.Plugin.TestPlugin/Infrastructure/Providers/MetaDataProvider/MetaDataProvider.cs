@@ -96,7 +96,7 @@ public class MetaDataProvider : IMetaDataProvider
 
         if (!string.IsNullOrWhiteSpace(assetType))
         {
-            shellDescriptors = [.. shellDescriptors.Where(item => string.Equals(item.AssetType, decodedAssetType, StringComparison.OrdinalIgnoreCase))];
+            shellDescriptors = [.. shellDescriptors.Where(item => string.Equals(item.AssetType, assetType, StringComparison.OrdinalIgnoreCase))];
         }
 
         ValidateCursor(cursor, shellDescriptors);

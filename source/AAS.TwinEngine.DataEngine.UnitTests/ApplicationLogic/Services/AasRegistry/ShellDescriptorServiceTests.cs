@@ -7,6 +7,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -27,17 +28,25 @@ public class ShellDescriptorServiceTests
     private readonly IShellDescriptorDataHandler _dataHandler = Substitute.For<IShellDescriptorDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
     private readonly ILogger<ShellDescriptorService> _logger = Substitute.For<ILogger<ShellDescriptorService>>();
+    private readonly IOptions<GeneralConfig> _generalConfig;
     private readonly IOptions<TemplateManagementConfig> _templateManagementConfig;
     private readonly ShellDescriptorService _sut;
 
     public ShellDescriptorServiceTests()
     {
+        var general = new GeneralConfig
+        {
+            CustomerDomainUrl = new Uri("https://mm-software.com/"),
+            DataEngineRepositoryBaseUrl = new Uri("http://localhost:8080/")
+        };
+        _generalConfig = Options.Create(general);
+
         var config = new TemplateManagementConfig
         {
             AasTemplateRegistry = new ServiceInstance { ConcurrentOperationsLimit = 10 }
         };
         _templateManagementConfig = Options.Create(config);
-        _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger, _templateManagementConfig);
+        _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger, _generalConfig, _templateManagementConfig);
     }
 
     [Fact]
@@ -365,6 +374,7 @@ public class ShellDescriptorServiceTests
         var sut = new ShellDescriptorService(
             _templateProvider, _shellTemplateMappingProvider, _dataHandler,
             _pluginDataHandler, _pluginManifestConflictHandler, _logger,
+            _generalConfig,
             Options.Create(config));
 
         var currentConcurrency = 0;
@@ -545,6 +555,58 @@ public class ShellDescriptorServiceTests
         Assert.Equal("idA", result.Result[0].Id);
 
         await _pluginDataHandler.Received(1).GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, cancellationToken);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorByIdAsync_UpdatesSubmodelDescriptorIdAndHref_BasedOnShellProductId()
+    {
+        var cancellationToken = CancellationToken.None;
+        const string shellId = "https://mm-software.com/ids/aas/000-001";
+        var metadata = new ShellDescriptorMetaData { Id = shellId, Href = "http://localhost:8080/shells/test" };
+        var template = new ShellDescriptor
+        {
+            Id = shellId,
+            Endpoints =
+            [
+                new EndpointData { ProtocolInformation = new ProtocolInformationData { Href = "http://localhost:8080/shells/test" } }
+            ],
+            SubmodelDescriptors =
+            [
+                new SubmodelDescriptor
+                {
+                    Id = "Nameplate",
+                    Endpoints =
+                    [
+                        new EndpointData
+                        {
+                            Interface = "SUBMODEL-3.0",
+                            ProtocolInformation = new ProtocolInformationData { Href = "http://localhost:8082/submodels/TmFtZXBsYXRl" }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var manifests = new List<PluginManifest>();
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler.GetDataForShellDescriptorAsync(manifests, shellId, cancellationToken).Returns(metadata);
+        _shellTemplateMappingProvider.GetTemplateId(shellId).Returns("template-1");
+        _shellTemplateMappingProvider.GetProductIdFromRule(shellId).Returns("000-001");
+        _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(template);
+        _dataHandler.FillOut(template, metadata).Returns(template);
+
+        var result = await _sut.GetShellDescriptorByIdAsync(shellId, cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.SubmodelDescriptors);
+
+        var updatedSubmodel = Assert.Single(result.SubmodelDescriptors!);
+        var expectedId = "https://mm-software.com/submodel/000-001/Nameplate";
+        var expectedHref = $"http://localhost:8080/submodels/{expectedId.EncodeBase64Url()}";
+
+        Assert.Equal(expectedId, updatedSubmodel.Id);
+        Assert.NotNull(updatedSubmodel.Endpoints);
+        Assert.Equal(expectedHref, updatedSubmodel.Endpoints![0].ProtocolInformation!.Href);
     }
 
 

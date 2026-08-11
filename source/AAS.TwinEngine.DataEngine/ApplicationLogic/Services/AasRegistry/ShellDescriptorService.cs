@@ -23,13 +23,17 @@ public class ShellDescriptorService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     ILogger<ShellDescriptorService> logger,
+    IOptions<GeneralConfig> generalConfig,
     IOptions<TemplateManagementConfig> templateManagementConfig) : IShellDescriptorService
 {
     private const int DefaultFallbackPluginPageSize = 100;
     private const int FallbackPluginPageSizeMultiplier = 10;
     private const int MaxFallbackPluginPageSize = 10_000;
+    private const string SubmodelUrlSegment = "submodel";
 
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
+    private readonly Uri _customerDomainUrl = generalConfig.Value.CustomerDomainUrl;
+    private readonly Uri? _dataEngineRepositoryBaseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl;
 
     public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, AssetKind? assetKind, string? assetType, CancellationToken cancellationToken)
     {
@@ -217,7 +221,58 @@ public class ShellDescriptorService(
             .GetShellDescriptorTemplateAsync(templateId, cancellationToken)
             .ConfigureAwait(false);
 
-        return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
+        var descriptor = shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
+        UpdateSubmodelDescriptors(descriptor, shellDescriptorMetadata.Id);
+        return descriptor;
+    }
+
+    private void UpdateSubmodelDescriptors(ShellDescriptor descriptor, string shellId)
+    {
+        if (descriptor.SubmodelDescriptors is null || descriptor.SubmodelDescriptors.Count == 0)
+        {
+            return;
+        }
+
+        string? productId;
+        try
+        {
+            productId = shellTemplateMappingProvider.GetProductIdFromRule(shellId);
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            logger.LogWarning(ex, "No product ID found while updating submodel descriptors for shell {ShellId}", shellId);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(productId))
+        {
+            return;
+        }
+
+        foreach (var submodelDescriptor in descriptor.SubmodelDescriptors)
+        {
+            if (string.IsNullOrWhiteSpace(submodelDescriptor.Id))
+            {
+                continue;
+            }
+
+            var updatedId = _customerDomainUrl + string.Join('/', SubmodelUrlSegment, productId, submodelDescriptor.Id);
+            submodelDescriptor.Id = updatedId;
+
+            if (_dataEngineRepositoryBaseUrl is null)
+            {
+                continue;
+            }
+
+            var encodedSubmodelId = updatedId.EncodeBase64Url(logger);
+            var updatedHref = $"{_dataEngineRepositoryBaseUrl}{ApiPaths.Submodels}/{encodedSubmodelId}";
+
+            foreach (var endpoint in submodelDescriptor.Endpoints ?? [])
+            {
+                endpoint.ProtocolInformation ??= new ProtocolInformationData();
+                endpoint.ProtocolInformation.Href = updatedHref;
+            }
+        }
     }
 
     private static bool ShouldUseClientSideAssetKindTypeFallback(

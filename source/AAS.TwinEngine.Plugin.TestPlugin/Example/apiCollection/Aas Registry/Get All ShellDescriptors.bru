@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shell-descriptors?limit&cursor
+  url: {{DataEngineBaseUrl}}/shell-descriptors?limit=&cursor=&assetKind=&assetType=
   body: none
   auth: inherit
 }
@@ -13,6 +13,8 @@ get {
 params:query {
   limit: 
   cursor: 
+  assetKind: 
+  assetType: 
 }
 
 settings {
