@@ -6,7 +6,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
 
-namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentProvider.Services;
+namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentStreamProvider.Services;
 
 public class FileContentProvider(ICreateClient httpClientFactory, IOptions<GeneralConfig> generalConfig, ILogger<FileContentProvider> logger) : IFileContentProvider
 {

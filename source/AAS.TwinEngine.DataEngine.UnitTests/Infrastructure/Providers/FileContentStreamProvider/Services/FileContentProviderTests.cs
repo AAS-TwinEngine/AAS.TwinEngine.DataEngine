@@ -3,7 +3,7 @@ using System.Text;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
-using AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentProvider.Services;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentStreamProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
-namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Streaming;
+namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.FileContentStreamProvider.Services;
 
 public class FileContentProviderTests
 {

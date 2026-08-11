@@ -138,9 +138,7 @@ public class AasRepositoryService(
 
             var thumbnailContent = await fileContentProvider.GetFileContentAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
 
-            var contentType = string.IsNullOrWhiteSpace(thumbnail.ContentType)
-                ? "application/octet-stream"
-                : thumbnail.ContentType;
+            var contentType = string.IsNullOrWhiteSpace(thumbnail.ContentType) ? "application/octet-stream" : thumbnail.ContentType;
             var fileName = GetFileName(thumbnailUrl);
 
             return new FileAttachmentResult(thumbnailContent.Content, contentType, fileName, _maxFileAttachmentSizeBytes)
