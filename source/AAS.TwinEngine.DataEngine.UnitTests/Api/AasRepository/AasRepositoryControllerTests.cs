@@ -7,7 +7,9 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_1;
 
@@ -274,5 +276,32 @@ public class AasRepositoryControllerTests
         };
     }
 
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturnFileContentStreamResult_WhenHandlerCompletes()
+    {
+        var expectedStream = new MemoryStream("test-image"u8.ToArray());
+        var attachmentResult = new FileAttachmentResult(expectedStream, "image/png", "thumbnail.png", 100 * 1024 * 1024);
+        _handler.GetThumbnailAsync(Arg.Any<GetThumbnailRequest>(), Arg.Any<CancellationToken>())
+            .Returns(attachmentResult);
+
+        var response = await _sut.GetThumbnailAsync(AasIdentifier, CancellationToken.None);
+
+        Assert.IsType<FileContentStreamResult>(response);
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_PassesRouteValuesToHandler()
+    {
+        _handler.GetThumbnailAsync(Arg.Any<GetThumbnailRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(Stream.Null, "image/png", "thumbnail.png", 100 * 1024 * 1024));
+
+        await _sut.GetThumbnailAsync(AasIdentifier, CancellationToken.None);
+
+        await _handler.Received(1)
+            .GetThumbnailAsync(
+                Arg.Is<GetThumbnailRequest>(r => r.AasIdentifier == AasIdentifier),
+                Arg.Any<CancellationToken>());
+    }
 }
+
 

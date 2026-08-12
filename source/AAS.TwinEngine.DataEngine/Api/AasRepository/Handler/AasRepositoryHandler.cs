@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_1;
 
@@ -66,6 +67,12 @@ public class AasRepositoryHandler(
             submodelRef => JsonSerializer.SerializeToElement(submodelRef.ToDto(), JsonSerializationOptions.SerializeToElementWithEnum)
         );
     }
+
+    public Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
+    => GetResourceByIdAsync(
+      request?.AasIdentifier,
+      "thumbnail",
+      id => aasRepositoryService.GetThumbnailAsync(id, cancellationToken));
 
     private Task<T> GetResourceByIdAsync<T>(
         string? encodedId,

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests.AasRepository;
@@ -234,6 +234,22 @@ public class AasRepositoryTests : ApiTestBase
         Assert.NotNull(json);
 
         await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetAssetInformationById_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetThumbnailById_ShouldReturnSuccess_ContentAsExpected()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/asset-information/thumbnail";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var bytes = await response.BodyAsync();
+        Assert.NotNull(bytes);
+        Assert.True(bytes.Length > 0);
     }
 
     [Fact]

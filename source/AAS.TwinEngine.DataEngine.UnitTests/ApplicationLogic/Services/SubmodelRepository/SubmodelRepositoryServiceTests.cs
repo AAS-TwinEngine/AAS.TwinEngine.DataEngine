@@ -5,7 +5,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
@@ -635,7 +635,7 @@ public class SubmodelRepositoryServiceTests
         ArrangeAttachmentElement(IdShortPath, property);
         var ex = await Assert.ThrowsAsync<InvalidUserInputException>(() =>
             _sut.GetFileAttachmentAsync(SubmodelId, IdShortPath, CancellationToken.None));
-        Assert.Equal("Invalid IdShortPath for file attachment.", ex.Message);
+        Assert.Equal("Invalid User Input.", ex.Message);
     }
 
     [Fact]
