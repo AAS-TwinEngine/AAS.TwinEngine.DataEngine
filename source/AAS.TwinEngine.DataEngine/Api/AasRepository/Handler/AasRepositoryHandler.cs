@@ -70,6 +70,12 @@ public class AasRepositoryHandler(
         );
     }
 
+    public Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
+    => GetResourceByIdAsync(
+      request?.AasIdentifier,
+      "thumbnail",
+      id => aasRepositoryService.GetThumbnailAsync(id, cancellationToken));
+
     public Task<ISubmodel> GetSubmodelByAasIdAsync(GetSubmodelByAasRequest request, CancellationToken cancellationToken)
     {
         var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());

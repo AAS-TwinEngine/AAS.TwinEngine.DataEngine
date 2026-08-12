@@ -3,7 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
@@ -13,8 +13,6 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
-
-using Serilog.Core;
 
 using File = AasCore.Aas3_1.File;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
@@ -269,7 +267,7 @@ public class SubmodelRepositoryService(
         }
 
         logger.LogError("Submodel element at path {IdShortPath} is not of type File. Actual type: {ActualType}", idShortPath, element.GetType().Name);
-        throw new InvalidUserInputException("Invalid IdShortPath for file attachment.");
+        throw new InvalidUserInputException();
     }
 
     private string GetValidatedFileUrl(File fileElement, string idShortPath)

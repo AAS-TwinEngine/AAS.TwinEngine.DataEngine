@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
@@ -29,6 +31,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
+    private readonly IFileContentProvider _fileContentProvider;
     private readonly ISubmodelRepositoryService _mockSubmodelRepositoryService;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
@@ -36,6 +39,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
     protected AasRepositoryControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
+        _fileContentProvider = Substitute.For<IFileContentProvider>();
         _mockSubmodelRepositoryService = Substitute.For<ISubmodelRepositoryService>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
@@ -47,6 +51,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
             _ = services.AddSingleton(_httpClientFactory);
             _ = services.AddSingleton(_mockTemplateProvider);
+            _ = services.AddSingleton(_fileContentProvider);
             _ = services.AddSingleton(_mockSubmodelRepositoryService);
         });
 
@@ -553,6 +558,83 @@ public abstract class AasRepositoryControllerTests : IDisposable
                     Submodels = []
                 };
             });
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturn200OKWithStream_WhenThumbnailExists()
+    {
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+
+        var messageHandler = new FakeHttpMessageHandler((request, token) =>
+        {
+            var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(TestData.CreatePluginResponseForAssetinformation())
+            };
+            return Task.FromResult(httpResponse);
+        });
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        var expectedAssetInformation = TestData.CreateAssetInformationTemplate();
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(expectedAssetInformation);
+
+        var stream = new MemoryStream("test-bytes"u8.ToArray());
+        var fileContentResponse = new FileContentResponse(stream);
+        _ = _fileContentProvider.GetFileContentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(fileContentResponse);
+
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedAssetInformation.DefaultThumbnail.ContentType, response.Content.Headers.ContentType?.MediaType);
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal("test-bytes"u8.ToArray(), bytes);
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturn404_WhenThumbnailIsMissing()
+    {
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+
+        var mockAssetInformationTemplate = new AssetInformation(
+            AssetKind.Instance,
+            "https://example.com/ids/asset/123",
+            [],
+            defaultThumbnail: null
+        );
+
+        var messageHandler = new FakeHttpMessageHandler((request, token) =>
+        {
+            var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {
+                      "assetKind": "Type",
+                      "globalAssetId": "https://example.com/ids/asset/123",
+                      "specificAssetIds": [],
+                      "defaultThumbnail": null
+                    }
+                    """)
+            };
+            return Task.FromResult(httpResponse);
+        });
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
+
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

@@ -26,4 +26,6 @@ public interface IAasRepositoryHandler
     Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(GetSubmodelElementByAasRequest request, CancellationToken cancellationToken);
 
     Task<FileAttachmentResult> GetFileByPathByAasIdAsync(GetFileByPathByAasIdRequest request, CancellationToken cancellationToken);
+
+    Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken);
 }
