@@ -20,6 +20,7 @@ public class FileContentStreamResult(FileAttachmentResult attachment, ContentDis
             case ContentDispositionType.inline:
                 response.Headers.ContentDisposition = "inline";
                 break;
+            case ContentDispositionType.attachment:
             default:
                 response.Headers.ContentDisposition = $"attachment; filename=\"{attachment.FileName}\"";
                 break;
