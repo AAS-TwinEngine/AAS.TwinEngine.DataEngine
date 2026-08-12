@@ -160,7 +160,7 @@ public class AasRepositoryService(
         var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
 
         var submodelExists = submodelRefs.Result?.SelectMany(r => r.Keys ?? [])
-                               .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.OrdinalIgnoreCase)) ?? false;
+                               .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.Ordinal)) ?? false;
 
         if (!submodelExists)
         {
