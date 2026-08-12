@@ -32,8 +32,6 @@ services:
       context: ../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
     container_name: twinengine-dataengine
-    ports:
-      - "8087:8080"
     depends_on:
       dpp-plugin:
         condition: service_started
