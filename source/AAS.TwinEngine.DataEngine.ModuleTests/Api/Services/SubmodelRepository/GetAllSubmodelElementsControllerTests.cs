@@ -216,6 +216,34 @@ public abstract class GetAllSubmodelElementsControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAllSubmodelElementsAsync_WithLevelAndExtentQueryParams_PassesQueryOptionsToServiceAsync()
+    {
+        // Arrange
+        var elementList = new SubmodelElementsPage
+        {
+            PagingMetaData = new PagingMetaData { Cursor = null },
+            Result = []
+        };
+
+        _ = _mockSubmodelRepositoryService
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .Returns(elementList);
+
+        // Act
+        var response = await _client.GetAsync(GetUrl() + "?level=deep&extent=withBlobValue");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await _mockSubmodelRepositoryService.Received(1)
+            .GetAllSubmodelElementsAsync(
+                SubmodelId,
+                Arg.Is<SubmodelQueryOptions?>(q => q is not null && q.Level == "deep" && q.Extent == "withBlobValue"),
+                null,
+                null,
+                Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task GetAllSubmodelElementsAsync_ResponseBodyContainsResultAndPagingMetadata_Async()
     {
         // Arrange
@@ -247,6 +275,43 @@ public abstract class GetAllSubmodelElementsControllerTests : IDisposable
     {
         // Act
         var response = await _client.GetAsync(GetUrl(limit: invalidLimit));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsAsync_WithInvalidCursorEncoding_Returns400Async()
+    {
+        // Arrange
+        const string InvalidCursor = "not!!valid!!base64";
+
+        // Act
+        var response = await _client.GetAsync(GetUrl() + $"?cursor={InvalidCursor}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("notALevel")]
+    [InlineData("123")]
+    public async Task GetAllSubmodelElementsAsync_WithInvalidLevelEnum_Returns400Async(string invalidLevel)
+    {
+        // Act
+        var response = await _client.GetAsync(GetUrl() + $"?level={invalidLevel}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("invalid")]
+    [InlineData("noBlobValue")]
+    public async Task GetAllSubmodelElementsAsync_WithInvalidExtentEnum_Returns400Async(string invalidExtent)
+    {
+        // Act
+        var response = await _client.GetAsync(GetUrl() + $"?extent={invalidExtent}");
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
