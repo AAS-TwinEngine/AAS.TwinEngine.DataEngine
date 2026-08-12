@@ -106,7 +106,7 @@ public class AasRepositoryHandler(
             request?.AasIdentifier,
             request?.SubmodelId,
             "submodel element By AasID",
-            async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, request?.IdShortPath, cancellationToken).ConfigureAwait(false));
+            async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, decodedIdShortPath, cancellationToken).ConfigureAwait(false));
     }
 
     public Task<FileAttachmentResult> GetFileByPathByAasIdAsync(GetFileByPathByAasIdRequest request, CancellationToken cancellationToken)
