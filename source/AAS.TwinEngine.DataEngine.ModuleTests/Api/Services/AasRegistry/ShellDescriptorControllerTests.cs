@@ -538,7 +538,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task GetSubmodelDescriptorByAasIdAsync_WithDifferentCaseInSubmodelId_ReturnsOkAsync()
+    public async Task GetSubmodelDescriptorByAasIdAsync_WithDifferentCaseInSubmodelId_ReturnsNotFoundAsync()
     {
         // Arrange
         const string aasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
@@ -565,7 +565,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         var response = await _client.GetAsync($"/shell-descriptors/{aasIdentifier}/submodel-descriptors/{encodedSubmodelId}");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static string EncodeBase64Url(string plainText)
