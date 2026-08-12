@@ -38,7 +38,7 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
     public async Task GetSubmodelElementFileAttachment_WhenElementPathDoesNotExist_ShouldReturn404()
     {
         // Arrange
-        var missingPath = "Documents[999].DocumentVersions[0].DigitalFiles[0]";
+        var missingPath = "Documents[0].DocumentVersions[0].VersionFile";
         var url = $"/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements/{missingPath}/attachment";
 
         // Act
@@ -62,4 +62,5 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
         // Assert
         Assert.Equal(404, response.Status);
     }
+    
 }
