@@ -1,22 +1,34 @@
 ﻿using System.Buffers;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using Microsoft.AspNetCore.Mvc;
 
 namespace AAS.TwinEngine.DataEngine.Api.Shared.Results;
 
-public class FileContentStreamResult(FileAttachmentResult attachment) : IActionResult
+public class FileContentStreamResult(FileAttachmentResult attachment, ContentDispositionType contentDispositionType) : IActionResult
 {
     public async Task ExecuteResultAsync(ActionContext context)
     {
         var response = context.HttpContext.Response;
         response.ContentType = attachment.ContentType;
-        response.Headers.ContentDisposition = $"attachment; filename=\"{attachment.FileName ?? string.Empty}\"";
+
+        switch (contentDispositionType)
+        {
+            case ContentDispositionType.inline:
+                response.Headers.ContentDisposition = "inline";
+                break;
+            case ContentDispositionType.attachment:
+            default:
+                response.Headers.ContentDisposition = $"attachment; filename=\"{attachment.FileName}\"";
+                break;
+        }
 
         await using (attachment)
         {
+            using var activity = DataEngineTracing.Source.StartActivity(DataEngineTracing.Spans.StreamResponse);
             var buffer = ArrayPool<byte>.Shared.Rent(81920);
             try
             {

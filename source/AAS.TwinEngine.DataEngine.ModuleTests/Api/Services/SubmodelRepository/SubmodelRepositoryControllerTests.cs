@@ -8,7 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 

@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 
 using AasCore.Aas3_1;
 
@@ -20,9 +21,12 @@ public class AasRepositoryService(
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
-    IOptions<TemplateManagementConfig> templateManagementConfig) : IAasRepositoryService
+    IFileContentProvider fileContentProvider,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    IOptions<GeneralConfig> generalConfig) : IAasRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
+    private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
     public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
@@ -122,6 +126,55 @@ public class AasRepositoryService(
             PagingMetaData = pagingMeta,
             Result = pagedItems
         };
+    }
+
+    public async Task<FileAttachmentResult> GetThumbnailAsync(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var thumbnail = await GetThumbnail(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+            var thumbnailUrl = GetValidatedThumbnailUrl(thumbnail, aasIdentifier);
+
+            var thumbnailContent = await fileContentProvider.GetFileContentAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
+
+            var contentType = string.IsNullOrWhiteSpace(thumbnail.ContentType) ? "application/octet-stream" : thumbnail.ContentType;
+            var fileName = GetFileName(thumbnailUrl);
+
+            return new FileAttachmentResult(thumbnailContent.Content, contentType, fileName, _maxFileAttachmentSizeBytes)
+            {
+                Upstream = thumbnailContent
+            };
+
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new AssetInformationNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
+        catch (ValidationFailedException ex)
+        {
+            throw new TemplateNotValidException(ex);
+        }
     }
 
     private static IAssetInformation FillOutAssetInformation(IAssetInformation template, AssetData pluginData)
@@ -319,5 +372,44 @@ public class AasRepositoryService(
             .All(pair =>
                 pair.First.Type == pair.Second.Type &&
                 pair.First.Value == pair.Second.Value);
+    }
+
+    private async Task<IResource> GetThumbnail(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+        var thumbnail = assetInformation?.DefaultThumbnail;
+
+        return thumbnail ?? throw new AssetInformationNotFoundException(aasIdentifier);
+    }
+
+    private string GetValidatedThumbnailUrl(IResource thumbnail, string aasIdentifier)
+    {
+        var thumbnailUrl = thumbnail.Path;
+
+        if (string.IsNullOrWhiteSpace(thumbnailUrl))
+        {
+            throw new AssetInformationNotFoundException(aasIdentifier);
+        }
+
+        if (!Uri.TryCreate(thumbnailUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            logger.LogError("Thumbnail URL is invalid. FileUrl: {FileUrl}", thumbnailUrl);
+            throw new InternalDataProcessingException();
+        }
+
+        return thumbnailUrl;
+    }
+
+    private static string GetFileName(string fileUrl)
+    {
+        var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = "thumbnail";
+        }
+
+        return fileName;
     }
 }
