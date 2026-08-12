@@ -62,5 +62,4 @@ public class GetSubmodelElementsFileAttachmentTest : ApiTestBase
         // Assert
         Assert.Equal(404, response.Status);
     }
-    
 }
