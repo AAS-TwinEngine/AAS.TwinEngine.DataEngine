@@ -14,14 +14,17 @@ public class FileContentStreamResult(FileAttachmentResult attachment, ContentDis
     {
         var response = context.HttpContext.Response;
         response.ContentType = attachment.ContentType;
-        if (contentDispositionType == ContentDispositionType.attachment)
+
+        switch (contentDispositionType)
         {
-            response.Headers.ContentDisposition = $"attachment; filename=\"{attachment.FileName}\"";
+            case ContentDispositionType.inline:
+                response.Headers.ContentDisposition = "inline";
+                break;
+            default:
+                response.Headers.ContentDisposition = $"attachment; filename=\"{attachment.FileName}\"";
+                break;
         }
-        else
-        {
-            response.Headers.ContentDisposition = "inline";
-        }
+
         await using (attachment)
         {
             using var activity = DataEngineTracing.Source.StartActivity(DataEngineTracing.Spans.StreamResponse);
