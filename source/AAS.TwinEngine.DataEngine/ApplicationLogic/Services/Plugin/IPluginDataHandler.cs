@@ -16,6 +16,17 @@ public interface IPluginDataHandler
 {
     Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken);
 
+    (IReadOnlyList<PluginManifest> FallbackOnlyPlugins, IReadOnlyList<PluginManifest> FilterCapablePlugins)
+        PartitionShellDescriptorPluginsByFilterCapability(IReadOnlyList<PluginManifest> pluginManifests);
+
+    Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsWithAssetFilterSupportAsync(
+        int? limit,
+        string? cursor,
+        AssetKind? assetKind,
+        string? assetType,
+        IReadOnlyList<PluginManifest> pluginManifests,
+        CancellationToken cancellationToken);
+
     Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken);
 
     Task<ShellDescriptorMetaData> GetDataForShellDescriptorAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken);

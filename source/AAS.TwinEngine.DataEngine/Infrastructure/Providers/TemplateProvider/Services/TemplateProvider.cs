@@ -303,7 +303,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
             return null;
         }
 
-        var descriptors = new List<SubmodelDescriptor>();
+        var descriptors = new List<SubmodelDescriptor>(submodelDescriptorArray.Count);
         foreach (var item in submodelDescriptorArray)
         {
             if (item is null)
