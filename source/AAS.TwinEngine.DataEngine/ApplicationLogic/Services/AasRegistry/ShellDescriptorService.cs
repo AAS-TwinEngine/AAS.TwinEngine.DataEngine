@@ -115,11 +115,11 @@ public class ShellDescriptorService(
         var submodelIds = submodelRefs.Result?
             .SelectMany(reference => reference.Keys ?? [])
             .Select(key => key.Value)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Distinct(StringComparer.Ordinal)
             .ToList() ?? [];
 
         var descriptors = (await Task.WhenAll(submodelIds.Select(submodelId =>
-                                        GetSubmodelDescriptorByAasIdAsync(aasId, submodelId, cancellationToken))).ConfigureAwait(false))
+                                        submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken))).ConfigureAwait(false))
                                         .OfType<SubmodelDescriptor>()
                                         .ToList();
 

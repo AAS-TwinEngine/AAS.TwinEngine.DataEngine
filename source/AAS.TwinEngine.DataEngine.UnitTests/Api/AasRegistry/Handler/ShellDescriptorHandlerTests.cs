@@ -25,12 +25,10 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Api.AasRegistry.Handler;
 public class ShellDescriptorHandlerTests
 {
     private readonly IShellDescriptorService _shellDescriptorService = Substitute.For<IShellDescriptorService>();
-    private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
-    private readonly ISubmodelDescriptorService _submodelDescriptorService = Substitute.For<ISubmodelDescriptorService>();
     private readonly ILogger<ShellDescriptorHandler> _logger = Substitute.For<ILogger<ShellDescriptorHandler>>();
     private readonly ShellDescriptorHandler _sut;
 
-    public ShellDescriptorHandlerTests() => _sut = new ShellDescriptorHandler(_logger, _shellDescriptorService, _aasRepositoryService, _submodelDescriptorService);
+    public ShellDescriptorHandlerTests() => _sut = new ShellDescriptorHandler(_logger, _shellDescriptorService);
 
     [Fact]
     public async Task GetAllShellDescriptors_ReturnsAllShellDescriptors_WhenExists()

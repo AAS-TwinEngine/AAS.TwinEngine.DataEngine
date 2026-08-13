@@ -6,16 +6,12 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 
 public class ShellDescriptorHandler(
     ILogger<ShellDescriptorHandler> logger,
-    IShellDescriptorService shellDescriptorService,
-    IAasRepositoryService aasRepositoryService,
-    ISubmodelDescriptorService submodelDescriptorService) : IShellDescriptorHandler
+    IShellDescriptorService shellDescriptorService) : IShellDescriptorHandler
 {
     public Task<ShellDescriptorsDto> GetAllShellDescriptors(GetShellDescriptorsRequest request, CancellationToken cancellationToken)
     {
