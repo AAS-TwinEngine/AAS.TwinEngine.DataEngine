@@ -724,7 +724,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
             .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
 
         _ = _mockSubmodelRepositoryService
-            .GetSubmodelElementAsync(requestedSubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .GetSubmodelElementAsync(requestedSubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(new Property(DataTypeDefXsd.String) { IdShort = IdShortPath });
 
         // Act

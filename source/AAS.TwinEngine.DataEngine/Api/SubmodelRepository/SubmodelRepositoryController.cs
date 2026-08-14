@@ -136,6 +136,8 @@ public class SubmodelRepositoryController(
     /// </summary>
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
     /// <param name="idShortPath">The IdShort path to the submodel element (dot-separated)</param>
+    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
+    /// <param name="extent">Controls how blob values are serialized. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
     /// <response code="200">Requested submodel element</response>
     /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
     /// <response code="404">Not Found</response>
@@ -145,10 +147,15 @@ public class SubmodelRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetSubmodelElementAsync([FromRoute] string submodelIdentifier, [FromRoute] string idShortPath, CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetSubmodelElementAsync(
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
+        [FromQuery] Level? level,
+        [FromQuery] Extent? extent,
+        CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel Element");
-        var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
+        var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath) { Level = level, Extent = extent };
         var response = await submodelRepositoryHandler.GetSubmodelElement(request, cancellationToken).ConfigureAwait(false);
         return Ok(Jsonization.Serialize.ToJsonObject(response));
     }

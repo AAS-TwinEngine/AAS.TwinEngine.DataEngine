@@ -9,7 +9,7 @@ public interface ISubmodelRepositoryService
 {
     Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken);
 
-    Task<ISubmodelElement> GetSubmodelElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken);
+    Task<ISubmodelElement> GetSubmodelElementAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken);
 
     Task<SubmodelList> GetAllSubmodelsAsync(
         SubmodelSearchFilter? filter,

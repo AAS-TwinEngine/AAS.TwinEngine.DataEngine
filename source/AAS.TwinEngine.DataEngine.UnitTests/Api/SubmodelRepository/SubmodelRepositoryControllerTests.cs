@@ -94,11 +94,25 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodelElement(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
         .Returns(_expectedElement);
 
-        var result = await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, CancellationToken.None);
+        var result = await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<JsonObject>(okResult.Value);
         Assert.Equal(expectedJson.ToJsonString(), json.ToJsonString());
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementAsync_WithLevelAndExtent_PassesThemToHandler()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        _handler.GetSubmodelElement(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(_expectedElement);
+
+        await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, Level.deep, Extent.withBlobValue, CancellationToken.None);
+
+        await _handler.Received(1).GetSubmodelElement(
+            Arg.Is<GetSubmodelElementRequest>(r => r.Level == Level.deep && r.Extent == Extent.withBlobValue),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

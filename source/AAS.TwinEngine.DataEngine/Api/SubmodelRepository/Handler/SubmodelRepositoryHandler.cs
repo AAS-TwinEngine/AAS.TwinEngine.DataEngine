@@ -30,10 +30,14 @@ public class SubmodelRepositoryHandler(
         var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
+        var queryOptions = request?.Level is not null || request?.Extent is not null
+            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
+            : null;
+
         return GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel element",
-            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, cancellationToken)!);
+            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, queryOptions, cancellationToken)!);
     }
 
     public async Task<SubmodelsDto> GetAllSubmodels(GetAllSubmodelsRequest request, CancellationToken cancellationToken)

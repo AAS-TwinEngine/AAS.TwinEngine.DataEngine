@@ -107,12 +107,12 @@ public class SubmodelRepositoryHandlerTests
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
         var submodelElement = Substitute.For<ISubmodelElement>();
-        _submodelRepository.GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>()).Returns(submodelElement);
+        _submodelRepository.GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(submodelElement);
 
         var result = await _sut.GetSubmodelElement(request, CancellationToken.None);
 
         Assert.Equal(submodelElement, result);
-        await _submodelRepository.Received().GetSubmodelElementAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _submodelRepository.Received().GetSubmodelElementAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -122,9 +122,27 @@ public class SubmodelRepositoryHandlerTests
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         const string IdShortPath = "Segments.LinkedSegment";
         var request = new GetSubmodelElementRequest(encodedId, IdShortPath);
-        _submodelRepository.GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>()).Returns((ISubmodelElement)null!);
+        _submodelRepository.GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns((ISubmodelElement)null!);
 
         await Assert.ThrowsAsync<SubmodelNotFoundException>(() => _sut.GetSubmodelElement(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task HandleSubmodelElement_WithLevelAndExtent_PassesQueryOptionsToService()
+    {
+        const string SubmodelId = "NameplateSubmodel";
+        const string IdShortPath = "Segments.LinkedSegment";
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
+        var request = new GetSubmodelElementRequest(encodedId, IdShortPath) { Level = Level.deep, Extent = Extent.withBlobValue };
+        var submodelElement = Substitute.For<ISubmodelElement>();
+        _submodelRepository
+            .GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>())
+            .Returns(submodelElement);
+
+        await _sut.GetSubmodelElement(request, CancellationToken.None);
+
+        await _submodelRepository.Received(1)
+            .GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -255,7 +273,7 @@ public class SubmodelRepositoryHandlerTests
         var encodedId = SubmodelId.EncodeBase64Url();
         var request = new GetSubmodelElementRequest(encodedId, validIdShortPath);
         var submodelElement = Substitute.For<ISubmodelElement>();
-        _submodelRepository.GetSubmodelElementAsync(SubmodelId, validIdShortPath, Arg.Any<CancellationToken>()).Returns(submodelElement);
+        _submodelRepository.GetSubmodelElementAsync(SubmodelId, validIdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(submodelElement);
 
         var result = await _sut.GetSubmodelElement(request, CancellationToken.None);
 
