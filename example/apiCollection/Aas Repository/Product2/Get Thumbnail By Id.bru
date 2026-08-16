@@ -1,0 +1,20 @@
+meta {
+  name: Get Thumbnail By Id
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/asset-information/thumbnail
+  body: none
+  auth: inherit
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-2}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

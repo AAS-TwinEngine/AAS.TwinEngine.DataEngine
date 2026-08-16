@@ -13,6 +13,7 @@ public static class HttpClientNames
     public const string AasTemplateRepository = "aas-template-repository";
     public const string ConceptDescriptorTemplateRepository = "concept-descriptor-template-repository";
 
+    public const string FileAttachmentProvider = "file-attachment-provider";
     // ── Plugin client name prefixes ──
 
     public const string PluginDataProviderPrefix = "plugin-data-provider";

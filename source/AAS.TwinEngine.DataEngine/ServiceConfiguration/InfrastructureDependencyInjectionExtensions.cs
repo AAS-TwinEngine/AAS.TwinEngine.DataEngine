@@ -1,14 +1,16 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.FileContentStreamProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
@@ -104,6 +106,8 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddHttpClientWithoutResilience(HttpClientNames.AasRegistryHealthCheck, templateManagement.AasTemplateRegistry.BaseUrl!);
         _ = services.AddHttpClientWithoutResilience(HttpClientNames.SubmodelRegistryHealthCheck, templateManagement.SubmodelTemplateRegistry.BaseUrl!);
 
+        _ = services.AddHttpClientWithoutResilience(HttpClientNames.FileAttachmentProvider, baseUrl: null, timeout: TimeSpan.FromSeconds(30));
+
         // Plugin HttpClients (from PluginsConfig.Instances)
         if (pluginsConfig.Instances.Count > 0)
         {
@@ -116,6 +120,7 @@ public static class InfrastructureDependencyInjectionExtensions
 
         _ = services.AddScoped<IPluginRequestBuilder, PluginRequestBuilder>();
         _ = services.AddScoped<ICreateClient, HttpClientFactory>();
+        _ = services.AddScoped<IFileContentProvider, FileContentProvider>();
         _ = services.AddScoped<IPluginDataProvider, PluginDataProvider>();
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();

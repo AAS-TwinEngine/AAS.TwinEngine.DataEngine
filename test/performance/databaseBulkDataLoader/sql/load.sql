@@ -7,7 +7,7 @@ DECLARE
     c_product_image_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg';
     c_checkmark_image_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png';
     c_dummy_document_pdf_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf';
-    c_dummy_document_viewer_url CONSTANT TEXT := 'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf';
+    c_dummy_document_viewer_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf';
     c_dummy_document_preview_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg';
     c_mm_germany CONSTANT TEXT := 'M&M Germany';
     c_mm_india CONSTANT TEXT := 'M&M India';

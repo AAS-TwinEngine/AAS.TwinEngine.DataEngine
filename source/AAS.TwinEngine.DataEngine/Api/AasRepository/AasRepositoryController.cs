@@ -1,10 +1,11 @@
-﻿using System.ComponentModel;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
 using AasCore.Aas3_1;
@@ -94,6 +95,29 @@ public class AasRepositoryController(
         var request = new GetAssetInformationRequest(aasIdentifier);
         var response = await aasRepositoryHandler.GetAssetInformationByIdAsync(request, cancellationToken).ConfigureAwait(false);
         return Ok(Jsonization.Serialize.ToJsonObject(response));
+    }
+
+    /// <summary>
+    /// Returns the thumbnail image of the Asset Administration Shell
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">The thumbnail of the Asset Information.</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/asset-information/thumbnail")]
+    [ProducesResponseType(typeof(FileStreamResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<IActionResult> GetThumbnailAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Start request to get thumbnail");
+        var request = new GetThumbnailRequest(aasIdentifier);
+        var response = await aasRepositoryHandler.GetThumbnailAsync(request, cancellationToken).ConfigureAwait(false);
+
+        return new FileContentStreamResult(response, ContentDispositionType.inline);
     }
 
     /// <summary>

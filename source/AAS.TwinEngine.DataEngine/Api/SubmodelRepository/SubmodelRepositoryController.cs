@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 
 using AasCore.Aas3_1;
@@ -14,6 +15,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 using NSwag.Annotations;
+using AAS.TwinEngine.DataEngine.Api.Shared;
 
 namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
 
@@ -150,5 +152,30 @@ public class SubmodelRepositoryController(
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
         var response = await submodelRepositoryHandler.GetSubmodelElement(request, cancellationToken).ConfigureAwait(false);
         return Ok(Jsonization.Serialize.ToJsonObject(response));
+    }
+
+    /// <summary>
+    /// Downloads file content from a specific submodel element from the Submodel at a specified path.
+    /// </summary>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="idShortPath">The IdShort path to the File SubmodelElement (dot-separated)</param>
+    /// <response code="200">Requested File.</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{submodelIdentifier}/submodel-elements/{idShortPath}/attachment")]
+    [ProducesResponseType(typeof(FileResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<IActionResult> GetFileAttachmentAsync(
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get File Attachment");
+        var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath);
+        var attachment = await submodelRepositoryHandler.GetFileAttachment(request, cancellationToken).ConfigureAwait(false);
+        return new FileContentStreamResult(attachment, ContentDispositionType.attachment);
     }
 }

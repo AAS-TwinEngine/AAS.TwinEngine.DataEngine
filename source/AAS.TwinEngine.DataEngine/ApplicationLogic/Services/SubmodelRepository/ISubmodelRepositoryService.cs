@@ -1,4 +1,5 @@
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+﻿using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_1;
 
@@ -23,4 +24,6 @@ public interface ISubmodelRepositoryService
         int? limit,
         string? cursor,
         CancellationToken cancellationToken);
+
+    Task<FileAttachmentResult> GetFileAttachmentAsync(string submodelId, string idShortPath, CancellationToken cancellationToken);
 }
