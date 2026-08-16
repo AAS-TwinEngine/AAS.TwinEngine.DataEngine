@@ -318,6 +318,79 @@ public class SubmodelDescriptorServiceTests
         Assert.Equal("Nameplate", page2.Result![0].Id);
     }
 
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_SkipsShellsWithNullOrEmptyId()
+    {
+        var validShell = CreateShell("Nameplate", "valid-shell");
+        var nullIdShell = new AssetAdministrationShell(
+            id: null!,
+            assetInformation: new AssetInformation(assetKind: AssetKind.Instance, globalAssetId: null),
+            submodels: [new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "ShouldBeSkipped")])]);
+
+        var shells = new Shells { Result = [nullIdShell, validShell] };
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                           .Returns(shells);
+        _submodelTemplateMappingProvider.GetTemplateId("Nameplate").Returns("Nameplate");
+        _provider.GetDataForSubmodelDescriptorByIdAsync("Nameplate", Arg.Any<CancellationToken>())
+                 .Returns(new SubmodelDescriptor { Id = "Nameplate" });
+
+        var result = await _sut.GetAllSubmodelDescriptorsAsync(5, null, CancellationToken.None);
+
+        Assert.Single(result.Result!);
+        Assert.Equal("Nameplate", result.Result![0].Id);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_WhenLimitReachedAtAasBoundary_CursorAasIdIsConsumedAas()
+    {
+        var shell1 = CreateShellWithMultipleSubmodels("shell-1", "sm-1", "sm-2", "sm-3");
+        var shell2 = CreateShellWithMultipleSubmodels("shell-2", "sm-4", "sm-5");
+
+        var shells = new Shells { Result = [shell1, shell2] };
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                           .Returns(shells);
+
+        _submodelTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns(x => (string)x[0]);
+        _provider.GetDataForSubmodelDescriptorByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                 .Returns(x => new SubmodelDescriptor { Id = (string)x[0] });
+
+        var result = await _sut.GetAllSubmodelDescriptorsAsync(5, null, CancellationToken.None);
+
+        Assert.Equal(5, result.Result!.Count);
+        Assert.NotNull(result.PagingMetaData?.Cursor);
+
+        var decoded = SubmodelPaginationCursor.Decode(result.PagingMetaData!.Cursor!);
+        Assert.Equal("sm-5", decoded!.SubmodelId);
+        Assert.Equal("shell-2", decoded.AasId);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsAsync_WhenLimitReachedAtFirstAasBoundary_CursorAasIdIsConsumedAas()
+    {
+        var shell1 = CreateShellWithMultipleSubmodels("shell-1", "sm-1", "sm-2");
+
+        var shells = new Shells
+        {
+            Result = [shell1],
+            PagingMetaData = new PagingMetaData { Cursor = "next-page-token" }
+        };
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                           .Returns(shells);
+
+        _submodelTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns(x => (string)x[0]);
+        _provider.GetDataForSubmodelDescriptorByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                 .Returns(x => new SubmodelDescriptor { Id = (string)x[0] });
+
+        var result = await _sut.GetAllSubmodelDescriptorsAsync(2, null, CancellationToken.None);
+
+        Assert.Equal(2, result.Result!.Count);
+        Assert.NotNull(result.PagingMetaData?.Cursor);
+
+        var decoded = SubmodelPaginationCursor.Decode(result.PagingMetaData!.Cursor!);
+        Assert.Equal("sm-2", decoded!.SubmodelId);
+        Assert.Equal("shell-1", decoded.AasId);
+    }
+
     private static AssetAdministrationShell CreateShell(string submodelId, string shellId = "shell-id")
     {
         return new AssetAdministrationShell(
@@ -330,5 +403,18 @@ public class SubmodelDescriptorServiceTests
                     keys: [new Key(KeyTypes.Submodel, submodelId)],
                     referredSemanticId: null)
             ]);
+    }
+
+    private static AssetAdministrationShell CreateShellWithMultipleSubmodels(string shellId, params string[] submodelIds)
+    {
+        var refs = submodelIds.Select(id => (IReference)new Reference(
+            type: ReferenceTypes.ModelReference,
+            keys: [new Key(KeyTypes.Submodel, id)],
+            referredSemanticId: null)).ToList();
+
+        return new AssetAdministrationShell(
+            id: shellId,
+            assetInformation: new AssetInformation(assetKind: AssetKind.Instance, globalAssetId: null),
+            submodels: refs);
     }
 }

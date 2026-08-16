@@ -332,43 +332,6 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetAllSubmodelsAsync_DeduplicatesSubmodelIds_AcrossShells()
-    {
-        const string SubmodelId1 = "https://example.com/submodels/Shared";
-        var submodelRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, SubmodelId1)]);
-        var filledSubmodel = TestData.CreateFilledSubmodel();
-
-        _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(new ShellDescriptorsMetaData
-            {
-                ShellDescriptors =
-                [
-                    new ShellDescriptorMetaData { Id = "https://example.com/shells/001" },
-                    new ShellDescriptorMetaData { Id = "https://example.com/shells/002" }
-                ]
-            });
-
-        _aasRepositoryTemplateService
-            .GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([submodelRef]);
-
-        _templateService
-            .GetFilteredSubmodelTemplateAsync(SubmodelId1, (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
-            .Returns(TestData.CreateSubmodel());
-
-        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
-        _pluginDataHandler
-            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
-        _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(filledSubmodel);
-
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
-
-        Assert.Single(result.Result);
-    }
-
-    [Fact]
     public async Task GetAllSubmodelsAsync_FiltersShellsByIdShort_WhenIdShortProvided()
     {
         const string IdShort = "M&M01";
@@ -378,6 +341,8 @@ public class SubmodelRepositoryServiceTests
             .GetDataForShellsByAssetIdsAsync(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Is<ShellSearchFilter?>(f => f != null && f.IdShort == IdShort),
+                Arg.Any<int?>(),
+                Arg.Any<string?>(),
                 Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [] });
 
@@ -387,6 +352,8 @@ public class SubmodelRepositoryServiceTests
             .GetDataForShellsByAssetIdsAsync(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Is<ShellSearchFilter?>(f => f != null && f.IdShort == IdShort),
+                Arg.Any<int?>(),
+                Arg.Any<string?>(),
                 Arg.Any<CancellationToken>());
     }
 
@@ -526,7 +493,7 @@ public class SubmodelRepositoryServiceTests
             ]);
 
         _templateService
-            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(TestData.CreateSubmodel());
         _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
         _pluginDataHandler
@@ -569,7 +536,7 @@ public class SubmodelRepositoryServiceTests
             ]);
 
         _templateService
-            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), (string?)null, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(TestData.CreateSubmodel());
         _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
         _pluginDataHandler

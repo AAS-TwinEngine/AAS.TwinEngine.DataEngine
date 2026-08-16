@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
@@ -184,21 +182,16 @@ public class SubmodelDescriptorService(
             if (submodelIds.Count == 0)
             {
                 state.TrackingAasId = shell.Id;
-                state.IsFirstAasInResume = false;
+                state.ResumeAfterSubmodelId = null;
                 continue;
             }
 
             var startIndex = 0;
 
-            if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
+            if (state.ResumeAfterSubmodelId is not null)
             {
-                startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
-                state.IsFirstAasInResume = false;
-                state.SkipToSubmodelId = null;
-            }
-            else
-            {
-                state.IsFirstAasInResume = false;
+                startIndex = submodelIds.IndexOf(state.ResumeAfterSubmodelId) + 1;
+                state.ResumeAfterSubmodelId = null;
             }
 
             for (var i = startIndex; i < submodelIds.Count; i++)
@@ -208,7 +201,7 @@ public class SubmodelDescriptorService(
 
                 if (state.CollectedIds.Count >= pageSize)
                 {
-                    if (state.CollectedIds.Contains(submodelIds.Last()))
+                    if (submodelIds[^1] == state.LastCollectedSubmodelId)
                     {
                         state.TrackingAasId = shell.Id;
                     }
@@ -240,8 +233,7 @@ public class SubmodelDescriptorService(
         public List<string> CollectedIds { get; } = [];
         public string? TrackingAasId { get; set; } = cursor?.AasId;
         public string? LastCollectedSubmodelId { get; set; }
-        public string? SkipToSubmodelId { get; set; } = cursor?.SubmodelId;
-        public bool IsFirstAasInResume { get; set; } = cursor is not null;
+        public string? ResumeAfterSubmodelId { get; set; } = cursor?.SubmodelId;
     }
 
     private string GenerateHref(string encodedId) => $"{_baseUrl}{ApiPaths.Submodels}/{encodedId}";

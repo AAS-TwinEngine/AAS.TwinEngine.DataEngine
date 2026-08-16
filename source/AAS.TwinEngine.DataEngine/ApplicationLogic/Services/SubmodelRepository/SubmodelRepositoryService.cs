@@ -93,7 +93,7 @@ public class SubmodelRepositoryService(
     private async Task<SubmodelPageResult> CollectSubmodelPageAsync(ShellSearchFilter shellSearchFilter, int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
-        var state = new PaginationState(incomingCursor);
+        var state = new PaginationState(incomingCursor, pageSize);
         var pluginCursor = state.TrackingAasId;
 
         while (state.CollectedIds.Count < pageSize)
@@ -101,9 +101,8 @@ public class SubmodelRepositoryService(
             var shellMetadata = await pluginDataHandler.GetDataForShellsByAssetIdsAsync(
                 pluginManifestConflictHandler.Manifests, shellSearchFilter, pageSize, Base64UrlExtensions.EncodeBase64Url(pluginCursor), cancellationToken).ConfigureAwait(false);
 
-            var shellDescriptors = shellMetadata.ShellDescriptors?.Where(s => !string.IsNullOrWhiteSpace(s.Id)).ToList() ?? [];
-
-            if (shellDescriptors.Count == 0)
+            var shellDescriptors = shellMetadata.ShellDescriptors;
+            if (shellDescriptors is null || shellDescriptors.Count == 0)
             {
                 break;
             }
@@ -128,30 +127,48 @@ public class SubmodelRepositoryService(
         return new SubmodelPageResult(state.CollectedIds, nextCursor);
     }
 
-    private async Task<bool> ProcessShellBatchAsync(List<ShellDescriptorMetaData> shellDescriptors, int pageSize, PaginationState state, CancellationToken cancellationToken)
+    private async Task<bool> ProcessShellBatchAsync(IReadOnlyList<ShellDescriptorMetaData> shellDescriptors, int pageSize, PaginationState state, CancellationToken cancellationToken)
     {
-        foreach (var shell in shellDescriptors)
+        var prefetchTasks = new Task<List<string>>[shellDescriptors.Count];
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
+
+        for (var idx = 0; idx < shellDescriptors.Count; idx++)
         {
-            var submodelIds = await GetSubmodelIdsForShellAsync(shell.Id!, cancellationToken).ConfigureAwait(false);
+            var shellId = shellDescriptors[idx].Id;
+            if (string.IsNullOrWhiteSpace(shellId))
+            {
+                prefetchTasks[idx] = Task.FromResult<List<string>>([]);
+                continue;
+            }
+
+            prefetchTasks[idx] = PrefetchSubmodelIdsAsync(shellId, semaphore, cancellationToken);
+        }
+
+        var allSubmodelIds = await Task.WhenAll(prefetchTasks).ConfigureAwait(false);
+
+        for (var idx = 0; idx < shellDescriptors.Count; idx++)
+        {
+            var shellId = shellDescriptors[idx].Id;
+            if (string.IsNullOrWhiteSpace(shellId))
+            {
+                continue;
+            }
+
+            var submodelIds = allSubmodelIds[idx];
 
             if (submodelIds.Count == 0)
             {
-                state.TrackingAasId = shell.Id;
-                state.IsFirstAasInResume = false;
+                state.TrackingAasId = shellId;
+                state.ResumeAfterSubmodelId = null;
                 continue;
             }
 
             var startIndex = 0;
 
-            if (state.IsFirstAasInResume && state.SkipToSubmodelId is not null)
+            if (state.ResumeAfterSubmodelId is not null)
             {
-                startIndex = submodelIds.IndexOf(state.SkipToSubmodelId) + 1;
-                state.IsFirstAasInResume = false;
-                state.SkipToSubmodelId = null;
-            }
-            else
-            {
-                state.IsFirstAasInResume = false;
+                startIndex = submodelIds.IndexOf(state.ResumeAfterSubmodelId) + 1;
+                state.ResumeAfterSubmodelId = null;
             }
 
             for (var i = startIndex; i < submodelIds.Count; i++)
@@ -161,19 +178,32 @@ public class SubmodelRepositoryService(
 
                 if (state.CollectedIds.Count >= pageSize)
                 {
-                    if (state.CollectedIds.Contains(submodelIds.Last()))
+                    if (submodelIds[^1] == state.LastCollectedSubmodelId)
                     {
-                        state.TrackingAasId = shell.Id;
+                        state.TrackingAasId = shellId;
                     }
 
                     return true;
                 }
             }
 
-            state.TrackingAasId = shell.Id;
+            state.TrackingAasId = shellId;
         }
 
         return false;
+    }
+
+    private async Task<List<string>> PrefetchSubmodelIdsAsync(string shellId, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+    {
+        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await GetSubmodelIdsForShellAsync(shellId, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _ = semaphore.Release();
+        }
     }
 
     private async Task<List<string>> GetSubmodelIdsForShellAsync(string shellId, CancellationToken cancellationToken)
@@ -193,41 +223,56 @@ public class SubmodelRepositoryService(
 
     private sealed record SubmodelPageResult(List<string> SubmodelIds, string? NextCursor);
 
-    private sealed class PaginationState(SubmodelPaginationCursor? cursor)
+    private sealed class PaginationState(SubmodelPaginationCursor? cursor, int capacity)
     {
-        public List<string> CollectedIds { get; } = [];
+        public List<string> CollectedIds { get; } = new(capacity);
         public string? TrackingAasId { get; set; } = cursor?.AasId;
         public string? LastCollectedSubmodelId { get; set; }
-        public string? SkipToSubmodelId { get; set; } = cursor?.SubmodelId;
-        public bool IsFirstAasInResume { get; set; } = cursor is not null;
+        public string? ResumeAfterSubmodelId { get; set; } = cursor?.SubmodelId;
     }
 
-    private async Task<List<ISubmodel>> BuildSubmodelsAsync(IEnumerable<string> submodelIds, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    private async Task<List<ISubmodel>> BuildSubmodelsAsync(List<string> submodelIds, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
-        var tasks = submodelIds.Select(async submodelId =>
+        var tasks = new Task<ISubmodel?>[submodelIds.Count];
+
+        for (var i = 0; i < submodelIds.Count; i++)
         {
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
+            tasks[i] = BuildSingleSubmodelAsync(submodelIds[i], filteredTemplateId, queryOptions, semaphore, cancellationToken);
+        }
+
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        var submodels = new List<ISubmodel>(results.Length);
+        foreach (var result in results)
+        {
+            if (result is not null)
             {
-                var template = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
-
-                if (template is null)
-                {
-                    return null;
-                }
-
-                var submodel = await BuildSubmodelWithValuesAsync(template, submodelId, cancellationToken).ConfigureAwait(false);
-
-                return submodel;
+                submodels.Add(result);
             }
-            finally
+        }
+
+        return submodels;
+    }
+
+    private async Task<ISubmodel?> BuildSingleSubmodelAsync(string submodelId, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+    {
+        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var template = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, filteredTemplateId, queryOptions, cancellationToken).ConfigureAwait(false);
+
+            if (template is null)
             {
-                _ = semaphore.Release();
+                return null;
             }
-        });
 
-        return [.. (await Task.WhenAll(tasks).ConfigureAwait(false)).OfType<ISubmodel>()];
+            return await BuildSubmodelWithValuesAsync(template, submodelId, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 
     public async Task<SubmodelElementsPage> GetAllSubmodelElementsAsync(string submodelId, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)

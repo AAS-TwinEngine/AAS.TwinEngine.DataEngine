@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -461,7 +461,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -481,7 +481,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -495,7 +495,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -504,7 +504,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { null! };
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -524,7 +524,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, null, null, CancellationToken.None));
     }
 
     private static List<ShellDescriptorMetaData> GetTestShellDescriptorDataList()

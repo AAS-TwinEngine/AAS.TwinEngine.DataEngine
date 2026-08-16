@@ -31,24 +31,24 @@ public class PluginDataProvider(
         ValidatePluginRequest(pluginRequests, url);
 
         var relativeUri = new Uri(url, UriKind.Relative);
-        var result = new List<string>();
-        foreach (var pluginRequest in pluginRequests)
+
+        var tasks = pluginRequests.Select(async pluginRequest =>
         {
             using var httpClient = CreateClient(pluginRequest.HttpClientName);
             try
             {
                 using var response = await httpClient.PostAsync(relativeUri, pluginRequest.JsonSchema, cancellationToken).ConfigureAwait(false);
-                var processedResponse = await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
-                result.Add(processedResponse);
+                return await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
                 logger.LogError("Request timed out. Endpoint: {Url}", url);
                 throw new RequestTimeoutException();
             }
-        }
+        });
 
-        return result;
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results.ToList();
     }
 
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
@@ -121,7 +121,6 @@ public class PluginDataProvider(
         foreach (var pluginRequest in pluginRequests)
         {
             var url = BuildShellsByAssetIdsUrl(limit, cursor);
-
             if (pluginRequest == null)
             {
                 logger.LogWarning("Plugin request is null. Skipping request to {Url}", url);
@@ -278,7 +277,7 @@ public class PluginDataProvider(
                    ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
                    : BaseUrl;
     }
-
+    
     private static string BuildShellsByAssetIdsUrl(int? limit, string? cursor)
     {
         const string BaseUrl = $"/{ApiPaths.PluginMetadata}/{ShellsEndpoint}";

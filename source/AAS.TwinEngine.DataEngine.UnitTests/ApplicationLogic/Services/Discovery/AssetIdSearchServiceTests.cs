@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -51,6 +51,8 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Returns(metadata);
 
@@ -83,6 +85,8 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Returns(metadata);
 
@@ -102,6 +106,8 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Throws(new RequestTimeoutException());
 
@@ -119,6 +125,8 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Throws(new AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException());
 
@@ -136,6 +144,8 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Throws(new ResponseParsingException());
 
@@ -154,6 +164,8 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Throws(new MultiPluginConflictException());
 
@@ -171,6 +183,8 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Throws(new ResourceNotFoundException());
 
@@ -200,14 +214,16 @@ public class AssetIdSearchServiceTests
         _ = _pluginDataHandler.GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
             Arg.Any<ShellSearchFilter?>(),
+            Arg.Any<int?>(),
+            Arg.Any<string?>(),
             Arg.Any<CancellationToken>())
             .Returns(metadata);
 
-        var result3 = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
+        var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
 
-        Assert.Equal(2, result3.Result!.Count);
-        Assert.Equal("urn:example:aas:001", result3.Result![0]);
-        Assert.Equal("urn:example:aas:002", result3.Result![1]);
+        Assert.Equal(2, result.Result!.Count);
+        Assert.Equal("urn:example:aas:001", result.Result![0]);
+        Assert.Equal("urn:example:aas:002", result.Result![1]);
     }
 
     [Fact]
