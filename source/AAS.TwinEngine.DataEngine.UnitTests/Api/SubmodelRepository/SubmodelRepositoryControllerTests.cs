@@ -63,7 +63,7 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodel(Arg.Any<GetSubmodelRequest>(), Arg.Any<CancellationToken>())
         .Returns(_expectedSubmodel);
 
-        var result = await _sut.GetSubmodelAsync(encodedId, null, null, CancellationToken.None);
+        var result = await _sut.GetSubmodelAsync(encodedId, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<JsonObject>(okResult.Value);
@@ -77,12 +77,11 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodel(Arg.Any<GetSubmodelRequest>(), Arg.Any<CancellationToken>())
             .Returns(_expectedSubmodel);
 
-        await _sut.GetSubmodelAsync(encodedId, AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep,
-            AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue, CancellationToken.None);
+        await _sut.GetSubmodelAsync(encodedId, CancellationToken.None, Level.deep, Extent.withBlobValue);
 
         await _handler.Received(1).GetSubmodel(
-            Arg.Is<GetSubmodelRequest>(r => r.level == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep
-                                         && r.extent == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue),
+            Arg.Is<GetSubmodelRequest>(r => r.Level == Level.deep
+                                         && r.Extent == Extent.withBlobValue),
             Arg.Any<CancellationToken>());
     }
 
@@ -94,7 +93,7 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodelElement(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
         .Returns(_expectedElement);
 
-        var result = await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, null, null, CancellationToken.None);
+        var result = await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, CancellationToken.None, Level.deep, Extent.withBlobValue);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<JsonObject>(okResult.Value);
@@ -108,10 +107,10 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodelElement(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
             .Returns(_expectedElement);
 
-        await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, Level.deep, Extent.withBlobValue, CancellationToken.None);
+        await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, CancellationToken.None, Level.deep, Extent.withBlobValue);
 
         await _handler.Received(1).GetSubmodelElement(
-            Arg.Is<GetSubmodelElementRequest>(r => r.level == Level.deep && r.extent == Extent.withBlobValue),
+            Arg.Is<GetSubmodelElementRequest>(r => r.Level == Level.deep && r.Extent == Extent.withBlobValue),
             Arg.Any<CancellationToken>());
     }
 
@@ -142,7 +141,12 @@ public class SubmodelRepositoryControllerTests
         var expectedDto = new SubmodelsDto { PagingMetaData = new AAS.TwinEngine.DataEngine.Api.Shared.PagingMetaDataDto(), Result = [] };
         _handler.GetAllSubmodels(Arg.Any<GetAllSubmodelsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedDto);
-        var request = new GetAllSubmodelsRequest { SemanticId = SemanticId, IdShort = IdShort, Limit = Limit };
+        var request = new GetAllSubmodelsRequest
+        {
+            SemanticId = SemanticId,
+            IdShort = IdShort,
+            Limit = Limit
+        };
 
         await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, Limit, null, CancellationToken.None);
 
