@@ -323,7 +323,7 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_WithInvalidLimit_ThrowsInvalidUserInputException()
     {
-        var request = new GetAllSubmodelsRequest {Limit = 0 };
+        var request = new GetAllSubmodelsRequest { Limit = 0 };
 
         await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetAllSubmodels(request, CancellationToken.None));
     }
@@ -476,13 +476,27 @@ public class SubmodelRepositoryHandlerTests
         var elementList = new SubmodelElementsPage { PagingMetaData = new PagingMetaData(), Result = [] };
 
         _submodelRepository
-            .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(
+                SubmodelId,
+                Arg.Is<SubmodelQueryOptions?>(q => q != null
+                    && q.Level == Level.deep.ToString()
+                    && q.Extent == Extent.withoutBlobValue.ToString()),
+                null,
+                null,
+                Arg.Any<CancellationToken>())
             .Returns(elementList);
 
         await _sut.GetAllSubmodelElements(request, CancellationToken.None);
 
         await _submodelRepository.Received(1)
-            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), null, null, Arg.Any<CancellationToken>());
+            .GetAllSubmodelElementsAsync(
+                SubmodelId,
+                Arg.Is<SubmodelQueryOptions?>(q => q != null
+                    && q.Level == Level.deep.ToString()
+                    && q.Extent == Extent.withoutBlobValue.ToString()),
+                null,
+                null,
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
