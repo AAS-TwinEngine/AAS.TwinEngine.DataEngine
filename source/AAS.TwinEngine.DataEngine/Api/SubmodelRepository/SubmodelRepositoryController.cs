@@ -34,8 +34,8 @@ public class SubmodelRepositoryController(
     /// <param name="idShort">The Asset Administration Shell's IdShort.</param>
     /// <param name="limit">The maximum number of elements in the response array.</param>
     /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata.</param>
-    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
-    /// <param name="extent">Determines the serialization of the returned content. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
+    /// <param name="level">Determines the structural depth of the returned content.</param>
+    /// <param name="extent">Determines the serialization of the returned content.</param>
     /// <response code="200">Returns the requested Submodels.</response>
     /// <response code="400">Bad Request, e.g. the request parameters or request format are invalid.</response>
     /// <response code="404">Not Found.</response>
@@ -50,9 +50,9 @@ public class SubmodelRepositoryController(
         [FromQuery] string? idShort,
         [FromQuery] int? limit,
         [FromQuery] string? cursor,
-        [FromQuery] Level? level,
-        [FromQuery] Extent? extent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] Level level = Level.deep,
+        [FromQuery] Extent extent = Extent.withoutBlobValue)
     {
         logger.LogInformation("Get All Submodels");
 
@@ -77,8 +77,8 @@ public class SubmodelRepositoryController(
     /// Returns a specific Submodel.
     /// </summary>
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
-    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
-    /// <param name="extent">Controls how blob values are serialized. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
+    /// <param name="level">Determines the structural depth of the returned content.</param>
+    /// <param name="extent">Controls how blob values are serialized.</param>
     /// <response code="200">Requested Submodel</response>
     /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
     /// <response code="404">Not Found</response>
@@ -95,7 +95,7 @@ public class SubmodelRepositoryController(
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel");
-        var request = new GetSubmodelRequest(submodelIdentifier) { Level = level, Extent = extent };
+        var request = new GetSubmodelRequest(submodelIdentifier, level, extent);
         var response = await submodelRepositoryHandler.GetSubmodel(request, cancellationToken).ConfigureAwait(false);
         return Ok(Jsonization.Serialize.ToJsonObject(response));
     }
@@ -106,8 +106,8 @@ public class SubmodelRepositoryController(
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
     /// <param name="limit">The maximum number of elements in the response array.</param>
     /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue.</param>
-    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
-    /// <param name="extent">Determines the serialization of the returned content. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
+    /// <param name="level">Determines the structural depth of the returned content.</param>
+    /// <param name="extent">Determines the serialization of the returned content.</param>
     /// <response code="200">List of found submodel elements</response>
     /// <response code="400">Bad Request, e.g. the request parameters or request format are invalid.</response>
     /// <response code="404">Not Found</response>
@@ -121,9 +121,10 @@ public class SubmodelRepositoryController(
         [FromRoute] string submodelIdentifier,
         [FromQuery] int? limit,
         [FromQuery] string? cursor,
-        [FromQuery] Level? level,
-        [FromQuery] Extent? extent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] Level level = Level.deep,
+        [FromQuery] Extent extent = Extent.withoutBlobValue
+        )
     {
         logger.LogInformation("Get All Submodel Elements");
         var request = new GetAllSubmodelElementsRequest(submodelIdentifier, limit, cursor, level, extent);
@@ -136,8 +137,8 @@ public class SubmodelRepositoryController(
     /// </summary>
     /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
     /// <param name="idShortPath">The IdShort path to the submodel element (dot-separated)</param>
-    /// <param name="level">Determines the structural depth of the returned content. Accepted values: <c>deep</c>, <c>core</c>.</param>
-    /// <param name="extent">Controls how blob values are serialized. Accepted values: <c>withBlobValue</c>, <c>withoutBlobValue</c>.</param>
+    /// <param name="level">Determines the structural depth of the returned content.</param>
+    /// <param name="extent">Controls how blob values are serialized.</param>
     /// <response code="200">Requested submodel element</response>
     /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
     /// <response code="404">Not Found</response>
@@ -155,7 +156,7 @@ public class SubmodelRepositoryController(
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Get Submodel Element");
-        var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath) { Level = level, Extent = extent };
+        var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath, level, extent);
         var response = await submodelRepositoryHandler.GetSubmodelElement(request, cancellationToken).ConfigureAwait(false);
         return Ok(Jsonization.Serialize.ToJsonObject(response));
     }

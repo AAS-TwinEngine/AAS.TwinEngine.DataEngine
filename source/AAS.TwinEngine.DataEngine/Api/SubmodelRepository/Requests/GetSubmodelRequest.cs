@@ -1,10 +1,3 @@
 ﻿namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 
-public record GetSubmodelRequest(string submodelId)
-{
-    public string SubmodelId { get; } = submodelId;
-
-    public Level? Level { get; set; }
-
-    public Extent? Extent { get; set; }
-}
+public record GetSubmodelRequest(string submodelId, Level? level = Level.deep, Extent? extent = Extent.withoutBlobValue);

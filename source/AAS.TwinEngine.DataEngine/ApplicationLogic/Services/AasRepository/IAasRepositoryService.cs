@@ -22,7 +22,7 @@ public interface IAasRepositoryService
 
     Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions queryOptions, int? limit, string? cursor, CancellationToken cancellationToken);
 
-    Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, CancellationToken cancellationToken);
+    Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, SubmodelQueryOptions queryOptions, CancellationToken cancellationToken);
 
     Task<FileAttachmentResult> GetFileAttachmentByAasIdAsync(string aasIdentifier, string submodelId, string idShortPath, CancellationToken cancellationToken);
 

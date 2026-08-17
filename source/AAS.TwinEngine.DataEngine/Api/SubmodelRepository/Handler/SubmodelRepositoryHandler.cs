@@ -17,10 +17,10 @@ public class SubmodelRepositoryHandler(
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
     {
-        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString()) : null;
+        var queryOptions = request?.level is not null || request?.extent is not null ? new SubmodelQueryOptions(request.level?.ToString(), request.extent?.ToString()) : null;
 
         return GetResourceByIdAsync(
-            request?.SubmodelId,
+            request?.submodelId,
             "submodel",
             id => submodelRepositoryService.GetSubmodelAsync(id, queryOptions, cancellationToken)!);
     }
@@ -30,8 +30,8 @@ public class SubmodelRepositoryHandler(
         var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
-        var queryOptions = request?.Level is not null || request?.Extent is not null
-            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
+        var queryOptions = request?.level is not null || request?.extent is not null
+            ? new SubmodelQueryOptions(request.level?.ToString(), request.extent?.ToString())
             : null;
 
         return GetResourceByIdAsync(

@@ -107,12 +107,13 @@ public class AasRepositoryHandler(
     {
         var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
 
         return GetResourceByIdAsync(
             request?.AasIdentifier,
             request?.SubmodelId,
             "submodel element By AasID",
-            async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, decodedIdShortPath, cancellationToken).ConfigureAwait(false));
+            async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, decodedIdShortPath, queryOptions, cancellationToken).ConfigureAwait(false));
     }
 
     public Task<FileAttachmentResult> GetFileByPathByAasIdAsync(GetFileByPathByAasIdRequest request, CancellationToken cancellationToken)
