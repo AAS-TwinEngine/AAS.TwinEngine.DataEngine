@@ -37,7 +37,7 @@ public class SubmodelRepositoryHandler(
         return GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel element",
-            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, queryOptions, cancellationToken)!);
+            id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, queryOptions, cancellationToken));
     }
 
     public async Task<SubmodelsDto> GetAllSubmodels(GetAllSubmodelsRequest request, CancellationToken cancellationToken)

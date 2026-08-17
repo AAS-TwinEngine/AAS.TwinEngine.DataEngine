@@ -59,7 +59,7 @@ public partial class SubmodelTemplateService(
                 ValidateSubmodelId(submodelId);
 
                 var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, queryOptions, cancellationToken).ConfigureAwait(false);
+                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
                 return BuildSubmodel(submodel, idShortPath);
             }
