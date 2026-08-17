@@ -81,8 +81,8 @@ public class SubmodelRepositoryControllerTests
             AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue, CancellationToken.None);
 
         await _handler.Received(1).GetSubmodel(
-            Arg.Is<GetSubmodelRequest>(r => r.Level == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep
-                                         && r.Extent == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue),
+            Arg.Is<GetSubmodelRequest>(r => r.level == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep
+                                         && r.extent == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue),
             Arg.Any<CancellationToken>());
     }
 
@@ -111,7 +111,7 @@ public class SubmodelRepositoryControllerTests
         await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, Level.deep, Extent.withBlobValue, CancellationToken.None);
 
         await _handler.Received(1).GetSubmodelElement(
-            Arg.Is<GetSubmodelElementRequest>(r => r.Level == Level.deep && r.Extent == Extent.withBlobValue),
+            Arg.Is<GetSubmodelElementRequest>(r => r.level == Level.deep && r.extent == Extent.withBlobValue),
             Arg.Any<CancellationToken>());
     }
 
@@ -126,7 +126,7 @@ public class SubmodelRepositoryControllerTests
         _handler.GetAllSubmodels(Arg.Any<GetAllSubmodelsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedDto);
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var dto = Assert.IsType<SubmodelsDto>(okResult.Value);
@@ -144,7 +144,7 @@ public class SubmodelRepositoryControllerTests
             .Returns(expectedDto);
         var request = new GetAllSubmodelsRequest { SemanticId = SemanticId, IdShort = IdShort, Limit = Limit };
 
-        await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, Limit, null, null, null, CancellationToken.None);
+        await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, Limit, null, CancellationToken.None);
 
         await _handler.Received(1).GetAllSubmodels(
             Arg.Is<GetAllSubmodelsRequest>(r => r.SemanticId == SemanticId && r.IdShort == IdShort && r.Limit == Limit),

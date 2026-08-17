@@ -74,7 +74,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
-        var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, null, CancellationToken.None));
         Assert.Equal("Submodel Element not found.", exception.Message);
     }
 
@@ -83,7 +83,7 @@ public class SubmodelTemplateServiceTests
     {
         string? submodelId = null;
 
-        var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(submodelId!, "idShort", CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(submodelId!, "idShort", null, CancellationToken.None));
         Assert.Equal("Internal Server Error.", exception.Message);
     }
 
@@ -97,7 +97,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
-        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None);
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, null, CancellationToken.None);
         Assert.Equal(GetSemanticId(expectedElement), GetSemanticId(result));
         Assert.Equal(expectedElement.SubmodelElements!.Count, result.SubmodelElements!.Count);
         Assert.Single(expectedElement.SubmodelElements);
@@ -113,7 +113,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
-        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None);
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, null, CancellationToken.None);
 
         Assert.Equal(GetSemanticId(expectedElement), GetSemanticId(result));
         Assert.Equal(expectedElement.SubmodelElements!.Count, result.SubmodelElements!.Count);
@@ -131,7 +131,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
 
-        var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, IdShortPath, null, CancellationToken.None));
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class SubmodelTemplateServiceTests
     {
         const string IdShortPath = "ContactInformation0";
 
-        var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync("", IdShortPath, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync("", IdShortPath, null, CancellationToken.None));
         Assert.IsType<InternalDataProcessingException>(exception);
     }
 
@@ -152,7 +152,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(expectedSubmodel);
 
-        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, path, CancellationToken.None);
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, path, null, CancellationToken.None);
 
         Assert.Equal(GetSemanticId(expectedSubmodel), GetSemanticId(result));
 
@@ -176,7 +176,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(expectedSubmodel);
 
-        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None);
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, null, CancellationToken.None);
 
         Assert.Equal(GetSemanticId(expectedSubmodel), GetSemanticId(result));
 
@@ -200,7 +200,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
-        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None);
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, null, CancellationToken.None);
 
         Assert.NotNull(result);
     }
@@ -216,7 +216,7 @@ public class SubmodelTemplateServiceTests
                          .Returns(submodel);
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(
-            () => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
+            () => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, null, CancellationToken.None));
     }
 
     [Fact]
@@ -229,7 +229,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
-        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None);
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, Path, null, CancellationToken.None);
 
         Assert.Equal(GetSemanticId(expectedSubmodel), GetSemanticId(result));
 
@@ -253,7 +253,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, null, CancellationToken.None));
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
                          .Returns(submodel);
 
-        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, CancellationToken.None));
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() => _sut.GetSubmodelTemplateAsync(SubmodelId, Path, null, CancellationToken.None));
     }
 
     [Fact]
@@ -322,7 +322,7 @@ public class SubmodelTemplateServiceTests
                          .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(
-            () => _sut.GetSubmodelTemplateAsync(SubmodelId, "SomePath", CancellationToken.None));
+            () => _sut.GetSubmodelTemplateAsync(SubmodelId, "SomePath", null, CancellationToken.None));
     }
     #region GetFilteredSubmodelTemplateAsync
 

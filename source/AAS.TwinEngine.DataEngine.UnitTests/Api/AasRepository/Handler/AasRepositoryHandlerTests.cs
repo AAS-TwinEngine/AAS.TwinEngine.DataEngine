@@ -457,14 +457,14 @@ public class AasRepositoryHandlerTests
             Level.deep,
             Extent.withoutBlobValue);
         var expectedElement = new Property(idShort: IdShortPath, valueType: DataTypeDefXsd.String);
-        _aasRepositoryService.GetSubmodelElementByAasIdAsync(AasId, SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetSubmodelElementByAasIdAsync(AasId, SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions>(), Arg.Any<CancellationToken>())
             .Returns(expectedElement);
 
         var result = await _sut.GetSubmodelElementByAasIdAsync(request, CancellationToken.None);
 
         Assert.IsType<Property>(result);
         await _aasRepositoryService.Received(1)
-            .GetSubmodelElementByAasIdAsync(AasId, SubmodelId, IdShortPath, Arg.Any<CancellationToken>());
+            .GetSubmodelElementByAasIdAsync(AasId, SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -479,7 +479,7 @@ public class AasRepositoryHandlerTests
             idShortPath,
             Level.deep,
             Extent.withoutBlobValue);
-        _aasRepositoryService.GetSubmodelElementByAasIdAsync(AasId, SubmodelId, idShortPath, Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetSubmodelElementByAasIdAsync(AasId, SubmodelId, idShortPath, Arg.Any<SubmodelQueryOptions>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new SubmodelNotFoundException(SubmodelId));
 
         await Assert.ThrowsAsync<SubmodelNotFoundException>(

@@ -594,7 +594,7 @@ public class SubmodelRepositoryServiceTests
     private void ArrangeAttachmentElement(string idShortPath, ISubmodelElement element)
     {
         var template = TestData.CreateSubmodelWithElement(element, idShortPath);
-        _templateService.GetSubmodelTemplateAsync(SubmodelId, idShortPath, Arg.Any<CancellationToken>()).Returns(template);
+        _templateService.GetSubmodelTemplateAsync(SubmodelId, idShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(template);
         _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
         _pluginDataHandler.TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>()).Returns(CreateSubmodelTreeNode(""));
         _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(template);
@@ -644,7 +644,7 @@ public class SubmodelRepositoryServiceTests
         const string IdShortPath = "Documents.ProductImage";
 
         _templateService
-            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>

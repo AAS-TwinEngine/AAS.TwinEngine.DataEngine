@@ -49,7 +49,7 @@ public class SubmodelRepositoryHandlerTests
     {
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
-        var request = new GetSubmodelRequest(encodedId) { Level = Level.deep, Extent = Extent.withBlobValue };
+        var request = new GetSubmodelRequest(encodedId, Level.deep, Extent.withBlobValue);
         var expectedSubmodel = Substitute.For<ISubmodel>();
         _submodelRepository
             .GetSubmodelAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>())
@@ -62,19 +62,29 @@ public class SubmodelRepositoryHandlerTests
     }
 
     [Fact]
-    public async Task HandleSubmodel_WithNoLevelOrExtent_PassesNullQueryOptionsToService()
+    public async Task HandleSubmodel_WithDefaultLevelAndExtent_PassesQueryOptionsToService()
     {
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
         var request = new GetSubmodelRequest(encodedId);
         _submodelRepository
-            .GetSubmodelAsync(SubmodelId, (SubmodelQueryOptions?)null, Arg.Any<CancellationToken>())
+            .GetSubmodelAsync(
+                SubmodelId,
+                Arg.Is<SubmodelQueryOptions?>(q => q != null
+                    && q.Level == Level.deep.ToString()
+                    && q.Extent == Extent.withoutBlobValue.ToString()),
+                Arg.Any<CancellationToken>())
             .Returns(Substitute.For<ISubmodel>());
 
         await _sut.GetSubmodel(request, CancellationToken.None);
 
         await _submodelRepository.Received(1)
-            .GetSubmodelAsync(SubmodelId, (SubmodelQueryOptions?)null, Arg.Any<CancellationToken>());
+            .GetSubmodelAsync(
+                SubmodelId,
+                Arg.Is<SubmodelQueryOptions?>(q => q != null
+                    && q.Level == Level.deep.ToString()
+                    && q.Extent == Extent.withoutBlobValue.ToString()),
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -133,7 +143,7 @@ public class SubmodelRepositoryHandlerTests
         const string SubmodelId = "NameplateSubmodel";
         const string IdShortPath = "Segments.LinkedSegment";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
-        var request = new GetSubmodelElementRequest(encodedId, IdShortPath) { Level = Level.deep, Extent = Extent.withBlobValue };
+        var request = new GetSubmodelElementRequest(encodedId, IdShortPath, Level.deep, Extent.withBlobValue);
         var submodelElement = Substitute.For<ISubmodelElement>();
         _submodelRepository
             .GetSubmodelElementAsync(SubmodelId, IdShortPath, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<CancellationToken>())
