@@ -56,15 +56,7 @@ public class SubmodelRepositoryController(
     {
         logger.LogInformation("Get All Submodels");
 
-        var request = new GetAllSubmodelsRequest
-        {
-            SemanticId = semanticId,
-            IdShort = idShort,
-            Limit = limit,
-            Cursor = cursor,
-            Level = level,
-            Extent = extent
-        };
+        var request = new GetAllSubmodelsRequest(semanticId, idShort, limit, cursor, level, extent);
 
         var response = await submodelRepositoryHandler
             .GetAllSubmodels(request, cancellationToken)
@@ -90,9 +82,9 @@ public class SubmodelRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<JsonObject>> GetSubmodelAsync(
         [FromRoute] string submodelIdentifier,
-        [FromQuery] Level? level,
-        [FromQuery] Extent? extent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] Level level = Level.deep,
+        [FromQuery] Extent extent = Extent.withoutBlobValue)
     {
         logger.LogInformation("Get Submodel");
         var request = new GetSubmodelRequest(submodelIdentifier, level, extent);
@@ -123,8 +115,7 @@ public class SubmodelRepositoryController(
         [FromQuery] string? cursor,
         CancellationToken cancellationToken,
         [FromQuery] Level level = Level.deep,
-        [FromQuery] Extent extent = Extent.withoutBlobValue
-        )
+        [FromQuery] Extent extent = Extent.withoutBlobValue)
     {
         logger.LogInformation("Get All Submodel Elements");
         var request = new GetAllSubmodelElementsRequest(submodelIdentifier, limit, cursor, level, extent);
@@ -151,9 +142,9 @@ public class SubmodelRepositoryController(
     public async Task<ActionResult<JsonObject>> GetSubmodelElementAsync(
         [FromRoute] string submodelIdentifier,
         [FromRoute] string idShortPath,
-        [FromQuery] Level? level,
-        [FromQuery] Extent? extent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] Level level = Level.deep,
+        [FromQuery] Extent extent = Extent.withoutBlobValue)
     {
         logger.LogInformation("Get Submodel Element");
         var request = new GetSubmodelElementRequest(submodelIdentifier, idShortPath, level, extent);

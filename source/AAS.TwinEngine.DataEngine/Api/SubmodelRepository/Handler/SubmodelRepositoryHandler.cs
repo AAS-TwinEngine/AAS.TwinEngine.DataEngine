@@ -17,10 +17,10 @@ public class SubmodelRepositoryHandler(
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
     {
-        var queryOptions = request?.level is not null || request?.extent is not null ? new SubmodelQueryOptions(request.level?.ToString(), request.extent?.ToString()) : null;
+        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.submodelId,
+            request?.SubmodelId,
             "submodel",
             id => submodelRepositoryService.GetSubmodelAsync(id, queryOptions, cancellationToken)!);
     }
@@ -30,9 +30,7 @@ public class SubmodelRepositoryHandler(
         var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
-        var queryOptions = request?.level is not null || request?.extent is not null
-            ? new SubmodelQueryOptions(request.level?.ToString(), request.extent?.ToString())
-            : null;
+        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
 
         return GetResourceByIdAsync(
             request?.SubmodelId,
@@ -51,7 +49,7 @@ public class SubmodelRepositoryHandler(
             IdShort = request?.IdShort
         };
 
-        var queryOptions = request?.Level is not null || request?.Extent is not null ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString()) : null;
+        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
 
         var result = await submodelRepositoryService.GetAllSubmodelsAsync(filter, queryOptions, request?.Limit, request?.Cursor, cancellationToken).ConfigureAwait(false);
 
@@ -63,9 +61,7 @@ public class SubmodelRepositoryHandler(
         request?.Limit.ValidateLimit(logger);
         request?.Cursor?.ValidateCursor(logger);
 
-        var queryOptions = request?.Level is not null || request?.Extent is not null
-            ? new SubmodelQueryOptions(request.Level?.ToString(), request.Extent?.ToString())
-            : null;
+        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
 
         var result = await GetResourceByIdAsync(
             request?.SubmodelId,
