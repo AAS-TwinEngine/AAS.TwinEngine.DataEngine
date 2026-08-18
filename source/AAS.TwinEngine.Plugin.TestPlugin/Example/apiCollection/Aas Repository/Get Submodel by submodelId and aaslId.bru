@@ -1,0 +1,26 @@
+meta {
+  name: Get Submodel by submodelId and aaslId
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: 
+  ~extent: 
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierCustomSubmodel}}
+  aasIdentifier: {{aasIdentifier}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

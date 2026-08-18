@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.Shared.Results;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
@@ -56,7 +57,8 @@ public class AasRepositoryControllerTests
     public async Task GetShellsByAssetIdAsync_ReturnsOkResult()
     {
         var expectedResponse = new ShellsDto { PagingMetaData = new PagingMetaDataDto { Cursor = null }, Result = [] };
-        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<string?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        var request = new GetShellsByAssetIdsRequest(["dGVzdA"], null, null, null);
+        _handler.GetShellsByAssetIdsAsync(request, Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
         var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, null, CancellationToken.None);
@@ -69,19 +71,21 @@ public class AasRepositoryControllerTests
     {
         var expectedResponse = new ShellsDto { PagingMetaData = new PagingMetaDataDto { Cursor = null }, Result = [] };
         const string idShort = "test-idshort";
-        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), idShort, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _handler.GetShellsByAssetIdsAsync(Arg.Any<GetShellsByAssetIdsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
         var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], idShort, null, null, CancellationToken.None);
 
         Assert.IsType<ActionResult<ShellsDto>>(result);
-        await _handler.Received(1).GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), idShort, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await _handler.Received(1).GetShellsByAssetIdsAsync(
+            Arg.Is<GetShellsByAssetIdsRequest>(r => r.IdShort == idShort),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task GetShellsByAssetIdAsync_ThrowsException_Propagates()
     {
-        _handler.GetShellsByAssetIdsAsync(Arg.Any<string[]?>(), Arg.Any<string?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _handler.GetShellsByAssetIdsAsync(Arg.Any<GetShellsByAssetIdsRequest>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("error"));
 
         var exception = await Record.ExceptionAsync(() => _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, null, CancellationToken.None));
@@ -287,6 +291,82 @@ public class AasRepositoryControllerTests
         var response = await _sut.GetThumbnailAsync(AasIdentifier, CancellationToken.None);
 
         Assert.IsType<FileContentStreamResult>(response);
+    }
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_ReturnsOkWithJson()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        var submodel = new Submodel(SubmodelId);
+        _handler.GetSubmodelByAasIdAsync(Arg.Any<GetSubmodelByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(submodel);
+
+        var result = await _sut.GetSubmodelByAasIdAsync(encodedAasId, encodedSubmodelId, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<JsonObject>(okResult.Value);
+        await _handler.Received(1).GetSubmodelByAasIdAsync(
+            Arg.Is<GetSubmodelByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelId == encodedSubmodelId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasIdAsync_ReturnsOk()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        var expected = new SubmodelElementsDto { PagingMetaData = new PagingMetaDataDto(), Result = [] };
+        _handler.GetAllSubmodelElementsByAasIdAsync(Arg.Any<GetAllSubmodelElementsByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetAllSubmodelElementsByAasIdAsync(encodedAasId, encodedSubmodelId, null, null, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<SubmodelElementsDto>(okResult.Value);
+        await _handler.Received(1).GetAllSubmodelElementsByAasIdAsync(
+            Arg.Is<GetAllSubmodelElementsByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelId == encodedSubmodelId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementByAasIdAsync_ReturnsOkWithJson()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        const string IdShortPath = "ManufacturerName";
+        var element = new Property(idShort: IdShortPath, valueType: DataTypeDefXsd.String);
+        _handler.GetSubmodelElementByAasIdAsync(Arg.Any<GetSubmodelElementByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(element);
+
+        var result = await _sut.GetSubmodelElementByAasIdAsync(encodedAasId, encodedSubmodelId, IdShortPath, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<JsonObject>(okResult.Value);
+        await _handler.Received(1).GetSubmodelElementByAasIdAsync(
+            Arg.Is<GetSubmodelElementByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelId == encodedSubmodelId && r.IdShortPath == IdShortPath),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileByPathByAasIdAsync_ReturnsFileContentStreamResult()
+    {
+        var encodedAasId = AasIdentifier.EncodeBase64Url();
+        const string SubmodelId = "SubmodelId";
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        const string IdShortPath = "Thumbnail";
+
+        _handler.GetFileByPathByAasIdAsync(Arg.Any<GetFileByPathByAasIdRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(Stream.Null, "image/png", "logo.png", 100 * 1024 * 1024));
+
+        var result = await _sut.GetFileByPathByAasIdAsync(encodedAasId, encodedSubmodelId, IdShortPath, CancellationToken.None);
+
+        Assert.IsType<FileContentStreamResult>(result);
+        await _handler.Received(1).GetFileByPathByAasIdAsync(
+            Arg.Is<GetFileByPathByAasIdRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelIdentifier == encodedSubmodelId && r.IdShortPath == IdShortPath),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

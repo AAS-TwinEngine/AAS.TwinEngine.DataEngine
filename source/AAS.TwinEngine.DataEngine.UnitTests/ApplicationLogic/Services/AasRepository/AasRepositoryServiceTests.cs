@@ -1,13 +1,16 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -25,6 +28,7 @@ public class AasRepositoryServiceTests
     private readonly IAasRepositoryTemplateService _templateService = Substitute.For<IAasRepositoryTemplateService>();
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+    private readonly ISubmodelRepositoryService _submodelRepositoryService = Substitute.For<ISubmodelRepositoryService>();
     private readonly ILogger<AasRepositoryService> _logger = Substitute.For<ILogger<AasRepositoryService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementConfig = Substitute.For<IOptions<TemplateManagementConfig>>();
     private readonly IFileContentProvider _fileContentProvider = Substitute.For<IFileContentProvider>();
@@ -53,7 +57,73 @@ public class AasRepositoryServiceTests
             _pluginManifestConflictHandler,
             _fileContentProvider,
             _templateManagementConfig,
+            _submodelRepositoryService,
             _generalConfig);
+    }
+
+    [Fact]
+    public async Task ValidateSubmodelBelongsToAasAsync_WithMatchingSubmodelId_DoesNotThrow()
+    {
+        _templateService.GetSubmodelRefByIdAsync(AasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(
+            [
+                new Reference(
+                    ReferenceTypes.ModelReference,
+                    [new Key(KeyTypes.Submodel, "submodel-1")],
+                    null)
+            ]);
+
+        await _sut.ValidateSubmodelBelongsToAasAsync(AasIdentifier, "submodel-1", CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task ValidateSubmodelBelongsToAasAsync_WithoutMatchingSubmodelId_ThrowsSubmodelNotFoundException()
+    {
+        _templateService.GetSubmodelRefByIdAsync(AasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(
+            [
+                new Reference(
+                    ReferenceTypes.ModelReference,
+                    [new Key(KeyTypes.Submodel, "other-submodel")],
+                    null)
+            ]);
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+            _sut.ValidateSubmodelBelongsToAasAsync(AasIdentifier, "submodel-1", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_WhenSubmodelBelongsToAas_ForwardsLevelAndExtentToSubmodelRepository()
+    {
+        const string submodelId = "submodel-1";
+        _templateService.GetSubmodelRefByIdAsync(AasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(
+            [
+                new Reference(
+                    ReferenceTypes.ModelReference,
+                    [new Key(KeyTypes.Submodel, submodelId)],
+                    null)
+            ]);
+
+        var expectedSubmodel = new Submodel(submodelId);
+        _submodelRepositoryService.GetSubmodelAsync(
+                submodelId,
+                Arg.Is<SubmodelQueryOptions>(o => o.Level == Level.core.ToString() && o.Extent == Extent.withBlobValue.ToString()),
+                Arg.Any<CancellationToken>())
+            .Returns(expectedSubmodel);
+
+        var result = await _sut.GetSubmodelByAasIdAsync(
+            AasIdentifier,
+            submodelId,
+            new SubmodelQueryOptions(Level.core.ToString(), Extent.withBlobValue.ToString()),
+            CancellationToken.None);
+
+        Assert.Same(expectedSubmodel, result);
+        await _submodelRepositoryService.Received(1)
+            .GetSubmodelAsync(
+                submodelId,
+                Arg.Is<SubmodelQueryOptions>(o => o.Level == Level.core.ToString() && o.Extent == Extent.withBlobValue.ToString()),
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]

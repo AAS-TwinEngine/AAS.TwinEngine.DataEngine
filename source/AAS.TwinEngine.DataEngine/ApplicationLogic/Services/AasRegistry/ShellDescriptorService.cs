@@ -1,8 +1,12 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
@@ -18,7 +22,9 @@ public class ShellDescriptorService(
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     ILogger<ShellDescriptorService> logger,
-    IOptions<TemplateManagementConfig> templateManagementConfig) : IShellDescriptorService
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    ISubmodelDescriptorService submodelDescriptorService,
+    IAasRepositoryService aasRepositoryService) : IShellDescriptorService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
     public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
@@ -93,6 +99,37 @@ public class ShellDescriptorService(
         {
             throw new InternalDataProcessingException(ex);
         }
+    }
+
+    public async Task<SubmodelDescriptor?> GetSubmodelDescriptorByAasIdAsync(string aasId, string submodelId, CancellationToken cancellationToken)
+    {
+        await aasRepositoryService.ValidateSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+
+        return await submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<SubmodelDescriptors?> GetAllSubmodelDescriptorsByAasIdAsync(string aasId, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        var submodelRefs = await aasRepositoryService.GetSubmodelRefByIdAsync(aasId, null, null, cancellationToken).ConfigureAwait(false);
+
+        var submodelIds = submodelRefs.Result?
+            .SelectMany(reference => reference.Keys ?? [])
+            .Select(key => key.Value)
+            .Distinct(StringComparer.Ordinal)
+            .ToList() ?? [];
+
+        var descriptors = (await Task.WhenAll(submodelIds.Select(submodelId =>
+                                        submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken))).ConfigureAwait(false))
+                                        .OfType<SubmodelDescriptor>()
+                                        .ToList();
+
+        var (items, pagingMetaData) = PagingExtensions.GetPagedResult(descriptors, descriptor => descriptor.Id, limit, cursor);
+
+        return new SubmodelDescriptors
+        {
+            Result = items,
+            PagingMetaData = pagingMetaData
+        };
     }
 
     private async Task<ShellDescriptor?> TryBuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetadata, CancellationToken cancellationToken)

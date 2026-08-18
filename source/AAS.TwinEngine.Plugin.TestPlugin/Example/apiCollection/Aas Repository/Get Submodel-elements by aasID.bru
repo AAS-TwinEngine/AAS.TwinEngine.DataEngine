@@ -1,0 +1,26 @@
+meta {
+  name: Get Submodel-elements by aasID
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 
+  ~cursor: 
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier}}
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

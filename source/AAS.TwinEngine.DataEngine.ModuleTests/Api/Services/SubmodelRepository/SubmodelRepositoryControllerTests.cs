@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -9,18 +8,17 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Provide
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.SubmodelRepository;
 
@@ -91,7 +89,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
         var mockSubmodel = TestData.CreateSubmodel();
 
-        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Returns(mockSubmodel);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(mockSubmodel);
 
         // Act
         var response = await _client.GetAsync($"/submodels/{SubmodelId}");
@@ -110,7 +108,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     {
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
 
-        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
         var response = await _client.GetAsync($"/submodels/{SubmodelId}");
 
@@ -179,7 +177,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     {
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
 
-        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Throws(new ResourceNotFoundException());
 
         var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, "Test"));
 

@@ -17,9 +17,9 @@ public class BlobHandler(ISemanticIdResolver semanticIdResolver) : ISubmodelElem
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)
     {
-        if (values is SemanticLeafNode leafValueNode)
+        if (values is SemanticLeafNode leafValueNode && element is Blob { Value: not null } blob)
         {
-            ((Blob)element).Value = Convert.FromBase64String(leafValueNode.Value);
+            blob.Value = Convert.FromBase64String(leafValueNode.Value);
         }
     }
 }
