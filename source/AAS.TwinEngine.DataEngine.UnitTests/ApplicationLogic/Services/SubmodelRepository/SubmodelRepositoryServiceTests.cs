@@ -4,8 +4,8 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
@@ -130,7 +130,7 @@ public class SubmodelRepositoryServiceTests
         var expected = TestData.CreateFilledContactInformation();
 
         _templateService
-            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(submodel);
 
         var semanticTree = CreateSubmodelTreeNode("");
@@ -142,7 +142,7 @@ public class SubmodelRepositoryServiceTests
             .Returns(filledSubmodel);
         _semanticIdHandler.Extract(filledSubmodel, IdShortPath).Returns(expected);
 
-        var result = await _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, CancellationToken.None) as SubmodelElementCollection;
+        var result = await _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, null, CancellationToken.None) as SubmodelElementCollection;
 
         Assert.Equal(expected.SemanticId, result?.SemanticId);
         Assert.Equal(expected.Value, result?.Value);
@@ -157,7 +157,7 @@ public class SubmodelRepositoryServiceTests
         var expected = TestData.CreateFilledContactName();
 
         _templateService
-            .GetSubmodelTemplateAsync(SubmodelId, IdShortPathWithNestedElement, Arg.Any<CancellationToken>())
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPathWithNestedElement, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .Returns(submodel);
 
         var semanticTree = CreateSubmodelTreeNode("");
@@ -169,7 +169,7 @@ public class SubmodelRepositoryServiceTests
             .Returns(filledSubmodel);
         _semanticIdHandler.Extract(filledSubmodel, IdShortPathWithNestedElement).Returns(expected);
 
-        var result = await _sut.GetSubmodelElementAsync(SubmodelId, IdShortPathWithNestedElement, CancellationToken.None) as Property;
+        var result = await _sut.GetSubmodelElementAsync(SubmodelId, IdShortPathWithNestedElement, null, CancellationToken.None) as Property;
 
         Assert.Equal(expected.SemanticId, result?.SemanticId);
         Assert.Equal(expected.Value, result?.Value);
@@ -212,11 +212,11 @@ public class SubmodelRepositoryServiceTests
     public async Task GetSubmodelElementAsync_WhenResourceNotFound_ThrowsSubmodelElementNotFoundException()
     {
         _templateService
-            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
-            _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, CancellationToken.None));
+            _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, null, CancellationToken.None));
     }
 
     [Fact]
@@ -227,7 +227,7 @@ public class SubmodelRepositoryServiceTests
             .ThrowsAsync(new ResponseParsingException());
 
         await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
-            _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, CancellationToken.None));
+            _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, null, CancellationToken.None));
     }
 
     [Fact]
@@ -238,7 +238,7 @@ public class SubmodelRepositoryServiceTests
             .ThrowsAsync(new RequestTimeoutException());
 
         await Assert.ThrowsAsync<PluginNotAvailableException>(() =>
-            _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, CancellationToken.None));
+            _sut.GetSubmodelElementAsync(SubmodelId, IdShortPath, null, CancellationToken.None));
     }
 
     public static SemanticBranchNode CreateSubmodelTreeNode(string value)
@@ -658,7 +658,7 @@ public class SubmodelRepositoryServiceTests
     private void ArrangeAttachmentElement(string idShortPath, ISubmodelElement element)
     {
         var template = TestData.CreateSubmodelWithElement(element, idShortPath);
-        _templateService.GetSubmodelTemplateAsync(SubmodelId, idShortPath, Arg.Any<CancellationToken>()).Returns(template);
+        _templateService.GetSubmodelTemplateAsync(SubmodelId, idShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>()).Returns(template);
         _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
         _pluginDataHandler.TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>()).Returns(CreateSubmodelTreeNode(""));
         _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(template);
@@ -708,7 +708,7 @@ public class SubmodelRepositoryServiceTests
         const string IdShortPath = "Documents.ProductImage";
 
         _templateService
-            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<CancellationToken>())
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>

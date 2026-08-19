@@ -80,7 +80,7 @@ public abstract class GetAllSubmodelElementsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
             .Returns(elementList);
 
         // Act
@@ -105,7 +105,7 @@ public abstract class GetAllSubmodelElementsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelElementsAsync(SubmodelId, null, null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
             .Returns(elementList);
 
         // Act

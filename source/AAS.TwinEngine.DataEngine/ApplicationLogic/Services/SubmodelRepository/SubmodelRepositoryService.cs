@@ -14,8 +14,6 @@ using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
-using Serilog.Core;
-
 using File = AasCore.Aas3_1.File;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -52,18 +50,17 @@ public class SubmodelRepositoryService(
         }, ex => new SubmodelNotFoundException(ex)).ConfigureAwait(false);
     }
 
-    public async Task<ISubmodelElement> GetSubmodelElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    public async Task<ISubmodelElement> GetSubmodelElementAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var reducedSubmodelTemplate = await submodelTemplateService.GetSubmodelTemplateAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+            var reducedSubmodelTemplate = await submodelTemplateService.GetSubmodelTemplateAsync(submodelId, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
 
             var submodelWithValues = await BuildSubmodelWithValuesAsync(reducedSubmodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
 
             return semanticIdHandler.Extract(submodelWithValues, idShortPath);
         }, ex => new SubmodelElementNotFoundException(ex)).ConfigureAwait(false);
     }
-
 
     public async Task<SubmodelList> GetAllSubmodelsAsync(SubmodelSearchFilter? filter, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
     {
@@ -378,7 +375,7 @@ public class SubmodelRepositoryService(
 
     private async Task<File> GetFileElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
-        var element = await GetSubmodelElementAsync(submodelId, idShortPath, cancellationToken);
+        var element = await GetSubmodelElementAsync(submodelId, idShortPath, null, cancellationToken);
 
         return GetFileElement(element, idShortPath);
     }

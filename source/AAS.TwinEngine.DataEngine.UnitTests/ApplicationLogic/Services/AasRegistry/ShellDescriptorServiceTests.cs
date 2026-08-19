@@ -2,10 +2,14 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -25,6 +29,8 @@ public class ShellDescriptorServiceTests
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IShellDescriptorDataHandler _dataHandler = Substitute.For<IShellDescriptorDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+    private readonly ISubmodelDescriptorService _submodelDescriptorService = Substitute.For<ISubmodelDescriptorService>();
+    private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
     private readonly ILogger<ShellDescriptorService> _logger = Substitute.For<ILogger<ShellDescriptorService>>();
     private readonly IOptions<TemplateManagementConfig> _templateManagementConfig;
     private readonly ShellDescriptorService _sut;
@@ -36,7 +42,68 @@ public class ShellDescriptorServiceTests
             AasTemplateRegistry = new ServiceInstance { ConcurrentOperationsLimit = 10 }
         };
         _templateManagementConfig = Options.Create(config);
-        _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger, _templateManagementConfig);
+        _sut = new ShellDescriptorService(
+            _templateProvider,
+            _shellTemplateMappingProvider,
+            _dataHandler,
+            _pluginDataHandler,
+            _pluginManifestConflictHandler,
+            _logger,
+            _templateManagementConfig,
+            _submodelDescriptorService,
+            _aasRepositoryService);
+    }
+
+    [Fact]
+    public async Task GetSubmodelDescriptorByAasIdAsync_ValidatesOwnershipAndReturnsDescriptor()
+    {
+        const string aasId = "aas-1";
+        const string submodelId = "submodel-1";
+        var expected = new SubmodelDescriptor { Id = submodelId };
+
+        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetSubmodelDescriptorByAasIdAsync(aasId, submodelId, CancellationToken.None);
+
+        Assert.Same(expected, result);
+        await _aasRepositoryService.Received(1)
+            .ValidateSubmodelBelongsToAasAsync(aasId, submodelId, Arg.Any<CancellationToken>());
+        await _submodelDescriptorService.Received(1)
+            .GetSubmodelDescriptorByIdAsync(submodelId, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsByAasIdAsync_DeduplicatesSubmodelIdsAndAppliesPaging()
+    {
+        const string aasId = "aas-1";
+
+        _aasRepositoryService.GetSubmodelRefByIdAsync(aasId, null, null, Arg.Any<CancellationToken>())
+            .Returns(new SubmodelRef
+            {
+                PagingMetaData = new PagingMetaData(),
+                Result =
+                [
+                    new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "submodel-2")], null),
+                    new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "submodel-1")], null),
+                    new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "submodel-2")], null)
+                ]
+            });
+
+        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync("submodel-1", Arg.Any<CancellationToken>())
+            .Returns(new SubmodelDescriptor { Id = "submodel-1" });
+        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync("submodel-2", Arg.Any<CancellationToken>())
+            .Returns(new SubmodelDescriptor { Id = "submodel-2" });
+
+        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(aasId, 1, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Result);
+        Assert.Single(result.Result);
+        Assert.NotNull(result.PagingMetaData);
+        Assert.False(string.IsNullOrWhiteSpace(result.PagingMetaData.Cursor));
+        await _submodelDescriptorService.Received(1).GetSubmodelDescriptorByIdAsync("submodel-1", Arg.Any<CancellationToken>());
+        await _submodelDescriptorService.Received(1).GetSubmodelDescriptorByIdAsync("submodel-2", Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -363,7 +430,7 @@ public class ShellDescriptorServiceTests
         var sut = new ShellDescriptorService(
             _templateProvider, _shellTemplateMappingProvider, _dataHandler,
             _pluginDataHandler, _pluginManifestConflictHandler, _logger,
-            Options.Create(config));
+            Options.Create(config), _submodelDescriptorService, _aasRepositoryService);
 
         var currentConcurrency = 0;
         var maxObservedConcurrency = 0;

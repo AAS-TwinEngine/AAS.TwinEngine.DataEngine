@@ -50,7 +50,7 @@ public partial class SubmodelTemplateService(
         }
     }
 
-    public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrWhiteSpace(idShortPath))
         {
@@ -59,7 +59,7 @@ public partial class SubmodelTemplateService(
                 ValidateSubmodelId(submodelId);
 
                 var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, null, cancellationToken).ConfigureAwait(false);
+                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
                 return BuildSubmodel(submodel, idShortPath);
             }

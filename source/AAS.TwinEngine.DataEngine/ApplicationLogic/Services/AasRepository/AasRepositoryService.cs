@@ -1,12 +1,14 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 
 using AasCore.Aas3_1;
 
@@ -23,6 +25,7 @@ public class AasRepositoryService(
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IFileContentProvider fileContentProvider,
     IOptions<TemplateManagementConfig> templateManagementConfig,
+    ISubmodelRepositoryService submodelRepositoryService,
     IOptions<GeneralConfig> generalConfig) : IAasRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
@@ -174,6 +177,48 @@ public class AasRepositoryService(
         catch (ValidationFailedException ex)
         {
             throw new TemplateNotValidException(ex);
+        }
+    }
+
+    public async Task<ISubmodel> GetSubmodelByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetSubmodelAsync(submodelIdentifier, queryOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetAllSubmodelElementsAsync(submodelIdentifier, queryOptions, limit, cursor, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetSubmodelElementAsync(submodelIdentifier, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<FileAttachmentResult> GetFileAttachmentByAasIdAsync(string aasIdentifier, string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelId, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetFileAttachmentAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
+    {
+        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
+
+        var submodelExists = submodelRefs.Result?.SelectMany(r => r.Keys ?? [])
+                               .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.Ordinal)) ?? false;
+
+        if (!submodelExists)
+        {
+            logger.LogError("Submodel {SubmodelId} not referenced by AAS {AasId}", submodelIdentifier, aasIdentifier);
+            throw new SubmodelNotFoundException(submodelIdentifier);
         }
     }
 
