@@ -148,7 +148,7 @@ services:
       - twinengine-network
 
   template-repository:
-    image: eclipsebasyx/aas-environment:2.0.0-milestone-11
+    image: eclipsebasyx/aas-environment:2.0.0-milestone-15
     container_name: template-repository
     volumes:
       - ../../example/aas:/application/aas
@@ -165,37 +165,37 @@ services:
       - twinengine-network
 
   aas-template-registry:
-    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-11
+    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-15
     container_name: aas-template-registry
     restart: always
     depends_on:
       - mongo
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+      - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
     networks:
       - twinengine-network
 
   sm-template-registry:
-    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-11
+    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-15
     container_name: sm-template-registry
     depends_on:
       - mongo
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+      - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
     networks:
       - twinengine-network
 
   aas-web-ui:
-    image: eclipsebasyx/aas-gui:v2-260526
+    image: eclipsebasyx/aas-gui:v2-260801
     container_name: aas-ui
     volumes:
       - ../../example/logo:/usr/src/app/dist/Logo
     environment:
-      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
-      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
-      AAS_REPO_PATH: http://localhost:8080/shells
-      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
-      CD_REPO_PATH: http://localhost:8080/concept-descriptions
+      AAS_REGISTRY_PATH: /shell-descriptors
+      SUBMODEL_REGISTRY_PATH: /submodel-descriptors
+      AAS_REPO_PATH: /shells
+      SUBMODEL_REPO_PATH: /submodels
+      CD_REPO_PATH: /concept-descriptions
       BASE_PATH: "/aas-ui"
       LOGO_PATH: "MM_Logo.svg"
       PRIMARY_DARK_COLOR: "#00F2E5"
