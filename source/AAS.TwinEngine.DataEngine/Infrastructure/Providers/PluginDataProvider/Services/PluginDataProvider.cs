@@ -277,7 +277,7 @@ public class PluginDataProvider(
                    ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
                    : BaseUrl;
     }
-    
+
     private static string BuildShellsByAssetIdsUrl(int? limit, string? cursor)
     {
         const string BaseUrl = $"/{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
@@ -294,7 +294,7 @@ public class PluginDataProvider(
         }
 
         return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
+                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams)
                    : BaseUrl;
     }
 

@@ -178,7 +178,7 @@ public class SubmodelDescriptorService(
         {
             var submodelIds = GetSubmodelIdsForShell(shell);
 
-            if (state.CollectSubmodelIds(submodelIds, shell.Id!, pageSize))
+            if (state.CollectSubmodelIds(submodelIds, shell.Id, pageSize))
             {
                 return true;
             }

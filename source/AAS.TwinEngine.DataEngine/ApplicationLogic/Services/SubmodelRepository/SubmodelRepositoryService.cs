@@ -188,7 +188,7 @@ public class SubmodelRepositoryService(
         {
             var references = await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shellId, cancellationToken).ConfigureAwait(false);
 
-            return references.Select(r => r.Keys.FirstOrDefault()?.Value).Where(id => !string.IsNullOrWhiteSpace(id)).ToList()!;
+            return references.Select(r => r.Keys.FirstOrDefault()?.Value).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
         }
         catch (ResourceNotFoundException ex)
         {
@@ -211,13 +211,7 @@ public class SubmodelRepositoryService(
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         var submodels = new List<ISubmodel>(results.Length);
-        foreach (var result in results)
-        {
-            if (result is not null)
-            {
-                submodels.Add(result);
-            }
-        }
+        submodels.AddRange(results.Where(result => result is not null));
 
         return submodels;
     }
