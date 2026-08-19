@@ -27,7 +27,7 @@ public class AssetIdSearchService(
             link.Value
         )).ToList();
 
-        var metadata = await GetFilteredMetadataAsync(specificAssetIds, cancellationToken).ConfigureAwait(false);
+        var metadata = await GetFilteredMetadataAsync(specificAssetIds, limit, cursor, cancellationToken).ConfigureAwait(false);
 
         var allIds = metadata.ShellDescriptors?
             .Where(m => !string.IsNullOrWhiteSpace(m.Id))
@@ -62,7 +62,7 @@ public class AssetIdSearchService(
         return specificAssetIds;
     }
 
-    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetId> specificAssetIds, CancellationToken cancellationToken)
+    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetId> specificAssetIds, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
@@ -73,7 +73,7 @@ public class AssetIdSearchService(
                 SpecificAssetIds = specificAssetIds
             };
 
-            return await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifests, filter, null, null, cancellationToken).ConfigureAwait(false);
+            return await pluginDataHandler.GetDataForShellsByAssetIdsAsync(pluginManifests, filter, limit, cursor, cancellationToken).ConfigureAwait(false);
         }
         catch (MultiPluginConflictException ex)
         {

@@ -328,7 +328,7 @@ public class AasRepositoryService(
         CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, null, null, cancellationToken)
+            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, limit, cursor, cancellationToken)
             .ConfigureAwait(false);
 
         var allMetadata = metadata.ShellDescriptors?
