@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
@@ -98,7 +99,7 @@ public class SubmodelRepositoryService(
     private async Task<SubmodelPageResult> CollectSubmodelPageAsync(ShellSearchFilter shellSearchFilter, int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
-        var state = new PaginationState(incomingCursor, pageSize);
+        var state = new SubmodelPaginationState(incomingCursor, pageSize);
         var pluginCursor = state.TrackingAasId;
 
         while (state.CollectedIds.Count < pageSize)
@@ -127,12 +128,10 @@ public class SubmodelRepositoryService(
             pluginCursor = state.TrackingAasId;
         }
 
-        var nextCursor = state.CollectedIds.Count >= pageSize ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId) : null;
-
-        return new SubmodelPageResult(state.CollectedIds, nextCursor);
+        return new SubmodelPageResult(state.CollectedIds, state.BuildNextCursor(pageSize));
     }
 
-    private async Task<bool> ProcessShellBatchAsync(IReadOnlyList<ShellDescriptorMetaData> shellDescriptors, int pageSize, PaginationState state, CancellationToken cancellationToken)
+    private async Task<bool> ProcessShellBatchAsync(IReadOnlyList<ShellDescriptorMetaData> shellDescriptors, int pageSize, SubmodelPaginationState state, CancellationToken cancellationToken)
     {
         var prefetchTasks = new Task<List<string>>[shellDescriptors.Count];
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
@@ -161,38 +160,10 @@ public class SubmodelRepositoryService(
 
             var submodelIds = allSubmodelIds[idx];
 
-            if (submodelIds.Count == 0)
+            if (state.CollectSubmodelIds(submodelIds, shellId, pageSize))
             {
-                state.TrackingAasId = shellId;
-                state.ResumeAfterSubmodelId = null;
-                continue;
+                return true;
             }
-
-            var startIndex = 0;
-
-            if (state.ResumeAfterSubmodelId is not null)
-            {
-                startIndex = submodelIds.IndexOf(state.ResumeAfterSubmodelId) + 1;
-                state.ResumeAfterSubmodelId = null;
-            }
-
-            for (var i = startIndex; i < submodelIds.Count; i++)
-            {
-                state.CollectedIds.Add(submodelIds[i]);
-                state.LastCollectedSubmodelId = submodelIds[i];
-
-                if (state.CollectedIds.Count >= pageSize)
-                {
-                    if (submodelIds[^1] == state.LastCollectedSubmodelId)
-                    {
-                        state.TrackingAasId = shellId;
-                    }
-
-                    return true;
-                }
-            }
-
-            state.TrackingAasId = shellId;
         }
 
         return false;
@@ -226,15 +197,6 @@ public class SubmodelRepositoryService(
         }
     }
 
-    private sealed record SubmodelPageResult(List<string> SubmodelIds, string? NextCursor);
-
-    private sealed class PaginationState(SubmodelPaginationCursor? cursor, int capacity)
-    {
-        public List<string> CollectedIds { get; } = new(capacity);
-        public string? TrackingAasId { get; set; } = cursor?.AasId;
-        public string? LastCollectedSubmodelId { get; set; }
-        public string? ResumeAfterSubmodelId { get; set; } = cursor?.SubmodelId;
-    }
 
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(List<string> submodelIds, string? filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {

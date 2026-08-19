@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
@@ -136,10 +137,10 @@ public class SubmodelDescriptorService(
         endpoint.ProtocolInformation.Href = href;
     }
 
-    private async Task<SubmodelDescriptorPageResult> CollectSubmodelDescriptorPageAsync(int pageSize, string? encodedCursor, CancellationToken cancellationToken)
+    private async Task<SubmodelPageResult> CollectSubmodelDescriptorPageAsync(int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
-        var state = new PaginationState(incomingCursor);
+        var state = new SubmodelPaginationState(incomingCursor);
         var pluginCursor = state.TrackingAasId;
 
         while (state.CollectedIds.Count < pageSize)
@@ -168,49 +169,19 @@ public class SubmodelDescriptorService(
             pluginCursor = state.TrackingAasId;
         }
 
-        var nextCursor = state.CollectedIds.Count >= pageSize ? SubmodelPaginationCursor.Encode(state.LastCollectedSubmodelId, state.TrackingAasId) : null;
-
-        return new SubmodelDescriptorPageResult(state.CollectedIds, nextCursor);
+        return new SubmodelPageResult(state.CollectedIds, state.BuildNextCursor(pageSize));
     }
 
-    private static bool ProcessShellBatch(List<AasCore.Aas3_1.IAssetAdministrationShell> shellList, int pageSize, PaginationState state)
+    private static bool ProcessShellBatch(List<AasCore.Aas3_1.IAssetAdministrationShell> shellList, int pageSize, SubmodelPaginationState state)
     {
         foreach (var shell in shellList)
         {
             var submodelIds = GetSubmodelIdsForShell(shell);
 
-            if (submodelIds.Count == 0)
+            if (state.CollectSubmodelIds(submodelIds, shell.Id!, pageSize))
             {
-                state.TrackingAasId = shell.Id;
-                state.ResumeAfterSubmodelId = null;
-                continue;
+                return true;
             }
-
-            var startIndex = 0;
-
-            if (state.ResumeAfterSubmodelId is not null)
-            {
-                startIndex = submodelIds.IndexOf(state.ResumeAfterSubmodelId) + 1;
-                state.ResumeAfterSubmodelId = null;
-            }
-
-            for (var i = startIndex; i < submodelIds.Count; i++)
-            {
-                state.CollectedIds.Add(submodelIds[i]);
-                state.LastCollectedSubmodelId = submodelIds[i];
-
-                if (state.CollectedIds.Count >= pageSize)
-                {
-                    if (submodelIds[^1] == state.LastCollectedSubmodelId)
-                    {
-                        state.TrackingAasId = shell.Id;
-                    }
-
-                    return true;
-                }
-            }
-
-            state.TrackingAasId = shell.Id;
         }
 
         return false;
@@ -224,16 +195,6 @@ public class SubmodelDescriptorService(
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList() ?? [];
-    }
-
-    private sealed record SubmodelDescriptorPageResult(List<string> SubmodelIds, string? NextCursor);
-
-    private sealed class PaginationState(SubmodelPaginationCursor? cursor)
-    {
-        public List<string> CollectedIds { get; } = [];
-        public string? TrackingAasId { get; set; } = cursor?.AasId;
-        public string? LastCollectedSubmodelId { get; set; }
-        public string? ResumeAfterSubmodelId { get; set; } = cursor?.SubmodelId;
     }
 
     private string GenerateHref(string encodedId) => $"{_baseUrl}{ApiPaths.Submodels}/{encodedId}";
