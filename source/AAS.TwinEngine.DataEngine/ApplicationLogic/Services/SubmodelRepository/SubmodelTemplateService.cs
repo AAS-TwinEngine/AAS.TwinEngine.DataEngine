@@ -83,7 +83,7 @@ public partial class SubmodelTemplateService(
         throw new InvalidDependencyException(nameof(idShortPath));
     }
 
-    public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string submodelId, string filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    public async Task<bool> ValidateSemanticIdFilter(string submodelId, string filteredTemplateId)
     {
         ValidateSubmodelId(submodelId);
 
@@ -94,16 +94,25 @@ public partial class SubmodelTemplateService(
 
             if (filteredTemplateId is not null && templateId != filteredTemplateId)
             {
-                return null;
+                return false;
             }
+            return true;
         }
         catch (ResourceNotFoundException)
         {
-            return null;
+            return false;
         }
+    }
 
+    public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        ValidateSubmodelId(submodelId);
+
+        string? templateId;
         try
         {
+            templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
+
             return await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, queryOptions, cancellationToken).ConfigureAwait(false);
         }
         catch (ResponseParsingException ex)
