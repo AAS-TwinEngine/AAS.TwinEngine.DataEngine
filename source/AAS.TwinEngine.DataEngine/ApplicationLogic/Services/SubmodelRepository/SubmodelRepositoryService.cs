@@ -193,8 +193,8 @@ public class SubmodelRepositoryService(
             var validationTasks = submodelIds.Select(async id =>
                 new
                 {
-                    Id = id!,
-                    IsValid = await submodelTemplateService.ValidateSemanticIdFilter(id!, filteredTemplateId).ConfigureAwait(false)
+                    Id = id,
+                    IsValid = await submodelTemplateService.ValidateSemanticIdFilter(id, filteredTemplateId).ConfigureAwait(false)
                 });
 
             var results = await Task.WhenAll(validationTasks).ConfigureAwait(false);

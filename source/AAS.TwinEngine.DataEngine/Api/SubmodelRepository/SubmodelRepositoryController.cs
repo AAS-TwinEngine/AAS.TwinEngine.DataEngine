@@ -56,7 +56,7 @@ public class SubmodelRepositoryController(
     {
         logger.LogInformation("Get All Submodels");
 
-        var request = new GetAllSubmodelsRequest{SemanticId = semanticId, IdShort = idShort, Limit = limit, Cursor = cursor, Level = level, Extent = extent};
+        var request = new GetAllSubmodelsRequest { SemanticId = semanticId, IdShort = idShort, Limit = limit, Cursor = cursor, Level = level, Extent = extent };
 
         var response = await submodelRepositoryHandler
             .GetAllSubmodels(request, cancellationToken)
