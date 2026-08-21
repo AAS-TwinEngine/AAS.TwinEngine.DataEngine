@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+﻿using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 
@@ -11,7 +11,7 @@ internal sealed class SubmodelPaginationState(SubmodelPaginationCursor? cursor, 
     public string? LastCollectedSubmodelId { get; set; }
     public string? ResumeAfterSubmodelId { get; set; } = cursor?.SubmodelId;
 
-    public bool CollectSubmodelIds(IList<string> submodelIds, string shellId, int pageSize)
+    public bool CollectSubmodelIds(IList<string?> submodelIds, string shellId, int pageSize)
     {
         if (submodelIds.Count == 0)
         {

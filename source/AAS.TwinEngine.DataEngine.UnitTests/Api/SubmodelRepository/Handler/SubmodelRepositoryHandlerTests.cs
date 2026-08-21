@@ -309,7 +309,7 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_ReturnsSubmodelsDto_WhenServiceSucceeds()
     {
-        var request = new GetAllSubmodelsRequest();
+        var request = new GetAllSubmodelsRequest(null, null, null, null, null, null);
         var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
@@ -323,7 +323,7 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_WithInvalidLimit_ThrowsInvalidUserInputException()
     {
-        var request = new GetAllSubmodelsRequest { Limit = 0 };
+        var request = new GetAllSubmodelsRequest(null, null, 0, null, null, null);
 
         await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetAllSubmodels(request, CancellationToken.None));
     }
@@ -333,7 +333,7 @@ public class SubmodelRepositoryHandlerTests
     {
         const string SemanticId = "https://example.com/semanticId";
         const string IdShort = "Nameplate";
-        var request = new GetAllSubmodelsRequest { SemanticId = SemanticId, IdShort = IdShort };
+        var request = new GetAllSubmodelsRequest(SemanticId, IdShort, null, null, null, null);
         var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(
             Arg.Is<SubmodelSearchFilter>(f => f.SemanticId == SemanticId && f.IdShort == IdShort),
@@ -356,7 +356,7 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_WhenLevelAndExtentSet_BuildsQueryOptions()
     {
-        var request = new GetAllSubmodelsRequest { Level = Level.deep, Extent = Extent.withBlobValue };
+        var request = new GetAllSubmodelsRequest(null, null, null, null, Level.deep, Extent.withBlobValue);
         var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(
             Arg.Any<SubmodelSearchFilter?>(),

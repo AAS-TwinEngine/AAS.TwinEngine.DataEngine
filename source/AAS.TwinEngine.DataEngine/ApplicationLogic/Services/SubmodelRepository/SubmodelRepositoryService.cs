@@ -96,7 +96,7 @@ public class SubmodelRepositoryService(
         }, ex => new SubmodelNotFoundException(ex)).ConfigureAwait(false);
     }
 
-    private async Task<SubmodelPageResult> CollectSubmodelPageAsync(ShellSearchFilter shellSearchFilter, string filteredTemplateId, int pageSize, string? encodedCursor, CancellationToken cancellationToken)
+    private async Task<SubmodelPageResult> CollectSubmodelPageAsync(ShellSearchFilter shellSearchFilter, string? filteredTemplateId, int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
         var state = new SubmodelPaginationState(incomingCursor, pageSize);
@@ -131,9 +131,9 @@ public class SubmodelRepositoryService(
         return new SubmodelPageResult(state.CollectedIds, state.BuildNextCursor(pageSize));
     }
 
-    private async Task<bool> ProcessShellBatchAsync(IReadOnlyList<ShellDescriptorMetaData> shellDescriptors, string filteredTemplateId, int pageSize, SubmodelPaginationState state, CancellationToken cancellationToken)
+    private async Task<bool> ProcessShellBatchAsync(IReadOnlyList<ShellDescriptorMetaData> shellDescriptors, string? filteredTemplateId, int pageSize, SubmodelPaginationState state, CancellationToken cancellationToken)
     {
-        var prefetchTasks = new Task<List<string>>[shellDescriptors.Count];
+        var prefetchTasks = new Task<List<string?>>[shellDescriptors.Count];
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
 
         for (var idx = 0; idx < shellDescriptors.Count; idx++)
@@ -141,7 +141,7 @@ public class SubmodelRepositoryService(
             var shellId = shellDescriptors[idx].Id;
             if (string.IsNullOrWhiteSpace(shellId))
             {
-                prefetchTasks[idx] = Task.FromResult<List<string>>([]);
+                prefetchTasks[idx] = Task.FromResult<List<string?>>([]);
                 continue;
             }
 
@@ -169,7 +169,7 @@ public class SubmodelRepositoryService(
         return false;
     }
 
-    private async Task<List<string>> PrefetchSubmodelIdsAsync(string shellId, string filteredTemplateId, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+    private async Task<List<string?>> PrefetchSubmodelIdsAsync(string shellId, string? filteredTemplateId, SemaphoreSlim semaphore, CancellationToken cancellationToken)
     {
         await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -182,13 +182,18 @@ public class SubmodelRepositoryService(
         }
     }
 
-    private async Task<List<string>> GetSubmodelIdsForShellAsync(string shellId, string filteredTemplateId, CancellationToken cancellationToken)
+    private async Task<List<string?>> GetSubmodelIdsForShellAsync(string shellId, string? filteredTemplateId, CancellationToken cancellationToken)
     {
         try
         {
             var references = await aasRepositoryTemplateService.GetSubmodelRefByIdAsync(shellId, cancellationToken).ConfigureAwait(false);
 
             var submodelIds = references.Select(reference => reference.Keys.FirstOrDefault()?.Value).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
+
+            if (string.IsNullOrWhiteSpace(filteredTemplateId))
+            {
+                return submodelIds;
+            }
 
             var validationTasks = submodelIds.Select(async id =>
                 new
