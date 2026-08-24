@@ -40,7 +40,7 @@ services:
     mem_limit: ${TWINENGINE_MEMORY:-1g}
     restart: always
     environment:
-      - General__DataEngineRepositoryBaseUrl=http://localhost:8080
+      - General__DataEngineRepositoryBaseUrl=${PUBLIC_BASE_URL:-http://localhost:8080}
       - General__OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
       - General__OpenTelemetry__ServiceName=TwinEngine
       - General__CustomerDomainUrl=https://mm-software.com
@@ -153,14 +153,17 @@ services:
     volumes:
       - ../../example/aas:/application/aas
       - ../../example/basyx/aas-env.properties:/application/application.properties
-    environment:
-      BASYX_EXTERNALURL : http://localhost:8080
     restart: always
     depends_on:
       aas-template-registry:
         condition: service_healthy
       sm-template-registry:
         condition: service_healthy
+    healthcheck:
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
     networks:
       - twinengine-network
 
@@ -168,10 +171,18 @@ services:
     image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-15
     container_name: aas-template-registry
     restart: always
+    ports:
+      - "8089:8080"
     depends_on:
       - mongo
     environment:
       - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+    # Only timings are overridden; the image's own HEALTHCHECK command is kept.
+    healthcheck:
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
     networks:
       - twinengine-network
 
@@ -182,6 +193,11 @@ services:
       - mongo
     environment:
       - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+    healthcheck:
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - twinengine-network
 
