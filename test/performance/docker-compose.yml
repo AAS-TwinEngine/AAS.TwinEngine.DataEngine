@@ -18,10 +18,13 @@ services:
     depends_on:
       aas-template-registry:
         condition: service_healthy
+        required: false
       sm-template-registry:
         condition: service_healthy
+        required: false
       template-repository:
         condition: service_healthy
+        required: false
     networks:
       - twinengine-network
 
@@ -157,13 +160,10 @@ services:
     depends_on:
       aas-template-registry:
         condition: service_healthy
+        required: false
       sm-template-registry:
         condition: service_healthy
-    healthcheck:
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 90s
+        required: false
     networks:
       - twinengine-network
 
@@ -177,12 +177,6 @@ services:
       - mongo
     environment:
       - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
-    # Only timings are overridden; the image's own HEALTHCHECK command is kept.
-    healthcheck:
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 90s
     networks:
       - twinengine-network
 
@@ -193,11 +187,6 @@ services:
       - mongo
     environment:
       - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
-    healthcheck:
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 60s
     networks:
       - twinengine-network
 
