@@ -238,8 +238,8 @@ services:
   postgres:
     image: postgres:14.23-alpine3.24
     container_name: postgres
-    cpus: ${POSTGRES_CPU:-4}
-    mem_limit: ${POSTGRES_MEMORY:-8g}
+    cpus: ${POSTGRES_CPU:-2}
+    mem_limit: ${POSTGRES_MEMORY:-4g}
     ports:
       - "9999:5432"
     environment:
