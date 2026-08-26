@@ -83,7 +83,7 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
-            var pageSize = limit ?? 100;
+            var pageSize = limit ?? GeneralConfig.DefaultPaginationLimit;
             var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, pageSize, cursor, cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, queryOptions, cancellationToken).ConfigureAwait(false);
@@ -99,6 +99,10 @@ public class SubmodelRepositoryService(
     private async Task<SubmodelPageResult> CollectSubmodelPageAsync(ShellSearchFilter shellSearchFilter, string? filteredTemplateId, int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
+        if (incomingCursor is null && !string.IsNullOrWhiteSpace(encodedCursor))
+        {
+            throw new InvalidUserInputException();
+        }
         var state = new SubmodelPaginationState(incomingCursor, pageSize);
         var pluginCursor = state.TrackingAasId;
 
@@ -243,7 +247,7 @@ public class SubmodelRepositoryService(
         }
         finally
         {
-            semaphore.Release();
+            _ = semaphore.Release();
         }
     }
 

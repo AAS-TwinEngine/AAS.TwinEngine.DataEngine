@@ -10,6 +10,7 @@ namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 public class GeneralConfig
 {
     public const string Section = "General";
+    public const int DefaultPaginationLimit = 100;
 
     public ApiConfiguration ApiConfiguration { get; set; } = new();
     public HeaderSanitizationOptions HeaderSanitization { get; set; } = new();

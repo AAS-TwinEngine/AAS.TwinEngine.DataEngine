@@ -19,7 +19,16 @@ public sealed record SubmodelPaginationCursor(string? SubmodelId, string? AasId)
             return null;
         }
 
-        var decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(encodedCursor));
+        string decoded;
+        try
+        {
+            decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(encodedCursor));
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+
         var separatorIndex = decoded.IndexOf(Separator);
 
         if (separatorIndex < 0)

@@ -29,7 +29,7 @@ public class SubmodelDescriptorService(
 
     public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
     {
-        var pageSize = limit ?? 100;
+        var pageSize = limit ?? GeneralConfig.DefaultPaginationLimit;
         var paginationResult = await CollectSubmodelDescriptorPageAsync(pageSize, cursor, cancellationToken).ConfigureAwait(false);
         var submodelIds = paginationResult.SubmodelIds;
 

@@ -74,6 +74,8 @@ public class PluginDataHandler(
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
+        limit ??= GeneralConfig.DefaultPaginationLimit;
+
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
@@ -223,6 +225,8 @@ public class PluginDataHandler(
                                            value = x.Value
                                        }))
             : null;
+
+        limit ??= GeneralConfig.DefaultPaginationLimit;
 
         var responses = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, filter?.IdShort, limit, cursor, cancellationToken).ConfigureAwait(false);
 

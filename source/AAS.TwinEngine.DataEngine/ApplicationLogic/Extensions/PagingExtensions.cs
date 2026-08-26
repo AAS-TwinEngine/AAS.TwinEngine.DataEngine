@@ -1,4 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
@@ -17,7 +18,7 @@ public static class PagingExtensions
             startIndex = allItems.ToList().FindIndex(item => getId(item) == lastId) + 1;
         }
 
-        var pageSize = limit ?? 100;
+        var pageSize = limit ?? GeneralConfig.DefaultPaginationLimit;
         var pagedItems = allItems.Skip(startIndex).Take(pageSize).ToList();
 
         string? nextCursor = null;
