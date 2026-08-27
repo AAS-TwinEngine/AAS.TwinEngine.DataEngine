@@ -128,4 +128,27 @@ public class GetAllSubmodelsTests : ApiTestBase
             Assert.NotEqual(firstResult, secondResult.GetProperty("id").GetString());
         }
     }
+
+    [Fact]
+
+    public async Task GetAllSubmodels_WithTwoFieldCursor_ShouldReturnSuccess_ContentAsExpected()
+    {
+
+        // Arrange
+        var url = "/submodels?limit=2&cursor=aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMi9DdXN0b21TdWJtb2RlbHxodHRwczovL21tLXNvZnR3YXJlLmNvbS9pZHMvYWFzLzAwMC0wMDE";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRepository", "TestData", "GetAllSubmodels_WithTwoFieldCursor_Expected.json"));
+
+    }
 }
