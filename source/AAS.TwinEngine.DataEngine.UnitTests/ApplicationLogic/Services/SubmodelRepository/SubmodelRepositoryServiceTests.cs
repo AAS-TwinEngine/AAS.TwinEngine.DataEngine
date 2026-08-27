@@ -291,7 +291,7 @@ public class SubmodelRepositoryServiceTests
     [Fact]
     public async Task GetAllSubmodelsAsync_FiltersShellsByIdShort_WhenIdShortProvided()
     {
-        const string IdShort = "M&M01";
+        const string IdShort = "MM01";
         var filter = new SubmodelSearchFilter { IdShort = IdShort };
 
         _pluginDataHandler

@@ -51,7 +51,7 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_ByIdShort()
     {
         // Arrange
-        var idShort = "M%26M03";
+        var idShort = "MM03";
         var url = $"/shells?idShort={idShort}";
 
         // Act
@@ -73,7 +73,7 @@ public class AasRepositoryTests : ApiTestBase
     {
         // Arrange
         var assetId = EncodeBase64Url("{\"name\":\"SerialNumber\",\"value\":\"SN-1111\"}");
-        var idShort = "M%26M03";
+        var idShort = "MM03";
         var url = $"/shells?assetIds={assetId}&idShort={idShort}";
 
         // Act

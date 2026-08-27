@@ -4,7 +4,7 @@ vars:pre-request {
   submodelIdentifierHandoverDocumentation: https://mm-software.com/submodel/000-001/HandoverDocumentation
   submodelIdentifierCustomSubmodel: https://mm-software.com/submodel/000-001/CustomSubmodel
   assetId: {"name":"SerialNumber","value":"SN-1111"}
-  idShort: M&M03
+  idShort: MM03
 }
 
 script:pre-request {
@@ -25,10 +25,5 @@ script:pre-request {
     const encoded = b64EncodeUnicode(plain);
     bru.setVar(name, encoded);
   });
-  
-  const rawIdShort = bru.getCollectionVar('idShort');
-  if (rawIdShort) {
-    bru.setVar('idShort', encodeURIComponent(rawIdShort));
-  }
 }
 
