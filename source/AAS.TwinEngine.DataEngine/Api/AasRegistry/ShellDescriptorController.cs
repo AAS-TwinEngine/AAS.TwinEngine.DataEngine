@@ -40,7 +40,7 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int limit = GeneralConfig.DefaultPaginationLimit, [FromQuery] string? cursor = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] string? cursor, CancellationToken cancellationToken, [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Get All ShellDescriptors");
         var request = new GetShellDescriptorsRequest(limit, cursor);

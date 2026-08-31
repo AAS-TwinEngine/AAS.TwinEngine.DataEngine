@@ -41,7 +41,7 @@ public class DiscoveryController(
     public async Task<ActionResult<ShellsByAssetLinkResponseDto>> SearchShellsByAssetLinkAsync(
         [FromBody] AssetLinkDto[] assetLinks,
         [FromQuery] string? cursor,
-        CancellationToken cancellationToken = default,
+        CancellationToken cancellationToken,
         [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Start request to search shells by asset link");
@@ -64,7 +64,7 @@ public class DiscoveryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<IList<ISpecificAssetId>>> GetSpecificAssetIdByAasIdentifierAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IList<ISpecificAssetId>>> GetSpecificAssetIdByAasIdentifierAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken)
     {
         logger.LogInformation("Start request to specific asset identifiers by asset administration shell id");
         var request = new GetSpecificAssetIdByAasIdentifierRequest(aasIdentifier);

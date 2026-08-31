@@ -75,7 +75,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<ShellDescriptorsDto>(null!));
 
-        var result = await _sut.GetAllShellDescriptorsAsync(2, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None, limit: 2);
 
         var notFoundResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Null(notFoundResult.Value);
