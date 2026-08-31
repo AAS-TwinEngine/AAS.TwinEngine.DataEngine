@@ -27,9 +27,9 @@ public class SubmodelDescriptorService(
     private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRegistry.ConcurrentOperationsLimit;
 
-    public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
-        var pageSize = limit ?? GeneralConfig.DefaultPaginationLimit;
+        var pageSize = limit;
         var paginationResult = await CollectSubmodelDescriptorPageAsync(pageSize, cursor, cancellationToken).ConfigureAwait(false);
         var submodelIds = paginationResult.SubmodelIds;
 

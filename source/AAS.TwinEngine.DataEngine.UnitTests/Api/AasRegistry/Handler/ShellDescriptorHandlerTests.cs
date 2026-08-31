@@ -34,8 +34,8 @@ public class ShellDescriptorHandlerTests
     public async Task GetAllShellDescriptors_ReturnsAllShellDescriptors_WhenExists()
     {
         var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
-        var request = new GetShellDescriptorsRequest(null, null);
-        _shellDescriptorService.GetAllShellDescriptorsAsync(null, null, Arg.Any<CancellationToken>()).Returns(expectedShellDescriptors);
+        var request = new GetShellDescriptorsRequest(100, null);
+        _shellDescriptorService.GetAllShellDescriptorsAsync(Arg.Any<int>(), null, Arg.Any<CancellationToken>()).Returns(expectedShellDescriptors);
 
         var result = await _sut.GetAllShellDescriptors(request, CancellationToken.None);
 
@@ -61,8 +61,8 @@ public class ShellDescriptorHandlerTests
     [Fact]
     public async Task GetAllShellDescriptors_ShellDescriptorsIsNull_ThrowsShellDescriptorNotFoundException()
     {
-        _shellDescriptorService.GetAllShellDescriptorsAsync(null, null, Arg.Any<CancellationToken>())!.Returns((ShellDescriptors)null!);
-        var request = new GetShellDescriptorsRequest(null, null);
+        _shellDescriptorService.GetAllShellDescriptorsAsync(Arg.Any<int>(), null, Arg.Any<CancellationToken>())!.Returns((ShellDescriptors)null!);
+        var request = new GetShellDescriptorsRequest(100, null);
 
         await Assert.ThrowsAsync<ShellDescriptorNotFoundException>(() => _sut.GetAllShellDescriptors(request, CancellationToken.None));
     }
@@ -161,8 +161,8 @@ public class ShellDescriptorHandlerTests
     public async Task GetAllSubmodelDescriptorsByAasId_ReturnsDescriptors_ForAllSubmodelsInAas()
     {
         const string AasId = "AasId";
-        var request = new GetSubmodelDescriptorsByAasRequest(AasId.EncodeBase64Url(), null, null);
-        _shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+        var request = new GetSubmodelDescriptorsByAasRequest(AasId.EncodeBase64Url(), 100, null);
+        _shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(AasId, Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(new SubmodelDescriptors
             {
                 PagingMetaData = new PagingMetaData(),
@@ -183,8 +183,8 @@ public class ShellDescriptorHandlerTests
     public async Task GetAllSubmodelDescriptorsByAasId_AasNotFound_PropagatesException()
     {
         const string AasId = "AasId";
-        var request = new GetSubmodelDescriptorsByAasRequest(AasId.EncodeBase64Url(), null, null);
-        _shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(AasId, null, null, Arg.Any<CancellationToken>())
+        var request = new GetSubmodelDescriptorsByAasRequest(AasId.EncodeBase64Url(), 100, null);
+        _shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(AasId, Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .ThrowsAsync(new TemplateNotFoundException());
 
         await Assert.ThrowsAsync<TemplateNotFoundException>(

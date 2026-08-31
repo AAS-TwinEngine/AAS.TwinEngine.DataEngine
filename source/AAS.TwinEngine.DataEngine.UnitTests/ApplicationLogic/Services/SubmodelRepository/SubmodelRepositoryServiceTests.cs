@@ -249,10 +249,10 @@ public class SubmodelRepositoryServiceTests
     public async Task GetAllSubmodelsAsync_ReturnsEmpty_WhenNoShellsFound()
     {
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [] });
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
 
         Assert.Empty(result.Result);
     }
@@ -268,7 +268,7 @@ public class SubmodelRepositoryServiceTests
         ArrangeValidateSemanticIdFilter(SubmodelId1, true);
         ArrangeSubmodelBuild(SubmodelId1, TestData.CreateFilledSubmodel());
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
 
         Assert.Single(result.Result);
     }
@@ -283,7 +283,7 @@ public class SubmodelRepositoryServiceTests
             .GetSubmodelRefByIdAsync(ShellId, Arg.Any<CancellationToken>())
             .ThrowsAsync(new ResourceNotFoundException());
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
 
         Assert.Empty(result.Result);
     }
@@ -298,18 +298,18 @@ public class SubmodelRepositoryServiceTests
             .GetDataForShellsByAssetIdsAsync(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Is<ShellSearchFilter?>(f => f != null && f.IdShort == IdShort),
-                Arg.Any<int?>(),
+                Arg.Any<int>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = [] });
 
-        await _sut.GetAllSubmodelsAsync(filter, null, null, null, CancellationToken.None);
+        await _sut.GetAllSubmodelsAsync(filter, null, 100, null, CancellationToken.None);
 
         await _pluginDataHandler.Received(1)
             .GetDataForShellsByAssetIdsAsync(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Is<ShellSearchFilter?>(f => f != null && f.IdShort == IdShort),
-                Arg.Any<int?>(),
+                Arg.Any<int>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>());
     }
@@ -332,7 +332,7 @@ public class SubmodelRepositoryServiceTests
         _templateService.ValidateSemanticIdFilter(SubmodelId1, FilteredTemplateId).Returns(true);
         ArrangeSubmodelBuild(SubmodelId1, TestData.CreateFilledSubmodel());
 
-        var result = await _sut.GetAllSubmodelsAsync(filter, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(filter, null, 100, null, CancellationToken.None);
 
         Assert.Single(result.Result);
         await _templateService.Received(1).GetFilteredSubmodelTemplateIdAsync(SemanticId, Arg.Any<CancellationToken>());
@@ -349,7 +349,7 @@ public class SubmodelRepositoryServiceTests
             .Returns((string?)null);
 
         await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
-            _sut.GetAllSubmodelsAsync(filter, null, null, null, CancellationToken.None));
+            _sut.GetAllSubmodelsAsync(filter, null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -369,7 +369,7 @@ public class SubmodelRepositoryServiceTests
         _templateService.ValidateSemanticIdFilter(SubmodelId2, FilteredTemplateId).Returns(false);
         ArrangeSubmodelBuild(SubmodelId1, TestData.CreateFilledSubmodel());
 
-        var result = await _sut.GetAllSubmodelsAsync(filter, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(filter, null, 100, null, CancellationToken.None);
 
         Assert.Single(result.Result);
     }
@@ -389,7 +389,7 @@ public class SubmodelRepositoryServiceTests
         ArrangeValidateSemanticIdFilter(SubmodelId1, true);
         ArrangeSubmodelBuild(SubmodelId1, TestData.CreateFilledSubmodel());
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
 
         Assert.Single(result.Result);
         await _aasRepositoryTemplateService.Received(1).GetSubmodelRefByIdAsync(ValidShellId, Arg.Any<CancellationToken>());
@@ -434,7 +434,7 @@ public class SubmodelRepositoryServiceTests
         const string Sm3 = "https://example.com/submodels/sm-3";
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors = [new ShellDescriptorMetaData { Id = Shell1Id }],
@@ -461,7 +461,7 @@ public class SubmodelRepositoryServiceTests
         const string Sm2 = "https://example.com/submodels/sm-2";
 
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors = [new ShellDescriptorMetaData { Id = Shell1Id }],
@@ -503,7 +503,7 @@ public class SubmodelRepositoryServiceTests
     {
         ArrangeShellsResponse([]);
 
-        await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
+        await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
 
         await _pluginDataHandler.Received(1).GetDataForShellsByAssetIdsAsync(
             Arg.Any<IReadOnlyList<PluginManifest>>(),
@@ -529,7 +529,7 @@ public class SubmodelRepositoryServiceTests
         ArrangeValidateSemanticIdFilter(ValidSubmodelId, true);
         ArrangeSubmodelBuild(ValidSubmodelId, TestData.CreateFilledSubmodel());
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
 
         Assert.Single(result.Result);
     }
@@ -544,7 +544,7 @@ public class SubmodelRepositoryServiceTests
         var filledSubmodel = TestData.CreateFilledSubmodel();
         ArrangeSubmodelBuild(SubmodelId, filledSubmodel);
 
-        var result = await _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelElementsAsync(SubmodelId, null, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(filledSubmodel.SubmodelElements!.Count, result.Result.Count);
@@ -568,7 +568,7 @@ public class SubmodelRepositoryServiceTests
             .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
         _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(emptySubmodel);
 
-        var result = await _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelElementsAsync(SubmodelId, null, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Empty(result.Result);
@@ -594,7 +594,7 @@ public class SubmodelRepositoryServiceTests
             .Returns((ISubmodel?)null);
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
-            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
+            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -605,7 +605,7 @@ public class SubmodelRepositoryServiceTests
             .ThrowsAsync(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
-            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
+            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -620,7 +620,7 @@ public class SubmodelRepositoryServiceTests
             .ThrowsAsync(new ResponseParsingException());
 
         await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
-            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, null, null, CancellationToken.None));
+            _sut.GetAllSubmodelElementsAsync(SubmodelId, null, 100, null, CancellationToken.None));
     }
 
     #endregion
@@ -841,7 +841,7 @@ public class SubmodelRepositoryServiceTests
     private void ArrangeShellsResponse(List<ShellDescriptorMetaData> descriptors)
     {
         _pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetDataForShellsByAssetIdsAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ShellDescriptorsMetaData { ShellDescriptors = descriptors });
     }
 

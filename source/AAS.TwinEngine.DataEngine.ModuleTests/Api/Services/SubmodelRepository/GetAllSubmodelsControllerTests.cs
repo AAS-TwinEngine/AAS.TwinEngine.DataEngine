@@ -56,7 +56,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act
@@ -81,7 +81,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act
@@ -108,7 +108,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act
@@ -134,7 +134,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act
@@ -155,7 +155,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act
@@ -200,7 +200,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act
@@ -223,7 +223,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act
@@ -288,7 +288,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
     {
         // Arrange
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Throws(new SubmodelNotFoundException());
 
         // Act
@@ -303,7 +303,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
     {
         // Arrange
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Throws(new InternalDataProcessingException());
 
         // Act
@@ -318,7 +318,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
     {
         // Arrange
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Throws(new InvalidOperationException("Unexpected failure"));
 
         // Act
@@ -339,7 +339,7 @@ public abstract class GetAllSubmodelsControllerTests : IDisposable
         };
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         // Act

@@ -49,7 +49,7 @@ public class PagingExtensionsTests
     [Fact]
     public void GetPagedResult_ShouldReturnDefaultPageSize_WhenPageSizeIsNull()
     {
-        var (pagedItems, meta) = PagingExtensions.GetPagedResult(_items, _idSelector, null, null);
+        var (pagedItems, meta) = PagingExtensions.GetPagedResult(_items, _idSelector, 100, null);
 
         Assert.Equal(20, pagedItems.Count);
         Assert.Null(meta.Cursor);

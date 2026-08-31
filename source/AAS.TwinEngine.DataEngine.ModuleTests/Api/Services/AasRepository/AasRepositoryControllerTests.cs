@@ -696,7 +696,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
             .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelElementsAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new SubmodelElementsPage { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
 
         // Act

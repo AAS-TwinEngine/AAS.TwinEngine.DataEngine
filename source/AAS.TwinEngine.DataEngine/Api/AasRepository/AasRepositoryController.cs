@@ -9,6 +9,7 @@ using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -46,9 +47,9 @@ public class AasRepositoryController(
     public async Task<ActionResult<ShellsDto>> GetShellsByAssetIdAsync(
         [FromQuery] string[]? assetIds,
         [FromQuery] string? idShort,
-        [FromQuery] int? limit,
         [FromQuery] string? cursor,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Start request to get shells (assetIds/idShort filters)");
         var request = new GetShellsByAssetIdsRequest(assetIds, idShort, limit, cursor);
@@ -139,7 +140,7 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<JsonObject>> GetSubmodelRefByIdAsync([FromRoute] string aasIdentifier, [FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
+    public async Task<ActionResult<JsonObject>> GetSubmodelRefByIdAsync([FromRoute] string aasIdentifier, [FromQuery] string? cursor, CancellationToken cancellationToken, [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Start request to get submodel-refs for shell");
         var request = new GetSubmodelRefRequest(aasIdentifier, limit, cursor);
@@ -199,9 +200,9 @@ public class AasRepositoryController(
     public async Task<ActionResult<SubmodelElementsDto>> GetAllSubmodelElementsByAasIdAsync(
         [FromRoute] string aasIdentifier,
         [FromRoute] string submodelIdentifier,
-        [FromQuery] int? limit,
         [FromQuery] string? cursor,
         CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit,
         [FromQuery] Level level = Level.deep,
         [FromQuery] Extent extent = Extent.withoutBlobValue)
     {

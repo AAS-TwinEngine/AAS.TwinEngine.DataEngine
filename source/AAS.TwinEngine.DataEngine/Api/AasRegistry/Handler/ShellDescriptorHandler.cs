@@ -15,7 +15,7 @@ public class ShellDescriptorHandler(
 {
     public Task<ShellDescriptorsDto> GetAllShellDescriptors(GetShellDescriptorsRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
+        request.Limit.ValidateLimit(logger);
         request?.Cursor?.ValidateCursor(logger);
 
         return GetResourceAsync(

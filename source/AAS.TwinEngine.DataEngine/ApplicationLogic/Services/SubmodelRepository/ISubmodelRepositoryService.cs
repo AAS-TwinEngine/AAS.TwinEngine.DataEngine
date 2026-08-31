@@ -14,14 +14,14 @@ public interface ISubmodelRepositoryService
     Task<SubmodelList> GetAllSubmodelsAsync(
         SubmodelSearchFilter? filter,
         SubmodelQueryOptions? queryOptions,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken);
 
     Task<SubmodelElementsPage> GetAllSubmodelElementsAsync(
         string submodelId,
         SubmodelQueryOptions? queryOptions,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken);
 

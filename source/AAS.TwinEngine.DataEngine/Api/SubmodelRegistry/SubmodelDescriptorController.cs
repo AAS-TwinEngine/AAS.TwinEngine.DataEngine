@@ -4,6 +4,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Asp.Versioning;
 
@@ -38,7 +39,7 @@ public class SubmodelDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<SubmodelDescriptorsDto>> GetAllSubmodelDescriptorsAsync([FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
+    public async Task<ActionResult<SubmodelDescriptorsDto>> GetAllSubmodelDescriptorsAsync([FromQuery] int limit = GeneralConfig.DefaultPaginationLimit, [FromQuery] string? cursor = null, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Get All Submodel Descriptors");
         var request = new GetSubmodelDescriptorsRequest(limit, cursor);

@@ -57,11 +57,11 @@ public class AasRepositoryControllerTests
     public async Task GetShellsByAssetIdAsync_ReturnsOkResult()
     {
         var expectedResponse = new ShellsDto { PagingMetaData = new PagingMetaDataDto { Cursor = null }, Result = [] };
-        var request = new GetShellsByAssetIdsRequest(["dGVzdA"], null, null, null);
+        var request = new GetShellsByAssetIdsRequest(["dGVzdA"], null, 100, null);
         _handler.GetShellsByAssetIdsAsync(request, Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
-        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, null, CancellationToken.None);
+        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, CancellationToken.None);
 
         Assert.IsType<ActionResult<ShellsDto>>(result);
     }
@@ -74,7 +74,7 @@ public class AasRepositoryControllerTests
         _handler.GetShellsByAssetIdsAsync(Arg.Any<GetShellsByAssetIdsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
-        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], idShort, null, null, CancellationToken.None);
+        var result = await _sut.GetShellsByAssetIdAsync(["dGVzdA"], idShort, null, CancellationToken.None);
 
         Assert.IsType<ActionResult<ShellsDto>>(result);
         await _handler.Received(1).GetShellsByAssetIdsAsync(
@@ -88,7 +88,7 @@ public class AasRepositoryControllerTests
         _handler.GetShellsByAssetIdsAsync(Arg.Any<GetShellsByAssetIdsRequest>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("error"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetShellsByAssetIdAsync(["dGVzdA"], null, null, CancellationToken.None));
 
         Assert.NotNull(exception);
         Assert.IsType<Exception>(exception);
@@ -182,7 +182,7 @@ public class AasRepositoryControllerTests
         _handler.GetSubmodelRefByIdAsync(Arg.Any<GetSubmodelRefRequest>(), Arg.Any<CancellationToken>())
             .Returns(_expectedSubmodelRef);
 
-        var result = await _sut.GetSubmodelRefByIdAsync(encodedId, Limit, null, CancellationToken.None);
+        var result = await _sut.GetSubmodelRefByIdAsync(encodedId, null, CancellationToken.None, Limit);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var actualJson = JsonSerializer.Serialize(okResult.Value, _options);
@@ -196,7 +196,7 @@ public class AasRepositoryControllerTests
         var encodedId = AasIdentifier.EncodeBase64Url();
         _handler.GetSubmodelRefByIdAsync(Arg.Any<GetSubmodelRefRequest>(), Arg.Any<CancellationToken>()).Throws(new UnauthorizedAccessException("Unauthorized"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetSubmodelRefByIdAsync(encodedId, Limit, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetSubmodelRefByIdAsync(encodedId, null, CancellationToken.None, Limit));
 
         Assert.NotNull(exception);
         Assert.IsType<UnauthorizedAccessException>(exception);
@@ -208,7 +208,7 @@ public class AasRepositoryControllerTests
         var encodedId = AasIdentifier.EncodeBase64Url();
         _handler.GetSubmodelRefByIdAsync(Arg.Any<GetSubmodelRefRequest>(), Arg.Any<CancellationToken>()).Throws(new Exception("Internal error"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetSubmodelRefByIdAsync(encodedId, Limit, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetSubmodelRefByIdAsync(encodedId, null, CancellationToken.None, Limit));
 
         Assert.NotNull(exception);
         Assert.IsType<Exception>(exception);
@@ -321,7 +321,7 @@ public class AasRepositoryControllerTests
         _handler.GetAllSubmodelElementsByAasIdAsync(Arg.Any<GetAllSubmodelElementsByAasRequest>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
-        var result = await _sut.GetAllSubmodelElementsByAasIdAsync(encodedAasId, encodedSubmodelId, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelElementsByAasIdAsync(encodedAasId, encodedSubmodelId, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<SubmodelElementsDto>(okResult.Value);

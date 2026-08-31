@@ -8,7 +8,7 @@ public static class PagingExtensions
     public static (IList<T> Items, PagingMetaData PagingMetaData) GetPagedResult<T>(
         IList<T> allItems,
         Func<T, string> getId,
-        int? limit,
+        int limit,
         string? cursor) where T : class
     {
         var startIndex = 0;
@@ -18,7 +18,7 @@ public static class PagingExtensions
             startIndex = allItems.ToList().FindIndex(item => getId(item) == lastId) + 1;
         }
 
-        var pageSize = limit ?? GeneralConfig.DefaultPaginationLimit;
+        var pageSize = limit;
         var pagedItems = allItems.Skip(startIndex).Take(pageSize).ToList();
 
         string? nextCursor = null;

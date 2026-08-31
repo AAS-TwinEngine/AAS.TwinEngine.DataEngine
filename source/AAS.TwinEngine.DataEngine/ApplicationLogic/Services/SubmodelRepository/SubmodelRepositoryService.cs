@@ -63,7 +63,7 @@ public class SubmodelRepositoryService(
         }, ex => new SubmodelElementNotFoundException(ex)).ConfigureAwait(false);
     }
 
-    public async Task<SubmodelList> GetAllSubmodelsAsync(SubmodelSearchFilter? filter, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelList> GetAllSubmodelsAsync(SubmodelSearchFilter? filter, SubmodelQueryOptions? queryOptions, int limit, string? cursor, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
@@ -83,7 +83,7 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
-            var pageSize = limit ?? GeneralConfig.DefaultPaginationLimit;
+            var pageSize = limit;
             var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, pageSize, cursor, cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, queryOptions, cancellationToken).ConfigureAwait(false);
@@ -251,7 +251,7 @@ public class SubmodelRepositoryService(
         }
     }
 
-    public async Task<SubmodelElementsPage> GetAllSubmodelElementsAsync(string submodelId, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsAsync(string submodelId, SubmodelQueryOptions? queryOptions, int limit, string? cursor, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {

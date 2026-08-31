@@ -37,11 +37,11 @@ public class DiscoveryControllerTests
             PagingMetaData = new PagingMetaDataDto { Cursor = null },
             Result = ["urn:example:aas:motor:001"]
         };
-        var request = new SearchShellsByAssetLinkRequest(assetLinks, null, null);
-        _ = _handler.SearchShellsByAssetLinkAsync(request, Arg.Any<CancellationToken>())
+        var request = new SearchShellsByAssetLinkRequest(assetLinks, 100, null);
+        _ = _handler.SearchShellsByAssetLinkAsync(Arg.Any<SearchShellsByAssetLinkRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
-        var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, null, CancellationToken.None);
+        var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var response = Assert.IsType<ShellsByAssetLinkResponseDto>(okResult.Value);
@@ -66,7 +66,7 @@ public class DiscoveryControllerTests
         _ = _handler.SearchShellsByAssetLinkAsync(request, Arg.Any<CancellationToken>())
             .Returns(expectedResponse);
 
-        var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, 10, "cursor123", CancellationToken.None);
+        var result = await _sut.SearchShellsByAssetLinkAsync(assetLinks, "cursor123", CancellationToken.None, 10);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.NotNull(okResult.Value);

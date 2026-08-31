@@ -27,7 +27,7 @@ public class ShellDescriptorService(
     IAasRepositoryService aasRepositoryService) : IShellDescriptorService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
-    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
@@ -108,9 +108,9 @@ public class ShellDescriptorService(
         return await submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<SubmodelDescriptors?> GetAllSubmodelDescriptorsByAasIdAsync(string aasId, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelDescriptors?> GetAllSubmodelDescriptorsByAasIdAsync(string aasId, int limit, string? cursor, CancellationToken cancellationToken)
     {
-        var submodelRefs = await aasRepositoryService.GetSubmodelRefByIdAsync(aasId, null, null, cancellationToken).ConfigureAwait(false);
+        var submodelRefs = await aasRepositoryService.GetSubmodelRefByIdAsync(aasId, int.MaxValue, null, cancellationToken).ConfigureAwait(false);
 
         var submodelIds = submodelRefs.Result?
             .SelectMany(reference => reference.Keys ?? [])

@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -51,7 +52,7 @@ public class SubmodelRepositoryHandler(
 
         var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
 
-        var result = await submodelRepositoryService.GetAllSubmodelsAsync(filter, queryOptions, request?.Limit, request?.Cursor, cancellationToken).ConfigureAwait(false);
+        var result = await submodelRepositoryService.GetAllSubmodelsAsync(filter, queryOptions, request?.Limit ?? GeneralConfig.DefaultPaginationLimit, request?.Cursor, cancellationToken).ConfigureAwait(false);
 
         return result.ToDto();
     }
@@ -66,7 +67,7 @@ public class SubmodelRepositoryHandler(
         var result = await GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
+            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
 
         return result.ToDto();
     }

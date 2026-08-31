@@ -37,7 +37,7 @@ public class AasRepositoryHandler(
         };
 
         var shells = await aasRepositoryService
-            .GetShellsByFiltersAsync(filter, request?.Limit, request?.Cursor, cancellationToken)
+            .GetShellsByFiltersAsync(filter, request.Limit, request?.Cursor, cancellationToken)
             .ConfigureAwait(false);
 
         return shells.ToDto();
@@ -65,7 +65,7 @@ public class AasRepositoryHandler(
         return GetResourceByIdAsync(
             request?.AasIdentifier,
             "submodel-ref",
-            id => aasRepositoryService.GetSubmodelRefByIdAsync(id!, request?.Limit, request?.Cursor, cancellationToken)!,
+            id => aasRepositoryService.GetSubmodelRefByIdAsync(id!, request.Limit, request?.Cursor, cancellationToken)!,
             submodelRef => JsonSerializer.SerializeToElement(submodelRef.ToDto(), JsonSerializationOptions.SerializeToElementWithEnum)
         );
     }
@@ -99,7 +99,7 @@ public class AasRepositoryHandler(
             request?.SubmodelId,
             "submodel elements By AasID",
             async (aasId, submodelId) => (await aasRepositoryService
-                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
+                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request.Limit, request?.Cursor, cancellationToken)
                 .ConfigureAwait(false)).ToDto());
     }
 

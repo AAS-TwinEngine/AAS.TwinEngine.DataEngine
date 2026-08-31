@@ -30,7 +30,7 @@ public class AasRepositoryService(
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
     private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
-    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
@@ -118,7 +118,7 @@ public class AasRepositoryService(
         }
     }
 
-    public async Task<SubmodelRef> GetSubmodelRefByIdAsync(string aasIdentifier, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelRef> GetSubmodelRefByIdAsync(string aasIdentifier, int limit, string? cursor, CancellationToken cancellationToken)
     {
         var submodelRefs = await templateService.GetSubmodelRefByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
 
@@ -187,7 +187,7 @@ public class AasRepositoryService(
         return await submodelRepositoryService.GetSubmodelAsync(submodelIdentifier, queryOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int limit, string? cursor, CancellationToken cancellationToken)
     {
         await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
 
@@ -210,7 +210,7 @@ public class AasRepositoryService(
 
     public async Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
     {
-        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
+        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, int.MaxValue, null, cancellationToken).ConfigureAwait(false);
 
         var submodelExists = submodelRefs.Result?.SelectMany(r => r.Keys ?? [])
                                .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.Ordinal)) ?? false;
@@ -301,7 +301,7 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {
@@ -310,7 +310,7 @@ public class AasRepositoryService(
             : await GetFilteredShellMetadataAsync(filter, limit, cursor, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
             .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
@@ -323,7 +323,7 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {

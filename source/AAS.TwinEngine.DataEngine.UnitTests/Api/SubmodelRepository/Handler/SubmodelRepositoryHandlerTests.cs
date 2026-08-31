@@ -309,9 +309,9 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_ReturnsSubmodelsDto_WhenServiceSucceeds()
     {
-        var request = new GetAllSubmodelsRequest(null, null, null, null, null, null);
+        var request = new GetAllSubmodelsRequest(null, null, 100, null, null, null);
         var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
-        _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+        _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         var result = await _sut.GetAllSubmodels(request, CancellationToken.None);
@@ -333,12 +333,12 @@ public class SubmodelRepositoryHandlerTests
     {
         const string SemanticId = "https://example.com/semanticId";
         const string IdShort = "Nameplate";
-        var request = new GetAllSubmodelsRequest(SemanticId, IdShort, null, null, null, null);
+        var request = new GetAllSubmodelsRequest(SemanticId, IdShort, 100, null, null, null);
         var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(
             Arg.Is<SubmodelSearchFilter>(f => f.SemanticId == SemanticId && f.IdShort == IdShort),
             Arg.Any<SubmodelQueryOptions?>(),
-            null,
+            Arg.Any<int>(),
             null,
             Arg.Any<CancellationToken>())
             .Returns(submodelList);
@@ -348,7 +348,7 @@ public class SubmodelRepositoryHandlerTests
         await _submodelRepository.Received(1).GetAllSubmodelsAsync(
             Arg.Is<SubmodelSearchFilter>(f => f.SemanticId == SemanticId && f.IdShort == IdShort),
             Arg.Any<SubmodelQueryOptions?>(),
-            null,
+            Arg.Any<int>(),
             null,
             Arg.Any<CancellationToken>());
     }
@@ -356,12 +356,12 @@ public class SubmodelRepositoryHandlerTests
     [Fact]
     public async Task GetAllSubmodels_WhenLevelAndExtentSet_BuildsQueryOptions()
     {
-        var request = new GetAllSubmodelsRequest(null, null, null, null, Level.deep, Extent.withBlobValue);
+        var request = new GetAllSubmodelsRequest(null, null, 100, null, Level.deep, Extent.withBlobValue);
         var submodelList = new SubmodelList { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
         _submodelRepository.GetAllSubmodelsAsync(
             Arg.Any<SubmodelSearchFilter?>(),
             Arg.Is<SubmodelQueryOptions?>(q => q != null),
-            null, null,
+            Arg.Any<int>(), null,
             Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
@@ -370,7 +370,7 @@ public class SubmodelRepositoryHandlerTests
         await _submodelRepository.Received(1).GetAllSubmodelsAsync(
             Arg.Any<SubmodelSearchFilter?>(),
             Arg.Is<SubmodelQueryOptions?>(q => q != null),
-            null, null,
+            Arg.Any<int>(), null,
             Arg.Any<CancellationToken>());
     }
 
@@ -378,7 +378,7 @@ public class SubmodelRepositoryHandlerTests
     public async Task GetAllSubmodels_WhenNullRequest_ReturnsSuccessfully()
     {
         var submodelList = new SubmodelList { PagingMetaData = new PagingMetaData(), Result = [] };
-        _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+        _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(submodelList);
 
         var result = await _sut.GetAllSubmodels(null!, CancellationToken.None);
@@ -391,18 +391,18 @@ public class SubmodelRepositoryHandlerTests
     {
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
-        var request = new GetAllSubmodelElementsRequest(encodedId, null, null, Level.deep, Extent.withoutBlobValue);
+        var request = new GetAllSubmodelElementsRequest(encodedId, 100, null, Level.deep, Extent.withoutBlobValue);
         var elementList = new SubmodelElementsPage { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
 
         _submodelRepository
-            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(elementList);
 
         var result = await _sut.GetAllSubmodelElements(request, CancellationToken.None);
 
         Assert.NotNull(result);
         await _submodelRepository.Received(1)
-            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>());
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -430,7 +430,7 @@ public class SubmodelRepositoryHandlerTests
     {
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
-        var request = new GetAllSubmodelElementsRequest(encodedId, null, null, Level.deep, Extent.withoutBlobValue);
+        var request = new GetAllSubmodelElementsRequest(encodedId, 100, null, Level.deep, Extent.withoutBlobValue);
         var element = Substitute.For<ISubmodelElement>();
         element.IdShort.Returns("ManufacturerName");
         var elementList = new SubmodelElementsPage
@@ -440,7 +440,7 @@ public class SubmodelRepositoryHandlerTests
         };
 
         _submodelRepository
-            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(elementList);
 
         var result = await _sut.GetAllSubmodelElements(request, CancellationToken.None);
@@ -454,17 +454,17 @@ public class SubmodelRepositoryHandlerTests
     {
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
-        var request = new GetAllSubmodelElementsRequest(encodedId, null, null, Level.deep, Extent.withBlobValue);
+        var request = new GetAllSubmodelElementsRequest(encodedId, 100, null, Level.deep, Extent.withBlobValue);
         var elementList = new SubmodelElementsPage { PagingMetaData = new DomainModel.Shared.PagingMetaData(), Result = [] };
 
         _submodelRepository
-            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), null, null, Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(elementList);
 
         await _sut.GetAllSubmodelElements(request, CancellationToken.None);
 
         await _submodelRepository.Received(1)
-            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), null, null, Arg.Any<CancellationToken>());
+            .GetAllSubmodelElementsAsync(SubmodelId, Arg.Is<SubmodelQueryOptions?>(q => q != null), Arg.Any<int>(), null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -472,7 +472,7 @@ public class SubmodelRepositoryHandlerTests
     {
         const string SubmodelId = "NameplateSubmodel";
         var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(SubmodelId));
-        var request = new GetAllSubmodelElementsRequest(encodedId, null, null, Level.deep, Extent.withoutBlobValue);
+        var request = new GetAllSubmodelElementsRequest(encodedId, 100, null, Level.deep, Extent.withoutBlobValue);
         var elementList = new SubmodelElementsPage { PagingMetaData = new PagingMetaData(), Result = [] };
 
         _submodelRepository
@@ -481,7 +481,7 @@ public class SubmodelRepositoryHandlerTests
                 Arg.Is<SubmodelQueryOptions?>(q => q != null
                     && q.Level == Level.deep.ToString()
                     && q.Extent == Extent.withoutBlobValue.ToString()),
-                null,
+                Arg.Any<int>(),
                 null,
                 Arg.Any<CancellationToken>())
             .Returns(elementList);
@@ -494,7 +494,7 @@ public class SubmodelRepositoryHandlerTests
                 Arg.Is<SubmodelQueryOptions?>(q => q != null
                     && q.Level == Level.deep.ToString()
                     && q.Extent == Extent.withoutBlobValue.ToString()),
-                null,
+                Arg.Any<int>(),
                 null,
                 Arg.Any<CancellationToken>());
     }

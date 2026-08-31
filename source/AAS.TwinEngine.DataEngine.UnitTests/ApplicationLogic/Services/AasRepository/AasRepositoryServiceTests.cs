@@ -200,7 +200,7 @@ public class AasRepositoryServiceTests
         var expectedRefs = CreateSubmodelRefs(3);
         _templateService.GetSubmodelRefByIdAsync(AasIdentifier, cancellationToken).Returns(expectedRefs);
 
-        var result = await _sut.GetSubmodelRefByIdAsync(AasIdentifier, null, null, cancellationToken);
+        var result = await _sut.GetSubmodelRefByIdAsync(AasIdentifier, 100, null, cancellationToken);
 
         Assert.Equal(3, result.Result!.Count);
         await _templateService.Received(1).GetSubmodelRefByIdAsync(AasIdentifier, cancellationToken);
@@ -365,7 +365,7 @@ public class AasRepositoryServiceTests
 
         _pluginDataHandler
             .GetDataForAllShellDescriptorsAsync(
-                null,
+                Arg.Any<int>(),
                 null,
                 manifests,
                 cancellationToken)
@@ -376,7 +376,7 @@ public class AasRepositoryServiceTests
             });
 
         // Act
-        var result = await _sut.GetShellsByFiltersAsync(filter: null, limit: null, cursor: null, cancellationToken);
+        var result = await _sut.GetShellsByFiltersAsync(filter: null, limit: 100, cursor: null, cancellationToken);
 
         // Assert
         var shell = Assert.Single(result.Result);
@@ -407,7 +407,7 @@ public class AasRepositoryServiceTests
             .GetDataForShellsByAssetIdsAsync(
                 manifests,
                 Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort),
-                Arg.Any<int?>(),
+                Arg.Any<int>(),
                 Arg.Any<string?>(),
                 cancellationToken)
             .Returns(new ShellDescriptorsMetaData
@@ -421,14 +421,14 @@ public class AasRepositoryServiceTests
 
         // Act
         var filter = new ShellSearchFilter { IdShort = targetIdShort };
-        var result = await _sut.GetShellsByFiltersAsync(filter, limit: null, cursor: null, cancellationToken);
+        var result = await _sut.GetShellsByFiltersAsync(filter, limit: 100, cursor: null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);
         Assert.Single(result.Result);
         Assert.Equal("aas-1", result.Result[0].Id);
         await _pluginDataHandler.Received(1)
-            .GetDataForShellsByAssetIdsAsync(manifests, Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort), Arg.Any<int?>(), Arg.Any<string?>(), cancellationToken);
+            .GetDataForShellsByAssetIdsAsync(manifests, Arg.Is<ShellSearchFilter>(f => f != null && f.IdShort == targetIdShort), Arg.Any<int>(), Arg.Any<string?>(), cancellationToken);
     }
 
     [Fact]
@@ -447,7 +447,7 @@ public class AasRepositoryServiceTests
        };
 
         _pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(null, null, manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, manifests, cancellationToken)
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors = metadataItems,
@@ -464,7 +464,7 @@ public class AasRepositoryServiceTests
             .Returns(new AssetAdministrationShell("aas-3", new AssetInformation(AssetKind.Instance)));
 
         // Act
-        var result = await _sut.GetShellsByFiltersAsync(filter: null, limit: null, cursor: null, cancellationToken);
+        var result = await _sut.GetShellsByFiltersAsync(filter: null, limit: 100, cursor: null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);
