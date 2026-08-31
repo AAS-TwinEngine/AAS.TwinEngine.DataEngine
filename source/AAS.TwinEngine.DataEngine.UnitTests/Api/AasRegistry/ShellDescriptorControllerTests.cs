@@ -178,7 +178,7 @@ public class ShellDescriptorControllerTests
         };
     }
 
-/*    [Fact]
+    [Fact]
     public async Task GetAllSubmodelDescriptorsByAasIdAsync_ReturnsOkResult()
     {
         const string AasId = "https://example.com/ids/aas/1170_1160_3052_6568";
@@ -187,14 +187,14 @@ public class ShellDescriptorControllerTests
         _handler.GetAllSubmodelDescriptorsByAasId(Arg.Any<GetSubmodelDescriptorsByAasRequest>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
-        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(encodedId, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(encodedId, null, CancellationToken.None, 100);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<SubmodelDescriptorsDto>(okResult.Value);
         await _handler.Received(1).GetAllSubmodelDescriptorsByAasId(
             Arg.Is<GetSubmodelDescriptorsByAasRequest>(r => r.AasIdentifier == encodedId),
             Arg.Any<CancellationToken>());
-    }*/
+    }
 
     [Fact]
     public async Task GetSubmodelDescriptorByAasIdAsync_ReturnsOkResult()
