@@ -23,8 +23,8 @@ public class AasRepositoryHandler(
 {
     public async Task<ShellsDto> GetShellsByAssetIdsAsync(GetShellsByAssetIdsRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
         var assetIdsFilters = request?.AssetIds is not null && request.AssetIds.Length > 0
             ? AssetIdHelper.DecodeAssetIds(request.AssetIds, logger)
@@ -33,11 +33,11 @@ public class AasRepositoryHandler(
         var filter = new ShellSearchFilter
         {
             SpecificAssetIds = assetIdsFilters,
-            IdShort = request?.IdShort
+            IdShort = request.IdShort
         };
 
         var shells = await aasRepositoryService
-            .GetShellsByFiltersAsync(filter, request.Limit, request?.Cursor, cancellationToken)
+            .GetShellsByFiltersAsync(filter, request.Limit, request.Cursor, cancellationToken)
             .ConfigureAwait(false);
 
         return shells.ToDto();
@@ -65,7 +65,7 @@ public class AasRepositoryHandler(
         return GetResourceByIdAsync(
             request?.AasIdentifier,
             "submodel-ref",
-            id => aasRepositoryService.GetSubmodelRefByIdAsync(id!, request.Limit, request?.Cursor, cancellationToken)!,
+            id => aasRepositoryService.GetSubmodelRefByIdAsync(id, request.Limit, request.Cursor, cancellationToken)!,
             submodelRef => JsonSerializer.SerializeToElement(submodelRef.ToDto(), JsonSerializationOptions.SerializeToElementWithEnum)
         );
     }
@@ -99,7 +99,7 @@ public class AasRepositoryHandler(
             request?.SubmodelId,
             "submodel elements By AasID",
             async (aasId, submodelId) => (await aasRepositoryService
-                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request.Limit, request?.Cursor, cancellationToken)
+                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request.Limit, request.Cursor, cancellationToken)
                 .ConfigureAwait(false)).ToDto());
     }
 

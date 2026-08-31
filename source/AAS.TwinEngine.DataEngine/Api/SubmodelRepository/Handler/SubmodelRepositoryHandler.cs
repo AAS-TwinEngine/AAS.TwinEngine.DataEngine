@@ -67,7 +67,7 @@ public class SubmodelRepositoryHandler(
         var result = await GetResourceByIdAsync(
             request?.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
+            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request.Limit, request.Cursor, cancellationToken)).ConfigureAwait(false);
 
         return result.ToDto();
     }
