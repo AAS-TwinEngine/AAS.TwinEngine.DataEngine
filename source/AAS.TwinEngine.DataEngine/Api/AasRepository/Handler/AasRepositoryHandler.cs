@@ -65,7 +65,7 @@ public class AasRepositoryHandler(
         return GetResourceByIdAsync(
             request?.AasIdentifier,
             "submodel-ref",
-            id => aasRepositoryService.GetSubmodelRefByIdAsync(id, request.Limit, request.Cursor, cancellationToken)!,
+            id => aasRepositoryService.GetSubmodelRefByIdAsync(id, request.Limit, request.Cursor, cancellationToken),
             submodelRef => JsonSerializer.SerializeToElement(submodelRef.ToDto(), JsonSerializationOptions.SerializeToElementWithEnum)
         );
     }
