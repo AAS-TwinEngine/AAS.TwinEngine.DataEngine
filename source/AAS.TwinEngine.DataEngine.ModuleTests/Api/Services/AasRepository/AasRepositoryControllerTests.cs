@@ -395,7 +395,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
     [Fact]
     public async Task GetShellsAsync_WithPagination_LimitsResultsAsync()
     {
-        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsFilterByIdShort());
         SetupTemplateProvider();
 
         var specificAssetId = """{"name":"SerialNumber","value":"SN-4711"}""";

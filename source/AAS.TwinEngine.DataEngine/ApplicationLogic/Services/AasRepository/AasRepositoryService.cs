@@ -331,13 +331,9 @@ public class AasRepositoryService(
             .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, limit, cursor, cancellationToken)
             .ConfigureAwait(false);
 
-        var allMetadata = metadata.ShellDescriptors?
-            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
-            .ToList() ?? [];
-
-        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id!, limit, cursor);
-
-        return (pagedItems, pagingMetaData);
+        return (
+              metadata.ShellDescriptors ?? [],
+              metadata.PagingMetaData ?? new PagingMetaData());
     }
 
     private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)
