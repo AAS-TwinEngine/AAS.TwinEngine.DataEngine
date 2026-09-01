@@ -30,7 +30,7 @@ public class AasRepositoryService(
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
     private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
-    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
@@ -187,7 +187,7 @@ public class AasRepositoryService(
         return await submodelRepositoryService.GetSubmodelAsync(submodelIdentifier, queryOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int limit, string? cursor, CancellationToken cancellationToken)
     {
         await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
 
@@ -301,7 +301,7 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {
@@ -310,7 +310,7 @@ public class AasRepositoryService(
             : await GetFilteredShellMetadataAsync(filter, limit, cursor, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
             .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
@@ -323,21 +323,17 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, cancellationToken)
+            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, limit, cursor, cancellationToken)
             .ConfigureAwait(false);
 
-        var allMetadata = metadata.ShellDescriptors?
-            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
-            .ToList() ?? [];
-
-        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id!, limit, cursor);
-
-        return (pagedItems, pagingMetaData);
+        return (
+              metadata.ShellDescriptors ?? [],
+              metadata.PagingMetaData ?? new PagingMetaData());
     }
 
     private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)

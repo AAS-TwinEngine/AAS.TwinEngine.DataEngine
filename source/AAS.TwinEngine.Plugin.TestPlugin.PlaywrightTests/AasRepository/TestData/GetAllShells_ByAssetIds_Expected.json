@@ -1,10 +1,10 @@
 {
   "paging_metadata": {
-    "cursor": null
+    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vaWRzL2Fhcy8wMDAtMDAz"
   },
   "result": [
     {
-      "idShort": "M&M03",
+      "idShort": "MM03",
       "id": "https://mm-software.com/ids/aas/000-003",
       "assetInformation": {
         "assetKind": "Instance",

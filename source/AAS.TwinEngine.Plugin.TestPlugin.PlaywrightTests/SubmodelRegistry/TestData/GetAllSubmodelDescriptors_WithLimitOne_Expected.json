@@ -1,7 +1,5 @@
 {
-  "paging_metadata": {
-    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9DdXN0b21TdWJtb2RlbA"
-  },
+  "paging_metadata": { "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9DdXN0b21TdWJtb2RlbHw" },
   "result": [
     {
       "description": [

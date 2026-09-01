@@ -15,8 +15,8 @@ public class ShellDescriptorHandler(
 {
     public Task<ShellDescriptorsDto> GetAllShellDescriptors(GetShellDescriptorsRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
         return GetResourceAsync(
             null,
@@ -28,7 +28,7 @@ public class ShellDescriptorHandler(
 
     public Task<ShellDescriptorDto> GetShellDescriptorById(GetShellDescriptorRequest request, CancellationToken cancellationToken)
         => GetResourceAsync(
-            request?.AasIdentifier,
+            request.AasIdentifier,
             "shell descriptor",
             id => shellDescriptorService.GetShellDescriptorByIdAsync(id!, cancellationToken),
             descriptor => descriptor.ToDto()
@@ -36,11 +36,11 @@ public class ShellDescriptorHandler(
 
     public Task<SubmodelDescriptorsDto> GetAllSubmodelDescriptorsByAasId(GetSubmodelDescriptorsByAasRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
         return GetResourceAsync(
-            request?.AasIdentifier,
+            request.AasIdentifier,
             "submodel descriptors by AasId",
             aasId => shellDescriptorService.GetAllSubmodelDescriptorsByAasIdAsync(
                 aasId,
@@ -53,8 +53,8 @@ public class ShellDescriptorHandler(
     public Task<SubmodelDescriptorDto> GetSubmodelDescriptorByAasId(GetSubmodelDescriptorByAasRequest request, CancellationToken cancellationToken)
     {
         return GetResourceAsync(
-            request?.AasIdentifier,
-            request?.SubmodelIdentifier,
+            request.AasIdentifier,
+            request.SubmodelIdentifier,
             "submodel descriptor",
             (aasId, submodelId) => shellDescriptorService.GetSubmodelDescriptorByAasIdAsync(aasId, submodelId, cancellationToken),
             descriptor => descriptor.ToDto());

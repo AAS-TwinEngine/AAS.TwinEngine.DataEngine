@@ -33,7 +33,7 @@ public class SubmodelRegistryTests : ApiTestBase
     public async Task GetAllSubmodelDescriptors_WithCursor_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
-        var url = "/submodel-descriptors?limit=2&cursor=aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9Db250YWN0SW5mb3JtYXRpb24";
+        var url = "/submodel-descriptors?limit=2&cursor=aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9Db250YWN0SW5mb3JtYXRpb258";
 
         // Act
         var response = await ApiContext.GetAsync(url);

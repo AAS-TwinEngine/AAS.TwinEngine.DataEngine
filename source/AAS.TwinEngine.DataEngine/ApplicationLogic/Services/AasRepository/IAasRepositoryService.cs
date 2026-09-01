@@ -8,7 +8,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 
 public interface IAasRepositoryService
 {
-    Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken);
+    Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken);
 
     Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken);
 
@@ -20,7 +20,7 @@ public interface IAasRepositoryService
 
     Task<ISubmodel> GetSubmodelByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions queryOptions, CancellationToken cancellationToken);
 
-    Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions queryOptions, int? limit, string? cursor, CancellationToken cancellationToken);
+    Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions queryOptions, int limit, string? cursor, CancellationToken cancellationToken);
 
     Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, SubmodelQueryOptions queryOptions, CancellationToken cancellationToken);
 

@@ -1,7 +1,5 @@
 {
-  "paging_metadata": {
-    "cursor": null
-  },
+  "paging_metadata": { "cursor": null },
   "result": [
     {
       "idShort": "CustomSubmodel",
@@ -11,7 +9,7 @@
           "text": "The Submodel HierarchicalStructures identified by its semanticId. The Submodel idShort can be picked freely."
         }
       ],
-      "id": "https://admin-shell.io/idta/CustomSubmodel/Template/0/1",
+      "id": "https://mm-software.com/submodel/000-001/CustomSubmodel",
       "kind": "Instance",
       "semanticId": {
         "type": "ExternalReference",
@@ -1608,7 +1606,7 @@
     },
     {
       "idShort": "ContactInformations",
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0",
+      "id": "https://mm-software.com/submodel/000-001/ContactInformation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -2924,7 +2922,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/idta-02004-2-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0",
+      "id": "https://mm-software.com/submodel/000-001/HandoverDocumentation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -9886,7 +9884,7 @@
           "text": "The Submodel HierarchicalStructures identified by its semanticId. The Submodel idShort can be picked freely."
         }
       ],
-      "id": "https://admin-shell.io/idta/CustomSubmodel/Template/0/1",
+      "id": "https://mm-software.com/submodel/000-002/CustomSubmodel",
       "kind": "Instance",
       "semanticId": {
         "type": "ExternalReference",
@@ -11483,7 +11481,7 @@
     },
     {
       "idShort": "ContactInformations",
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0",
+      "id": "https://mm-software.com/submodel/000-002/ContactInformation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -12687,7 +12685,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/idta-02004-2-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0",
+      "id": "https://mm-software.com/submodel/000-002/HandoverDocumentation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -16355,7 +16353,7 @@
           "text": "The Submodel HierarchicalStructures identified by its semanticId. The Submodel idShort can be picked freely."
         }
       ],
-      "id": "https://admin-shell.io/idta/CustomSubmodel/Template/0/1",
+      "id": "https://mm-software.com/submodel/000-003/CustomSubmodel",
       "kind": "Instance",
       "semanticId": {
         "type": "ExternalReference",
@@ -17952,7 +17950,7 @@
     },
     {
       "idShort": "ContactInformations",
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0",
+      "id": "https://mm-software.com/submodel/000-003/ContactInformation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -19800,7 +19798,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/idta-02004-2-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0",
+      "id": "https://mm-software.com/submodel/000-003/HandoverDocumentation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",

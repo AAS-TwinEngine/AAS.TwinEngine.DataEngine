@@ -125,7 +125,7 @@ public class SubmodelRepositoryControllerTests
         _handler.GetAllSubmodels(Arg.Any<GetAllSubmodelsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedDto);
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var dto = Assert.IsType<SubmodelsDto>(okResult.Value);
@@ -141,14 +141,9 @@ public class SubmodelRepositoryControllerTests
         var expectedDto = new SubmodelsDto { PagingMetaData = new AAS.TwinEngine.DataEngine.Api.Shared.PagingMetaDataDto(), Result = [] };
         _handler.GetAllSubmodels(Arg.Any<GetAllSubmodelsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedDto);
-        var request = new GetAllSubmodelsRequest
-        {
-            SemanticId = SemanticId,
-            IdShort = IdShort,
-            Limit = Limit
-        };
+        var request = new GetAllSubmodelsRequest(SemanticId, IdShort, Limit, null, null, null);
 
-        await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, Limit, null, CancellationToken.None);
+        await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, null, CancellationToken.None, Limit);
 
         await _handler.Received(1).GetAllSubmodels(
             Arg.Is<GetAllSubmodelsRequest>(r => r.SemanticId == SemanticId && r.IdShort == IdShort && r.Limit == Limit),

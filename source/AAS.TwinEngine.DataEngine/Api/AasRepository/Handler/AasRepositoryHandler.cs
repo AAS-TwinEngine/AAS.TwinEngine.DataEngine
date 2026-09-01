@@ -23,21 +23,21 @@ public class AasRepositoryHandler(
 {
     public async Task<ShellsDto> GetShellsByAssetIdsAsync(GetShellsByAssetIdsRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
-        var assetIdsFilters = request?.AssetIds is not null && request.AssetIds.Length > 0
+        var assetIdsFilters = request.AssetIds is not null && request.AssetIds.Length > 0
             ? AssetIdHelper.DecodeAssetIds(request.AssetIds, logger)
             : null;
 
         var filter = new ShellSearchFilter
         {
             SpecificAssetIds = assetIdsFilters,
-            IdShort = request?.IdShort
+            IdShort = request.IdShort
         };
 
         var shells = await aasRepositoryService
-            .GetShellsByFiltersAsync(filter, request?.Limit, request?.Cursor, cancellationToken)
+            .GetShellsByFiltersAsync(filter, request.Limit, request.Cursor, cancellationToken)
             .ConfigureAwait(false);
 
         return shells.ToDto();
@@ -45,85 +45,85 @@ public class AasRepositoryHandler(
 
     public Task<IAssetAdministrationShell> GetShellByIdAsync(GetShellRequest request, CancellationToken cancellationToken)
         => GetResourceByIdAsync(
-            request?.AasIdentifier,
+            request.AasIdentifier,
             "shell",
             id => aasRepositoryService.GetShellByIdAsync(id, cancellationToken)
         );
 
     public Task<IAssetInformation> GetAssetInformationByIdAsync(GetAssetInformationRequest request, CancellationToken cancellationToken)
         => GetResourceByIdAsync(
-                request?.AasIdentifier,
+                request.AasIdentifier,
                 "asset information",
                 id => aasRepositoryService.GetAssetInformationByIdAsync(id, cancellationToken)!
             );
 
     public Task<JsonElement> GetSubmodelRefByIdAsync(GetSubmodelRefRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
+            request.AasIdentifier,
             "submodel-ref",
-            id => aasRepositoryService.GetSubmodelRefByIdAsync(id!, request?.Limit, request?.Cursor, cancellationToken)!,
+            id => aasRepositoryService.GetSubmodelRefByIdAsync(id, request.Limit, request.Cursor, cancellationToken),
             submodelRef => JsonSerializer.SerializeToElement(submodelRef.ToDto(), JsonSerializationOptions.SerializeToElementWithEnum)
         );
     }
 
     public Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken)
     => GetResourceByIdAsync(
-      request?.AasIdentifier,
+      request.AasIdentifier,
       "thumbnail",
       id => aasRepositoryService.GetThumbnailAsync(id, cancellationToken));
 
     public Task<ISubmodel> GetSubmodelByAasIdAsync(GetSubmodelByAasRequest request, CancellationToken cancellationToken)
     {
-        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
-            request?.SubmodelId,
+            request.AasIdentifier,
+            request.SubmodelId,
             "submodel By AasID",
             async (aasId, submodelId) => await aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, queryOptions, cancellationToken).ConfigureAwait(false));
     }
 
     public Task<SubmodelElementsDto> GetAllSubmodelElementsByAasIdAsync(GetAllSubmodelElementsByAasRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
-        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
-            request?.SubmodelId,
+            request.AasIdentifier,
+            request.SubmodelId,
             "submodel elements By AasID",
             async (aasId, submodelId) => (await aasRepositoryService
-                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request?.Limit, request?.Cursor, cancellationToken)
+                .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request.Limit, request.Cursor, cancellationToken)
                 .ConfigureAwait(false)).ToDto());
     }
 
     public Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(GetSubmodelElementByAasRequest request, CancellationToken cancellationToken)
     {
-        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        var decodedIdShortPath = Uri.UnescapeDataString(request.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
-        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
-            request?.SubmodelId,
+            request.AasIdentifier,
+            request.SubmodelId,
             "submodel element By AasID",
             async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementByAasIdAsync(aasId, submodelId, decodedIdShortPath, queryOptions, cancellationToken).ConfigureAwait(false));
     }
 
     public Task<FileAttachmentResult> GetFileByPathByAasIdAsync(GetFileByPathByAasIdRequest request, CancellationToken cancellationToken)
     {
-        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        var decodedIdShortPath = Uri.UnescapeDataString(request.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
         return GetResourceByIdAsync(
-            request?.AasIdentifier,
-            request?.SubmodelIdentifier,
+            request.AasIdentifier,
+            request.SubmodelIdentifier,
             "file By AasID",
             async (aasId, submodelId) => await aasRepositoryService.GetFileAttachmentByAasIdAsync(aasId, submodelId, decodedIdShortPath, cancellationToken).ConfigureAwait(false));
     }

@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -17,67 +18,67 @@ public class SubmodelRepositoryHandler(
 {
     public Task<ISubmodel> GetSubmodel(GetSubmodelRequest request, CancellationToken cancellationToken)
     {
-        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.SubmodelId,
+            request.SubmodelId,
             "submodel",
             id => submodelRepositoryService.GetSubmodelAsync(id, queryOptions, cancellationToken)!);
     }
 
     public Task<ISubmodelElement> GetSubmodelElement(GetSubmodelElementRequest request, CancellationToken cancellationToken)
     {
-        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        var decodedIdShortPath = Uri.UnescapeDataString(request.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
-        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         return GetResourceByIdAsync(
-            request?.SubmodelId,
+            request.SubmodelId,
             "submodel element",
             id => submodelRepositoryService.GetSubmodelElementAsync(id, decodedIdShortPath, queryOptions, cancellationToken));
     }
 
     public async Task<SubmodelsDto> GetAllSubmodels(GetAllSubmodelsRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
         var filter = new SubmodelSearchFilter
         {
-            SemanticId = request?.SemanticId,
-            IdShort = request?.IdShort
+            SemanticId = request.SemanticId,
+            IdShort = request.IdShort
         };
 
-        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
-        var result = await submodelRepositoryService.GetAllSubmodelsAsync(filter, queryOptions, request?.Limit, request?.Cursor, cancellationToken).ConfigureAwait(false);
+        var result = await submodelRepositoryService.GetAllSubmodelsAsync(filter, queryOptions, request.Limit, request.Cursor, cancellationToken).ConfigureAwait(false);
 
         return result.ToDto();
     }
 
     public async Task<SubmodelElementsDto> GetAllSubmodelElements(GetAllSubmodelElementsRequest request, CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
-        var queryOptions = new SubmodelQueryOptions(request?.Level.ToString(), request?.Extent.ToString());
+        var queryOptions = new SubmodelQueryOptions(request.Level.ToString(), request.Extent.ToString());
 
         var result = await GetResourceByIdAsync(
-            request?.SubmodelId,
+            request.SubmodelId,
             "submodel",
-            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request?.Limit, request?.Cursor, cancellationToken)).ConfigureAwait(false);
+            id => submodelRepositoryService.GetAllSubmodelElementsAsync(id, queryOptions, request.Limit, request.Cursor, cancellationToken)).ConfigureAwait(false);
 
         return result.ToDto();
     }
 
     public async Task<FileAttachmentResult> GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken)
     {
-        var decodedIdShortPath = Uri.UnescapeDataString(request?.IdShortPath ?? string.Empty);
+        var decodedIdShortPath = Uri.UnescapeDataString(request.IdShortPath ?? string.Empty);
         decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
 
         return await GetResourceByIdAsync(
-            request?.SubmodelId,
+            request.SubmodelId,
             "file attachment",
             id => submodelRepositoryService.GetFileAttachmentAsync(id, decodedIdShortPath, cancellationToken))
             .ConfigureAwait(false);

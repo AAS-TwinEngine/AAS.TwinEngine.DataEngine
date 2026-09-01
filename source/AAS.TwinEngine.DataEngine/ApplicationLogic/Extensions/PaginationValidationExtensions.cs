@@ -4,9 +4,9 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 public static class PaginationValidationExtensions
 {
-    public static void ValidateLimit(this int? limit, ILogger? logger = null)
+    public static void ValidateLimit(this int limit, ILogger? logger = null)
     {
-        if (limit is null or > 0)
+        if (limit > 0)
         {
             return;
         }

@@ -1,13 +1,13 @@
-﻿using System.Collections.Concurrent;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Options;
@@ -27,47 +27,23 @@ public class SubmodelDescriptorService(
     private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRegistry.ConcurrentOperationsLimit;
 
-    public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelDescriptors> GetAllSubmodelDescriptorsAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
-        var shells = await aasRepositoryService.GetShellsByFiltersAsync(null, null, null, cancellationToken).ConfigureAwait(false);
+        var pageSize = limit;
+        var paginationResult = await CollectSubmodelDescriptorPageAsync(pageSize, cursor, cancellationToken).ConfigureAwait(false);
+        var submodelIds = paginationResult.SubmodelIds;
 
-        var submodelIds = ExtractDistinctSubmodelIds(shells.Result);
-
-        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
-        var descriptorTasks = submodelIds.Select(async submodelId =>
-        {
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
-            }
-            catch (SubmodelDescriptorNotFoundException ex)
-            {
-                logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
-                return null;
-            }
-            finally
-            {
-                _ = semaphore.Release();
-            }
-        });
-
-        var allDescriptors = (await Task.WhenAll(descriptorTasks).ConfigureAwait(false))
-            .Where(descriptor => descriptor is not null)
-            .Select(descriptor => descriptor!)
-            .ToList();
+        var allDescriptors = await BuildSubmodelDescriptorsAsync(submodelIds, cancellationToken).ConfigureAwait(false);
 
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
         {
             throw new SubmodelDescriptorNotFoundException();
         }
 
-        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allDescriptors, d => d.Id!, limit, cursor);
-
         return new SubmodelDescriptors
         {
-            PagingMetaData = pagingMetaData,
-            Result = pagedItems
+            PagingMetaData = new PagingMetaData { Cursor = paginationResult.NextCursor },
+            Result = allDescriptors
         };
     }
 
@@ -139,15 +115,104 @@ public class SubmodelDescriptorService(
         endpoint.ProtocolInformation.Href = href;
     }
 
-    private static IList<string> ExtractDistinctSubmodelIds(IList<AasCore.Aas3_1.IAssetAdministrationShell>? shells)
+    private async Task<List<SubmodelDescriptor>> BuildSubmodelDescriptorsAsync(List<string> submodelIds, CancellationToken cancellationToken)
     {
-        return shells?
-               .SelectMany(shell => shell.Submodels ?? [])
-               .SelectMany(reference => reference.Keys ?? [])
-               .Select(key => key.Value)
-               .Where(value => !string.IsNullOrWhiteSpace(value))
-               .Distinct(StringComparer.OrdinalIgnoreCase)
-               .ToList() ?? [];
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
+        var tasks = new Task<SubmodelDescriptor?>[submodelIds.Count];
+
+        for (var i = 0; i < submodelIds.Count; i++)
+        {
+            tasks[i] = BuildSingleSubmodelDescriptorAsync(submodelIds[i], semaphore, cancellationToken);
+        }
+
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        var descriptors = new List<SubmodelDescriptor>(results.Length);
+        descriptors.AddRange(results.Where(result => result is not null));
+
+        return descriptors;
+    }
+
+    private async Task<SubmodelDescriptor?> BuildSingleSubmodelDescriptorAsync(string submodelId, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+    {
+        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (SubmodelDescriptorNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
+            return null;
+        }
+        finally
+        {
+            _ = semaphore.Release();
+        }
+    }
+
+    private async Task<SubmodelPageResult> CollectSubmodelDescriptorPageAsync(int pageSize, string? encodedCursor, CancellationToken cancellationToken)
+    {
+        var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
+        if (incomingCursor is null && !string.IsNullOrWhiteSpace(encodedCursor))
+        {
+            throw new InvalidUserInputException();
+        }
+        var state = new SubmodelPaginationState(incomingCursor, pageSize);
+        var pluginCursor = state.TrackingAasId;
+
+        while (state.CollectedIds.Count < pageSize)
+        {
+            var shellsResult = await aasRepositoryService.GetShellsByFiltersAsync(null, pageSize, pluginCursor?.EncodeBase64Url(), cancellationToken).ConfigureAwait(false);
+
+            var shellList = shellsResult?.Result?.Where(s => !string.IsNullOrWhiteSpace(s.Id)).ToList() ?? [];
+
+            if (shellList.Count == 0)
+            {
+                break;
+            }
+
+            var limitReached = ProcessShellBatch(shellList, pageSize, state);
+
+            if (limitReached)
+            {
+                break;
+            }
+
+            if (shellsResult.PagingMetaData?.Cursor is null)
+            {
+                break;
+            }
+
+            pluginCursor = state.TrackingAasId;
+        }
+
+        return new SubmodelPageResult(state.CollectedIds, state.BuildNextCursor(pageSize));
+    }
+
+    private static bool ProcessShellBatch(List<AasCore.Aas3_1.IAssetAdministrationShell> shellList, int pageSize, SubmodelPaginationState state)
+    {
+        foreach (var shell in shellList)
+        {
+            var submodelIds = GetSubmodelIdsForShell(shell);
+
+            if (state.CollectSubmodelIds(submodelIds, shell.Id, pageSize))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static List<string> GetSubmodelIdsForShell(AasCore.Aas3_1.IAssetAdministrationShell shell)
+    {
+        return shell.Submodels?
+            .SelectMany(reference => reference.Keys ?? [])
+            .Select(key => key.Value)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList() ?? [];
     }
 
     private string GenerateHref(string encodedId) => $"{_baseUrl}{ApiPaths.Submodels}/{encodedId}";

@@ -31,28 +31,28 @@ public class PluginDataProvider(
         ValidatePluginRequest(pluginRequests, url);
 
         var relativeUri = new Uri(url, UriKind.Relative);
-        var result = new List<string>();
-        foreach (var pluginRequest in pluginRequests)
+
+        var tasks = pluginRequests.Select(async pluginRequest =>
         {
             using var httpClient = CreateClient(pluginRequest.HttpClientName);
             try
             {
                 using var response = await httpClient.PostAsync(relativeUri, pluginRequest.JsonSchema, cancellationToken).ConfigureAwait(false);
-                var processedResponse = await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
-                result.Add(processedResponse);
+                return await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
                 logger.LogError("Request timed out. Endpoint: {Url}", url);
                 throw new RequestTimeoutException();
             }
-        }
+        });
 
-        return result;
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results.ToList();
     }
 
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
-        int? limit,
+        int limit,
         string? cursor,
         IList<PluginRequestMetaData> pluginRequests,
         CancellationToken cancellationToken)
@@ -87,11 +87,6 @@ public class PluginDataProvider(
 
                 result.Add(responseContent);
 
-                if (!remainingLimit.HasValue)
-                {
-                    continue;
-                }
-
                 var itemsReceived = CountShellDescriptors(responseContent);
                 remainingLimit -= itemsReceived;
 
@@ -113,15 +108,14 @@ public class PluginDataProvider(
     public Task<IList<string>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
         => GetAndProcessAsync(pluginRequests, AssetInformationEndpoint, cancellationToken);
 
-    public async Task<IList<string>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, CancellationToken cancellationToken)
+    public async Task<IList<string>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, int limit, string? cursor, CancellationToken cancellationToken)
     {
         var result = new List<string>();
         var exceptions = new List<Exception>();
 
         foreach (var pluginRequest in pluginRequests)
         {
-            var url = BuildUrl(ApiPaths.PluginMetadata, ShellsEndpoint);
-
+            var url = BuildShellsByAssetIdsUrl(limit, cursor);
             if (pluginRequest == null)
             {
                 logger.LogWarning("Plugin request is null. Skipping request to {Url}", url);
@@ -251,7 +245,14 @@ public class PluginDataProvider(
     {
         using var doc = JsonDocument.Parse(responseContent);
 
-        if (doc.RootElement.TryGetProperty("result", out var itemsElement) && itemsElement.ValueKind == JsonValueKind.Array)
+        if (doc.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            return doc.RootElement.GetArrayLength();
+        }
+
+        if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+            doc.RootElement.TryGetProperty("result", out var itemsElement) &&
+            itemsElement.ValueKind == JsonValueKind.Array)
         {
             return itemsElement.GetArrayLength();
         }
@@ -259,14 +260,14 @@ public class PluginDataProvider(
         return 0;
     }
 
-    private static string BuildShellsUrl(int? limit, string? cursor)
+    private static string BuildShellsUrl(int limit, string? cursor)
     {
         const string BaseUrl = $"{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
         var queryParams = new Dictionary<string, string>();
 
         if (limit is > 0)
         {
-            queryParams["limit"] = limit.Value.ToString();
+            queryParams["limit"] = limit.ToString();
         }
 
         if (!string.IsNullOrWhiteSpace(cursor))
@@ -276,6 +277,26 @@ public class PluginDataProvider(
 
         return queryParams.Count > 0
                    ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
+                   : BaseUrl;
+    }
+
+    private static string BuildShellsByAssetIdsUrl(int limit, string? cursor)
+    {
+        const string BaseUrl = $"/{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
+        var queryParams = new Dictionary<string, string>();
+
+        if (limit is > 0)
+        {
+            queryParams["limit"] = limit.ToString();
+        }
+
+        if (!string.IsNullOrWhiteSpace(cursor))
+        {
+            queryParams["cursor"] = cursor;
+        }
+
+        return queryParams.Count > 0
+                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams)
                    : BaseUrl;
     }
 

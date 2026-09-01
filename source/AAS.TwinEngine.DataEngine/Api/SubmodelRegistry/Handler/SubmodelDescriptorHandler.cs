@@ -15,8 +15,8 @@ public class SubmodelDescriptorHandler(
         GetSubmodelDescriptorsRequest request,
         CancellationToken cancellationToken)
     {
-        request?.Limit.ValidateLimit(logger);
-        request?.Cursor?.ValidateCursor(logger);
+        request.Limit.ValidateLimit(logger);
+        request.Cursor?.ValidateCursor(logger);
 
         return GetSubmodelDescriptorResourceAsync(
             null,
@@ -32,7 +32,7 @@ public class SubmodelDescriptorHandler(
         GetSubmodelDescriptorRequest request,
         CancellationToken cancellationToken)
         => GetSubmodelDescriptorResourceAsync(
-            request?.SubmodelIdentifier,
+            request.SubmodelIdentifier,
             "submodel descriptor",
             id => submodelDescriptorService.GetSubmodelDescriptorByIdAsync(
                 id,

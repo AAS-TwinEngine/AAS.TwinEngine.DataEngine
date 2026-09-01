@@ -30,34 +30,34 @@ public class AasRepositoryHandlerTests
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithNullAssetIds_ReturnsAllShells()
     {
-        _ = _aasRepositoryService.GetShellsByFiltersAsync(Arg.Any<ShellSearchFilter?>(), null, null, Arg.Any<CancellationToken>())
+        _ = _aasRepositoryService.GetShellsByFiltersAsync(Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
-        var request = new GetShellsByAssetIdsRequest(null, null, null, null);
+        var request = new GetShellsByAssetIdsRequest(null, null, 100, null);
 
         var result = await _sut.GetShellsByAssetIdsAsync(request, CancellationToken.None);
 
         Assert.NotNull(result);
-        await _aasRepositoryService.Received().GetShellsByFiltersAsync(Arg.Is<ShellSearchFilter>(f => f.SpecificAssetIds == null && f.IdShort == null), null, null, Arg.Any<CancellationToken>());
+        await _aasRepositoryService.Received().GetShellsByFiltersAsync(Arg.Is<ShellSearchFilter>(f => f.SpecificAssetIds == null && f.IdShort == null), Arg.Any<int>(), null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithEmptyAssetIds_ReturnsAllShells()
     {
-        _ = _aasRepositoryService.GetShellsByFiltersAsync(Arg.Any<ShellSearchFilter?>(), null, null, Arg.Any<CancellationToken>())
+        _ = _aasRepositoryService.GetShellsByFiltersAsync(Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
-        var request = new GetShellsByAssetIdsRequest([], null, null, null);
+        var request = new GetShellsByAssetIdsRequest([], null, 100, null);
 
         var result = await _sut.GetShellsByAssetIdsAsync(request, CancellationToken.None);
 
         Assert.NotNull(result);
-        await _aasRepositoryService.Received().GetShellsByFiltersAsync(Arg.Is<ShellSearchFilter>(f => f.SpecificAssetIds == null && f.IdShort == null), null, null, Arg.Any<CancellationToken>());
+        await _aasRepositoryService.Received().GetShellsByFiltersAsync(Arg.Is<ShellSearchFilter>(f => f.SpecificAssetIds == null && f.IdShort == null), Arg.Any<int>(), null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task GetShellsByAssetIdsAsync_WithInvalidBase64Url_ThrowsInvalidUserInputException()
     {
         var assetIds = new[] { "not-valid-base64!!!" };
-        var request = new GetShellsByAssetIdsRequest(assetIds, null, null, null);
+        var request = new GetShellsByAssetIdsRequest(assetIds, null, 100, null);
 
         await Assert.ThrowsAsync<InvalidUserInputException>(
             () => _sut.GetShellsByAssetIdsAsync(request, CancellationToken.None));
@@ -70,13 +70,13 @@ public class AasRepositoryHandlerTests
         var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json))
             .Replace('+', '-').Replace('/', '_').TrimEnd('=');
         var assetIds = new[] { encoded };
-        var request = new GetShellsByAssetIdsRequest(assetIds, null, null, null);
+        var request = new GetShellsByAssetIdsRequest(assetIds, null, 100, null);
         var shell = new AssetAdministrationShell(
             "urn:example:aas:001",
             new AssetInformation(AssetKind.Instance));
 
         _ = _aasRepositoryService.GetShellsByFiltersAsync(
-            Arg.Any<ShellSearchFilter?>(), null, null, Arg.Any<CancellationToken>())
+            Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [shell] });
 
         var result = await _sut.GetShellsByAssetIdsAsync(request, CancellationToken.None);
@@ -103,14 +103,14 @@ public class AasRepositoryHandlerTests
     public async Task GetShellsByAssetIdsAsync_WithIdShort_PassesIdShortToService()
     {
         const string idShort = "test-idshort";
-        _ = _aasRepositoryService.GetShellsByFiltersAsync(Arg.Any<ShellSearchFilter?>(), null, null, Arg.Any<CancellationToken>())
+        _ = _aasRepositoryService.GetShellsByFiltersAsync(Arg.Any<ShellSearchFilter?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
             .Returns(new Shells { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
-        var request = new GetShellsByAssetIdsRequest(null, idShort, null, null);
+        var request = new GetShellsByAssetIdsRequest(null, idShort, 100, null);
 
         var result = await _sut.GetShellsByAssetIdsAsync(request, CancellationToken.None);
 
         Assert.NotNull(result);
-        await _aasRepositoryService.Received().GetShellsByFiltersAsync(Arg.Is<ShellSearchFilter>(f => f.SpecificAssetIds == null && f.IdShort == idShort), null, null, Arg.Any<CancellationToken>());
+        await _aasRepositoryService.Received().GetShellsByFiltersAsync(Arg.Is<ShellSearchFilter>(f => f.SpecificAssetIds == null && f.IdShort == idShort), Arg.Any<int>(), null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -402,12 +402,12 @@ public class AasRepositoryHandlerTests
     {
         const string AasId = "AasId";
         const string SubmodelId = "SubmodelId";
-        var request = new GetAllSubmodelElementsByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), null, null, Level.deep, Extent.withoutBlobValue);
+        var request = new GetAllSubmodelElementsByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), 100, null, Level.deep, Extent.withoutBlobValue);
         _aasRepositoryService.GetAllSubmodelElementsByAasIdAsync(
             AasId,
             SubmodelId,
             Arg.Is<SubmodelQueryOptions>(o => o.Level == Level.deep.ToString() && o.Extent == Extent.withoutBlobValue.ToString()),
-            null,
+            Arg.Any<int>(),
             null,
             Arg.Any<CancellationToken>())
             .Returns(new SubmodelElementsPage { PagingMetaData = new PagingMetaData(), Result = [] });
@@ -420,7 +420,7 @@ public class AasRepositoryHandlerTests
                 AasId,
                 SubmodelId,
                 Arg.Is<SubmodelQueryOptions>(o => o.Level == Level.deep.ToString() && o.Extent == Extent.withoutBlobValue.ToString()),
-                null,
+                Arg.Any<int>(),
                 null,
                 Arg.Any<CancellationToken>());
     }
@@ -430,12 +430,12 @@ public class AasRepositoryHandlerTests
     {
         const string AasId = "AasId";
         const string SubmodelId = "SubmodelId";
-        var request = new GetAllSubmodelElementsByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), null, null, Level.deep, Extent.withoutBlobValue);
+        var request = new GetAllSubmodelElementsByAasRequest(AasId.EncodeBase64Url(), SubmodelId.EncodeBase64Url(), 100, null, Level.deep, Extent.withoutBlobValue);
         _aasRepositoryService.GetAllSubmodelElementsByAasIdAsync(
                 AasId,
                 SubmodelId,
                 Arg.Is<SubmodelQueryOptions>(o => o.Level == Level.deep.ToString() && o.Extent == Extent.withoutBlobValue.ToString()),
-                null,
+                Arg.Any<int>(),
                 null,
                 Arg.Any<CancellationToken>())
             .ThrowsAsync(new SubmodelNotFoundException(SubmodelId));

@@ -1,11 +1,9 @@
 {
-  "paging_metadata": {
-    "cursor": null
-  },
+  "paging_metadata": { "cursor": null },
   "result": [
     {
       "idShort": "ContactInformations",
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0",
+      "id": "https://mm-software.com/submodel/000-001/ContactInformation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -1310,7 +1308,7 @@
     },
     {
       "idShort": "ContactInformations",
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0",
+      "id": "https://mm-software.com/submodel/000-002/ContactInformation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -2503,7 +2501,7 @@
     },
     {
       "idShort": "ContactInformations",
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0",
+      "id": "https://mm-software.com/submodel/000-003/ContactInformation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
