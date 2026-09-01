@@ -128,7 +128,7 @@ public class SubmodelDescriptorService(
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         var descriptors = new List<SubmodelDescriptor>(results.Length);
-        descriptors.AddRange(results.Where(result => result is not null)!);
+        descriptors.AddRange(results.Where(result => result is not null));
 
         return descriptors;
     }
