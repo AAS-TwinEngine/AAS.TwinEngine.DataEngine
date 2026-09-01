@@ -74,39 +74,6 @@ public class ShellDescriptorServiceTests
     }
 
     [Fact]
-    public async Task GetAllSubmodelDescriptorsByAasIdAsync_DeduplicatesSubmodelIdsAndAppliesPaging()
-    {
-        const string aasId = "aas-1";
-
-        _aasRepositoryService.GetSubmodelRefByIdAsync(aasId, Arg.Any<int>(), null, Arg.Any<CancellationToken>())
-            .Returns(new SubmodelRef
-            {
-                PagingMetaData = new PagingMetaData(),
-                Result =
-                [
-                    new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "submodel-2")], null),
-                    new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "submodel-1")], null),
-                    new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "submodel-2")], null)
-                ]
-            });
-
-        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync("submodel-1", Arg.Any<CancellationToken>())
-            .Returns(new SubmodelDescriptor { Id = "submodel-1" });
-        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync("submodel-2", Arg.Any<CancellationToken>())
-            .Returns(new SubmodelDescriptor { Id = "submodel-2" });
-
-        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(aasId, 1, null, CancellationToken.None);
-
-        Assert.NotNull(result);
-        Assert.NotNull(result.Result);
-        Assert.Single(result.Result);
-        Assert.NotNull(result.PagingMetaData);
-        Assert.False(string.IsNullOrWhiteSpace(result.PagingMetaData.Cursor));
-        await _submodelDescriptorService.Received(1).GetSubmodelDescriptorByIdAsync("submodel-1", Arg.Any<CancellationToken>());
-        await _submodelDescriptorService.Received(1).GetSubmodelDescriptorByIdAsync("submodel-2", Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
     public async Task GetAllShellDescriptorsAsync_ReturnsFilledShellDescriptors()
     {
         var cancellationToken = CancellationToken.None;

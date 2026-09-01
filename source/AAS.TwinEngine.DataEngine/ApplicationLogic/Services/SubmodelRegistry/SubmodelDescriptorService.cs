@@ -33,29 +33,7 @@ public class SubmodelDescriptorService(
         var paginationResult = await CollectSubmodelDescriptorPageAsync(pageSize, cursor, cancellationToken).ConfigureAwait(false);
         var submodelIds = paginationResult.SubmodelIds;
 
-        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
-        var descriptorTasks = submodelIds.Select(async submodelId =>
-        {
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
-            }
-            catch (SubmodelDescriptorNotFoundException ex)
-            {
-                logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
-                return null;
-            }
-            finally
-            {
-                _ = semaphore.Release();
-            }
-        });
-
-        var allDescriptors = (await Task.WhenAll(descriptorTasks).ConfigureAwait(false))
-            .Where(descriptor => descriptor is not null)
-            .Select(descriptor => descriptor!)
-            .ToList();
+        var allDescriptors = await BuildSubmodelDescriptorsAsync(submodelIds, cancellationToken).ConfigureAwait(false);
 
         if (submodelIds.Count > 0 && allDescriptors.Count == 0)
         {
@@ -137,10 +115,50 @@ public class SubmodelDescriptorService(
         endpoint.ProtocolInformation.Href = href;
     }
 
+    private async Task<List<SubmodelDescriptor>> BuildSubmodelDescriptorsAsync(List<string> submodelIds, CancellationToken cancellationToken)
+    {
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
+        var tasks = new Task<SubmodelDescriptor?>[submodelIds.Count];
+
+        for (var i = 0; i < submodelIds.Count; i++)
+        {
+            tasks[i] = BuildSingleSubmodelDescriptorAsync(submodelIds[i], semaphore, cancellationToken);
+        }
+
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        var descriptors = new List<SubmodelDescriptor>(results.Length);
+        descriptors.AddRange(results.Where(result => result is not null)!);
+
+        return descriptors;
+    }
+
+    private async Task<SubmodelDescriptor?> BuildSingleSubmodelDescriptorAsync(string submodelId, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+    {
+        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (SubmodelDescriptorNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Submodel descriptor was not found for submodel id {SubmodelId}. Continuing with remaining descriptors.", submodelId);
+            return null;
+        }
+        finally
+        {
+            _ = semaphore.Release();
+        }
+    }
+
     private async Task<SubmodelPageResult> CollectSubmodelDescriptorPageAsync(int pageSize, string? encodedCursor, CancellationToken cancellationToken)
     {
         var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
-        var state = new SubmodelPaginationState(incomingCursor);
+        if (incomingCursor is null && !string.IsNullOrWhiteSpace(encodedCursor))
+        {
+            throw new InvalidUserInputException();
+        }
+        var state = new SubmodelPaginationState(incomingCursor, pageSize);
         var pluginCursor = state.TrackingAasId;
 
         while (state.CollectedIds.Count < pageSize)

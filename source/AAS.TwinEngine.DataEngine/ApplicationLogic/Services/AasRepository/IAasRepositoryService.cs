@@ -14,7 +14,7 @@ public interface IAasRepositoryService
 
     Task<IAssetInformation> GetAssetInformationByIdAsync(string aasIdentifier, CancellationToken cancellationToken);
 
-    Task<SubmodelRef> GetSubmodelRefByIdAsync(string aasIdentifier, int limit, string? cursor, CancellationToken cancellationToken);
+    Task<SubmodelRef> GetSubmodelRefByIdAsync(string aasIdentifier, int? limit, string? cursor, CancellationToken cancellationToken);
 
     Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken);
 

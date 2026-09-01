@@ -118,7 +118,7 @@ public class AasRepositoryService(
         }
     }
 
-    public async Task<SubmodelRef> GetSubmodelRefByIdAsync(string aasIdentifier, int limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<SubmodelRef> GetSubmodelRefByIdAsync(string aasIdentifier, int? limit, string? cursor, CancellationToken cancellationToken)
     {
         var submodelRefs = await templateService.GetSubmodelRefByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
 
@@ -210,7 +210,7 @@ public class AasRepositoryService(
 
     public async Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
     {
-        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, int.MaxValue, null, cancellationToken).ConfigureAwait(false);
+        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
 
         var submodelExists = submodelRefs.Result?.SelectMany(r => r.Keys ?? [])
                                .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.Ordinal)) ?? false;

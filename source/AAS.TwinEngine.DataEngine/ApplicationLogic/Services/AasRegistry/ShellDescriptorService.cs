@@ -110,7 +110,7 @@ public class ShellDescriptorService(
 
     public async Task<SubmodelDescriptors?> GetAllSubmodelDescriptorsByAasIdAsync(string aasId, int limit, string? cursor, CancellationToken cancellationToken)
     {
-        var submodelRefs = await aasRepositoryService.GetSubmodelRefByIdAsync(aasId, int.MaxValue, null, cancellationToken).ConfigureAwait(false);
+        var submodelRefs = await aasRepositoryService.GetSubmodelRefByIdAsync(aasId, null, null, cancellationToken).ConfigureAwait(false);
 
         var submodelIds = submodelRefs.Result?
             .SelectMany(reference => reference.Keys ?? [])

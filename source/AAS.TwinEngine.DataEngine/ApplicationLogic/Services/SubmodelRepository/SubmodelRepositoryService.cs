@@ -83,8 +83,7 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
-            var pageSize = limit;
-            var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, pageSize, cursor, cancellationToken).ConfigureAwait(false);
+            var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, limit, cursor, cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, queryOptions, cancellationToken).ConfigureAwait(false);
 

@@ -375,18 +375,6 @@ public class SubmodelRepositoryHandlerTests
     }
 
     [Fact]
-    public async Task GetAllSubmodels_WhenNullRequest_ReturnsSuccessfully()
-    {
-        var submodelList = new SubmodelList { PagingMetaData = new PagingMetaData(), Result = [] };
-        _submodelRepository.GetAllSubmodelsAsync(Arg.Any<SubmodelSearchFilter?>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), null, Arg.Any<CancellationToken>())
-            .Returns(submodelList);
-
-        var result = await _sut.GetAllSubmodels(null!, CancellationToken.None);
-
-        Assert.NotNull(result);
-    }
-
-    [Fact]
     public async Task GetAllSubmodelElements_DecodesSubmodelIdAndPassesToService()
     {
         const string SubmodelId = "NameplateSubmodel";

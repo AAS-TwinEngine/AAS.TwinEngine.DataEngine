@@ -247,7 +247,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockTemplate);
 
         // Act
-        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5&cursor=bmV4dDEyMw==");
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

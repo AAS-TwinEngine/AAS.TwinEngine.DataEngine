@@ -1,7 +1,8 @@
+﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
-using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
@@ -15,6 +16,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -265,20 +268,15 @@ public class AasRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelRefByIdAsync_WithInvalidCursor_ReturnsFromStart()
+    public async Task GetSubmodelRefByIdAsync_WithInvalidCursor_ReturnsBadRequest()
     {
         var cancellationToken = CancellationToken.None;
         var expectedRefs = CreateSubmodelRefs(4);
+
         _templateService.GetSubmodelRefByIdAsync(AasIdentifier, cancellationToken).Returns(expectedRefs);
+
         var invalidCursor = "nonExistingId".EncodeBase64Url();
-
-        var result = await _sut.GetSubmodelRefByIdAsync(AasIdentifier, 2, invalidCursor, cancellationToken);
-
-        Assert.NotNull(result);
-        Assert.NotNull(result.Result);
-        Assert.Equal(2, result.Result.Count);
-        Assert.Equal("urn:uuid:submodel-0", result.Result[0].Keys.FirstOrDefault()?.Value);
-        Assert.Equal("urn:uuid:submodel-1", result.Result[1].Keys.FirstOrDefault()?.Value);
+        await Assert.ThrowsAsync<BadRequestException>(() => _sut.GetSubmodelRefByIdAsync(AasIdentifier, 2, invalidCursor, cancellationToken));
     }
 
     [Fact]
