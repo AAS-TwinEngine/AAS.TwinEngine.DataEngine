@@ -115,23 +115,6 @@ public class SubmodelDescriptorService(
         endpoint.ProtocolInformation.Href = href;
     }
 
-    private async Task<SubmodelPageResult> CollectSubmodelDescriptorPageAsync(int pageSize, string? encodedCursor, CancellationToken cancellationToken)
-    {
-        var incomingCursor = SubmodelPaginationCursor.Decode(encodedCursor);
-        var state = new SubmodelPaginationState(incomingCursor);
-        var pluginCursor = state.TrackingAasId;
-
-        while (state.CollectedIds.Count < pageSize)
-        {
-            var shellsResult = await aasRepositoryService.GetShellsByFiltersAsync(null, pageSize, pluginCursor?.EncodeBase64Url(), cancellationToken).ConfigureAwait(false);
-
-            var shellList = shellsResult?.Result?.Where(s => !string.IsNullOrWhiteSpace(s.Id)).ToList() ?? [];
-
-            if (shellList.Count == 0)
-            {
-                break;
-            }
-
     private async Task<List<SubmodelDescriptor>> BuildSubmodelDescriptorsAsync(List<string> submodelIds, CancellationToken cancellationToken)
     {
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);

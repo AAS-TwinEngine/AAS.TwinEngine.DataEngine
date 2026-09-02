@@ -74,8 +74,6 @@ public class PluginDataHandler(
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
-        limit ??= GeneralConfig.DefaultPaginationLimit;
-
         var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
