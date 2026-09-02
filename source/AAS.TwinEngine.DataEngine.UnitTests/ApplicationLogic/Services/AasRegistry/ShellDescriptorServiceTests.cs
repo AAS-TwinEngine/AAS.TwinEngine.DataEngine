@@ -51,7 +51,7 @@ public class ShellDescriptorServiceTests
             AasTemplateRegistry = new ServiceInstance { ConcurrentOperationsLimit = 10 }
         };
         _templateManagementConfig = Options.Create(config);
-        _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger, _generalConfig, _templateManagementConfig);
+        _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger, _templateManagementConfig, _submodelDescriptorService, _aasRepositoryService, _generalConfig);
     }
 
     [Fact]
@@ -275,7 +275,7 @@ public class ShellDescriptorServiceTests
     public async Task GetAllShellDescriptorsAsync_ShouldThrowException_WhenManifestConflict()
     {
         _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>()).Throws(new MultiPluginConflictException());
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -383,7 +383,7 @@ public class ShellDescriptorServiceTests
         Assert.NotNull(result.Result);
         Assert.Equal(5, result.Result.Count);
         Assert.All(result.Result, descriptor => Assert.False(string.IsNullOrWhiteSpace(descriptor.Id)));
-        await _pluginDataHandler.Received(1).GetDataForAllShellDescriptorsAsync(null, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken);
+        await _pluginDataHandler.Received(1).GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken);
     }
 
     [Fact]
@@ -397,9 +397,8 @@ public class ShellDescriptorServiceTests
         };
         var sut = new ShellDescriptorService(
             _templateProvider, _shellTemplateMappingProvider, _dataHandler,
-            _pluginDataHandler, _pluginManifestConflictHandler, _logger,
-            _generalConfig,
-            Options.Create(config), _submodelDescriptorService, _aasRepositoryService);
+            _pluginDataHandler, _pluginManifestConflictHandler, _logger, Options.Create(config), _submodelDescriptorService, _aasRepositoryService,
+            _generalConfig);
 
         var currentConcurrency = 0;
         var maxObservedConcurrency = 0;
@@ -571,7 +570,7 @@ public class ShellDescriptorServiceTests
             });
 
         var encodedAssetType = "Instance".EncodeBase64Url();
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, encodedAssetType, cancellationToken);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, encodedAssetType, cancellationToken);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);

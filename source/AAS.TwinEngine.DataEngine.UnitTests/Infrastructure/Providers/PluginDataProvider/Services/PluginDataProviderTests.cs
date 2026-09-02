@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -217,7 +217,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]

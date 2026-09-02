@@ -28,7 +28,7 @@ public class ShellDescriptorService(
     ILogger<ShellDescriptorService> logger,
     IOptions<TemplateManagementConfig> templateManagementConfig,
     ISubmodelDescriptorService submodelDescriptorService,
-    IAasRepositoryService aasRepositoryService) : IShellDescriptorService
+    IAasRepositoryService aasRepositoryService,
     IOptions<GeneralConfig> generalConfig) : IShellDescriptorService
 {
     private const int DefaultFallbackPluginPageSize = 100;

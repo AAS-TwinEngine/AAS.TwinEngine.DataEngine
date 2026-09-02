@@ -14,7 +14,7 @@ public class PaginationValidationExtensionsTests
     [Fact]
     public void ValidateLimit_WhenLimitExceedsMaximum_ThrowsInvalidUserInputExceptionWithExpectedMessage()
     {
-        var exception = Assert.Throws<InvalidUserInputException>(() => ((int?)10_001).ValidateLimit(_logger));
+        var exception = Assert.Throws<InvalidUserInputException>(() => ((int)10_001).ValidateLimit(_logger));
 
         Assert.Equal(PaginationValidationExtensions.MaxRequestedLimitExceededMessage, exception.Message);
     }
@@ -23,7 +23,7 @@ public class PaginationValidationExtensionsTests
     [InlineData(null)]
     [InlineData(1)]
     [InlineData(10_000)]
-    public void ValidateLimit_WhenLimitWithinAllowedRange_DoesNotThrow(int? limit)
+    public void ValidateLimit_WhenLimitWithinAllowedRange_DoesNotThrow(int limit)
     {
         limit.ValidateLimit(_logger);
     }

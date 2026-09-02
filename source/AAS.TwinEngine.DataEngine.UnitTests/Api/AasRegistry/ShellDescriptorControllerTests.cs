@@ -52,7 +52,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -64,7 +64,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new InternalServerException("Internal error"));
 
-        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
+        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
 
         Assert.NotNull(result);
         Assert.IsType<InternalServerException>(result);
@@ -86,7 +86,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new UnauthorizedAccessException("Unauthorized"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
 
         Assert.NotNull(exception);
         Assert.IsType<UnauthorizedAccessException>(exception);

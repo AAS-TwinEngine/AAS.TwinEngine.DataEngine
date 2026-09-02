@@ -44,7 +44,7 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int? limit, [FromQuery] string? cursor, [FromQuery] AssetKind? assetKind, [FromQuery] string? assetType, CancellationToken cancellationToken)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int limit, [FromQuery] string? cursor, [FromQuery] AssetKind? assetKind, [FromQuery] string? assetType, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get All ShellDescriptors");
         var request = new GetShellDescriptorsRequest(limit, cursor, assetKind, assetType);

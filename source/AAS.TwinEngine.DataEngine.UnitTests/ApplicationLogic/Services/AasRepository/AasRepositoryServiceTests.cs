@@ -367,7 +367,6 @@ public class AasRepositoryServiceTests
                 null,
                 null,
                 null,
-                null,
                 manifests,
                 cancellationToken)
             .Returns(new ShellDescriptorsMetaData
@@ -494,7 +493,7 @@ public class AasRepositoryServiceTests
         };
 
         _pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, cancellationToken)
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors = [metadata],
@@ -507,7 +506,7 @@ public class AasRepositoryServiceTests
 
         _templateService.GetShellTemplateAsync("aas-1", cancellationToken).Returns(templateShell);
 
-        var result = await _sut.GetShellsByFiltersAsync(null, null, null, cancellationToken);
+        var result = await _sut.GetShellsByFiltersAsync(null, 100, null, cancellationToken);
 
         var shell = Assert.Single(result.Result);
         Assert.Equal(AssetKind.Instance, shell.AssetInformation?.AssetKind);
@@ -530,7 +529,7 @@ public class AasRepositoryServiceTests
         };
 
         _pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, cancellationToken)
             .Returns(new ShellDescriptorsMetaData
             {
                 ShellDescriptors = [metadata],
@@ -543,7 +542,7 @@ public class AasRepositoryServiceTests
 
         _templateService.GetShellTemplateAsync("aas-1", cancellationToken).Returns(templateShell);
 
-        var result = await _sut.GetShellsByFiltersAsync(null, null, null, cancellationToken);
+        var result = await _sut.GetShellsByFiltersAsync(null, 100, null, cancellationToken);
 
         var shell = Assert.Single(result.Result);
         Assert.Equal(AssetKind.Type, shell.AssetInformation?.AssetKind);
