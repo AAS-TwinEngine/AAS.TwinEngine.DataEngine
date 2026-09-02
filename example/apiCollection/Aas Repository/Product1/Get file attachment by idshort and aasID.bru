@@ -1,0 +1,22 @@
+meta {
+  name: Get file attachment by idshort and aasID
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/:idShortPath/attachment
+  body: none
+  auth: inherit
+}
+
+params:path {
+  idShortPath: Documents%255B0%255D.DocumentVersions%255B0%255D.DigitalFiles%255B0%255D
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation-1}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

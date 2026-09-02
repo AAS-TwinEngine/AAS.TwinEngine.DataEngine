@@ -2,9 +2,12 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -20,10 +23,14 @@ public class AasRepositoryService(
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
-    IOptions<TemplateManagementConfig> templateManagementConfig) : IAasRepositoryService
+    IFileContentProvider fileContentProvider,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    ISubmodelRepositoryService submodelRepositoryService,
+    IOptions<GeneralConfig> generalConfig) : IAasRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
-    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
+    private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
+    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
@@ -124,6 +131,97 @@ public class AasRepositoryService(
         };
     }
 
+    public async Task<FileAttachmentResult> GetThumbnailAsync(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var thumbnail = await GetThumbnail(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+            var thumbnailUrl = GetValidatedThumbnailUrl(thumbnail, aasIdentifier);
+
+            var thumbnailContent = await fileContentProvider.GetFileContentAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
+
+            var contentType = string.IsNullOrWhiteSpace(thumbnail.ContentType) ? "application/octet-stream" : thumbnail.ContentType;
+            var fileName = GetFileName(thumbnailUrl);
+
+            return new FileAttachmentResult(thumbnailContent.Content, contentType, fileName, _maxFileAttachmentSizeBytes)
+            {
+                Upstream = thumbnailContent
+            };
+
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new AssetInformationNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
+        catch (ValidationFailedException ex)
+        {
+            throw new TemplateNotValidException(ex);
+        }
+    }
+
+    public async Task<ISubmodel> GetSubmodelByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetSubmodelAsync(submodelIdentifier, queryOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int limit, string? cursor, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetAllSubmodelElementsAsync(submodelIdentifier, queryOptions, limit, cursor, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetSubmodelElementAsync(submodelIdentifier, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<FileAttachmentResult> GetFileAttachmentByAasIdAsync(string aasIdentifier, string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelId, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetFileAttachmentAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
+    {
+        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
+
+        var submodelExists = submodelRefs.Result?.SelectMany(r => r.Keys ?? [])
+                               .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.Ordinal)) ?? false;
+
+        if (!submodelExists)
+        {
+            logger.LogError("Submodel {SubmodelId} not referenced by AAS {AasId}", submodelIdentifier, aasIdentifier);
+            throw new SubmodelNotFoundException(submodelIdentifier);
+        }
+    }
+
     private static IAssetInformation FillOutAssetInformation(IAssetInformation template, AssetData pluginData)
     {
         if (template is null)
@@ -213,7 +311,7 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {
@@ -222,7 +320,7 @@ public class AasRepositoryService(
             : await GetFilteredShellMetadataAsync(filter, limit, cursor, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
             .GetDataForAllShellDescriptorsAsync(limit, cursor, null, null, pluginManifestConflictHandler.Manifests, cancellationToken)
@@ -235,21 +333,17 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, cancellationToken)
+            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, limit, cursor, cancellationToken)
             .ConfigureAwait(false);
 
-        var allMetadata = metadata.ShellDescriptors?
-            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
-            .ToList() ?? [];
-
-        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id!, limit, cursor);
-
-        return (pagedItems, pagingMetaData);
+        return (
+              metadata.ShellDescriptors ?? [],
+              metadata.PagingMetaData ?? new PagingMetaData());
     }
 
     private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)
@@ -329,5 +423,44 @@ public class AasRepositoryService(
             .All(pair =>
                 pair.First.Type == pair.Second.Type &&
                 pair.First.Value == pair.Second.Value);
+    }
+
+    private async Task<IResource> GetThumbnail(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+        var thumbnail = assetInformation?.DefaultThumbnail;
+
+        return thumbnail ?? throw new AssetInformationNotFoundException(aasIdentifier);
+    }
+
+    private string GetValidatedThumbnailUrl(IResource thumbnail, string aasIdentifier)
+    {
+        var thumbnailUrl = thumbnail.Path;
+
+        if (string.IsNullOrWhiteSpace(thumbnailUrl))
+        {
+            throw new AssetInformationNotFoundException(aasIdentifier);
+        }
+
+        if (!Uri.TryCreate(thumbnailUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            logger.LogError("Thumbnail URL is invalid. FileUrl: {FileUrl}", thumbnailUrl);
+            throw new InternalDataProcessingException();
+        }
+
+        return thumbnailUrl;
+    }
+
+    private static string GetFileName(string fileUrl)
+    {
+        var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = "thumbnail";
+        }
+
+        return fileName;
     }
 }

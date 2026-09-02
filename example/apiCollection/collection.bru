@@ -13,6 +13,8 @@ vars:pre-request {
   assetId-product1: {"name":"SerialNumber","value":"SN-FMABC1234-9804820"}
   assetId-product2: {"name":"SerialNumber","value":"SN-FMABC1238-9804821"}
   idShort: Product2
+  submodelIdentifierNameplate-2: https://mm-software.com/submodel/{{productId-2}}/Nameplate
+  submodelIdentifierNameplate-3: https://mm-software.com/submodel/{{productId-3}}/Nameplate
 }
 
 script:pre-request {
@@ -26,6 +28,8 @@ script:pre-request {
     'aasIdentifier-3',
     'submodelIdentifierMaintenanceInstructions-1',
     'submodelIdentifierNameplate-1',
+    'submodelIdentifierNameplate-2',
+    'submodelIdentifierNameplate-3',
     'submodelIdentifierHandoverDocumentation-1',
     'submodelIdentifierTechnicalData-1',
     'submodelIdentifierCarbonFootprint-1',

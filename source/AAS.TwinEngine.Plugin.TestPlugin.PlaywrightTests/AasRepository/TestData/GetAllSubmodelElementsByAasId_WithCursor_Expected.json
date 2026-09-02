@@ -1,0 +1,39 @@
+{
+  "paging_metadata": {
+    "cursor": null
+  },
+  "result": [
+    {
+      "idShort": "Entities",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/vdi/2770/1/0/EntitiesForDocumentation"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+              }
+            ]
+          },
+          "kind": "ConceptQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "ZeroToOne"
+        }
+      ],
+      "orderRelevant": false,
+      "typeValueListElement": "Entity",
+      "modelType": "SubmodelElementList"
+    }
+  ]
+}

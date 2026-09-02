@@ -72,7 +72,7 @@ public class PluginDataHandler(
         return mergedValues;
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -245,7 +245,7 @@ public class PluginDataHandler(
         throw new ResponseParsingException();
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -268,7 +268,7 @@ public class PluginDataHandler(
                                        }))
             : null;
 
-        var responses = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, filter?.IdShort, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, filter?.IdShort, limit, cursor, cancellationToken).ConfigureAwait(false);
 
         var result = new ShellDescriptorsMetaData();
 

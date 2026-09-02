@@ -3,8 +3,11 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
@@ -27,6 +30,8 @@ public class ShellDescriptorServiceTests
     private readonly IPluginDataHandler _pluginDataHandler = Substitute.For<IPluginDataHandler>();
     private readonly IShellDescriptorDataHandler _dataHandler = Substitute.For<IShellDescriptorDataHandler>();
     private readonly IPluginManifestConflictHandler _pluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+    private readonly ISubmodelDescriptorService _submodelDescriptorService = Substitute.For<ISubmodelDescriptorService>();
+    private readonly IAasRepositoryService _aasRepositoryService = Substitute.For<IAasRepositoryService>();
     private readonly ILogger<ShellDescriptorService> _logger = Substitute.For<ILogger<ShellDescriptorService>>();
     private readonly IOptions<GeneralConfig> _generalConfig;
     private readonly IOptions<TemplateManagementConfig> _templateManagementConfig;
@@ -47,6 +52,25 @@ public class ShellDescriptorServiceTests
         };
         _templateManagementConfig = Options.Create(config);
         _sut = new ShellDescriptorService(_templateProvider, _shellTemplateMappingProvider, _dataHandler, _pluginDataHandler, _pluginManifestConflictHandler, _logger, _generalConfig, _templateManagementConfig);
+    }
+
+    [Fact]
+    public async Task GetSubmodelDescriptorByAasIdAsync_ValidatesOwnershipAndReturnsDescriptor()
+    {
+        const string aasId = "aas-1";
+        const string submodelId = "submodel-1";
+        var expected = new SubmodelDescriptor { Id = submodelId };
+
+        _submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetSubmodelDescriptorByAasIdAsync(aasId, submodelId, CancellationToken.None);
+
+        Assert.Same(expected, result);
+        await _aasRepositoryService.Received(1)
+            .ValidateSubmodelBelongsToAasAsync(aasId, submodelId, Arg.Any<CancellationToken>());
+        await _submodelDescriptorService.Received(1)
+            .GetSubmodelDescriptorByIdAsync(submodelId, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -110,7 +134,7 @@ public class ShellDescriptorServiceTests
         _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
         _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(template);
         _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, null, null, Arg.Any<List<PluginManifest>>(), cancellationToken)
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<List<PluginManifest>>(), cancellationToken)
             .Returns(metaData);
         _dataHandler.FillOut(template, Arg.Any<ShellDescriptorMetaData>())
             .Returns(callInfo =>
@@ -119,7 +143,7 @@ public class ShellDescriptorServiceTests
                 return filled.Single(x => x.Id == value.Id);
             });
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, null, cancellationToken);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, cancellationToken);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
@@ -139,10 +163,10 @@ public class ShellDescriptorServiceTests
         };
 
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, cancellationToken)
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, manifests, cancellationToken)
             .Returns(metaData);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, null, cancellationToken);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, cancellationToken);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
@@ -168,7 +192,7 @@ public class ShellDescriptorServiceTests
 
         var manifests = new List<PluginManifest>();
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, cancellationToken).Returns(metaData);
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, manifests, cancellationToken).Returns(metaData);
 
         _shellTemplateMappingProvider.GetTemplateId("id1").Returns("template-1");
         _shellTemplateMappingProvider.GetTemplateId("id2").Returns("template-2");
@@ -187,7 +211,7 @@ public class ShellDescriptorServiceTests
                 return new ShellDescriptor { Id = value.Id };
             });
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, null, cancellationToken);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, cancellationToken);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
@@ -250,7 +274,7 @@ public class ShellDescriptorServiceTests
     [Fact]
     public async Task GetAllShellDescriptorsAsync_ShouldThrowException_WhenManifestConflict()
     {
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>()).Throws(new MultiPluginConflictException());
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>()).Throws(new MultiPluginConflictException());
         await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
     }
 
@@ -258,10 +282,10 @@ public class ShellDescriptorServiceTests
     public async Task GetAllShellDescriptorsAsync_ShouldThrowInternalDataProcessingException_WhenValidationFailedException()
     {
         _pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(null, null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<CancellationToken>())
             .Throws(new ValidationFailedException());
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None));
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
     }
 
     [Fact]
@@ -278,10 +302,10 @@ public class ShellDescriptorServiceTests
         };
 
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, Arg.Any<CancellationToken>())
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, manifests, Arg.Any<CancellationToken>())
             .Returns(metaData);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
@@ -302,11 +326,11 @@ public class ShellDescriptorServiceTests
         };
 
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, null, null, manifests, Arg.Any<CancellationToken>())
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, manifests, Arg.Any<CancellationToken>())
             .Returns(metaData);
         _shellTemplateMappingProvider.GetTemplateId("id1").Throws(new ResourceNotFoundException());
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
@@ -342,7 +366,7 @@ public class ShellDescriptorServiceTests
         };
 
         _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
             .Returns(metaData);
         _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
         _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(GetShellDescriptorTemplate());
@@ -353,7 +377,7 @@ public class ShellDescriptorServiceTests
                 return new ShellDescriptor { Id = value.Id };
             });
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, AssetKind.Instance, "YXR0cmlidXRl", cancellationToken);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", cancellationToken);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
@@ -375,7 +399,7 @@ public class ShellDescriptorServiceTests
             _templateProvider, _shellTemplateMappingProvider, _dataHandler,
             _pluginDataHandler, _pluginManifestConflictHandler, _logger,
             _generalConfig,
-            Options.Create(config));
+            Options.Create(config), _submodelDescriptorService, _aasRepositoryService);
 
         var currentConcurrency = 0;
         var maxObservedConcurrency = 0;
@@ -391,7 +415,7 @@ public class ShellDescriptorServiceTests
         };
 
         _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(null, null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
             .Returns(metaData);
         _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
 
@@ -422,7 +446,7 @@ public class ShellDescriptorServiceTests
                 return new ShellDescriptor { Id = value.Id };
             });
 
-        var result = await sut.GetAllShellDescriptorsAsync(null, null, null, null, cancellationToken);
+        var result = await sut.GetAllShellDescriptorsAsync(100, null, null, null, cancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal(6, result.Result!.Count);

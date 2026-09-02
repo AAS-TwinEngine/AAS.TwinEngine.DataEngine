@@ -50,7 +50,7 @@ public partial class SubmodelTemplateService(
         }
     }
 
-    public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
+    public async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrWhiteSpace(idShortPath))
         {
@@ -59,7 +59,7 @@ public partial class SubmodelTemplateService(
                 ValidateSubmodelId(submodelId);
 
                 var templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
-                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, null, cancellationToken).ConfigureAwait(false);
+                var submodel = await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId, queryOptions, cancellationToken).ConfigureAwait(false);
 
                 return BuildSubmodel(submodel, idShortPath);
             }
@@ -83,7 +83,7 @@ public partial class SubmodelTemplateService(
         throw new InvalidDependencyException(nameof(idShortPath));
     }
 
-    public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string submodelId, string filteredTemplateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    public async Task<bool> ValidateSemanticIdFilter(string submodelId, string filteredTemplateId)
     {
         ValidateSubmodelId(submodelId);
 
@@ -94,16 +94,25 @@ public partial class SubmodelTemplateService(
 
             if (filteredTemplateId is not null && templateId != filteredTemplateId)
             {
-                return null;
+                return false;
             }
+            return true;
         }
         catch (ResourceNotFoundException)
         {
-            return null;
+            return false;
         }
+    }
 
+    public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        ValidateSubmodelId(submodelId);
+
+        string? templateId;
         try
         {
+            templateId = _submodelTemplateMappingProvider.GetTemplateId(submodelId);
+
             return await _templateProvider.GetFilteredSubmodelTemplateAsync(templateId!, queryOptions, cancellationToken).ConfigureAwait(false);
         }
         catch (ResponseParsingException ex)
@@ -189,14 +198,14 @@ public partial class SubmodelTemplateService(
                                           ?? throw new InternalDataProcessingException();
         }
 
-        throw new NotFoundException("Template not found");
+        throw new TemplateNotFoundException();
     }
 
     private static ISubmodelElement FindMatchingElement(IEnumerable<ISubmodelElement> submodelElements, string idShort)
     {
         var idShortWithoutIndex = SubmodelElementCollectionIndex().Replace(idShort, "");
         return submodelElements.FirstOrDefault(e => e.IdShort == idShort || e.IdShort == idShortWithoutIndex)
-               ?? throw new InternalDataProcessingException();
+               ?? throw new SubmodelElementNotFoundException();
     }
 
     private static bool TryParseIdShortWithBracketIndex(string idShort, out string idShortWithoutIndex, out int index)

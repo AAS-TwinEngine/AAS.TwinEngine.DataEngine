@@ -1,7 +1,7 @@
 [
   {
     "globalAssetId": "https://mm-software.com/ids/assets/000-001",
-    "idShort": "M&M01",
+    "idShort": "MM01",
     "id": "https://mm-software.com/ids/aas/000-001",
     "assetKind": "Instance",
     "assetType": "Attribute",
@@ -24,7 +24,7 @@
   },
   {
     "globalAssetId": "https://mm-software.com/ids/assets/000-002",
-    "idShort": "M&M02",
+    "idShort": "MM02",
     "id": "https://mm-software.com/ids/aas/000-002",
     "assetKind": "Instance",
     "assetType": "Attribute",
@@ -48,7 +48,7 @@
   },
   {
     "globalAssetId": "https://mm-software.com/ids/assets/000-003",
-    "idShort": "M&M03",
+    "idShort": "MM03",
     "id": "https://mm-software.com/ids/aas/000-003",
     "assetKind": "Type",
     "assetType": "Template",

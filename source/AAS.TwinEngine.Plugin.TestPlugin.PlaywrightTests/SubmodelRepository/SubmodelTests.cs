@@ -52,7 +52,7 @@ public class SubmodelTests : ApiTestBase
     public async Task GetAllSubmodels_ByIdShort()
     {
         // Arrange
-        var idShort = "M%26M03";
+        var idShort = "MM03";
         var url = $"/submodels?idShort={idShort}";
 
         // Act

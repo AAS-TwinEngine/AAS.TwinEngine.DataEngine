@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -61,7 +61,7 @@ public abstract class SubmodelDescriptorControllerTests : IDisposable
                 CreateShell("Nameplate")
             ]
         };
-        _ = _mockAasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+        _ = _mockAasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                                     .Returns(shells);
 
         _ = _mockSubmodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -95,7 +95,7 @@ public abstract class SubmodelDescriptorControllerTests : IDisposable
                 CreateShell("MissingSubmodel")
             ]
         };
-        _ = _mockAasRepositoryService.GetShellsByFiltersAsync(null, null, null, Arg.Any<CancellationToken>())
+        _ = _mockAasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                                     .Returns(shells);
         _ = _mockSubmodelDescriptorProvider.GetDataForSubmodelDescriptorByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                                             .Throws(new ResourceNotFoundException());

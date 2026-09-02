@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
@@ -175,5 +176,42 @@ public class ShellDescriptorControllerTests
             SpecificAssetIds = null,
             SubmodelDescriptors = null!
         };
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsByAasIdAsync_ReturnsOkResult()
+    {
+        const string AasId = "https://example.com/ids/aas/1170_1160_3052_6568";
+        var encodedId = AasId.EncodeBase64Url();
+        var expected = new SubmodelDescriptorsDto { PagingMetaData = new PagingMetaDataDto(), Result = [] };
+        _handler.GetAllSubmodelDescriptorsByAasId(Arg.Any<GetSubmodelDescriptorsByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(encodedId, null, CancellationToken.None, 100);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<SubmodelDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllSubmodelDescriptorsByAasId(
+            Arg.Is<GetSubmodelDescriptorsByAasRequest>(r => r.AasIdentifier == encodedId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelDescriptorByAasIdAsync_ReturnsOkResult()
+    {
+        const string AasId = "https://example.com/ids/aas/1170_1160_3052_6568";
+        const string SubmodelId = "https://example.com/submodel/1";
+        var encodedAasId = AasId.EncodeBase64Url();
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        _handler.GetSubmodelDescriptorByAasId(Arg.Any<GetSubmodelDescriptorByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(_expectedShellDescriptor.SubmodelDescriptors?.FirstOrDefault() ?? new SubmodelDescriptorDto());
+
+        var result = await _sut.GetSubmodelDescriptorByAasIdAsync(encodedAasId, encodedSubmodelId, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.NotNull(okResult.Value);
+        await _handler.Received(1).GetSubmodelDescriptorByAasId(
+            Arg.Is<GetSubmodelDescriptorByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelIdentifier == encodedSubmodelId),
+            Arg.Any<CancellationToken>());
     }
 }

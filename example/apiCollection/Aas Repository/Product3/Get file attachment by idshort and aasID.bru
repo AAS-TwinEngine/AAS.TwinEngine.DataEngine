@@ -1,0 +1,22 @@
+meta {
+  name: Get file attachment by idshort and aasID
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/:idShortPath/attachment
+  body: none
+  auth: inherit
+}
+
+params:path {
+  idShortPath: Markings[0].MarkingFile
+  aasIdentifier: {{aasIdentifier-3}}
+  submodelIdentifier: {{submodelIdentifierNameplate-3}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

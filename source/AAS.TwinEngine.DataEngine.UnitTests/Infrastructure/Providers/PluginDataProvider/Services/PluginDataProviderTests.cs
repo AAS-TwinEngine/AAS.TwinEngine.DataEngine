@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -129,7 +129,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        var result = await _sut.GetDataForAllShellDescriptorsAsync(null, null, null, null, metadata, CancellationToken.None);
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None);
 
         Assert.NotNull(result);
         var json = result[0];
@@ -137,7 +137,7 @@ public class PluginDataProviderTests
 
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
-        Assert.Equal("https://example.com/metadata/shells", captured.RequestUri!.ToString());
+        Assert.Equal("https://example.com/metadata/shells?limit=100", captured.RequestUri!.ToString());
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -432,7 +432,7 @@ public class PluginDataProviderTests
 
         var assetIdsHeaderValue = """[{"name":"SerialNumber","value":"SN-4711"}]""";
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, null, CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, null, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result);
@@ -441,7 +441,7 @@ public class PluginDataProviderTests
 
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
-        Assert.Equal("https://testendpoint.com/metadata/shells", captured.RequestUri!.ToString());
+        Assert.Equal("https://testendpoint.com/metadata/shells?limit=100", captured.RequestUri!.ToString());
         Assert.True(captured.Headers.Contains("aastwinengine-assetids"));
         Assert.Equal(assetIdsHeaderValue, captured.Headers.GetValues("aastwinengine-assetids").First());
     }
@@ -472,14 +472,14 @@ public class PluginDataProviderTests
 
         const string idShort = "test-idshort-value";
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, null, idShort, CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, null, idShort, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result);
 
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
-        Assert.Equal("https://testendpoint.com/metadata/shells", captured.RequestUri!.ToString());
+        Assert.Equal("https://testendpoint.com/metadata/shells?limit=100", captured.RequestUri!.ToString());
         Assert.True(captured.Headers.Contains("aastwinengine-idshort"));
         Assert.Equal(idShort, captured.Headers.GetValues("aastwinengine-idshort").First());
         Assert.False(captured.Headers.Contains("aastwinengine-assetids"));
@@ -502,7 +502,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -522,7 +522,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -536,7 +536,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -545,7 +545,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { null! };
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -565,7 +565,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     private static List<ShellDescriptorMetaData> GetTestShellDescriptorDataList()

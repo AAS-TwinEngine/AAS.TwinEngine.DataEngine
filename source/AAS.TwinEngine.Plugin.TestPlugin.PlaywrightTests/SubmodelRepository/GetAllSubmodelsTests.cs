@@ -73,7 +73,7 @@ public class GetAllSubmodelsTests : ApiTestBase
     [Fact]
     public async Task GetAllSubmodels_WithIdShort_ShouldReturnMatchingSubmodels()
     {
-        var idShort = "M%26M01";
+        var idShort = "MM01";
         var response = await ApiContext.GetAsync($"/submodels/?idShort={idShort}");
 
         AssertSuccessResponse(response);

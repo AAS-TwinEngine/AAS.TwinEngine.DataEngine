@@ -1,7 +1,5 @@
 {
-  "paging_metadata": {
-    "cursor": null
-  },
+  "paging_metadata": { "cursor": null },
   "result": [
     {
       "idShort": "CustomSubmodel",
@@ -11,7 +9,7 @@
           "text": "The Submodel HierarchicalStructures identified by its semanticId. The Submodel idShort can be picked freely."
         }
       ],
-      "id": "https://admin-shell.io/idta/CustomSubmodel/Template/0/1",
+      "id": "https://mm-software.com/submodel/000-003/CustomSubmodel",
       "kind": "Instance",
       "semanticId": {
         "type": "ExternalReference",
@@ -1608,7 +1606,7 @@
     },
     {
       "idShort": "ContactInformations",
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0",
+      "id": "https://mm-software.com/submodel/000-003/ContactInformation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -3456,7 +3454,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/idta-02004-2-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0",
+      "id": "https://mm-software.com/submodel/000-003/HandoverDocumentation",
       "kind": "Instance",
       "semanticId": {
         "type": "ModelReference",
@@ -4607,7 +4605,7 @@
                                   "value": "DigitalFile[\\d{2,3}]"
                                 }
                               ],
-                              "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                               "contentType": "application/pdf",
                               "modelType": "File"
                             }
@@ -7448,7 +7446,7 @@
                                   "value": "DigitalFile[\\d{2,3}]"
                                 }
                               ],
-                              "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                               "contentType": "application/pdf",
                               "modelType": "File"
                             }
@@ -8437,7 +8435,7 @@
                                   "value": "DigitalFile[\\d{2,3}]"
                                 }
                               ],
-                              "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                               "contentType": "application/pdf",
                               "modelType": "File"
                             }
@@ -9426,7 +9424,7 @@
                                   "value": "DigitalFile[\\d{2,3}]"
                                 }
                               ],
-                              "value": "https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
                               "contentType": "application/pdf",
                               "modelType": "File"
                             }

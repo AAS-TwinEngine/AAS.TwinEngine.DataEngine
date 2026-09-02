@@ -8,6 +8,11 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -26,12 +31,16 @@ public abstract class AasRepositoryControllerTests : IDisposable
 {
     private readonly ConfigTestFactory _factory;
     private readonly ITemplateProvider _mockTemplateProvider;
+    private readonly IFileContentProvider _fileContentProvider;
+    private readonly ISubmodelRepositoryService _mockSubmodelRepositoryService;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
 
     protected AasRepositoryControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
+        _fileContentProvider = Substitute.For<IFileContentProvider>();
+        _mockSubmodelRepositoryService = Substitute.For<ISubmodelRepositoryService>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
         var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
@@ -42,6 +51,8 @@ public abstract class AasRepositoryControllerTests : IDisposable
             _ = services.AddSingleton(mockPluginManifestConflictHandler);
             _ = services.AddSingleton(_httpClientFactory);
             _ = services.AddSingleton(_mockTemplateProvider);
+            _ = services.AddSingleton(_fileContentProvider);
+            _ = services.AddSingleton(_mockSubmodelRepositoryService);
         });
 
         _client = _factory.CreateClient();
@@ -236,7 +247,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockTemplate);
 
         // Act
-        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5&cursor=bmV4dDEyMw==");
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -384,7 +395,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
     [Fact]
     public async Task GetShellsAsync_WithPagination_LimitsResultsAsync()
     {
-        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsFilterByIdShort());
         SetupTemplateProvider();
 
         var specificAssetId = """{"name":"SerialNumber","value":"SN-4711"}""";
@@ -547,6 +558,213 @@ public abstract class AasRepositoryControllerTests : IDisposable
                     Submodels = []
                 };
             });
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturn200OKWithStream_WhenThumbnailExists()
+    {
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+
+        var messageHandler = new FakeHttpMessageHandler((request, token) =>
+        {
+            var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(TestData.CreatePluginResponseForAssetinformation())
+            };
+            return Task.FromResult(httpResponse);
+        });
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        var expectedAssetInformation = TestData.CreateAssetInformationTemplate();
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(expectedAssetInformation);
+
+        var stream = new MemoryStream("test-bytes"u8.ToArray());
+        var fileContentResponse = new FileContentResponse(stream);
+        _ = _fileContentProvider.GetFileContentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(fileContentResponse);
+
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedAssetInformation.DefaultThumbnail.ContentType, response.Content.Headers.ContentType?.MediaType);
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal("test-bytes"u8.ToArray(), bytes);
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_ShouldReturn404_WhenThumbnailIsMissing()
+    {
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+
+        var mockAssetInformationTemplate = new AssetInformation(
+            AssetKind.Instance,
+            "https://example.com/ids/asset/123",
+            [],
+            defaultThumbnail: null
+        );
+
+        var messageHandler = new FakeHttpMessageHandler((request, token) =>
+        {
+            var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {
+                      "assetKind": "Type",
+                      "globalAssetId": "https://example.com/ids/asset/123",
+                      "specificAssetIds": [],
+                      "defaultThumbnail": null
+                    }
+                    """)
+            };
+            return Task.FromResult(httpResponse);
+        });
+
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockAssetInformationTemplate);
+
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/asset-information/thumbnail");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetSubmodelAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(new Submodel(id: requestedSubmodelId));
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasIdAsync_WhenSubmodelNotInAas_Returns404Async()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/Missing";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "Other")], null)]);
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetAllSubmodelElementsAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new SubmodelElementsPage { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}/submodel-elements");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.True(json.ContainsKey("result"));
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementByAasIdAsync_ReturnsOkAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
+        const string IdShortPath = "ManufacturerName";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetSubmodelElementAsync(requestedSubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(new Property(DataTypeDefXsd.String) { IdShort = IdShortPath });
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}/submodel-elements/{IdShortPath}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+    }
+
+    [Fact]
+    public async Task GetFileByPathByAasIdAsync_ReturnsAttachmentStreamAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1Njg=";
+        const string submodelKey = "Nameplate";
+        const string productId = "1170_1160_3052_6568";
+        var requestedSubmodelId = $"https://mm-software.com/submodel/{productId}/{submodelKey}";
+        const string idShortPath = "Thumbnail";
+        var encodedSubmodelId = EncodeBase64Url(requestedSubmodelId);
+        var fileBytes = Encoding.UTF8.GetBytes("fake-image-bytes");
+
+        _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
+
+        _ = _mockSubmodelRepositoryService
+            .GetFileAttachmentAsync(requestedSubmodelId, idShortPath, Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(new MemoryStream(fileBytes), "image/png", "logo.png", 100 * 1024 * 1024));
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodels/{encodedSubmodelId}/submodel-elements/{idShortPath}/attachment");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("image/png", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal(fileBytes, body);
+        Assert.Contains("logo.png", response.Content.Headers.ContentDisposition?.ToString(), StringComparison.Ordinal);
+        await _mockSubmodelRepositoryService.Received(1).GetFileAttachmentAsync(requestedSubmodelId, idShortPath, Arg.Any<CancellationToken>());
     }
 
     private static string EncodeBase64Url(string plainText)

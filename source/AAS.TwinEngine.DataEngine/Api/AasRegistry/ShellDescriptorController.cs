@@ -4,7 +4,9 @@ using System.Net;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Asp.Versioning;
 
@@ -69,6 +71,60 @@ public class ShellDescriptorController(
         logger.LogInformation("Get ShellDescriptor");
         var request = new GetShellDescriptorRequest(aasIdentifier);
         var response = await shellDescriptorHandler.GetShellDescriptorById(request, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Returns all Submodel Descriptors
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <response code="200">Requested Submodel Descriptors</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodel-descriptors")]
+    [ProducesResponseType(typeof(SubmodelDescriptorsDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<SubmodelDescriptorsDto>> GetAllSubmodelDescriptorsByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
+    {
+        logger.LogInformation("Get All Submodel Descriptors through superpath for AAS");
+        var request = new GetSubmodelDescriptorsByAasRequest(aasIdentifier, limit, cursor);
+        var response = await shellDescriptorHandler.GetAllSubmodelDescriptorsByAasId(request, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Returns a specific Submodel Descriptor
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <response code="200">Requested Submodel Descriptor</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodel-descriptors/{submodelIdentifier}")]
+    [ProducesResponseType(typeof(SubmodelDescriptorDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<SubmodelDescriptorDto>> GetSubmodelDescriptorByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get Submodel Descriptor through superpath for AAS");
+        var request = new GetSubmodelDescriptorByAasRequest(aasIdentifier, submodelIdentifier);
+        var response = await shellDescriptorHandler.GetSubmodelDescriptorByAasId(request, cancellationToken).ConfigureAwait(false);
         return Ok(response);
     }
 }

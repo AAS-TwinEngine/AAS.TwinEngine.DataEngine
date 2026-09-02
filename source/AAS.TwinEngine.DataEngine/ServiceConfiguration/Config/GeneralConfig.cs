@@ -10,12 +10,15 @@ namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 public class GeneralConfig
 {
     public const string Section = "General";
+    public const int DefaultPaginationLimit = 100;
 
     public ApiConfiguration ApiConfiguration { get; set; } = new();
     public HeaderSanitizationOptions HeaderSanitization { get; set; } = new();
     public string AllowedHosts { get; set; } = "*";
     public OpenTelemetrySettings OpenTelemetry { get; set; } = new();
     public CacheConfig Cache { get; set; } = new();
+
+    public long MaxFileAttachmentSizeBytes { get; set; } = 104857600; // 100 MB
 
     /// <summary>
     /// Domain URL of the customer environment (V2: direct property; V1: was AasEnvironment:CustomerDomainUrl).
