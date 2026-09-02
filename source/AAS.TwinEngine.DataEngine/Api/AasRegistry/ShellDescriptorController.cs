@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Asp.Versioning;
 
@@ -39,7 +40,7 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken cancellationToken)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] string? cursor, CancellationToken cancellationToken, [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Get All ShellDescriptors");
         var request = new GetShellDescriptorsRequest(limit, cursor);
@@ -87,9 +88,9 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<SubmodelDescriptorsDto>> GetAllSubmodelDescriptorsByAasIdAsync(
         [FromRoute] string aasIdentifier,
-        [FromQuery] int? limit,
         [FromQuery] string? cursor,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Get All Submodel Descriptors through superpath for AAS");
         var request = new GetSubmodelDescriptorsByAasRequest(aasIdentifier, limit, cursor);

@@ -57,7 +57,7 @@ public class SubmodelDescriptorServiceTests
                 CreateShell("Nameplate")
             ]
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
         _submodelTemplateMappingProvider.GetTemplateId("ContactInformation").Returns("ContactInformation");
         _submodelTemplateMappingProvider.GetTemplateId("Nameplate").Returns("Nameplate");
@@ -86,7 +86,7 @@ public class SubmodelDescriptorServiceTests
                 CreateShell("MissingSubmodel")
             ]
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
         _submodelTemplateMappingProvider.GetTemplateId("ValidSubmodelId").Returns("ValidSubmodelId");
         _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel").Returns("MissingSubmodel");
@@ -112,7 +112,7 @@ public class SubmodelDescriptorServiceTests
                 CreateShell("MissingSubmodel2")
             ]
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
         _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel1").Returns("MissingSubmodel1");
         _submodelTemplateMappingProvider.GetTemplateId("MissingSubmodel2").Returns("MissingSubmodel2");
@@ -132,7 +132,7 @@ public class SubmodelDescriptorServiceTests
         {
             Result = []
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
 
         var result = await _sut.GetAllSubmodelDescriptorsAsync(5, null, CancellationToken.None);
@@ -328,7 +328,7 @@ public class SubmodelDescriptorServiceTests
             submodels: [new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "ShouldBeSkipped")])]);
 
         var shells = new Shells { Result = [nullIdShell, validShell] };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
         _submodelTemplateMappingProvider.GetTemplateId("Nameplate").Returns("Nameplate");
         _provider.GetDataForSubmodelDescriptorByIdAsync("Nameplate", Arg.Any<CancellationToken>())
@@ -347,7 +347,7 @@ public class SubmodelDescriptorServiceTests
         var shell2 = CreateShellWithMultipleSubmodels("shell-2", "sm-4", "sm-5");
 
         var shells = new Shells { Result = [shell1, shell2] };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
 
         _submodelTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns(x => (string)x[0]);
@@ -374,7 +374,7 @@ public class SubmodelDescriptorServiceTests
             Result = [shell1],
             PagingMetaData = new PagingMetaData { Cursor = "next-page-token" }
         };
-        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _aasRepositoryService.GetShellsByFiltersAsync(null, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                            .Returns(shells);
 
         _submodelTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns(x => (string)x[0]);

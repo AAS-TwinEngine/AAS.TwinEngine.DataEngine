@@ -7,6 +7,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -48,9 +49,9 @@ public class SubmodelRepositoryController(
     public async Task<ActionResult<SubmodelsDto>> GetAllSubmodelsAsync(
         [FromQuery] string? semanticId,
         [FromQuery] string? idShort,
-        [FromQuery] int? limit,
         [FromQuery] string? cursor,
         CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit,
         [FromQuery] Level level = Level.deep,
         [FromQuery] Extent extent = Extent.withoutBlobValue)
     {
@@ -111,9 +112,9 @@ public class SubmodelRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<SubmodelElementsDto>> GetAllSubmodelElementsAsync(
         [FromRoute] string submodelIdentifier,
-        [FromQuery] int? limit,
         [FromQuery] string? cursor,
         CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit,
         [FromQuery] Level level = Level.deep,
         [FromQuery] Extent extent = Extent.withoutBlobValue)
     {

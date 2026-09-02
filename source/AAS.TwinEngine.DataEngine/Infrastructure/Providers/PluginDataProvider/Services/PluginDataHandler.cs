@@ -70,7 +70,7 @@ public class PluginDataHandler(
         return mergedValues;
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -203,7 +203,7 @@ public class PluginDataHandler(
         throw new ResponseParsingException();
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -225,8 +225,6 @@ public class PluginDataHandler(
                                            value = x.Value
                                        }))
             : null;
-
-        limit ??= GeneralConfig.DefaultPaginationLimit;
 
         var responses = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, filter?.IdShort, limit, cursor, cancellationToken).ConfigureAwait(false);
 

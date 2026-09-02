@@ -3,7 +3,7 @@
 public record GetAllSubmodelsRequest(
     string? SemanticId,
     string? IdShort,
-    int? Limit,
+    int Limit,
     string? Cursor,
     Level? Level,
     Extent? Extent);

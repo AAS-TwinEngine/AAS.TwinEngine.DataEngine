@@ -19,7 +19,7 @@ public class AssetIdSearchService(
     IPluginManifestConflictHandler pluginManifestConflictHandler,
     IAasRepositoryService aasRepositoryService) : IAssetIdSearchService
 {
-    public async Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(IList<AssetLink> assetLinks, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<ShellsByAssetLink> SearchShellsByAssetLinkAsync(IList<AssetLink> assetLinks, int limit, string? cursor, CancellationToken cancellationToken)
     {
         var specificAssetIds = assetLinks.Select(link => new SpecificAssetId
         (
@@ -62,7 +62,7 @@ public class AssetIdSearchService(
         return specificAssetIds;
     }
 
-    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetId> specificAssetIds, int? limit, string? cursor, CancellationToken cancellationToken)
+    private async Task<ShellDescriptorsMetaData> GetFilteredMetadataAsync(List<SpecificAssetId> specificAssetIds, int limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {

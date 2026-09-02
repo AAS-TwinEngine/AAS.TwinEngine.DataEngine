@@ -52,7 +52,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -64,7 +64,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new InternalServerException("Internal error"));
 
-        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None));
 
         Assert.NotNull(result);
         Assert.IsType<InternalServerException>(result);
@@ -75,7 +75,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<ShellDescriptorsDto>(null!));
 
-        var result = await _sut.GetAllShellDescriptorsAsync(2, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None, limit: 2);
 
         var notFoundResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Null(notFoundResult.Value);
@@ -86,7 +86,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new UnauthorizedAccessException("Unauthorized"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None));
 
         Assert.NotNull(exception);
         Assert.IsType<UnauthorizedAccessException>(exception);
@@ -187,7 +187,7 @@ public class ShellDescriptorControllerTests
         _handler.GetAllSubmodelDescriptorsByAasId(Arg.Any<GetSubmodelDescriptorsByAasRequest>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
-        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(encodedId, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(encodedId, null, CancellationToken.None, 100);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<SubmodelDescriptorsDto>(okResult.Value);

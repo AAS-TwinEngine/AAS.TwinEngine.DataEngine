@@ -52,7 +52,7 @@ public class PluginDataProvider(
     }
 
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
-        int? limit,
+        int limit,
         string? cursor,
         IList<PluginRequestMetaData> pluginRequests,
         CancellationToken cancellationToken)
@@ -87,11 +87,6 @@ public class PluginDataProvider(
 
                 result.Add(responseContent);
 
-                if (!remainingLimit.HasValue)
-                {
-                    continue;
-                }
-
                 var itemsReceived = CountShellDescriptors(responseContent);
                 remainingLimit -= itemsReceived;
 
@@ -113,7 +108,7 @@ public class PluginDataProvider(
     public Task<IList<string>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
         => GetAndProcessAsync(pluginRequests, AssetInformationEndpoint, cancellationToken);
 
-    public async Task<IList<string>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, int? limit, string? cursor, CancellationToken cancellationToken)
+    public async Task<IList<string>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, int limit, string? cursor, CancellationToken cancellationToken)
     {
         var result = new List<string>();
         var exceptions = new List<Exception>();
@@ -250,7 +245,14 @@ public class PluginDataProvider(
     {
         using var doc = JsonDocument.Parse(responseContent);
 
-        if (doc.RootElement.TryGetProperty("result", out var itemsElement) && itemsElement.ValueKind == JsonValueKind.Array)
+        if (doc.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            return doc.RootElement.GetArrayLength();
+        }
+
+        if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+            doc.RootElement.TryGetProperty("result", out var itemsElement) &&
+            itemsElement.ValueKind == JsonValueKind.Array)
         {
             return itemsElement.GetArrayLength();
         }
@@ -258,14 +260,14 @@ public class PluginDataProvider(
         return 0;
     }
 
-    private static string BuildShellsUrl(int? limit, string? cursor)
+    private static string BuildShellsUrl(int limit, string? cursor)
     {
         const string BaseUrl = $"{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
         var queryParams = new Dictionary<string, string>();
 
         if (limit is > 0)
         {
-            queryParams["limit"] = limit.Value.ToString();
+            queryParams["limit"] = limit.ToString();
         }
 
         if (!string.IsNullOrWhiteSpace(cursor))
@@ -278,14 +280,14 @@ public class PluginDataProvider(
                    : BaseUrl;
     }
 
-    private static string BuildShellsByAssetIdsUrl(int? limit, string? cursor)
+    private static string BuildShellsByAssetIdsUrl(int limit, string? cursor)
     {
         const string BaseUrl = $"/{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
         var queryParams = new Dictionary<string, string>();
 
         if (limit is > 0)
         {
-            queryParams["limit"] = limit.Value.ToString();
+            queryParams["limit"] = limit.ToString();
         }
 
         if (!string.IsNullOrWhiteSpace(cursor))

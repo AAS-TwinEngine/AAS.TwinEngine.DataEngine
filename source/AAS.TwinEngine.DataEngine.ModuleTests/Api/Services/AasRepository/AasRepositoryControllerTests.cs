@@ -247,7 +247,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         _ = _mockTemplateProvider.GetSubmodelRefByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(mockTemplate);
 
         // Act
-        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5&cursor=bmV4dDEyMw==");
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/submodel-refs?limit=5");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -395,7 +395,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
     [Fact]
     public async Task GetShellsAsync_WithPagination_LimitsResultsAsync()
     {
-        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptors());
+        SetupPluginHttpClient(TestData.CreatePluginResponseForShellDescriptorsFilterByIdShort());
         SetupTemplateProvider();
 
         var specificAssetId = """{"name":"SerialNumber","value":"SN-4711"}""";
@@ -696,7 +696,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
             .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelKey)], null)]);
 
         _ = _mockSubmodelRepositoryService
-            .GetAllSubmodelElementsAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .GetAllSubmodelElementsAsync(requestedSubmodelId, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new SubmodelElementsPage { PagingMetaData = new PagingMetaData { Cursor = null }, Result = [] });
 
         // Act

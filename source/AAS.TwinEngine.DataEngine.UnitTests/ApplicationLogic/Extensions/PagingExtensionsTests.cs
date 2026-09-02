@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Extensions;
 
@@ -37,19 +38,20 @@ public class PagingExtensionsTests
     }
 
     [Fact]
-    public void GetPagedResult_ShouldReturnFromStart_WhenInvalidCursorProvided()
+    public void GetPagedResult_ShouldThrowBadRequestException_WhenInvalidCursorProvided()
     {
         var cursor = "nonExistingId".EncodeBase64Url();
-        var (pagedItems, meta) = PagingExtensions.GetPagedResult(_items, _idSelector, 5, cursor);
 
-        Assert.Equal("id1", pagedItems.First().Id);
-        Assert.NotNull(meta.Cursor);
+        var exception = Assert.Throws<BadRequestException>(() =>
+            PagingExtensions.GetPagedResult(_items, _idSelector, 5, cursor));
+
+        Assert.Equal("The provided cursor does not reference an item in the collection.", exception.Message);
     }
 
     [Fact]
     public void GetPagedResult_ShouldReturnDefaultPageSize_WhenPageSizeIsNull()
     {
-        var (pagedItems, meta) = PagingExtensions.GetPagedResult(_items, _idSelector, null, null);
+        var (pagedItems, meta) = PagingExtensions.GetPagedResult(_items, _idSelector, 100, null);
 
         Assert.Equal(20, pagedItems.Count);
         Assert.Null(meta.Cursor);
