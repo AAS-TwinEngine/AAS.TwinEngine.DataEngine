@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
 using Microsoft.Extensions.Logging;
@@ -20,8 +20,8 @@ public class PaginationValidationExtensionsTests
     }
 
     [Theory]
-    [InlineData(null)]
     [InlineData(1)]
+    [InlineData(100)]
     [InlineData(10_000)]
     public void ValidateLimit_WhenLimitWithinAllowedRange_DoesNotThrow(int limit)
     {

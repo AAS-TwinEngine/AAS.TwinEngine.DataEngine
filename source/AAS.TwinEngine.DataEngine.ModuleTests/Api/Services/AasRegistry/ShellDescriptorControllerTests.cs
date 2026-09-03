@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -95,7 +95,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAllShellDescriptorsAsync_WithAssetKindAndAssetType_ReturnsOkAsync()
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindAndAssetType_ReturnsEmptyResultAsync()
     {
         using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
@@ -124,9 +124,43 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
         Assert.NotNull(json);
-        var shellDescriptorsResponse = json.ToString();
-        var expectedShellDescriptors = TestData.CreateShellDescriptors();
-        Assert.Equal(shellDescriptorsResponse, expectedShellDescriptors);
+        Assert.Empty(json["result"]!.AsArray());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithMatchingAssetKindAndAssetType_ReturnsOkAsync()
+    {
+        using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptors())
+        }));
+        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePlugin2ResponseForShellDescriptors())
+        }));
+        using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
+        httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
+        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
+        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
+        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
+        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
+        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                     .Returns(_ => TestData.CreateShellDescriptorsTemplate());
+
+        // Template has assetKind="Type" and assetType="Type" → filter by Type matches all descriptors.
+        var assetType = "Type".EncodeBase64Url();
+        var response = await _client.GetAsync($"/shell-descriptors?limit=2&cursor=bmV4dDEyMw==&assetKind=Type&assetType={assetType}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
     }
 
     [Fact]

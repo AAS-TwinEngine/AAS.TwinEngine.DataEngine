@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry;
+using AAS.TwinEngine.DataEngine.Api.AasRegistry;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
@@ -57,6 +57,50 @@ public class ShellDescriptorControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
         Assert.Equal(_expectedShellDescriptors, json);
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindFilter_PassesAssetKindToHandler()
+    {
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Instance, null, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == AssetKind.Instance && r.AssetType == null),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetTypeFilter_PassesAssetTypeToHandler()
+    {
+        const string AssetType = "dHlwZS12YWx1ZQ==";
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, AssetType, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == null && r.AssetType == AssetType),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindAndAssetTypeFilters_PassesBothToHandler()
+    {
+        const string AssetType = "dHlwZS12YWx1ZQ==";
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Type, AssetType, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == AssetKind.Type && r.AssetType == AssetType),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

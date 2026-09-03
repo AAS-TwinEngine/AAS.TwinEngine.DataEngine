@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
+using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
@@ -43,7 +43,7 @@ public class ShellDescriptorHandlerTests
     }
 
     [Fact]
-    public async Task GetAllShellDescriptors_WithLimitAndCursor_PassesCorrectValuesToService()
+    public async Task GetAllShellDescriptors_WithLimitCursorAssetKindAndAssetType_PassesAllValuesToService()
     {
         var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
         var request = new GetShellDescriptorsRequest(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl");
@@ -56,6 +56,39 @@ public class ShellDescriptorHandlerTests
         Assert.NotNull(result);
         Assert.IsType<ShellDescriptorsDto>(result);
         await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptors_WithAssetKindOnly_PassesAssetKindToService()
+    {
+        var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
+        var request = new GetShellDescriptorsRequest(100, null, AssetKind.Type, null);
+
+        _shellDescriptorService.GetAllShellDescriptorsAsync(100, null, AssetKind.Type, null, Arg.Any<CancellationToken>())
+                               .Returns(expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptors(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.IsType<ShellDescriptorsDto>(result);
+        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(100, null, AssetKind.Type, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptors_WithAssetTypeOnly_PassesAssetTypeToService()
+    {
+        const string EncodedAssetType = "YXNzZXQtdHlwZQ==";
+        var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
+        var request = new GetShellDescriptorsRequest(100, null, null, EncodedAssetType);
+
+        _shellDescriptorService.GetAllShellDescriptorsAsync(100, null, null, EncodedAssetType, Arg.Any<CancellationToken>())
+                               .Returns(expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptors(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.IsType<ShellDescriptorsDto>(result);
+        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(100, null, null, EncodedAssetType, Arg.Any<CancellationToken>());
     }
 
     [Fact]

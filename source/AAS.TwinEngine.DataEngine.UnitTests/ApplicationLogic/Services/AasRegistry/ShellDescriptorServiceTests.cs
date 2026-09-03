@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
@@ -302,8 +302,12 @@ public class ShellDescriptorServiceTests
         };
 
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, manifests, Arg.Any<CancellationToken>())
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(
+                Arg.Any<int>(), Arg.Is<string?>(c => c == null), Arg.Is<AssetKind?>(k => k == null), Arg.Is<string?>(t => t == null),
+                Arg.Is<IReadOnlyList<PluginManifest>>(m => m == manifests), Arg.Any<CancellationToken>())
             .Returns(metaData);
+        // Throw ResourceNotFoundException for any id so TryBuildShellDescriptorAsync skips the null-id descriptor
+        _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string?>()).Throws(new ResourceNotFoundException());
 
         var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None);
 
@@ -326,7 +330,9 @@ public class ShellDescriptorServiceTests
         };
 
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, manifests, Arg.Any<CancellationToken>())
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(
+                Arg.Any<int>(), Arg.Is<string?>(c => c == null), Arg.Is<AssetKind?>(k => k == null), Arg.Is<string?>(t => t == null),
+                Arg.Is<IReadOnlyList<PluginManifest>>(m => m == manifests), Arg.Any<CancellationToken>())
             .Returns(metaData);
         _shellTemplateMappingProvider.GetTemplateId("id1").Throws(new ResourceNotFoundException());
 
@@ -365,8 +371,9 @@ public class ShellDescriptorServiceTests
             ShellDescriptors = metadataList
         };
 
+        // No manifests -> no filter capability -> filters passed through (no client-side fallback needed for null filters)
         _pluginManifestConflictHandler.Manifests.Returns(new List<PluginManifest>());
-        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
+        _pluginDataHandler.GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken)
             .Returns(metaData);
         _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
         _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(GetShellDescriptorTemplate());
@@ -377,13 +384,138 @@ public class ShellDescriptorServiceTests
                 return new ShellDescriptor { Id = value.Id };
             });
 
-        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", cancellationToken);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, cancellationToken);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
         Assert.Equal(5, result.Result.Count);
         Assert.All(result.Result, descriptor => Assert.False(string.IsNullOrWhiteSpace(descriptor.Id)));
-        await _pluginDataHandler.Received(1).GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IReadOnlyList<PluginManifest>>(), cancellationToken);
+        await _pluginDataHandler.Received(1).GetDataForAllShellDescriptorsAsync(
+            Arg.Is<int>(l => l == 100),
+            Arg.Is<string?>(c => c == null),
+            Arg.Is<AssetKind?>(k => k == null),
+            Arg.Is<string?>(t => t == null),
+            Arg.Any<IReadOnlyList<PluginManifest>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithFilterCapablePlugin_ForwardsAssetKindAndAssetTypeToPlugin()
+    {
+        var cancellationToken = CancellationToken.None;
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = [],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            }
+        };
+
+        var metaData = new ShellDescriptorsMetaData
+        {
+            PagingMetaData = null,
+            ShellDescriptors =
+            [
+                new ShellDescriptorMetaData { Id = "id1" },
+                new ShellDescriptorMetaData { Id = "id2" }
+            ]
+        };
+
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, cancellationToken)
+            .Returns(metaData);
+
+        _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
+        _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(GetShellDescriptorTemplate());
+        _dataHandler.FillOut(Arg.Any<ShellDescriptor>(), Arg.Any<ShellDescriptorMetaData>())
+            .Returns(callInfo =>
+            {
+                var value = callInfo.ArgAt<ShellDescriptorMetaData>(1);
+                return new ShellDescriptor { Id = value.Id, AssetKind = AssetKind.Instance };
+            });
+
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Result);
+        Assert.Equal(2, result.Result.Count);
+        // Verify filters were forwarded to plugin (not applied client-side)
+        await _pluginDataHandler.Received(1).GetDataForAllShellDescriptorsAsync(
+            Arg.Is<int>(l => l == 100),
+            Arg.Is<string?>(c => c == null),
+            Arg.Is<AssetKind?>(k => k == AssetKind.Instance),
+            Arg.Is<string>(t => t == "YXR0cmlidXRl"),
+            Arg.Is<IReadOnlyList<PluginManifest>>(m => m == manifests),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithNonFilterCapablePlugin_DoesNotForwardFiltersToPlugin()
+    {
+        var cancellationToken = CancellationToken.None;
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = [],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = false }
+            }
+        };
+
+        var page = new ShellDescriptorsMetaData
+        {
+            PagingMetaData = new PagingMetaData { Cursor = null },
+            ShellDescriptors =
+            [
+                new ShellDescriptorMetaData { Id = "id1" },
+                new ShellDescriptorMetaData { Id = "id2" }
+            ]
+        };
+
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForAllShellDescriptorsAsync(
+                Arg.Any<int>(),
+                Arg.Is<string?>(c => c == null),
+                Arg.Is<AssetKind?>(k => k == null),
+                Arg.Is<string?>(t => t == null),
+                Arg.Is<IReadOnlyList<PluginManifest>>(m => m == manifests),
+                Arg.Any<CancellationToken>())
+            .Returns(page);
+
+        _shellTemplateMappingProvider.GetTemplateId(Arg.Any<string>()).Returns("template-1");
+        _templateProvider.GetShellDescriptorTemplateAsync("template-1", cancellationToken).Returns(GetShellDescriptorTemplate());
+        _dataHandler.FillOut(Arg.Any<ShellDescriptor>(), Arg.Any<ShellDescriptorMetaData>())
+            .Returns(callInfo =>
+            {
+                var meta = callInfo.ArgAt<ShellDescriptorMetaData>(1);
+                return new ShellDescriptor { Id = meta.Id, AssetKind = AssetKind.Instance };
+            });
+
+        await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Instance, null, cancellationToken);
+
+        // Verify the plugin was called WITHOUT filters (client-side fallback path)
+        await _pluginDataHandler.Received(1).GetDataForAllShellDescriptorsAsync(
+            Arg.Any<int>(),
+            Arg.Is<string?>(c => c == null),
+            Arg.Is<AssetKind?>(k => k == null),
+            Arg.Is<string?>(t => t == null),
+            Arg.Is<IReadOnlyList<PluginManifest>>(m => m == manifests),
+            Arg.Any<CancellationToken>());
+        // Verify filters were NOT forwarded to the plugin
+        await _pluginDataHandler.DidNotReceive().GetDataForAllShellDescriptorsAsync(
+            Arg.Any<int>(),
+            Arg.Any<string?>(),
+            Arg.Is<AssetKind?>(k => k == AssetKind.Instance),
+            Arg.Any<string?>(),
+            Arg.Is<IReadOnlyList<PluginManifest>>(m => m == manifests),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
