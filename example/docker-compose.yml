@@ -235,6 +235,8 @@ services:
   postgres:
     image: postgres:14.23-alpine3.24
     container_name: postgres
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: twinengine
       POSTGRES_USER: postgres
