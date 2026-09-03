@@ -28,6 +28,8 @@ services:
 
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:v1.1.0
+    ports:
+    - '8085:8080'
     build:
       context: ../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
@@ -64,6 +66,8 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__pattern__0=CarbonFootprint
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__5__templateId=https://admin-shell.io/idta/SubmodelTemplate/DppMetadata/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__5__pattern__0=DppMetadata
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=.+
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
@@ -105,6 +109,8 @@ services:
   dpp-plugin:
     image: ghcr.io/aas-twinengine/plugindpp:v1.1.0
     container_name: dpp-plugin
+    ports:
+    - '8086:8080'
     build:
       context: ../../AAS.TwinEngine.Plugin.DPP/source
       dockerfile: ./AAS.TwinEngine.Plugin.RelationalDatabase/Dockerfile
@@ -137,6 +143,10 @@ services:
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__0=CarbonFootprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__1=Footprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__2=Carbon
+      - ExtractionRules__SubmodelNameExtractionRules__5__SubmodelName=DppMetadata
+      - ExtractionRules__SubmodelNameExtractionRules__5__pattern__0=DppMetadata
+      - ExtractionRules__SubmodelNameExtractionRules__5__pattern__1=Metadata
+      - ExtractionRules__SubmodelNameExtractionRules__5__pattern__2=Dpp
       - ExtractionRules__ProductIdExtractionRules__0__Pattern=/
       - ExtractionRules__ProductIdExtractionRules__0__Index=5
       - ExtractionRules__ProductIdExtractionRules__0__Strategy=Split
@@ -147,6 +157,8 @@ services:
   template-repository:
     image: eclipsebasyx/aas-environment:2.0.0-milestone-15
     container_name: template-repository
+    ports:
+      - "8081:8081"
     volumes:
       - ./aas:/application/aas
       - ./basyx/aas-env.properties:/application/application.properties
@@ -165,6 +177,8 @@ services:
     image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-15
     container_name: aas-template-registry
     restart: always
+    ports:
+      - '8082:8080'
     depends_on:
       - mongo
     environment:
@@ -175,6 +189,8 @@ services:
   sm-template-registry:
     image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-15
     container_name: sm-template-registry
+    ports:
+      - '8083:8080'
     depends_on:
       - mongo
     environment:
@@ -239,7 +255,7 @@ services:
     image: dpage/pgadmin4:9.16
     container_name: pgadmin
     ports:
-      - "8081:80"
+      - "8090:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin

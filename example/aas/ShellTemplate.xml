@@ -80,6 +80,15 @@
           <keys>
             <key>
               <type>Submodel</type>
+              <value>DppMetadata</value>
+            </key>
+          </keys>
+        </reference>
+        <reference>
+          <type>ModelReference</type>
+          <keys>
+            <key>
+              <type>Submodel</type>
               <value>CarbonFootprint</value>
             </key>
           </keys>
