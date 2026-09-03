@@ -6,6 +6,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 
+using Polly.Timeout;
+
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Policies;
 
 public class ResilienceHandlerExtensionsTests
@@ -114,12 +116,31 @@ public class ResilienceHandlerExtensionsTests
         Assert.Equal(4, handler.CallCount);
     }
 
-    private static ServiceCollection CreateServiceCollection(int maxRetries, int delaySeconds)
+    [Fact]
+    public async Task AddStandardResilienceHandler_StopsRequestWhenTimeoutIsExceeded()
+    {
+        var services = CreateServiceCollection(maxRetries: 1, delaySeconds: 1, timeoutSeconds: 1);
+        var handler = new BlockingHttpMessageHandler();
+        ConfigureHandler(services, handler);
+
+        var client = CreateHttpClient(services);
+
+        await Assert.ThrowsAsync<TimeoutRejectedException>(() => client.GetAsync(new Uri("/test", UriKind.Relative)));
+
+        Assert.InRange(handler.CallCount, 1, 2);
+        Assert.True(handler.CancellationObserved);
+    }
+
+    private static ServiceCollection CreateServiceCollection(
+        int maxRetries,
+        int delaySeconds,
+        int timeoutSeconds = 30)
     {
         var retryConfig = new RetryConfig
         {
             MaxRetryAttempts = maxRetries,
-            DelayInSeconds = delaySeconds
+            DelayInSeconds = delaySeconds,
+            TimeoutInSeconds = timeoutSeconds
         };
 
         var services = new ServiceCollection();
@@ -180,6 +201,32 @@ public class ResilienceHandlerExtensionsTests
         {
             CallCount++;
             return Task.FromResult(new HttpResponseMessage(_statusCode));
+        }
+    }
+
+    private sealed class BlockingHttpMessageHandler : HttpMessageHandler
+    {
+        public int CallCount { get; private set; }
+
+        public bool CancellationObserved { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            CallCount++;
+
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                CancellationObserved = true;
+                throw;
+            }
+
+            throw new InvalidOperationException("The blocking handler should not complete normally.");
         }
     }
 }
