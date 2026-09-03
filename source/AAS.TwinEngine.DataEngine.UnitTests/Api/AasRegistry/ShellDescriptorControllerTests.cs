@@ -1,4 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry;
+using AAS.TwinEngine.DataEngine.Api.AasRegistry;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
@@ -52,7 +52,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -60,11 +60,55 @@ public class ShellDescriptorControllerTests
     }
 
     [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindFilter_PassesAssetKindToHandler()
+    {
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Instance, null, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == AssetKind.Instance && r.AssetType == null),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetTypeFilter_PassesAssetTypeToHandler()
+    {
+        const string AssetType = "dHlwZS12YWx1ZQ==";
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, AssetType, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == null && r.AssetType == AssetType),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindAndAssetTypeFilters_PassesBothToHandler()
+    {
+        const string AssetType = "dHlwZS12YWx1ZQ==";
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Type, AssetType, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == AssetKind.Type && r.AssetType == AssetType),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task GetAllShellDescriptorsAsync_ThrowsException_ReturnsInternalServerError()
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new InternalServerException("Internal error"));
 
-        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None));
+        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
 
         Assert.NotNull(result);
         Assert.IsType<InternalServerException>(result);
@@ -75,7 +119,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<ShellDescriptorsDto>(null!));
 
-        var result = await _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None, limit: 2);
+        var result = await _sut.GetAllShellDescriptorsAsync(2, null, null, null, CancellationToken.None);
 
         var notFoundResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Null(notFoundResult.Value);
@@ -86,7 +130,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new UnauthorizedAccessException("Unauthorized"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(cursor: null, cancellationToken: CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
 
         Assert.NotNull(exception);
         Assert.IsType<UnauthorizedAccessException>(exception);
@@ -153,7 +197,7 @@ public class ShellDescriptorControllerTests
             Extensions = null!,
             Administration = null!,
             AssetKind = AssetKind.Type,
-            AssetType = AssetKind.Type,
+            AssetType = "Type",
             Endpoints =
             [
                 new EndpointDto {

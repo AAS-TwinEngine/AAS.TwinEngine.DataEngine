@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
@@ -33,7 +33,7 @@ public class MetaDataProviderTests
         const int Limit = 2;
         string? cursor = null;
 
-        var result = await _sut.GetShellDescriptorsAsync(Limit, cursor, null, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(Limit, cursor, null, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
@@ -45,10 +45,10 @@ public class MetaDataProviderTests
     [Fact]
     public async Task GetShellDescriptorsAsync_ReturnsCorrectPage_WhenCursorIsProvided()
     {
-        var firstPage = await _sut.GetShellDescriptorsAsync(2, null, null, null, CancellationToken.None);
+        var firstPage = await _sut.GetShellDescriptorsAsync(2, null, null, null, null, null, CancellationToken.None);
         var nextCursor = firstPage.PagingMetaData?.Cursor;
 
-        var secondPage = await _sut.GetShellDescriptorsAsync(2, nextCursor, null, null, CancellationToken.None);
+        var secondPage = await _sut.GetShellDescriptorsAsync(2, nextCursor, null, null, null, null, CancellationToken.None);
 
         Assert.NotNull(secondPage);
         Assert.NotNull(secondPage.Result);
@@ -59,7 +59,7 @@ public class MetaDataProviderTests
     [Fact]
     public async Task GetShellDescriptorsAsync_ThrowsNotFound_WhenCursorIsInvalid()
     {
-        var record = await Assert.ThrowsAsync<NotFoundException>(() => _sut.GetShellDescriptorsAsync(2, "bW0=", null, null, CancellationToken.None));
+        var record = await Assert.ThrowsAsync<NotFoundException>(() => _sut.GetShellDescriptorsAsync(2, "bW0=", null, null, null, null, CancellationToken.None));
 
         Assert.Equal(ExceptionMessages.ShellDescriptorDataNotFound, record.Message);
     }
@@ -67,7 +67,7 @@ public class MetaDataProviderTests
     [Fact]
     public async Task GetShellDescriptorsAsync_NeverReturnsShell_WithEmptyIds()
     {
-        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.All(result.Result!, shell => Assert.False(string.IsNullOrWhiteSpace(shell.Id), "Shell with empty or null Id found."));
@@ -98,7 +98,7 @@ public class MetaDataProviderTests
         SetMetaData("[]");
         var sut = new Provider(_logger);
 
-        var result = await sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
+        var result = await sut.GetShellDescriptorsAsync(null, null, null, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Empty(result.Result ?? []);
@@ -117,7 +117,7 @@ public class MetaDataProviderTests
             ]
         };
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.All(result.Result!, shell => Assert.Contains(shell.SpecificAssetIds!, sai => sai.Name == "SerialNumber" && sai.Value == "SN-4711"));
@@ -134,7 +134,7 @@ public class MetaDataProviderTests
             ]
         };
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.All(result.Result!, shell => Assert.Equal("https://mm-software.com/ids/assets/000-001", shell.GlobalAssetId));
@@ -151,7 +151,7 @@ public class MetaDataProviderTests
             ]
         };
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Empty(result.Result ?? []);
@@ -161,7 +161,7 @@ public class MetaDataProviderTests
     public async Task GetShellDescriptorsAsync_WhenIdShortIsProvided_ReturnsMatchingShells()
     {
         const string TargetIdShort = "ContactInformationAAS";
-        var result = await _sut.GetShellDescriptorsAsync(null, null, null, TargetIdShort, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, TargetIdShort, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result.Result ?? []);
@@ -180,7 +180,7 @@ public class MetaDataProviderTests
             ]
         };
         const string TargetIdShort = "ContactInformationAAS";
-        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, TargetIdShort, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, TargetIdShort, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result.Result ?? []);
@@ -199,10 +199,44 @@ public class MetaDataProviderTests
             ]
         };
         const string NonMatchingIdShort = "DigitalNameplateAAS";
-        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, NonMatchingIdShort, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, NonMatchingIdShort, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Empty(result.Result ?? []);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorsAsync_WhenIdShortCaseDiffers_ReturnsMatchingShells()
+    {
+        const string targetIdShortDifferentCase = "contactinformationaas";
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, targetIdShortDifferentCase, null, null, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Single(result.Result ?? []);
+        Assert.Equal("ContactInformation", result.Result![0].Id);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorsAsync_WhenAssetKindAndAssetTypeFiltersAreProvided_ReturnsMatchingShells()
+    {
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, "instance", "YXR0cmlidXRl", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Result ?? []);
+        Assert.All(result.Result ?? [], shell =>
+        {
+            Assert.Equal("Instance", shell.AssetKind, ignoreCase: true);
+            Assert.Equal("Attribute", shell.AssetType, ignoreCase: true);
+        });
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorsAsync_WhenAssetTypeHeaderUsesPlainText_MatchesCaseInsensitively()
+    {
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, "INSTANCE", "attribute", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Result ?? []);
     }
 
     [Fact]

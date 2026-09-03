@@ -116,7 +116,7 @@ public static class TestDataMapperProfiles
         Id = "shell-001",
         IdShort = "ShellShort",
         AssetKind = AssetKind.Type,
-        AssetType = AssetKind.Type,
+        AssetType = "Type",
         GlobalAssetId = "global-asset-id",
         Description = new List<LangStringTextType> { CreateLangStringData() },
         DisplayName = new List<LangStringNameType> { CreateLangStringNameType() },

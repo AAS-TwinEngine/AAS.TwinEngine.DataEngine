@@ -10,6 +10,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Asp.Versioning;
 
+using AasCore.Aas3_1;
+
 using Microsoft.AspNetCore.Mvc;
 
 using NSwag.Annotations;
@@ -30,6 +32,8 @@ public class ShellDescriptorController(
     /// </summary>
     /// <param name="limit">The maximum number of elements in the response array</param>
     /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="assetKind">The Asset's kind (Instance or Type)</param>
+    /// <param name="assetType">The Asset's type (UTF8-BASE64-URL-encoded)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <response code="200">Requested Asset Administration Shell Descriptors</response>
     /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
@@ -40,10 +44,10 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] string? cursor, CancellationToken cancellationToken, [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int limit, [FromQuery] string? cursor, [FromQuery] AssetKind? assetKind, [FromQuery] string? assetType, CancellationToken cancellationToken)
     {
         logger.LogInformation("Get All ShellDescriptors");
-        var request = new GetShellDescriptorsRequest(limit, cursor);
+        var request = new GetShellDescriptorsRequest(limit, cursor, assetKind, assetType);
         var response = await shellDescriptorHandler.GetAllShellDescriptors(request, cancellationToken).ConfigureAwait(false);
         return Ok(response);
     }

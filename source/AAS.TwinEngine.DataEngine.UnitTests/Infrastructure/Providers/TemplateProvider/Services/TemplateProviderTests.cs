@@ -268,7 +268,7 @@ public class TemplateProviderTests
 
         Assert.NotNull(result);
         Assert.Equal(AssetKind.Type, result.AssetKind);
-        Assert.Equal(AssetKind.Instance, result.AssetType);
+        Assert.Equal("Instance", result.AssetType);
     }
 
     [Fact]
@@ -287,7 +287,7 @@ public class TemplateProviderTests
         var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.Null(result.AssetKind);
+        Assert.Equal(AssetKind.Type, result.AssetKind);
         Assert.Null(result.AssetType);
         Assert.Null(result.GlobalAssetId);
         Assert.Null(result.Description);
@@ -296,6 +296,69 @@ public class TemplateProviderTests
         Assert.Null(result.SpecificAssetIds);
         Assert.Null(result.SubmodelDescriptors);
     }
+
+        [Fact]
+        public async Task GetShellDescriptorTemplateAsync_MapsSubmodelDescriptorIdAndProtocolInformation_FromPayload()
+        {
+                const string JsonResponse = """
+                                                                        {
+                                                                            "assetKind": "Instance",
+                                                                            "id": "https://mm-software.com/ids/aas/000-001",
+                                                                            "submodelDescriptors": [
+                                                                                {
+                                                                                    "id": "Nameplate",
+                                                                                    "endpoints": [
+                                                                                        {
+                                                                                            "interface": "SUBMODEL-3.0",
+                                                                                            "protocolInformation": {
+                                                                                                "href": "http://localhost:8082/submodels/TmFtZXBsYXRl",
+                                                                                                "endpointProtocol": "http",
+                                                                                                "endpointProtocolVersion": null,
+                                                                                                "subprotocol": null,
+                                                                                                "subprotocolBody": null,
+                                                                                                "subprotocolBodyEncoding": null,
+                                                                                                "securityAttributes": null
+                                                                                            }
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "id": "TechnicalData",
+                                                                                    "endpoints": [
+                                                                                        {
+                                                                                            "interface": "SUBMODEL-3.0",
+                                                                                            "protocolInformation": {
+                                                                                                "href": "http://localhost:8082/submodels/VGVjaG5pY2FsRGF0YQ",
+                                                                                                "endpointProtocol": "http"
+                                                                                            }
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                        """;
+
+                _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.AasRegistry, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                                     .Returns(JsonResponse);
+
+                var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
+
+                Assert.NotNull(result.SubmodelDescriptors);
+                Assert.Equal(2, result.SubmodelDescriptors!.Count);
+
+                var nameplate = result.SubmodelDescriptors[0];
+                Assert.Equal("Nameplate", nameplate.Id);
+                Assert.NotNull(nameplate.Endpoints);
+                Assert.Equal("SUBMODEL-3.0", nameplate.Endpoints![0].Interface);
+                Assert.NotNull(nameplate.Endpoints[0].ProtocolInformation);
+                Assert.Equal("http://localhost:8082/submodels/TmFtZXBsYXRl", nameplate.Endpoints[0].ProtocolInformation!.Href);
+                Assert.Equal("http", nameplate.Endpoints[0].ProtocolInformation.EndpointProtocol);
+
+                var technicalData = result.SubmodelDescriptors[1];
+                Assert.Equal("TechnicalData", technicalData.Id);
+                Assert.NotNull(technicalData.Endpoints);
+                Assert.Equal("http://localhost:8082/submodels/VGVjaG5pY2FsRGF0YQ", technicalData.Endpoints![0].ProtocolInformation!.Href);
+        }
 
     [Fact]
     public async Task GetShellTemplateAsync_ReturnsShell_WhenValidResponse()

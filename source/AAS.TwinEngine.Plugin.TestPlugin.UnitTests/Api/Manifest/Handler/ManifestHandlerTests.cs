@@ -21,8 +21,8 @@ public class ManifestHandlerTests
     [Fact]
     public async Task GetManifestData_ShouldReturnDto_WhenManifestIsAvailable()
     {
-        var manifest = new ManifestData { Capabilities = new CapabilitiesData { HasAssetInformation = true, HasShellDescriptor = true }, SupportedSemanticIds = ["test"] };
-        var expectedDto = new ManifestDto { Capabilities = new CapabilitiesDto { HasAssetInformation = true, HasShellDescriptor = true }, SupportedSemanticIds = ["test"] };
+        var manifest = new ManifestData { Capabilities = new CapabilitiesData { HasAssetInformation = true, HasShellDescriptor = true, HasAssetIdSearch = true, HasAssetKindTypeFilter = true }, SupportedSemanticIds = ["test"] };
+        var expectedDto = new ManifestDto { Capabilities = new CapabilitiesDto { HasAssetInformation = true, HasShellDescriptor = true, HasAssetIdSearch = true, HasAssetKindTypeFilter = true }, SupportedSemanticIds = ["test"] };
         _manifestService.GetManifestData(Arg.Any<CancellationToken>())
                         .Returns(Task.FromResult(manifest));
 

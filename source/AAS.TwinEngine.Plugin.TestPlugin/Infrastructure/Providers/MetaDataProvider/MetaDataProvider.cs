@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
@@ -36,6 +36,12 @@ public class MetaDataProvider : IMetaDataProvider
                 continue;
             }
 
+            if (string.IsNullOrWhiteSpace(entity.AssetKind))
+            {
+                _logger.LogError("Mock entity with null/empty AssetKind excluded. Id: {Id}", entity.Id);
+                continue;
+            }
+
             _shellDescriptorLookup[entity.Id] = entity;
 
             if (entity.AssetInformationData is not null)
@@ -60,7 +66,14 @@ public class MetaDataProvider : IMetaDataProvider
                                                          );
     }
 
-    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, string? idShort, CancellationToken cancellationToken)
+    public Task<ShellDescriptorsData> GetShellDescriptorsAsync(
+        int? limit,
+        string? cursor,
+        AssetIdFilterHeader? filter,
+        string? idShort,
+        string? assetKind,
+        string? assetType,
+        CancellationToken cancellationToken)
     {
         var domainModels = _shellDescriptorLookup.Values.ToList();
 
@@ -73,7 +86,17 @@ public class MetaDataProvider : IMetaDataProvider
 
         if (!string.IsNullOrEmpty(idShort))
         {
-            shellDescriptors = [.. shellDescriptors.Where(item => string.Equals(item.IdShort, idShort, StringComparison.Ordinal))];
+            shellDescriptors = [.. shellDescriptors.Where(item => string.Equals(item.IdShort, idShort, StringComparison.OrdinalIgnoreCase))];
+        }
+
+        if (!string.IsNullOrWhiteSpace(assetKind))
+        {
+            shellDescriptors = [.. shellDescriptors.Where(item => string.Equals(item.AssetKind, assetKind, StringComparison.OrdinalIgnoreCase))];
+        }
+
+        if (!string.IsNullOrWhiteSpace(assetType))
+        {
+            shellDescriptors = [.. shellDescriptors.Where(item => string.Equals(item.AssetType, assetType, StringComparison.OrdinalIgnoreCase))];
         }
 
         ValidateCursor(cursor, shellDescriptors);

@@ -285,15 +285,49 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
             DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["displayName"], Jsonization.Deserialize.LangStringNameTypeFrom),
             Extensions = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["extensions"], Jsonization.Deserialize.ExtensionFrom),
             Administration = AasJsonNodeDeserializer.DeserializeAasNode(descriptorNode["administration"], Jsonization.Deserialize.AdministrativeInformationFrom),
-            AssetKind = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(descriptorNode["assetKind"]),
-            AssetType = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(descriptorNode["assetType"]),
+            AssetKind = AasJsonNodeDeserializer.DeserializeEnum<AssetKind>(descriptorNode["assetKind"]) ?? AssetKind.Type,
+            AssetType = descriptorNode["assetType"]?.GetValue<string>(),
             Endpoints = descriptorNode["endpoints"]?.Deserialize<List<EndpointData>>(),
             GlobalAssetId = descriptorNode["globalAssetId"]?.GetValue<string>(),
             IdShort = descriptorNode["idShort"]?.GetValue<string>(),
             Id = descriptorNode["id"]?.GetValue<string>(),
             SpecificAssetIds = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["specificAssetIds"], Jsonization.Deserialize.SpecificAssetIdFrom),
-            SubmodelDescriptors = descriptorNode["submodelDescriptors"]?.Deserialize<List<SubmodelDescriptor>>()
+            SubmodelDescriptors = DeserializeSubmodelDescriptors(descriptorNode["submodelDescriptors"])
         };
+    }
+
+    private static IList<SubmodelDescriptor>? DeserializeSubmodelDescriptors(JsonNode? submodelDescriptorsNode)
+    {
+        if (submodelDescriptorsNode is not JsonArray submodelDescriptorArray)
+        {
+            return null;
+        }
+
+        var descriptors = new List<SubmodelDescriptor>();
+        foreach (var item in submodelDescriptorArray)
+        {
+            if (item is null)
+            {
+                continue;
+            }
+
+            var descriptor = new SubmodelDescriptor
+            {
+                Description = AasJsonNodeDeserializer.DeserializeAasArray(item["description"], Jsonization.Deserialize.LangStringTextTypeFrom),
+                DisplayName = AasJsonNodeDeserializer.DeserializeAasArray(item["displayName"], Jsonization.Deserialize.LangStringNameTypeFrom),
+                Extensions = AasJsonNodeDeserializer.DeserializeAasArray(item["extensions"], Jsonization.Deserialize.ExtensionFrom),
+                Administration = AasJsonNodeDeserializer.DeserializeAasNode(item["administration"], Jsonization.Deserialize.AdministrativeInformationFrom),
+                IdShort = item["idShort"]?.GetValue<string>(),
+                Id = item["id"]?.GetValue<string>(),
+                SemanticId = AasJsonNodeDeserializer.DeserializeAasNode(item["semanticId"], Jsonization.Deserialize.ReferenceFrom),
+                SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(item["supplementalSemanticId"], Jsonization.Deserialize.ReferenceFrom),
+                Endpoints = item["endpoints"]?.Deserialize<List<EndpointData>>()
+            };
+
+            descriptors.Add(descriptor);
+        }
+
+        return descriptors;
     }
 
     private static void UpdateSubmodelTemplateKind(ISubmodel submodel) => submodel.Kind = ModellingKind.Instance;
