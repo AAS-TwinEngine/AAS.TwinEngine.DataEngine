@@ -66,6 +66,47 @@ public class AasRegistryTests : ApiTestBase
     }
 
     [Fact]
+    public async Task GetAllShellDescriptors_WithLimitAndCursor()
+    {
+        // Arrange
+        var urlLimit2 = "/shell-descriptors?limit=2";
+
+        // Act
+        var responseLimit2 = await ApiContext.GetAsync(urlLimit2);
+
+        // Assert
+        AssertSuccessResponse(responseLimit2);
+
+        var contentLimit2 = await responseLimit2.TextAsync();
+        Assert.False(string.IsNullOrEmpty(contentLimit2));
+
+        var jsonLimit2 = JsonDocument.Parse(contentLimit2);
+        var resultLimit2 = jsonLimit2.RootElement.GetProperty("result");
+        Assert.Equal(2, resultLimit2.GetArrayLength());
+
+        var cursor = jsonLimit2.RootElement.GetProperty("paging_metadata").GetProperty("cursor").GetString();
+        Assert.False(string.IsNullOrEmpty(cursor));
+
+        // Act - request next page using the cursor returned above
+        var urlWithCursor = $"/shell-descriptors?limit=2&cursor={cursor}";
+        var responseWithCursor = await ApiContext.GetAsync(urlWithCursor);
+
+        // Assert
+        AssertSuccessResponse(responseWithCursor);
+
+        var contentWithCursor = await responseWithCursor.TextAsync();
+        Assert.False(string.IsNullOrEmpty(contentWithCursor));
+
+        var jsonWithCursor = JsonDocument.Parse(contentWithCursor);
+        var resultWithCursor = jsonWithCursor.RootElement.GetProperty("result");
+
+        // Ensure the second page does not repeat the first element of the first page
+        var firstIdPage1 = resultLimit2[0].GetProperty("id").GetString();
+        var firstIdPage2 = resultWithCursor[0].GetProperty("id").GetString();
+        Assert.NotEqual(firstIdPage1, firstIdPage2);
+    }
+
+    [Fact]
     public async Task GetShellDescriptorById_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
