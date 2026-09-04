@@ -119,15 +119,24 @@ public class ResilienceHandlerExtensionsTests
     [Fact]
     public async Task AddStandardResilienceHandler_StopsRequestWhenTimeoutIsExceeded()
     {
-        var services = CreateServiceCollection(maxRetries: 1, delaySeconds: 1, timeoutSeconds: 1);
-        var handler = new BlockingHttpMessageHandler();
+        // Arrange
+        var services = CreateServiceCollection(
+            maxRetries: 1,
+            delaySeconds: 1,
+            timeoutSeconds: 1);
+
+        var handler = new DelayedHttpMessageHandler(
+            TimeSpan.FromSeconds(2));
+
         ConfigureHandler(services, handler);
 
         var client = CreateHttpClient(services);
 
-        await Assert.ThrowsAsync<TimeoutRejectedException>(() => client.GetAsync(new Uri("/test", UriKind.Relative)));
+        // Act & Assert
+        await Assert.ThrowsAsync<TimeoutRejectedException>(
+            () => client.GetAsync("/test"));
 
-        Assert.InRange(handler.CallCount, 1, 2);
+        Assert.Equal(2, handler.CallCount);
         Assert.True(handler.CancellationObserved);
     }
 
@@ -204,11 +213,18 @@ public class ResilienceHandlerExtensionsTests
         }
     }
 
-    private sealed class BlockingHttpMessageHandler : HttpMessageHandler
+    private sealed class DelayedHttpMessageHandler : HttpMessageHandler
     {
+        private readonly TimeSpan _delay;
+
         public int CallCount { get; private set; }
 
         public bool CancellationObserved { get; private set; }
+
+        public DelayedHttpMessageHandler(TimeSpan delay)
+        {
+            _delay = delay;
+        }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -218,7 +234,7 @@ public class ResilienceHandlerExtensionsTests
 
             try
             {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                await Task.Delay(_delay, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -226,7 +242,7 @@ public class ResilienceHandlerExtensionsTests
                 throw;
             }
 
-            throw new InvalidOperationException("The blocking handler should not complete normally.");
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 }
