@@ -6,6 +6,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 
+using Polly.Timeout;
+
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Policies;
 
 public class ResilienceHandlerExtensionsTests
@@ -114,12 +116,40 @@ public class ResilienceHandlerExtensionsTests
         Assert.Equal(4, handler.CallCount);
     }
 
-    private static ServiceCollection CreateServiceCollection(int maxRetries, int delaySeconds)
+    [Fact]
+    public async Task AddStandardResilienceHandler_StopsRequestWhenTimeoutIsExceeded()
+    {
+        // Arrange
+        var services = CreateServiceCollection(
+            maxRetries: 1,
+            delaySeconds: 1,
+            timeoutSeconds: 1);
+
+        var handler = new DelayedHttpMessageHandler(
+            TimeSpan.FromSeconds(2));
+
+        ConfigureHandler(services, handler);
+
+        var client = CreateHttpClient(services);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TimeoutRejectedException>(
+            () => client.GetAsync("/test"));
+
+        Assert.Equal(2, handler.CallCount);
+        Assert.True(handler.CancellationObserved);
+    }
+
+    private static ServiceCollection CreateServiceCollection(
+        int maxRetries,
+        int delaySeconds,
+        int timeoutSeconds = 30)
     {
         var retryConfig = new RetryConfig
         {
             MaxRetryAttempts = maxRetries,
-            DelayInSeconds = delaySeconds
+            DelayInSeconds = delaySeconds,
+            TimeoutInSeconds = timeoutSeconds
         };
 
         var services = new ServiceCollection();
@@ -180,6 +210,39 @@ public class ResilienceHandlerExtensionsTests
         {
             CallCount++;
             return Task.FromResult(new HttpResponseMessage(_statusCode));
+        }
+    }
+
+    private sealed class DelayedHttpMessageHandler : HttpMessageHandler
+    {
+        private readonly TimeSpan _delay;
+
+        public int CallCount { get; private set; }
+
+        public bool CancellationObserved { get; private set; }
+
+        public DelayedHttpMessageHandler(TimeSpan delay)
+        {
+            _delay = delay;
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            CallCount++;
+
+            try
+            {
+                await Task.Delay(_delay, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                CancellationObserved = true;
+                throw;
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 }

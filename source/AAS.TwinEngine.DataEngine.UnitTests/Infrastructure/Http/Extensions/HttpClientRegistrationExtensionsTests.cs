@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+﻿using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -14,7 +14,7 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Extensions;
 
 public class HttpClientRegistrationExtensionsTests
 {
-    private static readonly RetryConfig DefaultRetryConfig = new() { MaxRetryAttempts = 3, DelayInSeconds = 1 };
+    private static readonly RetryConfig DefaultRetryConfig = new() { MaxRetryAttempts = 3, DelayInSeconds = 1, TimeoutInSeconds = 30 };
 
     [Fact]
     public void HttpClientRegistrationExtensions_RegistersTemplateProviderClientWithCorrectConfiguration()

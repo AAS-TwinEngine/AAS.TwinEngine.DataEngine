@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Http.Resilience;
 
 using Polly;
+using Polly.Timeout;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Http.Policies;
 
@@ -27,6 +28,10 @@ public static class ResilienceHandlerExtensions
                     logger.LogWarning(args.Outcome.Exception, "Retry attempt {AttemptNumber} after {Delay}s", args.AttemptNumber, args.RetryDelay.TotalSeconds);
                     return default;
                 }
+            });
+            _ = builder.AddTimeout(new TimeoutStrategyOptions
+            {
+                Timeout = TimeSpan.FromSeconds(retryConfig.TimeoutInSeconds)
             });
         });
 
