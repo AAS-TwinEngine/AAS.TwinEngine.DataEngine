@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
@@ -8,9 +7,9 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
-using Asp.Versioning;
-
 using AasCore.Aas3_1;
+
+using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,7 +43,12 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] int limit, [FromQuery] string? cursor, [FromQuery] AssetKind? assetKind, [FromQuery] string? assetType, CancellationToken cancellationToken)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync(
+        [FromQuery] string? cursor,
+        [FromQuery] AssetKind? assetKind,
+        [FromQuery] string? assetType,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Get All ShellDescriptors");
         var request = new GetShellDescriptorsRequest(limit, cursor, assetKind, assetType);

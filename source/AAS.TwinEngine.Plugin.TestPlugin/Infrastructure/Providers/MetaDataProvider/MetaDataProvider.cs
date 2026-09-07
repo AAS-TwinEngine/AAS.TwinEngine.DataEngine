@@ -58,6 +58,8 @@ public class MetaDataProvider : IMetaDataProvider
     {
         return entity.AssetInformationData!.ToDomainModel(
                                                           entity.GlobalAssetId,
+                                                          entity.AssetKind,
+                                                          entity.AssetType,
                                                           entity.SpecificAssetIds?.Select(x => new SpecificAssetIdsData
                                                           {
                                                               Name = x.Name,

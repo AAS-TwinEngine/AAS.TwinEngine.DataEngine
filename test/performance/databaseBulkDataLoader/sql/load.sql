@@ -114,7 +114,7 @@ BEGIN
         -- ASSET
         -- ============================================================
         INSERT INTO "Asset" (
-            "ProductId","IdShort","GlobalAssetId","AasId",
+            "ProductId","IdShort","GlobalAssetId","AasId","AssetKind","AssetType",
             "ThumbnailContentType","ThumbnailPath","MaintenanceFreeAsset",
             "UriOfTheProduct","ManufacturerProductType","OrderCodeOfManufacturer",
             "ProductArticleNumberOfManufacturer","SerialNumber","YearOfConstruction",
@@ -133,6 +133,12 @@ BEGIN
             'Product' || asset_sequence,
             'https://mm-software.com/ids/assets/' || pid,
             'https://mm-software.com/ids/aas/' || pid,
+            CASE
+                WHEN random() < 0.5 
+                    THEN 'Instance'
+                    ELSE 'Type'
+            END,
+            '',
             'image/jpeg',
             c_product_image_url,
             (i % 2 = 1),
@@ -176,10 +182,10 @@ BEGIN
         -- ============================================================
         -- SPECIFIC ASSET IDS  (3 per asset)
         -- ============================================================
-        INSERT INTO "SpecificAssetIds" ("AssetId","Name","Value") VALUES
-            (asset_id, 'SerialNumber', 'SN-' || lpad(i::text, 6, '0') || '-' || pid),
-            (asset_id, 'BatchId',      'BATCH-' || (2022 + i % 4) || '-' || lpad(i::text, 3, '0')),
-            (asset_id, 'LotNumber',    'LOT-' || CASE i%3 WHEN 1 THEN 'DE' WHEN 2 THEN 'IN' ELSE 'CN' END || '-' || lpad(i::text, 5, '0'));
+        INSERT INTO "SpecificAssetIds" ("ProductId","Name","Value") VALUES
+            (pid, 'SerialNumber', 'SN-' || lpad(i::text, 6, '0') || '-' || pid),
+            (pid, 'BatchId',      'BATCH-' || (2022 + i % 4) || '-' || lpad(i::text, 3, '0')),
+            (pid, 'LotNumber',    'LOT-' || CASE i%3 WHEN 1 THEN 'DE' WHEN 2 THEN 'IN' ELSE 'CN' END || '-' || lpad(i::text, 5, '0'));
 
         -- ============================================================
         -- MARKINGS  (2 per asset)

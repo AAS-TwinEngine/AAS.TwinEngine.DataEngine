@@ -130,36 +130,148 @@ public class AasRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetShellByIdAsync_ShouldReturnShellWithAssetInformation()
+    public async Task GetShellByIdAsync_WhenMetadataProvidesValues_OverridesTemplateValues()
     {
         var cancellationToken = CancellationToken.None;
 
-        var shellTemplate = CreateShellTemplate();
-        var assetInfoTemplate = CreateAssetInformationTemplate();
-        var pluginData = CreateAssetData();
-        var manifests = new List<PluginManifest>
-       {
-           new()
-           {
-               PluginName = "PluginA",
-               PluginUrl = new Uri("http://plugin-a"),
-               SupportedSemanticIds = ["id-1"],
-               Capabilities = new Capabilities { HasAssetInformation = true }
-           }
-       };
+        var shellTemplate = CreateShellTemplateWithAssetInformation();
+        var manifests = new List<PluginManifest>();
+        var metadata = new ShellDescriptorMetaData
+        {
+            Id = "aas-1",
+            IdShort = "PluginIdShort",
+            AssetKind = "Instance",
+            AssetType = "plugin-asset-type",
+            GlobalAssetId = "plugin-global-asset-id",
+            SpecificAssetIds = [new SpecificAssetId("ManufacturerId", "PluginManufacturer")]
+        };
 
         _templateService.GetShellTemplateAsync(AasIdentifier, cancellationToken).Returns(shellTemplate);
-        _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken).Returns(assetInfoTemplate);
         _pluginManifestConflictHandler.Manifests.Returns(manifests);
         _pluginDataHandler
-            .GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
-            .Returns(pluginData);
+            .GetDataForShellDescriptorAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(metadata);
 
         var result = await _sut.GetShellByIdAsync(AasIdentifier, cancellationToken);
 
         Assert.NotNull(result);
+        Assert.Equal("aas-1", result.Id);
+        Assert.Equal("PluginIdShort", result.IdShort);
         Assert.NotNull(result.AssetInformation);
-        Assert.Equal(pluginData.GlobalAssetId, result.AssetInformation.GlobalAssetId);
+        Assert.Equal(AssetKind.Instance, result.AssetInformation.AssetKind);
+        Assert.Equal("plugin-asset-type", result.AssetInformation.AssetType);
+        Assert.Equal("plugin-global-asset-id", result.AssetInformation.GlobalAssetId);
+        var specificAssetId = Assert.Single(result.AssetInformation.SpecificAssetIds!);
+        Assert.Equal("PluginManufacturer", specificAssetId.Value);
+    }
+
+    [Fact]
+    public async Task GetShellByIdAsync_WhenMetadataOmitsOptionalValues_KeepsTemplateValues()
+    {
+        var cancellationToken = CancellationToken.None;
+
+        var shellTemplate = CreateShellTemplateWithAssetInformation();
+        var manifests = new List<PluginManifest>();
+        var metadata = new ShellDescriptorMetaData
+        {
+            Id = "aas-1",
+            IdShort = null,
+            AssetKind = null,
+            AssetType = null,
+            GlobalAssetId = "plugin-global-asset-id"
+        };
+
+        _templateService.GetShellTemplateAsync(AasIdentifier, cancellationToken).Returns(shellTemplate);
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForShellDescriptorAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(metadata);
+
+        var result = await _sut.GetShellByIdAsync(AasIdentifier, cancellationToken);
+
+        Assert.NotNull(result);
+        Assert.Equal("TemplateIdShort", result.IdShort);
+        Assert.Equal(AssetKind.Type, result.AssetInformation!.AssetKind);
+        Assert.Equal("template-asset-type", result.AssetInformation.AssetType);
+    }
+
+    [Fact]
+    public async Task GetShellByIdAsync_WhenAssetKindIsUnparseable_KeepsTemplateAssetKind()
+    {
+        var cancellationToken = CancellationToken.None;
+
+        var shellTemplate = CreateShellTemplateWithAssetInformation();
+        var manifests = new List<PluginManifest>();
+        var metadata = new ShellDescriptorMetaData
+        {
+            Id = "aas-1",
+            AssetKind = "not-a-valid-kind",
+            GlobalAssetId = "plugin-global-asset-id"
+        };
+
+        _templateService.GetShellTemplateAsync(AasIdentifier, cancellationToken).Returns(shellTemplate);
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForShellDescriptorAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(metadata);
+
+        var result = await _sut.GetShellByIdAsync(AasIdentifier, cancellationToken);
+
+        Assert.Equal(AssetKind.Type, result!.AssetInformation!.AssetKind);
+    }
+
+    [Fact]
+    public async Task GetShellByIdAsync_WhenTemplateHasNoAssetInformation_ThrowsTemplateNotValidException()
+    {
+        var cancellationToken = CancellationToken.None;
+
+        var manifests = new List<PluginManifest>();
+        var metadata = new ShellDescriptorMetaData { Id = "aas-1" };
+
+        _templateService.GetShellTemplateAsync(AasIdentifier, cancellationToken).Returns(CreateShellTemplate());
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForShellDescriptorAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(metadata);
+
+        await Assert.ThrowsAsync<TemplateNotValidException>(() =>
+            _sut.GetShellByIdAsync(AasIdentifier, cancellationToken));
+    }
+
+    public static TheoryData<Exception, Type> ShellByIdExceptionMappings() => new()
+    {
+        { new ResourceNotFoundException(), typeof(ShellNotFoundException) },
+        { new AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException(), typeof(ServiceUnAuthorizedException) },
+        { new ResponseParsingException(), typeof(InternalDataProcessingException) },
+        { new RequestTimeoutException(), typeof(PluginNotAvailableException) },
+        { new MultiPluginConflictException(), typeof(InternalDataProcessingException) },
+        { new PluginMetaDataInvalidRequestException(), typeof(InvalidUserInputException) }
+    };
+
+    [Theory]
+    [MemberData(nameof(ShellByIdExceptionMappings))]
+    public async Task GetShellByIdAsync_WhenPluginDataHandlerThrows_MapsToExpectedException(Exception thrown, Type expected)
+    {
+        var manifests = new List<PluginManifest>();
+
+        _templateService.GetShellTemplateAsync(AasIdentifier, Arg.Any<CancellationToken>())
+            .Returns(CreateShellTemplateWithAssetInformation());
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForShellDescriptorAsync(manifests, AasIdentifier, Arg.Any<CancellationToken>())
+            .Throws(thrown);
+
+        await Assert.ThrowsAsync(expected, () => _sut.GetShellByIdAsync(AasIdentifier, CancellationToken.None));
+    }
+
+    [Theory]
+    [MemberData(nameof(ShellByIdExceptionMappings))]
+    public async Task GetShellByIdAsync_WhenTemplateServiceThrows_MapsToExpectedException(Exception thrown, Type expected)
+    {
+        _templateService.GetShellTemplateAsync(AasIdentifier, Arg.Any<CancellationToken>())
+            .Throws(thrown);
+
+        await Assert.ThrowsAsync(expected, () => _sut.GetShellByIdAsync(AasIdentifier, CancellationToken.None));
     }
 
     [Fact]
@@ -191,9 +303,32 @@ public class AasRepositoryServiceTests
 
         Assert.NotNull(result);
         Assert.Equal(pluginData.GlobalAssetId, result.GlobalAssetId);
+        Assert.Equal(AssetKind.Type, result.AssetKind);
+        Assert.Equal("https://example.com/plugin-type", result.AssetType);
         Assert.NotNull(result.DefaultThumbnail);
         Assert.Equal(pluginData.DefaultThumbnail?.Path, result.DefaultThumbnail?.Path);
         Assert.Equal(pluginData.DefaultThumbnail?.ContentType, result.DefaultThumbnail?.ContentType);
+    }
+
+    [Fact]
+    public async Task GetAssetInformationByIdAsync_WhenPluginOmitsAssetKindAndType_KeepsTemplateValues()
+    {
+        var cancellationToken = CancellationToken.None;
+
+        var template = CreateAssetInformationTemplate();
+        var manifests = new List<PluginManifest>();
+        var pluginData = new AssetData { AssetKind = null, AssetType = null };
+
+        _templateService.GetAssetInformationTemplateAsync(AasIdentifier, cancellationToken).Returns(template);
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(pluginData);
+
+        var result = await _sut.GetAssetInformationByIdAsync(AasIdentifier, cancellationToken);
+
+        Assert.Equal(AssetKind.Instance, result.AssetKind);
+        Assert.Equal("http://example.com/type", result.AssetType);
     }
 
     [Fact]
@@ -560,6 +695,18 @@ public class AasRepositoryServiceTests
             submodels: []
         );
 
+    private static AssetAdministrationShell CreateShellTemplateWithAssetInformation()
+        => new(
+            id: "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
+            assetInformation: new AssetInformation(
+                assetKind: AssetKind.Type,
+                globalAssetId: "template-global-asset-id",
+                specificAssetIds: [new SpecificAssetId("ManufacturerId", "TemplateManufacturer")],
+                assetType: "template-asset-type"),
+            idShort: "TemplateIdShort",
+            submodels: []
+        );
+
     [Fact]
     public async Task GetThumbnailAsync_ShouldReturnStream_WhenUrlIsHttp()
     {
@@ -675,6 +822,8 @@ public class AasRepositoryServiceTests
     private static AssetData CreateAssetData()
         => new()
         {
+            AssetKind = "Type",
+            AssetType = "https://example.com/plugin-type",
             GlobalAssetId = "urn:my-company:asset:9999",
             SpecificAssetIds = new List<SpecificAssetIdsData>
             {
