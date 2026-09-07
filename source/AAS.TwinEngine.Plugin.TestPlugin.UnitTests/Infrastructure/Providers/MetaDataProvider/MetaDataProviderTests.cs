@@ -219,7 +219,7 @@ public class MetaDataProviderTests
     [Fact]
     public async Task GetShellDescriptorsAsync_WhenAssetKindAndAssetTypeFiltersAreProvided_ReturnsMatchingShells()
     {
-        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, "instance", "YXR0cmlidXRl", CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, "instance", "Attribute", CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotEmpty(result.Result ?? []);
