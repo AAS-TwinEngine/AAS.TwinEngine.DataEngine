@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.Api.AasRegistry;
+﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
@@ -52,7 +52,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 100);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -64,7 +64,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Instance, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(null, AssetKind.Instance, null, CancellationToken.None, 100);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -79,7 +79,7 @@ public class ShellDescriptorControllerTests
         const string AssetType = "dHlwZS12YWx1ZQ==";
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, AssetType, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, AssetType, CancellationToken.None, 100);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -94,7 +94,7 @@ public class ShellDescriptorControllerTests
         const string AssetType = "dHlwZS12YWx1ZQ==";
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(100, null, AssetKind.Type, AssetType, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(null, AssetKind.Type, AssetType, CancellationToken.None, 100);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -108,7 +108,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new InternalServerException("Internal error"));
 
-        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
+        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 100));
 
         Assert.NotNull(result);
         Assert.IsType<InternalServerException>(result);
@@ -119,7 +119,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<ShellDescriptorsDto>(null!));
 
-        var result = await _sut.GetAllShellDescriptorsAsync(2, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 2);
 
         var notFoundResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Null(notFoundResult.Value);
@@ -130,7 +130,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new UnauthorizedAccessException("Unauthorized"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(100, null, null, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 100));
 
         Assert.NotNull(exception);
         Assert.IsType<UnauthorizedAccessException>(exception);
