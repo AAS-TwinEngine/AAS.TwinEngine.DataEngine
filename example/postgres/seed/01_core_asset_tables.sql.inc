@@ -1,5 +1,6 @@
 INSERT INTO "Asset" (
-    "ProductId","IdShort","GlobalAssetId","AasId","AssetKind","AssetType","ThumbnailContentType","ThumbnailPath","MaintenanceFreeAsset",
+    "ProductId","IdShort","GlobalAssetId","AasId","AssetKind","AssetType",
+    "ThumbnailContentType","ThumbnailPath","MaintenanceFreeAsset",
     "UriOfTheProduct","ManufacturerProductType","OrderCodeOfManufacturer","ProductArticleNumberOfManufacturer",
     "SerialNumber","YearOfConstruction","DateOfManufacture","HardwareVersion","FirmwareVersion","SoftwareVersion",
     "CountryOfOrigin","UniqueFacilityIdentifier","ManufacturerName","ManufacturerProductDesignation_en",
