@@ -119,7 +119,6 @@ public class ResilienceHandlerExtensionsTests
     [Fact]
     public async Task AddStandardResilienceHandler_StopsRequestWhenTimeoutIsExceeded()
     {
-        // Arrange
         var services = CreateServiceCollection(
             maxRetries: 1,
             delaySeconds: 1,
@@ -132,7 +131,6 @@ public class ResilienceHandlerExtensionsTests
 
         var client = CreateHttpClient(services);
 
-        // Act & Assert
         await Assert.ThrowsAsync<TimeoutRejectedException>(
             () => client.GetAsync("/test"));
 
