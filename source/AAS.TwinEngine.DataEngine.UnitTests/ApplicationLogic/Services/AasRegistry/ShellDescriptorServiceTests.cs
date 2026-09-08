@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
@@ -701,8 +701,7 @@ public class ShellDescriptorServiceTests
                 };
             });
 
-        var encodedAssetType = "Instance".EncodeBase64Url();
-        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, encodedAssetType, cancellationToken);
+        var result = await _sut.GetAllShellDescriptorsAsync(100, null, null, "Instance", cancellationToken);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Result);

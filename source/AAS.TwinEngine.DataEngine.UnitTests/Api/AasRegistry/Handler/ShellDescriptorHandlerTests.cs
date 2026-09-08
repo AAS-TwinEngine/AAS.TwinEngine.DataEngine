@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
+﻿using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
@@ -48,14 +48,14 @@ public class ShellDescriptorHandlerTests
         var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
         var request = new GetShellDescriptorsRequest(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl");
 
-        _shellDescriptorService.GetAllShellDescriptorsAsync(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetAllShellDescriptorsAsync(50, "aGVsbG8=", AssetKind.Instance, "attribute", Arg.Any<CancellationToken>())
                                .Returns(expectedShellDescriptors);
 
         var result = await _sut.GetAllShellDescriptors(request, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.IsType<ShellDescriptorsDto>(result);
-        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(50, "aGVsbG8=", AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<CancellationToken>());
+        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(50, "aGVsbG8=", AssetKind.Instance, "attribute", Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -78,17 +78,18 @@ public class ShellDescriptorHandlerTests
     public async Task GetAllShellDescriptors_WithAssetTypeOnly_PassesAssetTypeToService()
     {
         const string EncodedAssetType = "YXNzZXQtdHlwZQ==";
+        const string AssetType = "asset-type";
         var expectedShellDescriptors = TestDataMapperProfiles.CreateShellDescriptors();
         var request = new GetShellDescriptorsRequest(100, null, null, EncodedAssetType);
 
-        _shellDescriptorService.GetAllShellDescriptorsAsync(100, null, null, EncodedAssetType, Arg.Any<CancellationToken>())
+        _shellDescriptorService.GetAllShellDescriptorsAsync(100, null, null, AssetType, Arg.Any<CancellationToken>())
                                .Returns(expectedShellDescriptors);
 
         var result = await _sut.GetAllShellDescriptors(request, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.IsType<ShellDescriptorsDto>(result);
-        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(100, null, null, EncodedAssetType, Arg.Any<CancellationToken>());
+        await _shellDescriptorService.Received(1).GetAllShellDescriptorsAsync(100, null, null, AssetType, Arg.Any<CancellationToken>());
     }
 
     [Fact]
