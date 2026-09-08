@@ -31,9 +31,7 @@ public class ShellDescriptorService(
     IAasRepositoryService aasRepositoryService,
     IOptions<GeneralConfig> generalConfig) : IShellDescriptorService
 {
-    private const int DefaultFallbackPluginPageSize = 100;
     private const int FallbackPluginPageSizeMultiplier = 10;
-    private const int MaxFallbackPluginPageSize = 10_000;
     private const string SubmodelUrlSegment = "submodel";
 
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
@@ -96,12 +94,8 @@ public class ShellDescriptorService(
     {
         logger.LogInformation("Falling back to client-side asset kind/type filtering for shell descriptors.");
 
-        var decodedAssetType = string.IsNullOrWhiteSpace(assetType)
-            ? null
-            : assetType.DecodeBase64Url(logger);
-
         var collectedDescriptors = new List<ShellDescriptor>();
-        var pluginLimit = limit is > 0 ? limit.Value : DefaultFallbackPluginPageSize;
+        var pluginLimit = limit is > 0 ? limit.Value : GeneralConfig.DefaultPaginationLimit;
         var pluginCursor = cursor;
         var pagingMetaData = new PagingMetaData();
 
@@ -114,7 +108,7 @@ public class ShellDescriptorService(
             var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
             var shellDescriptors = await BuildShellDescriptorsInParallelAsync(shellDescriptorMetadataList, cancellationToken).ConfigureAwait(false);
 
-            foreach (var descriptor in shellDescriptors.Where(descriptor => MatchesAssetKindTypeFilter(descriptor, assetKind, decodedAssetType)))
+            foreach (var descriptor in shellDescriptors.Where(descriptor => MatchesAssetKindTypeFilter(descriptor, assetKind, assetType)))
             {
                 collectedDescriptors.Add(descriptor);
 
@@ -137,7 +131,7 @@ public class ShellDescriptorService(
                 break;
             }
 
-            pluginLimit = Math.Min(pluginLimit * FallbackPluginPageSizeMultiplier, MaxFallbackPluginPageSize);
+            pluginLimit = Math.Min(pluginLimit * FallbackPluginPageSizeMultiplier, PaginationValidationExtensions.MaxRequestedLimit);
         }
 
         return new ShellDescriptors
@@ -328,15 +322,15 @@ public class ShellDescriptorService(
         return hasShellDescriptorPlugin && !hasFilterCapablePlugin;
     }
 
-    private static bool MatchesAssetKindTypeFilter(ShellDescriptor descriptor, AssetKind? assetKind, string? decodedAssetType)
+    private static bool MatchesAssetKindTypeFilter(ShellDescriptor descriptor, AssetKind? assetKind, string? assetType)
     {
         if (assetKind.HasValue && descriptor.AssetKind != assetKind.Value)
         {
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(decodedAssetType)
-            && !string.Equals(descriptor.AssetType, decodedAssetType, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(assetType)
+            && !string.Equals(descriptor.AssetType, assetType, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
