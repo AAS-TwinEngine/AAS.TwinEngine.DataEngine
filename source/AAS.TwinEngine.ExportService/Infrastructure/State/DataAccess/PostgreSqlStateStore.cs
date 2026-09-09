@@ -1,4 +1,5 @@
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
@@ -28,6 +29,8 @@ public sealed class PostgreSqlStateStore : IStateStore
         _logger = logger;
     }
 
+    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
+        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task EnsureSchemaAsync(CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.CreateSchema, _schema);
@@ -42,6 +45,8 @@ public sealed class PostgreSqlStateStore : IStateStore
         _logger.LogInformation("State store schema '{Schema}' ensured.", _schema);
     }
 
+    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
+        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task<IReadOnlyList<ExportedEntity>> LoadAsync(EntityKind kind, CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.SelectByKind, _schema);
@@ -67,6 +72,8 @@ public sealed class PostgreSqlStateStore : IStateStore
         return results;
     }
 
+    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
+        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task UpsertAsync(ExportedEntity entity, CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.Upsert, _schema);
@@ -84,6 +91,8 @@ public sealed class PostgreSqlStateStore : IStateStore
         _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
+        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.Delete, _schema);
@@ -101,13 +110,10 @@ public sealed class PostgreSqlStateStore : IStateStore
 
     private static string QuoteSchema(string schema)
     {
-        foreach (var ch in schema)
+        if (schema.Any(ch => !char.IsLetterOrDigit(ch) && ch != '_'))
         {
-            if (!char.IsLetterOrDigit(ch) && ch != '_')
-            {
-                throw new InvalidOperationException(
-                    $"Invalid schema name '{schema}'. Only letters, digits and underscores are allowed.");
-            }
+            throw new InvalidOperationException(
+                $"Invalid schema name '{schema}'. Only letters, digits and underscores are allowed.");
         }
 
         return schema;

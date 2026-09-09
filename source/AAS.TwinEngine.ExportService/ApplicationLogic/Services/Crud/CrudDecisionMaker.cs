@@ -27,12 +27,9 @@ public sealed class CrudDecisionMaker : ICrudDecisionMaker
             }
         }
 
-        foreach (var managed in managedState)
+        foreach (var managed in managedState.Where(m => !sourceIdentifiers.Contains(m.Identifier)))
         {
-            if (!sourceIdentifiers.Contains(managed.Identifier))
-            {
-                decisions.Add(new CrudDecision(ExportOperation.Delete, kind, managed.Identifier, null));
-            }
+            decisions.Add(new CrudDecision(ExportOperation.Delete, kind, managed.Identifier, null));
         }
 
         return decisions;

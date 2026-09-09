@@ -108,9 +108,10 @@ public sealed class ExportBackgroundService : BackgroundService
         {
             _ = await runner.RunAsync(timeoutCts.Token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !stoppingToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (timeoutCts.IsCancellationRequested && !stoppingToken.IsCancellationRequested)
         {
             _logger.LogCritical(
+                ex,
                 "Export run exceeded configured timeout of {TimeoutMinutes} minutes and was cancelled.",
                 _config.CurrentValue.Scheduler.RunTimeoutMinutes);
         }

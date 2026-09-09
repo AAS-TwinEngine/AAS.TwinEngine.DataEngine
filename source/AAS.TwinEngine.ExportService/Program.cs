@@ -4,7 +4,7 @@ using Serilog;
 
 namespace AAS.TwinEngine.ExportService;
 
-public class Program
+public static class Program
 {
     public static async Task Main(string[] args)
     {
@@ -28,7 +28,7 @@ public class Program
         }
         finally
         {
-            Log.CloseAndFlush();
+            await Log.CloseAndFlushAsync().ConfigureAwait(false);
         }
     }
 }

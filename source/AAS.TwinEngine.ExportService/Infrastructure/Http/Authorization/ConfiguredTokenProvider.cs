@@ -73,13 +73,13 @@ public sealed class ConfiguredTokenProvider : ITokenProvider
         var form = new List<KeyValuePair<string, string>>
         {
             new("grant_type", "client_credentials"),
-            new("client_id", auth.ClientId!),
-            new("client_secret", auth.ClientSecret!)
+            new("client_id", auth.ClientId),
+            new("client_secret", auth.ClientSecret)
         };
 
         if (!string.IsNullOrWhiteSpace(auth.Scope))
         {
-            form.Add(new("scope", auth.Scope!));
+            form.Add(new("scope", auth.Scope));
         }
 
         using var request = new HttpRequestMessage(HttpMethod.Post, auth.TokenEndpoint)
