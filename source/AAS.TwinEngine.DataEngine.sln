@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AAS.TwinEngine.Plugin.TestP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests", "AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests\AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests.csproj", "{147F5F77-EC38-4541-AF3C-5B4FAD15E1C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AAS.TwinEngine.ExportService", "AAS.TwinEngine.ExportService\AAS.TwinEngine.ExportService.csproj", "{91FC90E2-2B09-4953-87BB-7C63F09D501C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{147F5F77-EC38-4541-AF3C-5B4FAD15E1C4}.Release|x64.Build.0 = Release|Any CPU
 		{147F5F77-EC38-4541-AF3C-5B4FAD15E1C4}.Release|x86.ActiveCfg = Release|Any CPU
 		{147F5F77-EC38-4541-AF3C-5B4FAD15E1C4}.Release|x86.Build.0 = Release|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Debug|x64.Build.0 = Debug|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Debug|x86.Build.0 = Debug|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Release|x64.ActiveCfg = Release|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Release|x64.Build.0 = Release|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Release|x86.ActiveCfg = Release|Any CPU
+		{91FC90E2-2B09-4953-87BB-7C63F09D501C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
