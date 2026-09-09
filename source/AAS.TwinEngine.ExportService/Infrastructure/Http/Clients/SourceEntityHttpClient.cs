@@ -121,7 +121,7 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
         return $"{basePath}{separator}cursor={encoded}";
     }
 
-    private (IReadOnlyList<SourceEntity> Entities, string? NextCursor) ParsePage(string json)
+    private static (IReadOnlyList<SourceEntity> Entities, string? NextCursor) ParsePage(string json)
     {
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
