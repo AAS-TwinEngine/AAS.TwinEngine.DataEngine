@@ -145,9 +145,7 @@ public class PluginDataHandler(
 
     private void ValidateAssetKindTypeFilterResponse(IList<ShellDescriptorMetaData> shellDescriptors, AssetKind? assetKind, string? encodedAssetType)
     {
-        var requestedAssetType = string.IsNullOrWhiteSpace(encodedAssetType)
-            ? null
-            : encodedAssetType.DecodeBase64Url(logger);
+var requestedAssetType = encodedAssetType;
 
         foreach (var descriptor in shellDescriptors)
         {
