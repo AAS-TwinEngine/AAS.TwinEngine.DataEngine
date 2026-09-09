@@ -258,7 +258,7 @@ public class PluginDataProviderTests
         Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetKindHeader, out var assetKindHeader));
         Assert.Equal("Instance", Assert.Single(assetKindHeader));
         Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetTypeHeader, out var assetTypeHeader));
-        Assert.Equal("attribute", Assert.Single(assetTypeHeader));
+        Assert.Equal("YXR0cmlidXRl", Assert.Single(assetTypeHeader));
     }
 
     [Fact]

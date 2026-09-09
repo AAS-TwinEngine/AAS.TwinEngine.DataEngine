@@ -466,10 +466,10 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "attribute", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
             .Returns([JsonSerializer.Serialize(response, _jsonoptions)]);
 
-        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "attribute", manifests, CancellationToken.None);
 
         Assert.Single(result.ShellDescriptors ?? []);
         Assert.Equal("shell-1", result.ShellDescriptors![0].Id);
