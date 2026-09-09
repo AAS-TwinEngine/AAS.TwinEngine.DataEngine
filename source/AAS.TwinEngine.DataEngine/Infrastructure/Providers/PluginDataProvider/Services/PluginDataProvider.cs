@@ -81,7 +81,7 @@ public class PluginDataProvider(
 
             if (!string.IsNullOrWhiteSpace(assetType))
             {
-                requestHeaders[AssetTypeHeader] = assetType.DecodeBase64Url(logger);
+requestHeaders[AssetTypeHeader] = assetType;
             }
 
             var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken, requestHeaders);
