@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
+using AAS.TwinEngine.ExportService.Infrastructure.Logging;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 using OpenTelemetry.Logs;
@@ -28,7 +29,8 @@ internal static class LoggingConfigurationExtension
         {
             _ = loggerConfig
                 .ReadFrom.Configuration(context.Configuration)
-                .Enrich.FromLogContext();
+                .Enrich.FromLogContext()
+                .Enrich.With<SanitizingEnricher>();
         }, writeToProviders: true);
 
         _ = builder.Logging.ClearProviders();

@@ -74,9 +74,8 @@ public sealed class ExportRunner : IExportRunner
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWarning(ex, "Export run was cancelled during phase {EntityKind}.", kind);
-                status = RunStatus.Aborted;
-                throw;
+                throw new OperationCanceledException(
+                    $"Export run was cancelled during phase {kind}.", ex, ex.CancellationToken);
             }
             catch (Exception ex)
             {

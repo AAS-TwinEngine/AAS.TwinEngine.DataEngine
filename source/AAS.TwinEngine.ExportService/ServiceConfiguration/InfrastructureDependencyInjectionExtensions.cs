@@ -43,7 +43,7 @@ public static class InfrastructureDependencyInjectionExtensions
         {
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        });
+        }).AddStandardResilience(rootConfig.Resilience);
 
         RegisterSourceHttpClient(services, HttpClientNames.SourceConceptDescriptions, rootConfig.Sources.ConceptDescriptions, rootConfig.Resilience);
         RegisterSourceHttpClient(services, HttpClientNames.SourceSubmodels, rootConfig.Sources.Submodels, rootConfig.Resilience);

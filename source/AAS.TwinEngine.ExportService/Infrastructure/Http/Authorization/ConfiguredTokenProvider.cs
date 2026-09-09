@@ -108,6 +108,12 @@ public sealed class ConfiguredTokenProvider : ITokenProvider
                 .ConfigureAwait(false)
                 ?? throw new AuthenticationFailedException($"Token response for endpoint '{endpointName}' was empty.");
 
+            if (string.IsNullOrWhiteSpace(payload.AccessToken))
+            {
+                throw new AuthenticationFailedException(
+                    $"Token response for endpoint '{endpointName}' did not contain an access token.");
+            }
+
             var expiresIn = payload.ExpiresIn > 30 ? payload.ExpiresIn - 30 : payload.ExpiresIn;
             var expiresAt = DateTimeOffset.UtcNow.AddSeconds(expiresIn);
             return new CachedToken(payload.AccessToken, expiresAt);
@@ -118,9 +124,12 @@ public sealed class ConfiguredTokenProvider : ITokenProvider
         }
         catch (Exception ex)
         {
+            // Record the raw exception on the trace span (not on the logger / thrown exception)
+            // to avoid leaking token-endpoint response bodies, URLs, headers or client secrets
+            // through inner-exception chains that upstream logs would serialize.
             span.RecordError(ex);
             throw new AuthenticationFailedException(
-                $"Token acquisition for endpoint '{endpointName}' failed: {ex.Message}", ex);
+                $"Token acquisition for endpoint '{endpointName}' failed.");
         }
     }
 
