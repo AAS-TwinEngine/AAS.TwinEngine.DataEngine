@@ -133,7 +133,7 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
             _ => default
         };
 
-        if (array.ValueKind != JsonValueKind.Array)
+if (array.ValueKind != JsonValueKind.Array)
         {
             throw new SourceUnavailableException(
                 "Source response was not a JSON array or paged wrapper.");
