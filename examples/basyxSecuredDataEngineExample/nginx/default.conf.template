@@ -2,12 +2,10 @@ server {
     listen 80;
     server_name _;
 
-    # Serve static files
     location /fileprovider/ {
-        # Allow only GET and OPTIONS requests, deny all other methods
         limit_except GET OPTIONS {
             deny all;
-        }   
+        }
         root /usr/share/nginx/html;
     }
 
@@ -22,132 +20,99 @@ server {
         proxy_set_header Content-Type $http_content_type;
     }
 
-
     location /shell-descriptors {
         limit_except GET OPTIONS {
             deny all;
         }
-		proxy_pass http://twinengine-dataengine:8080;
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://twinengine-dataengine:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Authorization $http_authorization;
-		proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     location /lookup {
         limit_except POST OPTIONS {
             deny all;
         }
-		proxy_pass http://twinengine-dataengine:8080;
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header Authorization $http_authorization;
+        proxy_pass http://twinengine-dataengine:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Authorization $http_authorization;
     }
 
     location /shells {
-        # Allow only GET and OPTIONS requests, deny all other methods
         limit_except GET OPTIONS {
             deny all;
-        } 
+        }
         proxy_pass http://twinengine-dataengine:8080;
-        proxy_set_header Authorization $http_authorization;       
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Authorization $http_authorization;
     }
 
-    location /submodels  {
-        # Allow only GET and OPTIONS requests, deny all other methods
+    location /submodels {
         limit_except GET OPTIONS {
             deny all;
-            }
+        }
         proxy_pass http://twinengine-dataengine:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Authorization $http_authorization;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /concept-descriptions/ {
-        # Allow only GET and OPTIONS requests, deny all other methods
+    location /submodel-descriptors {
         limit_except GET OPTIONS {
             deny all;
-            }
-        proxy_pass http://template-repository-registry:8082;
-        proxy_set_header Host $host;
-        proxy_set_header Authorization $http_authorization;    
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /concept-descriptions {
-        # Allow only GET and OPTIONS requests, deny all other methods
-        limit_except GET OPTIONS {
-            deny all;
-            }
-        proxy_pass http://template-repository-registry:8082;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /submodel-descriptors/ {
-        # Allow only GET and OPTIONS requests, deny all other methods
-        limit_except GET OPTIONS {
-            deny all;
-            }   
+        }
         proxy_pass http://twinengine-dataengine:8080;
-        proxy_set_header Authorization $http_authorization;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
-    }
-
-	location /submodel-descriptors {
-        # Allow only GET and OPTIONS requests, deny all other methods
-        limit_except GET OPTIONS {
-            deny all;
-        }   
-		proxy_pass http://twinengine-dataengine:8080;
-		proxy_set_header Host $host;
         proxy_set_header Authorization $http_authorization;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     location /serialization {
-        # Allow only GET and OPTIONS requests, deny all other methods
         limit_except GET OPTIONS {
             deny all;
-        }   
-		proxy_pass http://twinengine-dataengine:8080;
+        }
+        proxy_pass http://twinengine-dataengine:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Authorization $http_authorization;
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /description {
-        # Allow only GET and OPTIONS requests, deny all other methods
+    location /concept-descriptions {
         limit_except GET OPTIONS {
             deny all;
         }
         proxy_pass http://template-repository-registry:8082;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Authorization $http_authorization;
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /description {
+        limit_except GET OPTIONS {
+            deny all;
+        }
+        proxy_pass http://template-repository-registry:8082;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Authorization $http_authorization;
     }
 }
