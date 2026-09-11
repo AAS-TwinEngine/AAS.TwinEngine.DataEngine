@@ -6,6 +6,8 @@ This example combines the DataEngine minimal example with the secured BaSyx setu
 
 The setup is intended for local integration testing of DataEngine header forwarding into a secured BaSyx environment.
 
+DataEngine is built from the local `../../source` tree so this example includes local fixes to the outbound HTTP pipeline.
+
 ## What This Combines
 
 From the DataEngine minimal example:
@@ -116,6 +118,8 @@ Authorization: Bearer ABC
 ## Troubleshooting
 
 **Header reaches DataEngine but not BaSyx:** Check `dataengine-env.json` mappings and set a breakpoint in `RequestHeaderMapper.ApplyMappings`.
+
+If the mappings are loaded but the outbound request still has no `Authorization` header, rebuild the DataEngine image used by this compose file. Older published `develop` images can run the forwarding handler inside the resilience pipeline, where the request context is not available.
 
 **Header does not reach DataEngine:** Check `nginx/default.conf.template` for `proxy_set_header Authorization $http_authorization;` on the relevant route.
 

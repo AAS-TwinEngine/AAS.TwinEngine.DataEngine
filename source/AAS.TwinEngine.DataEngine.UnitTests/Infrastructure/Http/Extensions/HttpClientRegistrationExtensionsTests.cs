@@ -1,4 +1,5 @@
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Extensions;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -116,6 +117,36 @@ public class HttpClientRegistrationExtensionsTests
         mappingService
             .Received()
             .ApplyMappings(httpContextAccessor.HttpContext, Arg.Any<HttpRequestMessage>(), HttpClientNames.SubmodelTemplateRepository);
+    }
+
+    [Fact]
+    public void AddHttpClientWithResilience_RegistersHeaderForwardingBeforeResilienceHandler()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddHttpContextAccessor();
+
+        var headerMapper = Substitute.For<IRequestHeaderMapper>();
+        _ = services.AddScoped(_ => headerMapper);
+
+        var handlerTypes = new List<Type>();
+
+        services.AddHttpClientWithResilience(
+            HttpClientNames.SubmodelTemplateRepository,
+            DefaultRetryConfig,
+            new Uri("https://example.com"));
+
+        services.Configure<HttpClientFactoryOptions>(HttpClientNames.SubmodelTemplateRepository,
+            options => options.HttpMessageHandlerBuilderActions.Add(builder =>
+                handlerTypes.AddRange(builder.AdditionalHandlers.Select(handler => handler.GetType()))));
+
+        var serviceProvider = services.BuildServiceProvider();
+        var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+
+        _ = factory.CreateClient(HttpClientNames.SubmodelTemplateRepository);
+
+        Assert.NotEmpty(handlerTypes);
+        Assert.Equal(typeof(HeaderForwardingHandler), handlerTypes[0]);
     }
 
     private sealed class FaultyHttpMessageHandler : HttpMessageHandler

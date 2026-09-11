@@ -24,7 +24,10 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:develop
+    build:
+      context: ../../source
+      dockerfile: AAS.TwinEngine.DataEngine/Dockerfile
+    image: aas-twinengine/dataengine:local-secured-example
     container_name: twinengine-dataengine
     depends_on:
       dpp-plugin:
@@ -47,6 +50,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    ports:
+      - "8086:8080"
     restart: always
     environment:
       - Semantics__IndexContextPrefix=_aastwinengineindex_

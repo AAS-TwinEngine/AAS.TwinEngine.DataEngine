@@ -43,7 +43,6 @@
           { "IDENTIFIABLE": "$sm(\"https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0\")" },
           { "IDENTIFIABLE": "$sm(\"https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0\")" },
           { "IDENTIFIABLE": "$sm(\"https://admin-shell.io/idta/SubmodelTemplate/ContactInformation/1/0\")" },
-          { "IDENTIFIABLE": "$sm(\"https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0\")" },
           { "IDENTIFIABLE": "$sm(\"https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0\")" },
           { "IDENTIFIABLE": "$sm(\"https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0\")" },
           { "DESCRIPTOR": "$aasdesc(\"https://mm-software.com/aas/aasTemplate\")" },
@@ -61,31 +60,58 @@
           { "ROUTE": "/concept-descriptions" },
           { "ROUTE": "/concept-descriptions/*" }
         ]
+      },
+      {
+        "name": "viewer_allowed_sme",
+        "objects": [
+          {
+            "REFERABLE": "$sme(\"https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0\").MaxRotationSpeed"
+          }
+        ]
       }
     ],
     "DEFACLS": [
       {
         "name": "anonymous_read",
-        "acl": { "USEATTRIBUTES": "anonymous_attr", "RIGHTS": ["READ"], "ACCESS": "ALLOW" }
+        "acl": {
+          "USEATTRIBUTES": "anonymous_attr",
+          "RIGHTS": ["READ"],
+          "ACCESS": "ALLOW"
+        }
       },
       {
         "name": "viewer_read",
-        "acl": { "USEATTRIBUTES": "role_attr", "RIGHTS": ["READ"], "ACCESS": "ALLOW" }
+        "acl": {
+          "USEATTRIBUTES": "role_attr",
+          "RIGHTS": ["READ"],
+          "ACCESS": "ALLOW"
+        }
       },
       {
         "name": "admin_all",
-        "acl": { "USEATTRIBUTES": "role_attr", "RIGHTS": ["ALL"], "ACCESS": "ALLOW" }
+        "acl": {
+          "USEATTRIBUTES": "role_attr",
+          "RIGHTS": ["ALL"],
+          "ACCESS": "ALLOW"
+        }
       }
     ],
     "DEFFORMULAS": [
       { "name": "always_true", "formula": { "$boolean": true } },
       {
         "name": "is_admin",
-        "formula": { "$eq": [{ "$attribute": { "CLAIM": "role" } }, { "$strVal": "admin" }] }
+        "formula": {
+          "$eq": [{ "$attribute": { "CLAIM": "role" } }, { "$strVal": "admin" }]
+        }
       },
       {
         "name": "is_viewer",
-        "formula": { "$eq": [{ "$attribute": { "CLAIM": "role" } }, { "$strVal": "viewer" }] }
+        "formula": {
+          "$eq": [
+            { "$attribute": { "CLAIM": "role" } },
+            { "$strVal": "viewer" }
+          ]
+        }
       }
     ],
     "rules": [
@@ -102,11 +128,22 @@
       {
         "USEACL": "viewer_read",
         "USEOBJECTS": ["viewer_allowed_identifiables"],
-        "USEFORMULA": "is_viewer"
+        "USEFORMULA": "is_viewer",
+        "FILTERLIST": [
+          {
+            "FRAGMENT": "$sme.URIOfTheProduct",
+            "CONDITION": { "$boolean": false }
+          }
+        ]
       },
       {
         "USEACL": "viewer_read",
         "USEOBJECTS": ["anonymous_concept_descriptions_all"],
+        "USEFORMULA": "is_viewer"
+      },
+      {
+        "USEACL": "viewer_read",
+        "USEOBJECTS": ["viewer_allowed_sme"],
         "USEFORMULA": "is_viewer"
       },
       {
