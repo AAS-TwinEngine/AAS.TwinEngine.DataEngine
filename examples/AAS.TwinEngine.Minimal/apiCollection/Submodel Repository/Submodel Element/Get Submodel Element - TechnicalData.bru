@@ -1,0 +1,21 @@
+meta {
+  name: Get Submodel Element - TechnicalData
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierTechnicalData-1}}
+  idShortPath: GeneralInformation.ProductImage
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

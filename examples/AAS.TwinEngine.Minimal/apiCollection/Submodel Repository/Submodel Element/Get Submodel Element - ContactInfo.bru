@@ -1,0 +1,21 @@
+meta {
+  name: Get Submodel Element - MaintenanceInstructionsInfo
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierMaintenanceInstructions-1}}
+  idShortPath: MaintenanceToolList%255B0%255D.OrderCodeToolOfManufacturer
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

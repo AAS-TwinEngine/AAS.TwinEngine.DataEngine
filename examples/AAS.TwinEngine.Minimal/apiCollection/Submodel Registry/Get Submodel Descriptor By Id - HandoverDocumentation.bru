@@ -1,0 +1,20 @@
+meta {
+  name: Get Submodel Descriptor By Id - HandoverDocumentation
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodel-descriptors/:submodelIdentifier
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation-1}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

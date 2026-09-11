@@ -1,0 +1,21 @@
+meta {
+  name: Get Submodel Element - HandoverDocumentation
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation-1}}
+  idShortPath: Documents[0].DocumentClassifications[1].ClassName
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

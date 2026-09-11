@@ -1,0 +1,20 @@
+meta {
+  name: Get Submodel - Nameplate
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

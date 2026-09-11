@@ -1,0 +1,38 @@
+meta {
+  name: Search Shells By Asset Link - Multiple Filters
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{DataEngineBaseUrl}}/lookup/shellsByAssetLink?limit&cursor
+  body: json
+  auth: inherit
+}
+
+params:query {
+  limit: 
+  cursor: 
+}
+
+body:json {
+  [
+    {
+      "name": "SerialNumber",
+      "value": "SN-FMABC1234-9804820"
+    },
+    {
+      "name": "BatchId",
+      "value": "BATCH-2022-001"
+    },
+    {
+      "name": "LotNumber",
+      "value": "LOT-DE-77881"
+    }
+  ]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

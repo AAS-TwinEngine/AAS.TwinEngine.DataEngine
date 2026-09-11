@@ -1,0 +1,23 @@
+meta {
+  name: Get All ShellDescriptors
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shell-descriptors?limit=1&cursor=&assetKind=&assetType=
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 1
+  cursor: 
+  assetKind: 
+  assetType: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

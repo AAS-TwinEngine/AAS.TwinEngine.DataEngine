@@ -1,0 +1,155 @@
+{
+  "General": {
+    "CustomerDomainUrl": "https://mm-software.com",
+    "DataEngineRepositoryBaseUrl": "http://localhost:8080"
+  },
+  "Plugins": {
+    "SubmodelElementIndexContextPrefix": "_aastwinengineindex_",
+    "MultiLanguageProperty": {
+      "DefaultLanguages": ["en", "de"],
+      "SemanticPostfixSeparator": "_"
+    },
+    "ResiliencePolicies": {
+      "Retry": {
+        "MaxRetryAttempts": 4,
+        "DelayInSeconds": 7,
+        "BackoffMultiplier": 2.0,
+        "TimeoutInSeconds": 30
+      }
+    },
+    "Instances": [
+      {
+        "Name": "RelationalDatabasePlugin",
+        "baseUrl": "http://dpp-plugin:8080",
+        "healthEndpoint": "/healthz",
+        "headerMappings": [
+          {
+            "source": "Authorization",
+            "target": "X-Auth-Token",
+            "required": false
+          },
+          {
+            "source": "X-Organization-Id",
+            "target": "X-Tenant-Context",
+            "required": false
+          },
+          {
+            "source": "X-Correlation-Id",
+            "target": "X-Request-Id",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "TemplateManagement": {
+    "ResiliencePolicies": {
+      "Retry": {
+        "MaxRetryAttempts": 4,
+        "DelayInSeconds": 7,
+        "BackoffMultiplier": 2.0,
+        "TimeoutInSeconds": 30
+      }
+    },
+    "TemplateMappingRules": {
+      "SubmodelTemplateMappings": [
+        {
+          "templateId": "https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0",
+          "pattern": ["TechnicalData"]
+        },
+        {
+          "templateId": "https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0",
+          "pattern": ["Nameplate"]
+        },
+        {
+          "templateId": "https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0",
+          "pattern": ["MaintenanceInstructions"]
+        },
+        {
+          "templateId": "https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0",
+          "pattern": ["CarbonFootprint"]
+        },
+        {
+          "templateId": "https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0",
+          "pattern": ["HandoverDocumentation"]
+        }
+      ],
+      "ShellTemplateMappings": [
+        {
+          "templateId": "https://mm-software.com/aas/aasTemplate",
+          "pattern": [""]
+        }
+      ],
+      "AasIdExtractionRules": [
+        {
+          "Strategy": "Split",
+          "Pattern": "/",
+          "Index": 5
+        }
+      ]
+    },
+    "Semantics": {
+      "InternalSemanticId": "InternalSemanticId"
+    },
+    "AasTemplateRepository": {
+      "Name": "AasTemplateRepository",
+      "baseUrl": "http://template-repository-registry:8082",
+      "healthEndpoint": "/health",
+      "headerMappings": [
+        {
+          "source": "Authorization",
+          "target": "Authorization",
+          "required": false
+        }
+      ]
+    },
+    "SubmodelTemplateRepository": {
+      "Name": "SubmodelTemplateRepository",
+      "baseUrl": "http://template-repository-registry:8082",
+      "healthEndpoint": "/health",
+      "headerMappings": [
+        {
+          "source": "Authorization",
+          "target": "Authorization",
+          "required": false
+        }
+      ]
+    },
+    "ConceptDescriptionTemplateRepository": {
+      "Name": "ConceptDescriptionTemplateRepository",
+      "baseUrl": "http://template-repository-registry:8082",
+      "healthEndpoint": "/health",
+      "headerMappings": [
+        {
+          "source": "Authorization",
+          "target": "Authorization",
+          "required": false
+        }
+      ]
+    },
+    "AasTemplateRegistry": {
+      "Name": "AasTemplateRegistry",
+      "baseUrl": "http://template-repository-registry:8082",
+      "healthEndpoint": "/health",
+      "headerMappings": [
+        {
+          "source": "Authorization",
+          "target": "Authorization",
+          "required": false
+        }
+      ]
+    },
+    "SubmodelTemplateRegistry": {
+      "Name": "SubmodelTemplateRegistry",
+      "baseUrl": "http://template-repository-registry:8082",
+      "healthEndpoint": "/health",
+      "headerMappings": [
+        {
+          "source": "Authorization",
+          "target": "Authorization",
+          "required": false
+        }
+      ]
+    }
+  }
+}
