@@ -1,5 +1,7 @@
 {
-  "paging_metadata": { "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vaWRzL2Fhcy8wMDAtMDAz" },
+  "paging_metadata": {
+    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vaWRzL2Fhcy8wMDAtMDAz"
+  },
   "result": [
     {
       "description": null,
@@ -7,7 +9,7 @@
       "extensions": null,
       "administration": null,
       "assetKind": "Instance",
-      "assetType": null,
+      "assetType": "Attribute",
       "endpoints": [
         {
           "interface": "AAS-3.0",
@@ -83,7 +85,7 @@
       "extensions": null,
       "administration": null,
       "assetKind": "Instance",
-      "assetType": null,
+      "assetType": "Attribute",
       "endpoints": [
         {
           "interface": "AAS-3.0",
@@ -158,8 +160,8 @@
       "displayName": null,
       "extensions": null,
       "administration": null,
-      "assetKind": "Instance",
-      "assetType": null,
+      "assetKind": "Type",
+      "assetType": "Template",
       "endpoints": [
         {
           "interface": "AAS-3.0",

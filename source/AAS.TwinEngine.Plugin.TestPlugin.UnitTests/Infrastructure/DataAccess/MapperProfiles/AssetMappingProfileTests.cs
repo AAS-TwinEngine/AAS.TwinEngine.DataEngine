@@ -16,9 +16,11 @@ public class AssetMappingProfileTests
             new() { Name = "SerialNumber", Value = "SN123" }
         };
 
-        var result = entity.ToDomainModel(GlobalAssetId, specificAssetIds);
+        var result = entity.ToDomainModel(GlobalAssetId, "Instance", "product", specificAssetIds);
 
         Assert.NotNull(result);
+        Assert.Equal("Instance", result.AssetKind);
+        Assert.Equal("product", result.AssetType);
         Assert.Equal(GlobalAssetId, result.GlobalAssetId);
         Assert.Equal(specificAssetIds, result.SpecificAssetIds);
         Assert.NotNull(result.DefaultThumbnail);
@@ -36,7 +38,7 @@ public class AssetMappingProfileTests
         const string GlobalAssetId = "asset-456";
         var specificAssetIds = new List<SpecificAssetIdsData>();
 
-        var result = entity.ToDomainModel(GlobalAssetId, specificAssetIds);
+        var result = entity.ToDomainModel(GlobalAssetId, null, null, specificAssetIds);
 
         Assert.NotNull(result);
         Assert.Equal(GlobalAssetId, result.GlobalAssetId);

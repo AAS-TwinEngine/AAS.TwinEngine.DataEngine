@@ -5,15 +5,16 @@ meta {
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shells?idShort&limit&cursor
+  url: {{DataEngineBaseUrl}}/shells
   body: none
   auth: inherit
 }
 
 params:query {
-  idShort: 
-  limit: 
-  cursor: 
+  ~limit: 100
+  ~cursor: 
+  ~idShort: 
+  ~assetIds: 
 }
 
 settings {

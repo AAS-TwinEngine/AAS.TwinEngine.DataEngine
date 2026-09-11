@@ -4,6 +4,12 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
 
 public class AssetDto
 {
+    [JsonPropertyName("assetKind")]
+    public string? AssetKind { get; set; }
+
+    [JsonPropertyName("assetType")]
+    public string? AssetType { get; set; }
+
     [JsonPropertyName("globalAssetId")]
     public string? GlobalAssetId { get; set; }
 

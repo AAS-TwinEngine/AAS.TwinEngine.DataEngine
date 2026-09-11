@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
@@ -44,7 +44,9 @@ public class PluginManifestProviderTests
       ],
       "capabilities": {
         "hasShellDescriptor": true,
-        "hasAssetInformation": false
+                "hasAssetInformation": false,
+                "hasAssetIdSearch": true,
+                "hasAssetKindTypeFilter": true
       }
     }
     """;
@@ -76,6 +78,8 @@ public class PluginManifestProviderTests
         Assert.Contains("0112/2///61987#ABP464#002_en", manifest.SupportedSemanticIds);
         Assert.True(manifest.Capabilities.HasShellDescriptor);
         Assert.False(manifest.Capabilities.HasAssetInformation);
+        Assert.True(manifest.Capabilities.HasAssetIdSearch);
+        Assert.True(manifest.Capabilities.HasAssetKindTypeFilter);
     }
 
     [Fact]

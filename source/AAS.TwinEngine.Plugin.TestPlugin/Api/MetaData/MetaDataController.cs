@@ -1,4 +1,4 @@
-using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Requests;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.MetaData.Responses;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions.Responses;
@@ -24,10 +24,12 @@ public class MetaDataController(IMetaDataHandler metaDataHandler) : ControllerBa
         [FromQuery] int? limit,
         [FromQuery] string? cursor,
         [FromHeader(Name = "aastwinengine-assetids")] string? assetIdsFilter = null,
+        [FromHeader(Name = "aastwinengine-assetkind")] string? assetKindFilter = null,
+        [FromHeader(Name = "aastwinengine-assettype")] string? assetTypeFilter = null,
         [FromHeader(Name = "aastwinengine-idshort")] string? idShortFilter = null,
         CancellationToken cancellationToken = default)
     {
-        var request = new GetShellDescriptorsRequest(limit, cursor, assetIdsFilter, idShortFilter);
+        var request = new GetShellDescriptorsRequest(limit, cursor, assetIdsFilter, idShortFilter, assetKindFilter, assetTypeFilter);
 
         var response = await metaDataHandler.GetShellDescriptors(request, cancellationToken);
 

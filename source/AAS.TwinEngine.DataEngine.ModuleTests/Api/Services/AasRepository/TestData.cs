@@ -98,6 +98,29 @@ internal static class TestData
                    }
                    """;
 
+    public static string CreatePluginResponseForShellDescriptor()
+               => """
+                   {
+                     "assetKind": "Type",
+                     "globalAssetId": "https://example.com/ids/F/5350_5407_2522_6562",
+                     "id": "https://example.com/ids/aas/1170_1160_3052_6568/test/aas",
+                     "specificAssetIds": [
+                       {
+                         "name": "LotNumber",
+                         "value": "Test"
+                       },
+                       {
+                         "name": "BatchId",
+                         "value": "Test"
+                       },
+                       {
+                         "name": "SerialNumber",
+                         "value": "Test"
+                       }
+                     ]
+                   }
+                   """;
+
     public static IReadOnlyList<PluginManifest> CreatePluginManifests()
     {
         return new List<PluginManifest>
@@ -128,11 +151,20 @@ internal static class TestData
                      "assetInformation": {
                        "assetKind": "Type",
                        "globalAssetId": "https://example.com/ids/F/5350_5407_2522_6562",
-                       "specificAssetIds": [],
-                       "defaultThumbnail": {
-                         "path": "https://example.com/share/img/10080308_DE.jpg",
-                         "contentType": "image/svg\u002Bxml"
-                       }
+                       "specificAssetIds": [
+                         {
+                           "name": "LotNumber",
+                           "value": "Test"
+                         },
+                         {
+                           "name": "BatchId",
+                           "value": "Test"
+                         },
+                         {
+                           "name": "SerialNumber",
+                           "value": "Test"
+                         }
+                       ]
                      },
                      "submodels": [
                        {

@@ -12,6 +12,8 @@ public static class ShellDescriptorMappingProfile
             Id = entity.Id,
             GlobalAssetId = entity.GlobalAssetId,
             IdShort = entity.IdShort,
+            AssetKind = entity.AssetKind,
+            AssetType = entity.AssetType,
             SpecificAssetIds = entity.SpecificAssetIds?.Select(s => new SpecificAssetIdsData
             {
                 Name = s.Name,
