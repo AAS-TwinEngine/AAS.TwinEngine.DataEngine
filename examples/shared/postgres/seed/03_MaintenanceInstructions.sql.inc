@@ -30,7 +30,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Stromversorgung trennen; Gegen Wiedereinschalten sichern; Spannungsfreiheit prüfen',
 6,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 2,
 'Qualified maintenance technician required',
 'Qualifizierter Wartungstechniker erforderlich',
@@ -47,7 +47,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Schutzhandschuhe tragen; System trennen; Filter entsorgen',
 12,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 1,
 'Certified technician required',
 'Zertifizierter Techniker erforderlich',
@@ -64,7 +64,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Fahrzeug sichern; Unterstellböcke verwenden; Schutzbrille tragen',
 3,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 0,
 'IEC/EN 60079-14 knowledge required',
 'IEC/EN 60079-14 Kenntnisse erforderlich',
@@ -81,7 +81,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Motor abkühlen lassen; Deckel langsam öffnen; Kontakt vermeiden',
 4,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 1,
 'IEC/EN 60079-19 knowledge required',
 'IEC/EN 60079-19 Kenntnisse erforderlich',
@@ -98,7 +98,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Batterie trennen; Funken vermeiden; Handschuhe tragen',
 9,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 2,
 'IEC/EN 61009-1 knowledge required',
 'IEC/EN 61009-1 Kenntnisse erforderlich',
@@ -239,22 +239,22 @@ INSERT INTO "Email"
  "PublicKey_en","PublicKey_de",
  "TypeOfPublicKey_en","TypeOfPublicKey_de")
 VALUES
-(1,'aarav.sharma@examples/shared.in','0173-1#07-AAS754#001',
+(1,'aarav.sharma@example.in','0173-1#07-AAS754#001',
  'A1B2C3D4E5F67890ABCDEF1234567890ABCDEF12','A1B2C3D4E5F67890ABCDEF1234567890ABCDEF13',
  'RSA Encryption','RSA-Verschlüsselung'),
-(2,'lukas.mueller@examples/shared.de','0173-1#07-AAS756#001',
+(2,'lukas.mueller@example.de','0173-1#07-AAS756#001',
  'B2C3D4E5F67890ABCDEF1234567890ABCDEF1234','B2C3D4E5F67890ABCDEF1234567890ABCDEF1235',
  'ECC Encryption','ECC-Verschlüsselung'),
-(3,'priya.mehta@examples/shared.in','0173-1#07-AAS757#001',
+(3,'priya.mehta@example.in','0173-1#07-AAS757#001',
  'C3D4E5F67890ABCDEF1234567890ABCDEF123456','C3D4E5F67890ABCDEF1234567890ABCDEF123457',
  'DSA Signature','DSA-Signatur'),
-(4,'anna.schneider@examples/shared.de','0173-1#07-AAS758#001',
+(4,'anna.schneider@example.de','0173-1#07-AAS758#001',
  'E5F67890ABCDEF1234567890ABCDEF1234567890','E5F67890ABCDEF1234567890ABCDEF1234567891',
  'EdDSA Signature','EdDSA-Signatur'),
-(5,'wei.li@examples/shared.cn','0173-1#07-AAS754#001',
+(5,'wei.li@example.cn','0173-1#07-AAS754#001',
  'F67890ABCDEF1234567890ABCDEF1234567890AB','F67890ABCDEF1234567890ABCDEF1234567890AB',
  'RSA Encryption','RSA-Verschlüsselung'),
-(6,'johann.becker@examples/shared.de','0173-1#07-AAS756#001',
+(6,'johann.becker@example.de','0173-1#07-AAS756#001',
  'D4E5F67890ABCDEF1234567890ABCDEF12345678','D4E5F67890ABCDEF1234567890ABCDEF12345679',
  'ECC Encryption','ECC-Verschlüsselung');
 
@@ -361,7 +361,7 @@ VALUES
 'System is powered off','System ist ausgeschaltet',
 'Power still active','Strom noch aktiv',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 5,'minutes'),
 (1,'MS-002',0,0,NULL,2,TRUE,FALSE,
 'Apply safety lockout','Sicherheitsverriegelung anwenden',
@@ -370,7 +370,7 @@ VALUES
 'Lockout applied','Verriegelung aktiv',
 'Lockout failed','Verriegelung fehlgeschlagen',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 10,'minutes'),
 (0,'MS-003',1,0,NULL,2,TRUE,FALSE,
 'Inspect equipment','Gerät prüfen',
@@ -379,7 +379,7 @@ VALUES
 'No damage found','Keine Schäden gefunden',
 'Damage detected','Schaden festgestellt',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 15,'minutes'),
 (0,'MS-004',2,20,'ml',3,TRUE,FALSE,
 'Replace filter','Filter austauschen',
@@ -388,7 +388,7 @@ VALUES
 'Filter OK','Filter in Ordnung',
 'Fit issue','Problem erkannt',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 20,'minutes'),
 (1,'MS-005',1,50,'ml',1,TRUE,FALSE,
 'Add lubricant','Schmiermittel hinzufügen',
@@ -397,7 +397,7 @@ VALUES
 'Lubrication OK','Schmierung OK',
 'Leak found','Leck erkannt',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 10,'minutes'),
 (2,'MS-006',0,0,NULL,2,TRUE,FALSE,
 'Test system','System testen',
@@ -406,7 +406,7 @@ VALUES
 'Test passed','Test bestanden',
 'Test failed','Test fehlgeschlagen',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 15,'minutes'),
 (1,'MS-007',0,0,NULL,1,TRUE,FALSE,
 'Reconnect power','Stromversorgung wiederherstellen',
@@ -415,7 +415,7 @@ VALUES
 'Power OK','Strom OK',
 'Failure','Fehler',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 5,'minutes'),
 (1,'MS-008',0,0,NULL,1,TRUE,TRUE,
 'End maintenance','Wartung beenden',
@@ -424,7 +424,7 @@ VALUES
 'Completed','Abgeschlossen',
 '-','-',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/examples/shared/data/dummy_document.pdf'),
+'main/example/data/dummy_document.pdf'),
 5,'minutes');
 
 INSERT INTO "MaintenanceInstructionsForSpecificIntervalMaintenanceStep"
@@ -450,39 +450,39 @@ INSERT INTO "MaintenanceTool" (
 "MaxQuantityOfTool"
 )
 VALUES
-(0,'TL-001','BOSCH-TRX-T20','https://tools.examples/shared.com/t20',
+(0,'TL-001','BOSCH-TRX-T20','https://tools.example.com/t20',
 'Torx Screwdriver T20','Torx Schraubendreher T20',
 'Bosch Tools','Bosch Werkzeuge',
 'Torx screwdriver size T20, non-insulated, 100 mm length',
 'Torx Schraubendreher Größe T20, nicht isoliert, 100 mm Länge',
 2),
 
-(1,'TL-002','SKF-WRENCH-SET','https://tools.examples/shared.com/wrench-set',
+(1,'TL-002','SKF-WRENCH-SET','https://tools.example.com/wrench-set',
 'Wrench Set','Schraubenschlüssel Set',
 'SKF Industrial Tools','SKF Industrie Werkzeuge',
 'Set of metric wrenches from 8 mm to 24 mm',
 'Satz metrischer Schraubenschlüssel von 8 mm bis 24 mm',
 1),
-(0,'TL-003','FLUKE-MULTI-115','https://tools.examples/shared.com/multimeter',
+(0,'TL-003','FLUKE-MULTI-115','https://tools.example.com/multimeter',
 'Digital Multimeter','Digitales Multimeter',
 'Fluke Corporation','Fluke Unternehmen',
 'Digital multimeter for voltage, resistance, and continuity testing',
 'Digitalmultimeter für Spannung, Widerstand und Durchgangsprüfung',
 1),
-(0,'TL-004','FACOM-PLIERS-SET','https://tools.examples/shared.com/pliers',
+(0,'TL-004','FACOM-PLIERS-SET','https://tools.example.com/pliers',
 'Pliers Set','Zangenset',
 'Facom Tools','Facom Werkzeuge',
 'Set of combination and needle-nose pliers for general maintenance',
 'Satz aus Kombi- und Spitzzangen für allgemeine Wartung',
 2),
-(1,'TL-005','MAKITA-DRILL-18V','https://tools.examples/shared.com/drill',
+(1,'TL-005','MAKITA-DRILL-18V','https://tools.example.com/drill',
 'Cordless Drill','Akku-Bohrmaschine',
 'Makita Corporation','Makita Unternehmen',
 '18V cordless drill with adjustable torque and battery system',
 '18V Akku-Bohrmaschine mit Drehmomentregelung und Batteriesystem',
 1),
 
-(2,'TL-006','STAHLWILLE-TORQUE-50','https://tools.examples/shared.com/torque-wrench',
+(2,'TL-006','STAHLWILLE-TORQUE-50','https://tools.example.com/torque-wrench',
 'Torque Wrench','Drehmomentschlüssel',
 'Stahlwille GmbH','Stahlwille GmbH',
 'Torque wrench up to 50 Nm for precise tightening',
@@ -512,7 +512,7 @@ INSERT INTO "MaintenanceConsumable" (
 "QuantityOfConsumable"
 )
 VALUES
-(0,'CS-001','ml','CASTROL-OIL-80W','https://consumables.examples/shared.com/oil',
+(0,'CS-001','ml','CASTROL-OIL-80W','https://consumables.example.com/oil',
 'Lubricating Oil','Schmieröl',
 'Castrol Ltd','Castrol GmbH',
 'High-performance mineral gear oil, SAE 80W, reduces wear and ensures smooth operation',
@@ -520,7 +520,7 @@ VALUES
 'Dispose via certified waste company. Avoid release into environment.',
 'Entsorgung nur durch Fachbetrieb. Freisetzung in Umwelt vermeiden.',
 50),
-(1,'CS-002','pcs','KIMBERLY-CLOTH-BLUE','https://consumables.examples/shared.com/cloth',
+(1,'CS-002','pcs','KIMBERLY-CLOTH-BLUE','https://consumables.example.com/cloth',
 'Cleaning Cloth','Reinigungstuch',
 'Kimberly-Clark','Kimberly-Clark GmbH',
 'Blue industrial cleaning cloth, 380x380 mm, highly absorbent',
@@ -528,7 +528,7 @@ VALUES
 'Dispose as industrial waste. Do not reuse if contaminated.',
 'Als Industrieabfall entsorgen. Nicht wiederverwenden bei Verschmutzung.',
 20),
-(2,'CS-003','ml','LOCTITE-THREADLOCK-243','https://consumables.examples/shared.com/loctite',
+(2,'CS-003','ml','LOCTITE-THREADLOCK-243','https://consumables.example.com/loctite',
 'Threadlocker Fluid','Schraubensicherungsmittel',
 'Henkel AG','Henkel AG',
 'Medium-strength threadlocker for securing bolts',
@@ -536,7 +536,7 @@ VALUES
 'Dispose as hazardous chemical waste. Avoid skin contact.',
 'Als Sondermüll entsorgen. Hautkontakt vermeiden.',
 10),
-(0,'CS-004','g','MOLYKOTE-GREASE-HP','https://consumables.examples/shared.com/grease',
+(0,'CS-004','g','MOLYKOTE-GREASE-HP','https://consumables.example.com/grease',
 'Industrial Grease','Industrieschmierfett',
 'Dow Chemical','Dow Chemical GmbH',
 'High-performance grease for bearings',
@@ -544,7 +544,7 @@ VALUES
 'Dispose per hazardous waste regulations.',
 'Entsorgung gemäß Vorschriften für gefährliche Abfälle.',
 30),
-(0,'CS-005','ml','DISTILLED-WATER-5L','https://consumables.examples/shared.com/water',
+(0,'CS-005','ml','DISTILLED-WATER-5L','https://consumables.example.com/water',
 'Distilled Water','Destilliertes Wasser',
 'AquaPure Supplies','AquaPure Lieferanten',
 'Purified water for cooling and cleaning',
@@ -575,7 +575,7 @@ INSERT INTO "MaintenanceSparePart" (
 "QuantityOfSparePart"
 )
 VALUES
-(0,'SP-001','BOSCH-BEARING-6205','https://spareparts.examples/shared.com/bearing',
+(0,'SP-001','BOSCH-BEARING-6205','https://spareparts.example.com/bearing',
 'Ball Bearing 6205','Kugellager 6205',
 'Bosch Industrial','Bosch Industrie',
 'Deep groove ball bearing, size 6205, high durability',
@@ -583,7 +583,7 @@ VALUES
 'Dispose via metal recycling.',
 'Über Metallrecycling entsorgen.',
 2),
-(0,'SP-002','SKF-SEAL-RING-45','https://spareparts.examples/shared.com/seal',
+(0,'SP-002','SKF-SEAL-RING-45','https://spareparts.example.com/seal',
 'Seal Ring 45 mm','Dichtungsring 45 mm',
 'SKF Group','SKF Gruppe',
 'Rubber sealing ring 45 mm diameter',
@@ -591,7 +591,7 @@ VALUES
 'Dispose as rubber waste.',
 'Als Gummiabfall entsorgen.',
 1),
-(0,'SP-003','SIEMENS-SENSOR-TEMP','https://spareparts.examples/shared.com/sensor',
+(0,'SP-003','SIEMENS-SENSOR-TEMP','https://spareparts.example.com/sensor',
 'Temperature Sensor','Temperatursensor',
 'Siemens AG','Siemens AG',
 'Industrial temperature sensor',
@@ -599,7 +599,7 @@ VALUES
 'Dispose as electronic waste.',
 'Als Elektroschrott entsorgen.',
 1),
-(1,'SP-004','PANASONIC-BATTERY-CR2032','https://spareparts.examples/shared.com/battery',
+(1,'SP-004','PANASONIC-BATTERY-CR2032','https://spareparts.example.com/battery',
 'Button Cell Battery','Knopfzelle Batterie',
 'Panasonic Corporation','Panasonic Unternehmen',
 'Lithium button cell CR2032, 3V',

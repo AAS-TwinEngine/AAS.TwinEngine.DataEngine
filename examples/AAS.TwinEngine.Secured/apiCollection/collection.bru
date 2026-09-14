@@ -1,0 +1,141 @@
+vars:pre-request {
+  aasIdentifier-1: https://mm-software.com/ids/aas/{{productId-1}}
+  submodelIdentifierMaintenanceInstructions-1: https://mm-software.com/submodel/{{productId-1}}/MaintenanceInstructions
+  submodelIdentifierNameplate-1: https://mm-software.com/submodel/{{productId-1}}/Nameplate
+  aasIdentifier-2: https://mm-software.com/ids/aas/{{productId-2}}
+  aasIdentifier-3: https://mm-software.com/ids/aas/{{productId-3}}
+  submodelIdentifierTechnicalData-1: https://mm-software.com/submodel/{{productId-1}}/TechnicalData
+  submodelIdentifierCarbonFootprint-1: https://mm-software.com/submodel/{{productId-1}}/CarbonFootprint
+  submodelIdentifierHandoverDocumentation-1: https://mm-software.com/submodel/{{productId-1}}/HandoverDocumentation
+  productId-1: 000-001
+  productId-2: 000-002
+  productId-3: 001-001
+  assetId-product1: {"name":"SerialNumber","value":"SN-FMABC1234-9804820"}
+  assetId-product2: {"name":"SerialNumber","value":"SN-FMABC1238-9804821"}
+  idShort: Product2
+  submodelIdentifierNameplate-2: https://mm-software.com/submodel/{{productId-2}}/Nameplate
+  submodelIdentifierNameplate-3: https://mm-software.com/submodel/{{productId-3}}/Nameplate
+}
+
+auth {
+  mode: bearer
+  bearer: {{access_token}}
+}
+
+script:pre-request {
+  async function getAccessToken() {
+    const keycloakUrl = bru.getEnvVar('KEYCLOAK_URL');
+    const realm = bru.getEnvVar('REALM');
+    const grantType = bru.getEnvVar('KEYCLOAK_GRANT_TYPE') || 'password';
+    const clientId = bru.getEnvVar('CLIENT_ID');
+    const clientSecret = bru.getEnvVar('CLIENT_SECRET');
+    const username = bru.getEnvVar('USERNAME');
+    const password = bru.getEnvVar('PASSWORD');
+    const accessToken = bru.getEnvVar('access_token');
+    const expiresAt = Number(bru.getEnvVar('access_token_expires_at') || 0);
+
+    if (accessToken && Date.now() < expiresAt) {
+      return;
+    }
+
+    if (!keycloakUrl || !realm || !clientId) {
+      throw new Error('Missing KEYCLOAK_URL, REALM, or CLIENT_ID');
+    }
+
+    const form = [
+      ['grant_type', grantType],
+      ['client_id', clientId]
+    ];
+
+    if (grantType === 'client_credentials') {
+      if (!clientSecret) {
+        throw new Error('CLIENT_SECRET is required for client_credentials');
+      }
+
+      form.push(['client_secret', clientSecret]);
+    } else if (grantType === 'password') {
+      if (!username || !password) {
+        throw new Error('USERNAME and PASSWORD are required for password grant');
+      }
+
+      form.push(['username', username]);
+      form.push(['password', password]);
+    } else {
+      throw new Error(`Unsupported KEYCLOAK_GRANT_TYPE: ${grantType}`);
+    }
+
+    const tokenUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`;
+    const response = await new Promise((resolve, reject) => {
+      bru.sendRequest({
+        method: 'POST',
+        url: tokenUrl,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data: form.map(([name, value]) =>
+          `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
+        ).join('&')
+      }, (error, result) => {
+        if (error) {
+          reject(new Error(`Keycloak token request failed: ${error.message}`));
+          return;
+        }
+
+        resolve(result);
+      });
+    });
+
+    let tokenBody;
+    try {
+      tokenBody = typeof response.data === 'string'
+        ? JSON.parse(response.data)
+        : response.data;
+    } catch (error) {
+      throw new Error(`Keycloak returned an invalid token response (HTTP ${response.status})`);
+    }
+
+    if (response.status < 200 || response.status >= 300 || !tokenBody.access_token) {
+      const description = tokenBody.error_description || tokenBody.error || 'unknown error';
+      throw new Error(`Token retrieval failed (HTTP ${response.status}): ${description}`);
+    }
+
+    const lifetimeSeconds = Number(tokenBody.expires_in || 300);
+    bru.setEnvVar('access_token', tokenBody.access_token);
+    bru.setEnvVar(
+      'access_token_expires_at',
+      String(Date.now() + Math.max(lifetimeSeconds - 30, 1) * 1000)
+    );
+  }
+
+  await getAccessToken();
+
+  function b64EncodeUnicode(str){
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m,p)=>String.fromCharCode('0x'+p)));
+  }
+  
+  const varsToEncode = [
+    'aasIdentifier-1',
+    'aasIdentifier-2',
+    'aasIdentifier-3',
+    'submodelIdentifierMaintenanceInstructions-1',
+    'submodelIdentifierNameplate-1',
+    'submodelIdentifierNameplate-2',
+    'submodelIdentifierNameplate-3',
+    'submodelIdentifierHandoverDocumentation-1',
+    'submodelIdentifierTechnicalData-1',
+    'submodelIdentifierCarbonFootprint-1',
+    'assetId-product1',
+    'assetId-product2'
+  ];
+  
+  varsToEncode.forEach(name => {
+    const plain = bru.getCollectionVar(name);
+    const encoded = b64EncodeUnicode(plain);
+    bru.setVar(name, encoded);
+  });
+  
+  const rawIdShort = bru.getCollectionVar('idShort');
+  if (rawIdShort) {
+    bru.setVar('idShort', encodeURIComponent(rawIdShort));
+  }
+}

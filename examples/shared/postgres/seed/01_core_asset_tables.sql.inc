@@ -1,5 +1,6 @@
 INSERT INTO "Asset" (
-    "ProductId","IdShort","GlobalAssetId","AasId","ThumbnailContentType","ThumbnailPath","MaintenanceFreeAsset",
+    "ProductId","IdShort","GlobalAssetId","AasId","AssetKind","AssetType",
+    "ThumbnailContentType","ThumbnailPath","MaintenanceFreeAsset",
     "UriOfTheProduct","ManufacturerProductType","OrderCodeOfManufacturer","ProductArticleNumberOfManufacturer",
     "SerialNumber","YearOfConstruction","DateOfManufacture","HardwareVersion","FirmwareVersion","SoftwareVersion",
     "CountryOfOrigin","UniqueFacilityIdentifier","ManufacturerName","ManufacturerProductDesignation_en",
@@ -15,12 +16,12 @@ INSERT INTO "Asset" (
 'Product1',
 'https://mm-software.com/ids/assets/000-001',
 'https://mm-software.com/ids/aas/000-001',
+'Instance',
+'',
 'image/jpeg',
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg',
 TRUE,
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg',
 'FM-ABC-1234',
 'FMABC1234',
 'FM11-ABC22-123456',
@@ -42,8 +43,7 @@ TRUE,
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 '123456',
 'EEA-EX-200-S/47-Q3',
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg',
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 'Restricted use',
 'Eingeschränkte Nutzung',
@@ -55,7 +55,7 @@ TRUE,
 5,
 '2025-12-24T14:30:00Z',
 '2035-12-24T14:30:00Z',
-('https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/' ||
+('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
 'AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf')
 ),
 
@@ -64,12 +64,12 @@ TRUE,
 'Product2',
 'https://mm-software.com/ids/assets/000-002',
 'https://mm-software.com/ids/aas/000-002',
+'Instance',
+'ElectronicDevice',
 'image/jpeg',
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product2.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg',
 FALSE,
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product2.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg',
 'FM-ABC-1235',
 'FMABC1238',
 'FM11-ABC22-123458',
@@ -91,8 +91,7 @@ FALSE,
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 '123456',
 'EEA-EX-200-S/47-Q4',
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product2.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg',
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 'Restricted use',
 'Eingeschränkte Nutzung',
@@ -104,7 +103,7 @@ FALSE,
 2.2999999999999998,
 '2026-01-15T09:15:00+05:30',
 '2036-01-15T09:15:00+05:31',
-('https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/' ||
+('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
 'AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf')
 ),
 
@@ -113,12 +112,12 @@ FALSE,
 'Product3',
 'https://mm-software.com/ids/assets/001-001',
 'https://mm-software.com/ids/aas/001-001',
+'Type',
+'',
 'image/jpeg',
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product3.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg',
 TRUE,
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product3.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg',
 'TM-ABC-1680',
 'TMABC1680',
 'TM11-ABC22-123456',
@@ -140,8 +139,7 @@ TRUE,
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 '123456',
 'EEA-EX-200-S/47-Q5',
-('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
-'AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product3.jpg'),
+'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg',
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 'Restricted use',
 'Eingeschränkte Nutzung',
@@ -153,7 +151,7 @@ TRUE,
 7.8,
 '2024-07-01T18:45:00-04:00',
 '2034-07-01T18:45:00-04:01',
-('https://docs.google.com/viewer?url=https://raw.githubusercontent.com/AAS-TwinEngine/' ||
+('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
 'AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf')
 );
 
@@ -161,12 +159,12 @@ TRUE,
 -- Specific Asset IDs
 -- ============================================================
 
-INSERT INTO "SpecificAssetIds" ("AssetId","Name","Value") VALUES
-('1','SerialNumber','SN-FMABC1234-9804820'),
-('1','BatchId','BATCH-2022-001'),
-('1','LotNumber','LOT-DE-77881'),
-('2','SerialNumber','SN-FMABC1238-9804821'),
-('2','BatchId','BATCH-2022-001'),
-('2','LotNumber','LOT-IN-77882'),
-('3','SerialNumber','SN-TMABC1680-9804760'),
-('3','BatchId','BATCH-2022-001');
+INSERT INTO "SpecificAssetIds" ("ProductId","Name","Value") VALUES
+('000-001','SerialNumber','SN-FMABC1234-9804820'),
+('000-001','BatchId','BATCH-2022-001'),
+('000-001','LotNumber','LOT-DE-77881'),
+('000-002','SerialNumber','SN-FMABC1238-9804821'),
+('000-002','BatchId','BATCH-2022-001'),
+('000-002','LotNumber','LOT-IN-77882'),
+('001-001','SerialNumber','SN-TMABC1680-9804760'),
+('001-001','BatchId','BATCH-2022-001');

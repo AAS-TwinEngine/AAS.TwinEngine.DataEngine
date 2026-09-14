@@ -22,12 +22,6 @@ public static class HttpClientRegistrationExtensions
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
             client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-        })
-        .AddStandardResilienceHandler(retryConfig);
-
-        httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Brotli
         });
 
         _ = httpClientBuilder.AddHttpMessageHandler(sp =>
@@ -36,13 +30,20 @@ public static class HttpClientRegistrationExtensions
                     sp.GetRequiredService<IRequestHeaderMapper>(),
                     clientName));
 
+        _ = httpClientBuilder.AddStandardResilienceHandler(retryConfig);
+
+        httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Brotli
+        });
+
         return services;
     }
 
     public static IServiceCollection AddHttpClientWithoutResilience(
         this IServiceCollection services,
         string clientName,
-        Uri? baseUrl = null,
+        Uri baseUrl,
         TimeSpan? timeout = null)
     {
         _ = services.AddHttpClient(clientName, client =>

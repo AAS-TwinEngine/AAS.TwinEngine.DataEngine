@@ -58,7 +58,7 @@ docker compose down -v
 
 ## Authentication
 
-The example reuses the Keycloak realm from `../securedExample/keycloak/realm`.
+The example imports the local Keycloak realm from `./keycloak/realm`.
 
 Default credentials:
 

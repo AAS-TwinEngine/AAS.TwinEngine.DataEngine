@@ -87,8 +87,8 @@ INSERT INTO "DocumentVersion" (
 ) VALUES
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1',
     '2023-01-01',
     'Released',
@@ -103,13 +103,13 @@ INSERT INTO "DocumentVersion" (
     'DSLR, Camera, Photography, User Guide, Setup',
     'DSLR, Kamera, Fotografie, Benutzerhandbuch, Einrichtung',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     1,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1.1',
     '2024-05-05',
     'InReview',
@@ -124,13 +124,13 @@ INSERT INTO "DocumentVersion" (
     'Mirrorless, Camera, Specs, Imaging, Performance',
     'Spiegellos, Kamera, Spezifikationen, Bildgebung, Leistung',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '2.1',
     '2026-01-01',
     'Released',
@@ -145,13 +145,13 @@ INSERT INTO "DocumentVersion" (
     'Lens, Maintenance, Cleaning, Professional, Care',
     'Objektiv, Wartung, Reinigung, Professionell, Pflege',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '2.3',
     '2025-10-10',
     'InReview',
@@ -166,13 +166,13 @@ INSERT INTO "DocumentVersion" (
     'Wide-Angle, Lens, Installation, Setup, Kit',
     'Weitwinkel, Objektiv, Installation, Einrichtung, Set',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '0.9',
     '2024-01-01',
     'Released',
@@ -187,13 +187,13 @@ INSERT INTO "DocumentVersion" (
     'Telephoto, Lens, Data Sheet, Specifications, Optics',
     'Teleobjektiv, Objektiv, Datenblatt, Spezifikationen, Optik',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1.2',
     '2024-03-03',
     'InReview',
@@ -208,13 +208,13 @@ INSERT INTO "DocumentVersion" (
     'Safety, Camera, Accessories, Guidelines, Handling',
     'Sicherheit, Kamera, Zubehör, Richtlinien, Handhabung',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     1,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1.4',
     '2023-01-01',
     'Released',
@@ -229,13 +229,13 @@ INSERT INTO "DocumentVersion" (
     'Perfume, Fragrance, Luxury, Catalog, Collection',
     'Parfum, Duft, Luxus, Katalog, Kollektion',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     2,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '2',
     '2024-03-03',
     'InReview',
@@ -250,13 +250,13 @@ INSERT INTO "DocumentVersion" (
     'Packaging, Perfume, Bottles, Caps, Compliance',
     'Verpackung, Parfum, Flaschen, Verschlüsse, Konformität',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 ),
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf',
+    'https://raw.githubusercontent.com/'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1',
     '2022-02-02',
     'Released',
@@ -271,7 +271,7 @@ INSERT INTO "DocumentVersion" (
     'Perfume, Fragrance, Luxury, Catalog, Collection',
     'Parfum, Duft, Luxus, Katalog, Kollektion',
     'https://raw.githubusercontent.com/'
-    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg'
+    'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg'
 );
 
 -- ============================================================

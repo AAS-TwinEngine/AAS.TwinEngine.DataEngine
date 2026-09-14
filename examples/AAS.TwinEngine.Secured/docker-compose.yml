@@ -13,74 +13,45 @@ services:
       - "8080:80"
     volumes:
       - ../shared/nginx/html:/usr/share/nginx/html
-      - ../shared/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template
     restart: always
     depends_on:
+      twinengine-dataengine:
+        condition: service_started
       template-repository-registry:
         condition: service_started
     networks:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:v1.1.0
+    build:
+      context: ../../source
+      dockerfile: AAS.TwinEngine.DataEngine/Dockerfile
+    image: aas-twinengine/dataengine:local-secured-example
     container_name: twinengine-dataengine
     depends_on:
       dpp-plugin:
         condition: service_started
+      template-repository-registry:
+        condition: service_started
+      keycloak-healthcheck:
+        condition: service_completed_successfully
     restart: always
     environment:
-      - General__DataEngineRepositoryBaseUrl=http://localhost:8080
-      - General__CustomerDomainUrl=https://mm-software.com
-      - Plugins__Instances__0__Name=RelationalDatabasePlugin
-      - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
-      - Plugins__Instances__0__healthEndpoint=/healthz
-      - Plugins__MultiLanguageProperty__DefaultLanguages__0=en
-      - Plugins__MultiLanguageProperty__DefaultLanguages__1=de
-      - Plugins__Instances__0__headerMappings__0__source=Authorization
-      - Plugins__Instances__0__headerMappings__0__target=X-Auth-Token
-      - Plugins__Instances__0__headerMappings__0__required=false
-      - Plugins__Instances__0__headerMappings__1__source=X-Organization-Id
-      - Plugins__Instances__0__headerMappings__1__target=X-Tenant-Context
-      - Plugins__Instances__0__headerMappings__1__required=false
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=TechnicalData
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=Nameplate
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=MaintenanceInstructions
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__templateId=https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__pattern__0=CarbonFootprint
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
-      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
-      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
-      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
-      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
-      - TemplateManagement__AasTemplateRepository__Name=AasTemplateRepository
-      - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository-registry:8082
-      - TemplateManagement__AasTemplateRepository__healthEndpoint=/health
-      - TemplateManagement__SubmodelTemplateRepository__Name=SubmodelTemplateRepository
-      - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository-registry:8082
-      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/health
-      - TemplateManagement__ConceptDescriptionTemplateRepository__Name=ConceptDescriptionTemplateRepository
-      - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://template-repository-registry:8082
-      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/health
-      - TemplateManagement__AasTemplateRegistry__Name=AasTemplateRegistry
-      - TemplateManagement__AasTemplateRegistry__baseUrl=http://template-repository-registry:8082
-      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/health
-      - TemplateManagement__SubmodelTemplateRegistry__Name=SubmodelTemplateRegistry
-      - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://template-repository-registry:8082
-      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/health
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./dataengine-env.json:/config/dataengine-env.json:ro
     networks:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:v1.0.0
+    image: ghcr.io/aas-twinengine/plugindpp:develop
     container_name: dpp-plugin
     depends_on:
       postgres:
         condition: service_healthy
+    ports:
+      - "8086:8080"
     restart: always
     environment:
       - Semantics__IndexContextPrefix=_aastwinengineindex_
@@ -115,10 +86,14 @@ services:
     container_name: template-repository-registry
     pull_policy: always
     command: ["/app/aasenvironmentservice"]
+    ports:
+      - "8082:8082"
     volumes:
       - ../shared/aas:/app/preconfiguration:ro
+      - ./security_env:/security_env:ro
     environment:
       - SERVER_PORT=8082
+      - SERVER_VERIFICATIONENDPOINTAVAILABLE=true
       - CORS_ALLOWEDORIGINS=*
       - CORS_ALLOWEDHEADERS=*
       - CORS_ALLOWEDCREDENTIALS=true
@@ -127,20 +102,27 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_DBNAME=basyxtestdb
       - POSTGRES_MAXOPENCONNECTIONS=500
       - POSTGRES_MAXIDLECONNECTIONS=500
       - POSTGRES_CONNMAXLIFETIMEMINUTES=5
-      - ABAC_ENABLED=false
+      - ABAC_ENABLED=true
+      - ABAC_MODELPATH=/security_env/access-rules.json
+      - ABAC_POLICY_FILE_IMPORT=always
+      - OIDC_TRUSTLISTPATH=/security_env/trustlist.json
       - GENERAL_AASREGISTRYINTEGRATION=true
       - GENERAL_SUBMODELREGISTRYINTEGRATION=true
       - GENERAL_DISCOVERYINTEGRATION=true
       - GENERAL_EXTERNALURL=http://localhost:8080
       - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
-    restart: always
     depends_on:
       basyx_configuration:
         condition: service_completed_successfully
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "keycloak.localhost:host-gateway"
+    restart: always
     networks:
       - twinengine-network
 
@@ -153,7 +135,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_DBNAME=basyxtestdb
       - POSTGRES_MAXOPENCONNECTIONS=500
       - POSTGRES_MAXIDLECONNECTIONS=500
       - POSTGRES_CONNMAXLIFETIMEMINUTES=5
@@ -178,10 +160,67 @@ services:
       LOGO_PATH: "MM_Logo.svg"
       PRIMARY_DARK_COLOR: "#00F2E5"
       PRIMARY_LIGHT_COLOR: "#041b2b"
-    restart: always
+      ENDPOINT_CONFIG_AVAILABLE: "false"
+      KEYCLOAK_URL: http://localhost:9090
+      KEYCLOAK_REALM: basyx
+      KEYCLOAK_CLIENT_ID: basyx-ui
+      ALLOW_EDITING: "false"
+      SM_VIEWER_EDITOR: "false"
+      ALLOW_UPLOADING: "false"
     depends_on:
       template-repository-registry:
         condition: service_started
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "keycloak.localhost:host-gateway"
+    restart: always
+    networks:
+      - twinengine-network
+
+  keycloak:
+    image: keycloak/keycloak:26.0.6
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/basyxtestdb
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: admin
+      KC_HOSTNAME: keycloak.localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_HTTPS_ENABLED: "false"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KC_HTTP_PORT: "9090"
+      KC_HTTP_MANAGEMENT_PORT: "9000"
+      KC_IMPORT: /opt/keycloak/data/import/
+      KC_HTTP_MANAGEMENT_ENABLED: "true"
+    command: ["start-dev", "--import-realm", "--health-enabled=true", "--http-port=9090"]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./keycloak/realm:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  keycloak-healthcheck:
+    image: curlimages/curl:latest
+    container_name: keycloak-healthcheck
+    command: >
+      sh -c "
+        echo 'Waiting for Keycloak to become ready...';
+        until curl -sf http://keycloak:9000/health/ready; do
+          sleep 5;
+        done;
+        echo 'Keycloak is ready!'"
+    depends_on:
+      - keycloak
     networks:
       - twinengine-network
 
