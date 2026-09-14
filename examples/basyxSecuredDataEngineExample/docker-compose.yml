@@ -102,7 +102,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_DBNAME=basyxtestdb
       - POSTGRES_MAXOPENCONNECTIONS=500
       - POSTGRES_MAXIDLECONNECTIONS=500
       - POSTGRES_CONNMAXLIFETIMEMINUTES=5
@@ -135,7 +135,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_DBNAME=basyxtestdb
       - POSTGRES_MAXOPENCONNECTIONS=500
       - POSTGRES_MAXIDLECONNECTIONS=500
       - POSTGRES_CONNMAXLIFETIMEMINUTES=5
@@ -183,7 +183,7 @@ services:
     container_name: keycloak
     environment:
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/basyxTestDB
+      KC_DB_URL: jdbc:postgresql://postgres:5432/basyxtestdb
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: admin
       KC_HOSTNAME: keycloak.localhost
