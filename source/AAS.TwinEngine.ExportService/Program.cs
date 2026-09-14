@@ -1,9 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 using AAS.TwinEngine.ExportService.ServiceConfiguration;
 
 using Serilog;
 
 namespace AAS.TwinEngine.ExportService;
 
+[ExcludeFromCodeCoverage]
 public static class Program
 {
     public static async Task Main(string[] args)
