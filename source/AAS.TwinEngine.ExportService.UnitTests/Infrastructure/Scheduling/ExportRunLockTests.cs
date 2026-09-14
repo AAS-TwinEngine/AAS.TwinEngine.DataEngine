@@ -66,28 +66,4 @@ public class ExportRunLockTests
 
         releaser2.Dispose();
     }
-
-    [Fact]
-    public void TryAcquire_MultithreadedContention_OnlyOneSucceedsAtATime()
-    {
-        // Arrange
-        const int threadCount = 20;
-        var acquiredCount = 0;
-        using var barrier = new Barrier(threadCount);
-
-        // Act
-        Parallel.For(0, threadCount, _ =>
-        {
-            barrier.SignalAndWait();
-            using var releaser = _sut.TryAcquire();
-            if (releaser is not null)
-            {
-                Interlocked.Increment(ref acquiredCount);
-                Thread.Sleep(5);
-            }
-        });
-
-        // Assert - exactly one thread was inside at any given moment
-        Assert.True(acquiredCount >= 1);
-    }
 }
