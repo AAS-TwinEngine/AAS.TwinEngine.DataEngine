@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -26,17 +27,18 @@ public sealed class CachedGetRequestClient(
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
         var currentTraceContext = Activity.Current?.Context ?? default;
+        var authorizationHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
 
         if (!IsCacheEnabled(httpContextAccessor, cacheOptions.Value))
         {
             using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, currentTraceContext);
             logger.LogInformation("Cache bypassed because 'EnableNoCacheParameter' is true and 'noCache=true' was specified.");
-            return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
+            return await FetchAsync(relativeUrl, httpClientName, authorizationHeader, cancellationToken).ConfigureAwait(false);
         }
 
         using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, currentTraceContext);
 
-        var cacheKey = BuildCacheKey(httpContextAccessor, relativeUrl);
+        var cacheKey = BuildCacheKey(httpContextAccessor, relativeUrl, authorizationHeader);
 
         var entryOptions = new HybridCacheEntryOptions
         {
@@ -51,20 +53,26 @@ public sealed class CachedGetRequestClient(
             async token =>
             {
                 using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, httpFetchParentContext);
-                return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
+                return await FetchAsync(relativeUrl, httpClientName, authorizationHeader, token).ConfigureAwait(false);
             },
             options: entryOptions,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<string> FetchAsync(string url, string httpClientName, CancellationToken cancellationToken)
+    private async Task<string> FetchAsync(string url, string httpClientName, string? authorizationHeader, CancellationToken cancellationToken)
     {
         logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(url));
 
         var httpClient = clientFactory.CreateClient(httpClientName);
         var relativeUri = new Uri(url, UriKind.Relative);
+        using var request = new HttpRequestMessage(HttpMethod.Get, relativeUri);
 
-        var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);
+        if (AuthenticationHeaderValue.TryParse(authorizationHeader, out var parsedAuthorizationHeader))
+        {
+            request.Headers.Authorization = parsedAuthorizationHeader;
+        }
+
+        var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         if (response.IsSuccessStatusCode)
         {
@@ -84,9 +92,10 @@ public sealed class CachedGetRequestClient(
         };
     }
 
-    private static string BuildCacheKey(IHttpContextAccessor httpContextAccessor, string requestParts)
+    private static string BuildCacheKey(IHttpContextAccessor httpContextAccessor, string requestParts, string? authorizationHeader)
     {
         var requestHash = ComputeHash(requestParts);
+        var authorizationHash = ComputeHash(authorizationHeader ?? string.Empty);
 
         var user = httpContextAccessor.HttpContext?.User;
 
@@ -98,10 +107,10 @@ public sealed class CachedGetRequestClient(
 
             var permissionHash = ComputePermissionHash(user.Claims);
 
-            return $"user:{userId}:ph:{permissionHash}:req:{requestHash}";
+            return $"user:{userId}:ph:{permissionHash}:auth:{authorizationHash}:req:{requestHash}";
         }
 
-        return $"anonymous:req:{requestHash}";
+        return $"anonymous:auth:{authorizationHash}:req:{requestHash}";
     }
 
     private static string ComputePermissionHash(IEnumerable<Claim> claims)

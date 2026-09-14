@@ -130,7 +130,8 @@ public class CachedGetRequestClientTests
 
         // Assert
         var expectedHash = ComputeHash(RelativeUrl);
-        Assert.Equal($"anonymous:req:{expectedHash}", capturedKey);
+        var authorizationHash = ComputeHash(string.Empty);
+        Assert.Equal($"anonymous:auth:{authorizationHash}:req:{expectedHash}", capturedKey);
     }
 
     [Fact]
@@ -149,7 +150,8 @@ public class CachedGetRequestClientTests
 
         // Assert
         var expectedHash = ComputeHash(RelativeUrl);
-        Assert.Equal($"anonymous:req:{expectedHash}", capturedKey);
+        var authorizationHash = ComputeHash(string.Empty);
+        Assert.Equal($"anonymous:auth:{authorizationHash}:req:{expectedHash}", capturedKey);
     }
 
     [Fact]
@@ -170,7 +172,8 @@ public class CachedGetRequestClientTests
 
         // Assert
         var expectedHash = ComputeHash(RelativeUrl);
-        Assert.Equal($"anonymous:req:{expectedHash}", capturedKey);
+        var authorizationHash = ComputeHash(string.Empty);
+        Assert.Equal($"anonymous:auth:{authorizationHash}:req:{expectedHash}", capturedKey);
     }
 
     [Fact]
@@ -199,7 +202,8 @@ public class CachedGetRequestClientTests
         // Assert
         var requestHash = ComputeHash(RelativeUrl);
         var permissionHash = ComputePermissionHash(claims);
-        Assert.Equal($"user:{UserId}:ph:{permissionHash}:req:{requestHash}", capturedKey);
+        var authorizationHash = ComputeHash(string.Empty);
+        Assert.Equal($"user:{UserId}:ph:{permissionHash}:auth:{authorizationHash}:req:{requestHash}", capturedKey);
     }
 
     [Fact]
@@ -228,7 +232,8 @@ public class CachedGetRequestClientTests
         // Assert
         var requestHash = ComputeHash(RelativeUrl);
         var permissionHash = ComputePermissionHash(claims);
-        Assert.Equal($"user:{SubId}:ph:{permissionHash}:req:{requestHash}", capturedKey);
+        var authorizationHash = ComputeHash(string.Empty);
+        Assert.Equal($"user:{SubId}:ph:{permissionHash}:auth:{authorizationHash}:req:{requestHash}", capturedKey);
     }
 
     [Fact]
@@ -255,7 +260,8 @@ public class CachedGetRequestClientTests
         // Assert
         var requestHash = ComputeHash(RelativeUrl);
         var permissionHash = ComputePermissionHash(claims);
-        Assert.Equal($"user:unknown:ph:{permissionHash}:req:{requestHash}", capturedKey);
+        var authorizationHash = ComputeHash(string.Empty);
+        Assert.Equal($"user:unknown:ph:{permissionHash}:auth:{authorizationHash}:req:{requestHash}", capturedKey);
     }
 
     [Fact]
