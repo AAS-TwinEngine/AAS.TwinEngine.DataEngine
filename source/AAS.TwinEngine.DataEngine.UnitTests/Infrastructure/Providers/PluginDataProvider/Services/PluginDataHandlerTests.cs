@@ -208,7 +208,7 @@ public class PluginDataHandlerTests
     }
 
     [Fact]
-    public async Task TryGetValuesBatchAsync_GroupsBySchemaBeforeCreatingBatches()
+    public async Task TryGetValuesBatchAsync_OrdersBySchemaAndBatchesByTotalRequestCount()
     {
         var nameplate = new SemanticLeafNode("Nameplate", "", DataType.String, Cardinality.One);
         var contact = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
@@ -235,12 +235,10 @@ public class PluginDataHandlerTests
             new("contact-3", contact),
             new("custom-3", custom)
         ];
-        var capturedBatches = new List<IReadOnlyList<string>>();
+        var capturedBatches = new List<IReadOnlyList<IReadOnlyList<string>>>();
         var responses = new Queue<string>(
         [
-            """[{"submodelId":"nameplate-1","result":{"Nameplate":"1"}},{"submodelId":"nameplate-2","result":{"Nameplate":"2"}},{"submodelId":"nameplate-3","result":{"Nameplate":"3"}}]""",
-            """[{"submodelId":"contact-1","result":{"Contact":"1"}},{"submodelId":"contact-2","result":{"Contact":"2"}},{"submodelId":"contact-3","result":{"Contact":"3"}}]""",
-            """[{"submodelId":"custom-1","result":{"Custom":"1"}},{"submodelId":"custom-2","result":{"Custom":"2"}},{"submodelId":"custom-3","result":{"Custom":"3"}}]"""
+            """[{"submodelId":"nameplate-1","result":{"Nameplate":"1"}},{"submodelId":"contact-1","result":{"Contact":"1"}},{"submodelId":"custom-1","result":{"Custom":"1"}},{"submodelId":"nameplate-2","result":{"Nameplate":"2"}},{"submodelId":"contact-2","result":{"Contact":"2"}},{"submodelId":"custom-2","result":{"Custom":"2"}},{"submodelId":"nameplate-3","result":{"Nameplate":"3"}},{"submodelId":"contact-3","result":{"Contact":"3"}},{"submodelId":"custom-3","result":{"Custom":"3"}}]"""
         ]);
 
         _multiPluginDataHandler
@@ -254,8 +252,9 @@ public class PluginDataHandlerTests
             .Returns(call =>
             {
                 var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
-                var group = Assert.Single(groups);
-                capturedBatches.Add(group.SubmodelIds.Select(DecodeBase64Url).ToList());
+                capturedBatches.Add(groups
+                    .Select(group => (IReadOnlyList<string>)group.SubmodelIds.Select(DecodeBase64Url).ToList())
+                    .ToList());
                 return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
             });
         _pluginDataProvider
@@ -267,12 +266,11 @@ public class PluginDataHandlerTests
 
         var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
 
-        Assert.Equal(
-        [
-            ["nameplate-1", "nameplate-2", "nameplate-3"],
-            ["contact-1", "contact-2", "contact-3"],
-            ["custom-1", "custom-2", "custom-3"]
-        ], capturedBatches);
+        var batch = Assert.Single(capturedBatches);
+        Assert.Equal(3, batch.Count);
+        Assert.Contains(batch, group => group.SequenceEqual(["nameplate-1", "nameplate-2", "nameplate-3"]));
+        Assert.Contains(batch, group => group.SequenceEqual(["contact-1", "contact-2", "contact-3"]));
+        Assert.Contains(batch, group => group.SequenceEqual(["custom-1", "custom-2", "custom-3"]));
         Assert.Equal(9, result.Count);
     }
 

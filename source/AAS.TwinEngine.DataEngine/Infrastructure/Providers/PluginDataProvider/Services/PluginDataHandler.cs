@@ -91,8 +91,8 @@ public class PluginDataHandler(
         }
 
         var batches = preparedRequests
-            .GroupBy(request => request.SchemaKey, StringComparer.Ordinal)
-            .SelectMany(schemaGroup => schemaGroup.Chunk(batchSize))
+            .OrderBy(request => request.SchemaKey, StringComparer.Ordinal)
+            .Chunk(batchSize)
             .ToList();
 
         var responseItems = new ConcurrentBag<SubmodelDataBatchResponse>();
@@ -101,12 +101,12 @@ public class PluginDataHandler(
             new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
             async (batch, token) =>
             {
-                IReadOnlyList<SubmodelDataBatchRequestGroup> groups =
-                [
-                    new(
-                        batch.Select(item => item.Request.SubmodelId.EncodeBase64Url(logger)).ToList(),
-                        batch[0].Schema)
-                ];
+                IReadOnlyList<SubmodelDataBatchRequestGroup> groups = batch
+                    .GroupBy(item => item.SchemaKey, StringComparer.Ordinal)
+                    .Select(group => new SubmodelDataBatchRequestGroup(
+                        group.Select(item => item.Request.SubmodelId.EncodeBase64Url(logger)).ToList(),
+                        group.First().Schema))
+                    .ToList();
 
                 var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
                 using var requestContent = pluginRequest.Content;
