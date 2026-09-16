@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -32,6 +33,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
     private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
 
     private readonly TemplateManagementConfig _config = options.Value;
+    private readonly ConcurrentDictionary<string, Lazy<Task<JsonNode>>> _inFlightTemplateLoads = new();
 
     public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
@@ -54,11 +56,13 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
         var url = queryParams.Count > 0
             ? $"{SubModelRepositoryPath}/{encodedTemplateId}?{string.Join("&", queryParams)}"
             : $"{SubModelRepositoryPath}/{encodedTemplateId}";
+        var cacheKey = BuildTemplateCacheKey(templateId, queryOptions);
 
         try
         {
             return await GetSubmodelFromUrlAsync(
                 url,
+                cacheKey,
                 templateId,
                 "Failed to parse or deserialize filtered submodel template JSON. TemplateId: {TemplateId}",
                 cancellationToken).ConfigureAwait(false);
@@ -69,14 +73,48 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
         }
     }
 
-    private async Task<ISubmodel> GetSubmodelFromUrlAsync(string url, string templateId, string errorMessage, CancellationToken cancellationToken)
+    private async Task<ISubmodel> GetSubmodelFromUrlAsync(string url, string cacheKey, string templateId, string errorMessage, CancellationToken cancellationToken)
     {
-        var cacheKey = $"template:{url}";
-        if (!IsNoCacheRequested() && memoryCache.TryGetValue<JsonNode>(cacheKey, out var cachedTemplate) && cachedTemplate is not null)
+        if (IsNoCacheRequested())
         {
-            return Jsonization.Deserialize.SubmodelFrom(cachedTemplate.DeepClone());
+            return await LoadSubmodelTemplateAsync(url, templateId, errorMessage, cancellationToken).ConfigureAwait(false);
         }
 
+        if (memoryCache.TryGetValue<JsonNode>(cacheKey, out var cachedTemplate) && cachedTemplate is not null)
+        {
+            return Jsonization.Deserialize.SubmodelFrom(cachedTemplate);
+        }
+
+        var lazyLoad = _inFlightTemplateLoads.GetOrAdd(
+            cacheKey,
+            _ => new Lazy<Task<JsonNode>>(
+                () => LoadAndCacheSubmodelTemplateAsync(url, cacheKey, templateId, errorMessage, cancellationToken),
+                LazyThreadSafetyMode.ExecutionAndPublication));
+
+        try
+        {
+            var template = await lazyLoad.Value.ConfigureAwait(false);
+            return Jsonization.Deserialize.SubmodelFrom(template);
+        }
+        finally
+        {
+            if (lazyLoad.IsValueCreated && lazyLoad.Value.IsCompleted)
+            {
+                _ = _inFlightTemplateLoads.TryRemove(new KeyValuePair<string, Lazy<Task<JsonNode>>>(cacheKey, lazyLoad));
+            }
+        }
+    }
+
+    private async Task<JsonNode> LoadAndCacheSubmodelTemplateAsync(string url, string cacheKey, string templateId, string errorMessage, CancellationToken cancellationToken)
+    {
+        var submodel = await LoadSubmodelTemplateAsync(url, templateId, errorMessage, cancellationToken).ConfigureAwait(false);
+        var template = Jsonization.Serialize.ToJsonObject(submodel);
+        memoryCache.Set(cacheKey, template, TimeSpan.FromMinutes(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes));
+        return template;
+    }
+
+    private async Task<ISubmodel> LoadSubmodelTemplateAsync(string url, string templateId, string errorMessage, CancellationToken cancellationToken)
+    {
         var content = await SendGetRequestAsync(
             url,
             HttpClientNames.SubmodelTemplateRepository,
@@ -85,14 +123,9 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
 
         try
         {
-            var jsonNode = JsonNode.Parse(content);
-            var submodel = Jsonization.Deserialize.SubmodelFrom(jsonNode!);
+            var jsonNode = JsonNode.Parse(content) ?? throw new JsonException("Template response was empty.");
+            var submodel = Jsonization.Deserialize.SubmodelFrom(jsonNode);
             UpdateSubmodelTemplateKind(submodel);
-            if (!IsNoCacheRequested())
-            {
-                memoryCache.Set(cacheKey, jsonNode!.DeepClone(), TimeSpan.FromMinutes(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes));
-            }
-
             return submodel;
         }
         catch (JsonException ex)
@@ -101,6 +134,9 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
             throw new ResponseParsingException();
         }
     }
+
+    private static string BuildTemplateCacheKey(string templateId, SubmodelQueryOptions? queryOptions) =>
+        $"template:{Uri.EscapeDataString(templateId)}:level:{Uri.EscapeDataString(queryOptions?.Level ?? string.Empty)}:extent:{Uri.EscapeDataString(queryOptions?.Extent ?? string.Empty)}";
 
     private bool IsNoCacheRequested()
     {
