@@ -465,6 +465,7 @@ public class TemplateProviderTests
         Assert.Null(result);
     }
 
+    //template-cache-by-id-changes
     [Fact]
     public async Task GetFilteredSubmodelTemplateAsync_WhenSameTemplateIsLoadedConcurrently_FetchesItOnce()
     {
@@ -496,6 +497,7 @@ public class TemplateProviderTests
         Assert.Equal(1, fetchCount);
     }
 
+    //template-cache-by-id-changes
     [Fact]
     public async Task GetFilteredSubmodelTemplateAsync_WhenTemplateIsCached_ReturnsIndependentInstances()
     {
@@ -511,6 +513,7 @@ public class TemplateProviderTests
         await _cachedHttp.Received(1).GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
 
+    //template-cache-by-id-changes
     [Fact]
     public async Task GetFilteredSubmodelTemplateAsync_WhenFilterOptionsDiffer_UsesSeparateCacheEntries()
     {
