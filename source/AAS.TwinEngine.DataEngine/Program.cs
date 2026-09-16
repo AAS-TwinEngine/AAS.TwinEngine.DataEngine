@@ -43,6 +43,7 @@ public class Program
         });
 
         _ = builder.Services.AddHybridCache();
+        _ = builder.Services.AddMemoryCache();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
         builder.Services.ConfigureResponseCompression();

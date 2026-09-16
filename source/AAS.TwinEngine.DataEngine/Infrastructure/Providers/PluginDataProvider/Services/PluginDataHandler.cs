@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -33,6 +35,7 @@ public class PluginDataHandler(
     private const string ShellsBasePath = "shells";
 
     private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
+    private readonly ConcurrentDictionary<string, Lazy<PreparedSchema>> _schemaCache = new(StringComparer.Ordinal);
 
     public async Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken)
     {
@@ -83,7 +86,10 @@ public class PluginDataHandler(
             return new Dictionary<string, SemanticTreeNode>();
         }
 
+        var preparationStopwatch = Stopwatch.StartNew();
         var preparedRequests = requests.Select(request => PrepareBatchRequest(request, pluginManifests)).ToList();
+        preparationStopwatch.Stop();
+        logger.LogInformation("Plugin batch preparation completed. RequestCount: {RequestCount}, PreparedCount: {PreparedCount}, ElapsedMs: {ElapsedMs}", requests.Count, preparedRequests.Count, preparationStopwatch.ElapsedMilliseconds);
         var pluginNames = preparedRequests.Select(request => request.PluginName).Distinct(StringComparer.Ordinal).ToList();
         if (pluginNames.Count != 1)
         {
@@ -95,7 +101,10 @@ public class PluginDataHandler(
             .Chunk(batchSize)
             .ToList();
 
+        logger.LogInformation("Plugin batch groups prepared. RequestCount: {RequestCount}, BatchSize: {BatchSize}, BatchCount: {BatchCount}, MaxConcurrency: {MaxConcurrency}", preparedRequests.Count, batchSize, batches.Count, maxConcurrency);
+
         var responseItems = new ConcurrentBag<SubmodelDataBatchResponse>();
+        var pluginHttpStopwatch = Stopwatch.StartNew();
         await Parallel.ForEachAsync(
             batches,
             new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
@@ -110,22 +119,31 @@ public class PluginDataHandler(
 
                 var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
                 using var requestContent = pluginRequest.Content;
+                var httpStopwatch = Stopwatch.StartNew();
                 var responseContent = await pluginDataProvider
                     .GetDataForSubmodelsBatchAsync(pluginRequest, token)
                     .ConfigureAwait(false);
+                httpStopwatch.Stop();
 
+                logger.LogInformation("Plugin batch HTTP completed. BatchSize: {BatchSize}, GroupCount: {GroupCount}, ResponseBytes: {ResponseBytes}, ElapsedMs: {ElapsedMs}", batch.Length, groups.Count, responseContent.Length, httpStopwatch.ElapsedMilliseconds);
+
+                var deserializeStopwatch = Stopwatch.StartNew();
                 var batchResponses = DeserializeBatchResponse(responseContent);
                 ValidateBatchResponse(batch, batchResponses);
+                deserializeStopwatch.Stop();
+                logger.LogInformation("Plugin batch response deserialized. BatchSize: {BatchSize}, ResponseCount: {ResponseCount}, ElapsedMs: {ElapsedMs}", batch.Length, batchResponses.Count, deserializeStopwatch.ElapsedMilliseconds);
 
                 foreach (var response in batchResponses)
                 {
                     responseItems.Add(response);
                 }
             }).ConfigureAwait(false);
+        pluginHttpStopwatch.Stop();
 
         var preparedById = preparedRequests.ToDictionary(item => item.Request.SubmodelId, StringComparer.Ordinal);
         var valuesById = new ConcurrentDictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
 
+        var responseValidationStopwatch = Stopwatch.StartNew();
         await Parallel.ForEachAsync(
             responseItems,
             new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
@@ -142,6 +160,9 @@ public class PluginDataHandler(
 
                 return ValueTask.CompletedTask;
             }).ConfigureAwait(false);
+        responseValidationStopwatch.Stop();
+
+        logger.LogInformation("Plugin batch processing completed. RequestCount: {RequestCount}, ResponseCount: {ResponseCount}, HttpAndDeserializeMs: {HttpAndDeserializeMs}, ValidateParseMergeMs: {ValidateParseMergeMs}", requests.Count, responseItems.Count, pluginHttpStopwatch.ElapsedMilliseconds, responseValidationStopwatch.ElapsedMilliseconds);
 
         return valuesById;
     }
@@ -155,11 +176,50 @@ public class PluginDataHandler(
         }
 
         var pluginValues = splitValues.Single();
-        var schema = JsonSchemaGenerator.ConvertToJsonSchema(pluginValues.Value);
-        jsonSchemaValidator.ValidateRequestSchema(schema);
+        var semanticTreeKey = BuildSemanticTreeKey(pluginValues.Value);
+        var preparedSchema = _schemaCache.GetOrAdd(
+            semanticTreeKey,
+            _ => new Lazy<PreparedSchema>(
+                () => CreatePreparedSchema(pluginValues.Value),
+                LazyThreadSafetyMode.ExecutionAndPublication)).Value;
 
-        var schemaKey = JsonSerializer.Serialize(schema, JsonSerializationOptions.FileAndHttpContent);
-        return new PreparedBatchRequest(request, pluginValues.Key, schema, schemaKey);
+        return new PreparedBatchRequest(request, pluginValues.Key, preparedSchema.Schema, preparedSchema.SchemaKey);
+    }
+
+    private PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
+    {
+        var schema = JsonSchemaGenerator.ConvertToJsonSchema(semanticTree);
+        jsonSchemaValidator.ValidateRequestSchema(schema);
+        return new PreparedSchema(schema, JsonSerializer.Serialize(schema, JsonSerializationOptions.FileAndHttpContent));
+    }
+
+    private static string BuildSemanticTreeKey(SemanticTreeNode node)
+    {
+        var builder = new StringBuilder();
+        AppendSemanticTreeKey(builder, node);
+        return builder.ToString();
+    }
+
+    private static void AppendSemanticTreeKey(StringBuilder builder, SemanticTreeNode node)
+    {
+        _ = builder.Append(node.GetType().Name)
+            .Append('|').Append(node.SemanticId)
+            .Append('|').Append(node.Cardinality);
+
+        if (node is SemanticLeafNode leaf)
+        {
+            _ = builder.Append('|').Append(leaf.DataType);
+        }
+
+        if (node is SemanticBranchNode branch)
+        {
+            foreach (var child in branch.Children)
+            {
+                _ = builder.Append('[');
+                AppendSemanticTreeKey(builder, child);
+                _ = builder.Append(']');
+            }
+        }
     }
 
     private static IReadOnlyList<SubmodelDataBatchResponse> DeserializeBatchResponse(string responseContent)
@@ -196,6 +256,8 @@ public class PluginDataHandler(
         string PluginName,
         JsonSchema Schema,
         string SchemaKey);
+
+    private sealed record PreparedSchema(JsonSchema Schema, string SchemaKey);
 
     public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {

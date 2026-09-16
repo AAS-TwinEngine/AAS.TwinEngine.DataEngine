@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Diagnostics;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
@@ -222,21 +224,28 @@ public class SubmodelRepositoryService(
 
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(List<string> submodelIds, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
+        var totalStopwatch = Stopwatch.StartNew();
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
         var templateTasks = new Task<ISubmodel>[submodelIds.Count];
 
+        var templateStopwatch = Stopwatch.StartNew();
         for (var i = 0; i < submodelIds.Count; i++)
         {
             templateTasks[i] = GetSubmodelTemplateAsync(submodelIds[i], queryOptions, semaphore, cancellationToken);
         }
 
         var templates = await Task.WhenAll(templateTasks).ConfigureAwait(false);
+        templateStopwatch.Stop();
+
+        var extractionStopwatch = Stopwatch.StartNew();
         var valueRequests = templates
             .Select((template, index) => new SubmodelValueRequest(submodelIds[index], semanticIdHandler.Extract(template)))
             .DistinctBy(request => request.SubmodelId, StringComparer.Ordinal)
             .ToList();
+        extractionStopwatch.Stop();
 
         var pluginManifests = pluginManifestConflictHandler.Manifests;
+        var pluginStopwatch = Stopwatch.StartNew();
         var valuesById = pluginManifests.Count == 1 && pluginManifests[0].Capabilities.HasSubmodelBatch
             ? await pluginDataHandler.TryGetValuesBatchAsync(
                 pluginManifests,
@@ -245,8 +254,10 @@ public class SubmodelRepositoryService(
                 _submodelBatchMaxConcurrency,
                 cancellationToken).ConfigureAwait(false)
             : await GetValuesIndividuallyAsync(pluginManifests, valueRequests, cancellationToken).ConfigureAwait(false);
+        pluginStopwatch.Stop();
 
         var results = new ISubmodel[submodelIds.Count];
+        var fillStopwatch = Stopwatch.StartNew();
         await Parallel.ForEachAsync(
             Enumerable.Range(0, submodelIds.Count),
             new ParallelOptions { MaxDegreeOfParallelism = _concurrentOperationsLimit, CancellationToken = cancellationToken },
@@ -258,6 +269,18 @@ public class SubmodelRepositoryService(
                 results[index] = submodel;
                 return ValueTask.CompletedTask;
             }).ConfigureAwait(false);
+        fillStopwatch.Stop();
+        totalStopwatch.Stop();
+
+        logger.LogInformation(
+            "Submodel batch timings. Count: {SubmodelCount}, UniqueValueRequests: {UniqueValueRequestCount}, TemplateMs: {TemplateMs}, SemanticExtractionMs: {SemanticExtractionMs}, PluginMs: {PluginMs}, FillMs: {FillMs}, TotalMs: {TotalMs}",
+            submodelIds.Count,
+            valueRequests.Count,
+            templateStopwatch.ElapsedMilliseconds,
+            extractionStopwatch.ElapsedMilliseconds,
+            pluginStopwatch.ElapsedMilliseconds,
+            fillStopwatch.ElapsedMilliseconds,
+            totalStopwatch.ElapsedMilliseconds);
 
         return [.. results];
     }

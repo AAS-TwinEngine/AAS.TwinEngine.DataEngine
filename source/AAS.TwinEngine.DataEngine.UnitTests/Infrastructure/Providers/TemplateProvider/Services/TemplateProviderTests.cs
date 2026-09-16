@@ -12,6 +12,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -48,7 +50,12 @@ public class TemplateProviderTests
         };
         options.Value.Returns(config);
 
-        _sut = new Template(logger, options, _cachedHttp);
+        _sut = new Template(
+            logger,
+            options,
+            _cachedHttp,
+            new MemoryCache(new MemoryCacheOptions()),
+            Substitute.For<IHttpContextAccessor>());
     }
 
     [Fact]

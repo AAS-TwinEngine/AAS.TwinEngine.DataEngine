@@ -17,12 +17,13 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Caching.Memory;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
-public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<TemplateManagementConfig> options, ICachedGetRequestClient cachedHttp) : ITemplateProvider
+public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<TemplateManagementConfig> options, ICachedGetRequestClient cachedHttp, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor) : ITemplateProvider
 {
     private const string SubModelRepositoryPath = ApiPaths.Submodels;
     private const string AasRegistryPath = ApiPaths.ShellDescriptors;
@@ -70,6 +71,12 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
 
     private async Task<ISubmodel> GetSubmodelFromUrlAsync(string url, string templateId, string errorMessage, CancellationToken cancellationToken)
     {
+        var cacheKey = $"template:{url}";
+        if (!IsNoCacheRequested() && memoryCache.TryGetValue<JsonNode>(cacheKey, out var cachedTemplate) && cachedTemplate is not null)
+        {
+            return Jsonization.Deserialize.SubmodelFrom(cachedTemplate.DeepClone());
+        }
+
         var content = await SendGetRequestAsync(
             url,
             HttpClientNames.SubmodelTemplateRepository,
@@ -81,6 +88,11 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
             var jsonNode = JsonNode.Parse(content);
             var submodel = Jsonization.Deserialize.SubmodelFrom(jsonNode!);
             UpdateSubmodelTemplateKind(submodel);
+            if (!IsNoCacheRequested())
+            {
+                memoryCache.Set(cacheKey, jsonNode!.DeepClone(), TimeSpan.FromMinutes(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes));
+            }
+
             return submodel;
         }
         catch (JsonException ex)
@@ -88,6 +100,16 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
             logger.LogError(ex, errorMessage, templateId);
             throw new ResponseParsingException();
         }
+    }
+
+    private bool IsNoCacheRequested()
+    {
+        if (httpContextAccessor.HttpContext?.Request.Query.TryGetValue("noCache", out var value) != true)
+        {
+            return false;
+        }
+
+        return bool.TryParse(value.ToString(), out var noCache) && noCache;
     }
 
     public async Task<ISubmodel?> GetFilteredSubmodelTemplateBySemanticIdAsync(string semanticId, CancellationToken cancellationToken)

@@ -274,6 +274,47 @@ public class PluginDataHandlerTests
         Assert.Equal(9, result.Count);
     }
 
+    [Fact]
+    public async Task TryGetValuesBatchAsync_ValidatesRequestSchemaOnceForEquivalentSemanticTrees()
+    {
+        var semanticIds = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["Contact"],
+                Capabilities = new Capabilities()
+            }
+        };
+        IReadOnlyList<SubmodelValueRequest> requests =
+        [
+            new("submodel/a", semanticIds),
+            new("submodel/b", new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One))
+        ];
+
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), manifests)
+            .Returns(call => new Dictionary<string, SemanticTreeNode>
+            {
+                ["TestPlugin"] = call.ArgAt<SemanticTreeNode>(0)
+            });
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call => new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1))));
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns("[{\"submodelId\":\"submodel/a\",\"result\":{\"Contact\":\"a\"}},{\"submodelId\":\"submodel/b\",\"result\":{\"Contact\":\"b\"}}]");
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
+
+        _ = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
+
+        _jsonSchemaValidator.Received(1).ValidateRequestSchema(Arg.Any<JsonSchema>());
+    }
+
     private static string DecodeBase64Url(string encodedValue) =>
         Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(encodedValue));
 
