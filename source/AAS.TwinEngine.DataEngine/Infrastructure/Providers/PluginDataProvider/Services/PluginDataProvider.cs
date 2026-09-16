@@ -48,7 +48,26 @@ public class PluginDataProvider(
         });
 
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.ToList();
+        return [.. results];
+    }
+
+    public async Task<string> GetDataForSubmodelsBatchAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken)
+    {
+        var url = BuildUrl(DataEndpoint);
+        ValidatePluginRequest(pluginRequest, url);
+        var relativeUri = new Uri(url, UriKind.Relative);
+
+        using var httpClient = CreateClient(pluginRequest.HttpClientName);
+        try
+        {
+            using var response = await httpClient.PostAsync(relativeUri, pluginRequest.Content, cancellationToken).ConfigureAwait(false);
+            return await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException)
+        {
+            logger.LogError("Request timed out. Endpoint: {Url}", url);
+            throw new RequestTimeoutException();
+        }
     }
 
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(

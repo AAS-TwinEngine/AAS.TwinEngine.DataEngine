@@ -15,6 +15,7 @@ public class ManifestProvider(
     private readonly bool _hasShellDescriptor = capabilities.Value.HasShellDescriptor;
     private readonly bool _hasAssetInformation = capabilities.Value.HasAssetInformation;
     private readonly bool _hasAssetIdSearch = capabilities.Value.HasAssetIdSearch;
+    private readonly bool _hasSubmodelBatch = capabilities.Value.HasSubmodelBatch;
 
     public ManifestData GetManifestData()
     {
@@ -31,7 +32,8 @@ public class ManifestProvider(
             {
                 HasAssetInformation = _hasAssetInformation,
                 HasShellDescriptor = _hasShellDescriptor,
-                HasAssetIdSearch = _hasAssetIdSearch
+                HasAssetIdSearch = _hasAssetIdSearch,
+                HasSubmodelBatch = _hasSubmodelBatch
             }
         };
         return manifestData;

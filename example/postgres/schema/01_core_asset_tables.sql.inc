@@ -4,10 +4,12 @@
 
 CREATE TABLE IF NOT EXISTS "Asset" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "ProductId" VARCHAR(50),
+    "ProductId" VARCHAR(50) UNIQUE,
     "IdShort" VARCHAR(100),
     "GlobalAssetId" TEXT,
     "AasId" TEXT,
+    "AssetKind" VARCHAR(50) NOT NULL,
+    "AssetType" VARCHAR(100),
     "ThumbnailContentType" VARCHAR(50),
     "ThumbnailPath" TEXT,
     "MaintenanceFreeAsset" BOOLEAN,
@@ -50,10 +52,16 @@ CREATE TABLE IF NOT EXISTS "Asset" (
 
 CREATE TABLE IF NOT EXISTS "SpecificAssetIds" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
+    "ProductId" VARCHAR(50) NOT NULL REFERENCES "Asset"("ProductId") ON DELETE CASCADE,
     "Name" TEXT,
     "Value" TEXT
 );
 
-CREATE INDEX idx_asset_productid
+CREATE INDEX IF NOT EXISTS idx_asset_productid
 ON "Asset"("ProductId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_aas_id
+ON "Asset" ("AasId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_global_asset_id
+ON "Asset" ("GlobalAssetId");

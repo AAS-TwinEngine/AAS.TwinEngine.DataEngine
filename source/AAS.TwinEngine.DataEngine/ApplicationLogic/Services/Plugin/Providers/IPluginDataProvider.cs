@@ -6,6 +6,8 @@ public interface IPluginDataProvider
 {
     Task<IList<string>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequests, string submodelId, CancellationToken cancellationToken);
 
+    Task<string> GetDataForSubmodelsBatchAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken);
+
     Task<IList<string>> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);
 
     Task<IList<string>> GetDataForShellDescriptorByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);

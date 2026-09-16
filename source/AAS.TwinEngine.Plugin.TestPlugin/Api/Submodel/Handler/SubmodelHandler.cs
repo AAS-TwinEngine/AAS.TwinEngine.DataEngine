@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Responses;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
@@ -38,6 +39,24 @@ public class SubmodelHandler(
             },
             (semanticTree) => semanticTreeHandler.GetJson(semanticTree, request.dataQuery)
         );
+    }
+
+    public async Task<IReadOnlyList<SubmodelDataBatchResult>> GetSubmodelDataBatch(
+        IReadOnlyList<GetSubmodelDataBatchRequest> requests,
+        CancellationToken cancellationToken)
+    {
+        var tasks = requests
+            .SelectMany(request => request.SubmodelIds.Select(async encodedSubmodelId =>
+            {
+                var submodelId = encodedSubmodelId.DecodeBase64();
+                var result = await GetSubmodelData(
+                    new GetSubmodelDataRequest(submodelId, request.Schema),
+                    cancellationToken).ConfigureAwait(false);
+
+                return new SubmodelDataBatchResult(submodelId, result);
+            }));
+
+        return await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     private static async Task<TDto> GetResourceByIdAsync<TModel, TDto>(

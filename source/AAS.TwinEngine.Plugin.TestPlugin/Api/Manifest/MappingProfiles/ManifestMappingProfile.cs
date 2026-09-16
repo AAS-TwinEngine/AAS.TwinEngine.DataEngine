@@ -13,7 +13,8 @@ public static class ManifestMappingProfile
             {
                 HasAssetInformation = data.Capabilities.HasAssetInformation,
                 HasShellDescriptor = data.Capabilities.HasShellDescriptor,
-                HasAssetIdSearch = data.Capabilities.HasAssetIdSearch
+                HasAssetIdSearch = data.Capabilities.HasAssetIdSearch,
+                HasSubmodelBatch = data.Capabilities.HasSubmodelBatch
             },
             SupportedSemanticIds = data.SupportedSemanticIds
         };

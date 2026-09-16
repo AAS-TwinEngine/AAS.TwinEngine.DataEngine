@@ -155,6 +155,131 @@ public class PluginDataHandlerTests
     }
 
     [Fact]
+    public async Task TryGetValuesBatchAsync_SplitsBatchesAndMapsOutOfOrderResponsesBySubmodelId()
+    {
+        var semanticIds = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["Contact"],
+                Capabilities = new Capabilities()
+            }
+        };
+        var requests = new List<SubmodelValueRequest>
+        {
+            new("submodel/a", semanticIds),
+            new("submodel/b", semanticIds),
+            new("submodel/c", semanticIds)
+        };
+        var capturedBatchSizes = new List<int>();
+        var capturedIds = new List<string>();
+
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), manifests)
+            .Returns(new Dictionary<string, SemanticTreeNode> { ["TestPlugin"] = semanticIds });
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call =>
+            {
+                var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
+                capturedBatchSizes.Add(groups.Sum(group => group.SubmodelIds.Count));
+                capturedIds.AddRange(groups.SelectMany(group => group.SubmodelIds));
+                return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
+            });
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns(
+                """[{"submodelId":"submodel/b","result":{"Contact":"b"}},{"submodelId":"submodel/a","result":{"Contact":"a"}}]""",
+                """[{"submodelId":"submodel/c","result":{"Contact":"c"}}]""");
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 2, 1, CancellationToken.None);
+
+        Assert.Equal([2, 1], capturedBatchSizes);
+    Assert.Equal(["c3VibW9kZWwvYQ", "c3VibW9kZWwvYg", "c3VibW9kZWwvYw"], capturedIds);
+    Assert.Equal("a", Assert.IsType<SemanticLeafNode>(result["submodel/a"]).Value);
+    Assert.Equal("b", Assert.IsType<SemanticLeafNode>(result["submodel/b"]).Value);
+    Assert.Equal("c", Assert.IsType<SemanticLeafNode>(result["submodel/c"]).Value);
+    }
+
+    [Fact]
+    public async Task TryGetValuesBatchAsync_GroupsBySchemaBeforeCreatingBatches()
+    {
+        var nameplate = new SemanticLeafNode("Nameplate", "", DataType.String, Cardinality.One);
+        var contact = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        var custom = new SemanticLeafNode("Custom", "", DataType.String, Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["Nameplate", "Contact", "Custom"],
+                Capabilities = new Capabilities()
+            }
+        };
+        IReadOnlyList<SubmodelValueRequest> requests =
+        [
+            new("nameplate-1", nameplate),
+            new("contact-1", contact),
+            new("custom-1", custom),
+            new("nameplate-2", nameplate),
+            new("contact-2", contact),
+            new("custom-2", custom),
+            new("nameplate-3", nameplate),
+            new("contact-3", contact),
+            new("custom-3", custom)
+        ];
+        var capturedBatches = new List<IReadOnlyList<string>>();
+        var responses = new Queue<string>(
+        [
+            """[{"submodelId":"nameplate-1","result":{"Nameplate":"1"}},{"submodelId":"nameplate-2","result":{"Nameplate":"2"}},{"submodelId":"nameplate-3","result":{"Nameplate":"3"}}]""",
+            """[{"submodelId":"contact-1","result":{"Contact":"1"}},{"submodelId":"contact-2","result":{"Contact":"2"}},{"submodelId":"contact-3","result":{"Contact":"3"}}]""",
+            """[{"submodelId":"custom-1","result":{"Custom":"1"}},{"submodelId":"custom-2","result":{"Custom":"2"}},{"submodelId":"custom-3","result":{"Custom":"3"}}]"""
+        ]);
+
+        _multiPluginDataHandler
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), manifests)
+            .Returns(call => new Dictionary<string, SemanticTreeNode>
+            {
+                ["TestPlugin"] = call.ArgAt<SemanticTreeNode>(0)
+            });
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call =>
+            {
+                var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
+                var group = Assert.Single(groups);
+                capturedBatches.Add(group.SubmodelIds.Select(DecodeBase64Url).ToList());
+                return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
+            });
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns(_ => responses.Dequeue());
+        _multiPluginDataHandler
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
+
+        Assert.Equal(
+        [
+            ["nameplate-1", "nameplate-2", "nameplate-3"],
+            ["contact-1", "contact-2", "contact-3"],
+            ["custom-1", "custom-2", "custom-3"]
+        ], capturedBatches);
+        Assert.Equal(9, result.Count);
+    }
+
+    private static string DecodeBase64Url(string encodedValue) =>
+        Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(encodedValue));
+
+    [Fact]
     public async Task GetDataForAllShellDescriptorsAsync_ReturnsListWithHrefSet()
     {
         var metaData = new ShellDescriptorsMetaData

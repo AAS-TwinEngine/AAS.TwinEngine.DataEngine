@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -69,6 +70,132 @@ public class PluginDataHandler(
 
         return mergedValues;
     }
+
+    public async Task<IReadOnlyDictionary<string, SemanticTreeNode>> TryGetValuesBatchAsync(
+        IReadOnlyList<PluginManifest> pluginManifests,
+        IReadOnlyList<SubmodelValueRequest> requests,
+        int batchSize,
+        int maxConcurrency,
+        CancellationToken cancellationToken)
+    {
+        if (requests.Count == 0)
+        {
+            return new Dictionary<string, SemanticTreeNode>();
+        }
+
+        var preparedRequests = requests.Select(request => PrepareBatchRequest(request, pluginManifests)).ToList();
+        var pluginNames = preparedRequests.Select(request => request.PluginName).Distinct(StringComparer.Ordinal).ToList();
+        if (pluginNames.Count != 1)
+        {
+            throw new MultiPluginConflictException();
+        }
+
+        var batches = preparedRequests
+            .GroupBy(request => request.SchemaKey, StringComparer.Ordinal)
+            .SelectMany(schemaGroup => schemaGroup.Chunk(batchSize))
+            .ToList();
+
+        var responseItems = new ConcurrentBag<SubmodelDataBatchResponse>();
+        await Parallel.ForEachAsync(
+            batches,
+            new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
+            async (batch, token) =>
+            {
+                IReadOnlyList<SubmodelDataBatchRequestGroup> groups =
+                [
+                    new(
+                        batch.Select(item => item.Request.SubmodelId.EncodeBase64Url(logger)).ToList(),
+                        batch[0].Schema)
+                ];
+
+                var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
+                using var requestContent = pluginRequest.Content;
+                var responseContent = await pluginDataProvider
+                    .GetDataForSubmodelsBatchAsync(pluginRequest, token)
+                    .ConfigureAwait(false);
+
+                var batchResponses = DeserializeBatchResponse(responseContent);
+                ValidateBatchResponse(batch, batchResponses);
+
+                foreach (var response in batchResponses)
+                {
+                    responseItems.Add(response);
+                }
+            }).ConfigureAwait(false);
+
+        var preparedById = preparedRequests.ToDictionary(item => item.Request.SubmodelId, StringComparer.Ordinal);
+        var valuesById = new ConcurrentDictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
+
+        await Parallel.ForEachAsync(
+            responseItems,
+            new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
+            (response, _) =>
+            {
+                var prepared = preparedById[response.SubmodelId];
+                var responseContent = response.Result.GetRawText();
+                jsonSchemaValidator.ValidateResponseContent(responseContent, prepared.Schema);
+
+                var parsedValues = JsonSchemaParser.ParseJsonSchema(responseContent);
+                valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(
+                    prepared.Request.SemanticIds,
+                    [parsedValues]);
+
+                return ValueTask.CompletedTask;
+            }).ConfigureAwait(false);
+
+        return valuesById;
+    }
+
+    private PreparedBatchRequest PrepareBatchRequest(SubmodelValueRequest request, IReadOnlyList<PluginManifest> pluginManifests)
+    {
+        var splitValues = multiPluginDataHandler.SplitByPluginManifests(request.SemanticIds, pluginManifests);
+        if (splitValues.Count != 1)
+        {
+            throw new MultiPluginConflictException();
+        }
+
+        var pluginValues = splitValues.Single();
+        var schema = JsonSchemaGenerator.ConvertToJsonSchema(pluginValues.Value);
+        jsonSchemaValidator.ValidateRequestSchema(schema);
+
+        var schemaKey = JsonSerializer.Serialize(schema, JsonSerializationOptions.FileAndHttpContent);
+        return new PreparedBatchRequest(request, pluginValues.Key, schema, schemaKey);
+    }
+
+    private static IReadOnlyList<SubmodelDataBatchResponse> DeserializeBatchResponse(string responseContent)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<List<SubmodelDataBatchResponse>>(
+                responseContent,
+                JsonSerializationOptions.DeserializationOption) ?? throw new ResponseParsingException();
+        }
+        catch (JsonException)
+        {
+            throw new ResponseParsingException();
+        }
+    }
+
+    private static void ValidateBatchResponse(
+        IReadOnlyList<PreparedBatchRequest> requests,
+        IReadOnlyList<SubmodelDataBatchResponse> responses)
+    {
+        var expectedIds = requests.Select(request => request.Request.SubmodelId).ToHashSet(StringComparer.Ordinal);
+        var actualIds = responses.Select(response => response.SubmodelId).ToList();
+
+        if (actualIds.Count != expectedIds.Count ||
+            actualIds.Distinct(StringComparer.Ordinal).Count() != actualIds.Count ||
+            actualIds.Any(id => !expectedIds.Contains(id)))
+        {
+            throw new ResponseParsingException();
+        }
+    }
+
+    private sealed record PreparedBatchRequest(
+        SubmodelValueRequest Request,
+        string PluginName,
+        JsonSchema Schema,
+        string SchemaKey);
 
     public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {

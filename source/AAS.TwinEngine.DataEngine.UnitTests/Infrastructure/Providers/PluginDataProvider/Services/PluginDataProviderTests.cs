@@ -106,6 +106,34 @@ public class PluginDataProviderTests
     }
 
     [Fact]
+    public async Task GetDataForSubmodelsBatchAsync_PostsToBatchEndpoint()
+    {
+        HttpRequestMessage capturedRequest = null!;
+        string? capturedContent = null;
+        using var messageHandler = new FakeHttpMessageHandler(async (request, cancellationToken) =>
+        {
+            capturedRequest = request;
+            capturedContent = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]")
+            };
+        });
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
+        const string HttpClientName = "plugin-data-provider-TestPlugin";
+        _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+        using var content = JsonContent.Create(new[] { new { submodelIds = new[] { "a", "b" }, schema = new { type = "object" } } });
+        var request = new PluginRequestSubmodelBatch(HttpClientName, content);
+
+        var result = await _sut.GetDataForSubmodelsBatchAsync(request, CancellationToken.None);
+
+        Assert.Equal("[]", result);
+        Assert.Equal(HttpMethod.Post, capturedRequest.Method);
+        Assert.Equal("https://example.com/data/batch", capturedRequest.RequestUri!.ToString());
+        Assert.Contains("\"submodelIds\":[\"a\",\"b\"]", capturedContent);
+    }
+
+    [Fact]
     public async Task GetDataForAllShellDescriptorsAsync_ShouldReturnRawContent()
     {
         HttpRequestMessage? captured = null;

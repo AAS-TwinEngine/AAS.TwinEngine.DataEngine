@@ -8,5 +8,7 @@ public interface IPluginRequestBuilder
 {
     IList<PluginRequestSubmodel> Build(IDictionary<string, JsonSchema> jsonSchema);
 
+    PluginRequestSubmodelBatch Build(string pluginName, IReadOnlyList<SubmodelDataBatchRequestGroup> groups);
+
     IList<PluginRequestMetaData> Build(IList<string> plugins, string? aasIdentifier = null);
 }
