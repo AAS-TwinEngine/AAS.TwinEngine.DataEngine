@@ -94,10 +94,7 @@ public class PluginDataHandler(
             throw new MultiPluginConflictException();
         }
 
-        var batches = preparedRequests
-            .OrderBy(request => request.SchemaKey, StringComparer.Ordinal)
-            .Chunk(batchSize)
-            .ToList();
+        var batches = preparedRequests.OrderBy(request => request.SchemaKey, StringComparer.Ordinal).Chunk(batchSize).ToList();
 
         var responseItems = new ConcurrentBag<SubmodelDataBatchResponse>();
         await Parallel.ForEachAsync(
@@ -109,17 +106,13 @@ public class PluginDataHandler(
                     .GroupBy(item => item.SchemaKey, StringComparer.Ordinal)
                     .Select(group => new SubmodelDataBatchRequestGroup(
                         group.Select(item => item.Request.SubmodelId.EncodeBase64Url(logger)).ToList(),
-                        group.First().Schema))
-                    .ToList();
+                        group.First().Schema)).ToList();
 
                 var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
                 using var requestContent = pluginRequest.Content;
-                var responseContent = await pluginDataProvider
-                    .GetDataForSubmodelsBatchAsync(pluginRequest, token)
-                    .ConfigureAwait(false);
+                var responseContent = await pluginDataProvider.GetDataForSubmodelsBatchAsync(pluginRequest, token).ConfigureAwait(false);
 
                 var batchResponses = DeserializeBatchResponse(responseContent);
-                ValidateBatchResponse(batch, batchResponses);
 
                 foreach (var response in batchResponses)
                 {
@@ -140,9 +133,7 @@ public class PluginDataHandler(
                 jsonSchemaValidator.ValidateResponseContent(responseContent, prepared.Schema);
 
                 var parsedValues = JsonSchemaParser.ParseJsonSchema(responseContent);
-                valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(
-                    prepared.Request.SemanticIds,
-                    [parsedValues]);
+                valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(prepared.Request.SemanticIds, new[] { parsedValues });
 
                 return ValueTask.CompletedTask;
             }).ConfigureAwait(false);
@@ -160,11 +151,7 @@ public class PluginDataHandler(
 
         var pluginValues = splitValues.Single();
         var semanticTreeKey = BuildSemanticTreeKey(pluginValues.Value);
-        var preparedSchema = _schemaCache.GetOrAdd(
-            semanticTreeKey,
-            _ => new Lazy<PreparedSchema>(
-                () => CreatePreparedSchema(pluginValues.Value),
-                LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+        var preparedSchema = _schemaCache.GetOrAdd(semanticTreeKey, _ => new Lazy<PreparedSchema>(() => CreatePreparedSchema(pluginValues.Value), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
 
         return new PreparedBatchRequest(request, pluginValues.Key, preparedSchema.Schema, preparedSchema.SchemaKey);
     }
@@ -185,9 +172,7 @@ public class PluginDataHandler(
 
     private static void AppendSemanticTreeKey(StringBuilder builder, SemanticTreeNode node)
     {
-        _ = builder.Append(node.GetType().Name)
-            .Append('|').Append(node.SemanticId)
-            .Append('|').Append(node.Cardinality);
+        _ = builder.Append(node.GetType().Name).Append('|').Append(node.SemanticId).Append('|').Append(node.Cardinality);
 
         if (node is SemanticLeafNode leaf)
         {
@@ -219,26 +204,7 @@ public class PluginDataHandler(
         }
     }
 
-    private static void ValidateBatchResponse(
-        IReadOnlyList<PreparedBatchRequest> requests,
-        IReadOnlyList<SubmodelDataBatchResponse> responses)
-    {
-        var expectedIds = requests.Select(request => request.Request.SubmodelId).ToHashSet(StringComparer.Ordinal);
-        var actualIds = responses.Select(response => response.SubmodelId).ToList();
-
-        if (actualIds.Count != expectedIds.Count ||
-            actualIds.Distinct(StringComparer.Ordinal).Count() != actualIds.Count ||
-            actualIds.Any(id => !expectedIds.Contains(id)))
-        {
-            throw new ResponseParsingException();
-        }
-    }
-
-    private sealed record PreparedBatchRequest(
-        SubmodelValueRequest Request,
-        string PluginName,
-        JsonSchema Schema,
-        string SchemaKey);
+    private sealed record PreparedBatchRequest(SubmodelValueRequest Request, string PluginName, JsonSchema Schema, string SchemaKey);
 
     private sealed record PreparedSchema(JsonSchema Schema, string SchemaKey);
 

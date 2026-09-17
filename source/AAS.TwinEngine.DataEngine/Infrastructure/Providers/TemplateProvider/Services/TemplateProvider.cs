@@ -33,7 +33,6 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
     private const string ConceptDescriptionPath = ApiPaths.ConceptDescriptions;
 
     private readonly TemplateManagementConfig _config = options.Value;
-    //template-cache-by-id-changes
     private readonly ConcurrentDictionary<string, Lazy<Task<JsonNode>>> _inFlightTemplateLoads = new();
 
     public async Task<ISubmodel?> GetFilteredSubmodelTemplateAsync(string templateId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
@@ -57,7 +56,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
         var url = queryParams.Count > 0
             ? $"{SubModelRepositoryPath}/{encodedTemplateId}?{string.Join("&", queryParams)}"
             : $"{SubModelRepositoryPath}/{encodedTemplateId}";
-        //template-cache-by-id-changes
+
         var cacheKey = BuildTemplateCacheKey(templateId, queryOptions);
 
         try
@@ -77,7 +76,6 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
 
     private async Task<ISubmodel> GetSubmodelFromUrlAsync(string url, string cacheKey, string templateId, string errorMessage, CancellationToken cancellationToken)
     {
-        //template-cache-by-id-changes
         if (IsNoCacheRequested())
         {
             return await LoadSubmodelTemplateAsync(url, templateId, errorMessage, cancellationToken).ConfigureAwait(false);
@@ -90,7 +88,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
 
         var lazyLoad = _inFlightTemplateLoads.GetOrAdd(
             cacheKey,
-            _ => new Lazy<Task<JsonNode>>(
+            cacheKey => new Lazy<Task<JsonNode>>(
                 () => LoadAndCacheSubmodelTemplateAsync(url, cacheKey, templateId, errorMessage, cancellationToken),
                 LazyThreadSafetyMode.ExecutionAndPublication));
 
@@ -110,7 +108,6 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
 
     private async Task<JsonNode> LoadAndCacheSubmodelTemplateAsync(string url, string cacheKey, string templateId, string errorMessage, CancellationToken cancellationToken)
     {
-        //template-cache-by-id-changes
         var submodel = await LoadSubmodelTemplateAsync(url, templateId, errorMessage, cancellationToken).ConfigureAwait(false);
         var template = Jsonization.Serialize.ToJsonObject(submodel);
         memoryCache.Set(cacheKey, template, TimeSpan.FromMinutes(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes));
@@ -139,7 +136,6 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
         }
     }
 
-    //template-cache-by-id-changes
     private static string BuildTemplateCacheKey(string templateId, SubmodelQueryOptions? queryOptions) =>
         $"template:{Uri.EscapeDataString(templateId)}:level:{Uri.EscapeDataString(queryOptions?.Level ?? string.Empty)}:extent:{Uri.EscapeDataString(queryOptions?.Extent ?? string.Empty)}";
 

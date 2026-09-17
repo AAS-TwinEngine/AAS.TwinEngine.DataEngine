@@ -46,7 +46,6 @@ public class PluginDataProvider(
             }
             catch (TaskCanceledException)
             {
-                logger.LogError("Request timed out. Endpoint: {Url}", url);
                 throw new RequestTimeoutException();
             }
         });
@@ -69,7 +68,6 @@ public class PluginDataProvider(
         }
         catch (TaskCanceledException)
         {
-            logger.LogError("Request timed out. Endpoint: {Url}", url);
             throw new RequestTimeoutException();
         }
     }
@@ -186,7 +184,6 @@ requestHeaders[AssetTypeHeader] = assetType;
             }
             catch (TaskCanceledException ex)
             {
-                logger.LogError(ex, "Request timed out. Endpoint: {Url}", url);
                 exceptions.Add(new RequestTimeoutException());
             }
         }
@@ -286,7 +283,6 @@ requestHeaders[AssetTypeHeader] = assetType;
         }
         catch (TaskCanceledException)
         {
-            logger.LogError("Request timed out. Endpoint: {Url}", url);
             exceptions.Add(new RequestTimeoutException());
             return null;
         }
