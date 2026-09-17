@@ -261,7 +261,7 @@ public class PluginDataHandler(
 
     private sealed record PreparedSchema(JsonSchema Schema, string SchemaKey);
 
-    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -334,7 +334,7 @@ public class PluginDataHandler(
 
     private void ValidateAssetKindTypeFilterResponse(IList<ShellDescriptorMetaData> shellDescriptors, AssetKind? assetKind, string? encodedAssetType)
     {
-var requestedAssetType = encodedAssetType;
+        var requestedAssetType = encodedAssetType;
 
         foreach (var descriptor in shellDescriptors)
         {

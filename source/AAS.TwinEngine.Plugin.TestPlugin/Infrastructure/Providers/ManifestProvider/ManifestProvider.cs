@@ -16,6 +16,7 @@ public class ManifestProvider(
     private readonly bool _hasAssetInformation = capabilities.Value.HasAssetInformation;
     private readonly bool _hasAssetIdSearch = capabilities.Value.HasAssetIdSearch;
     private readonly bool _hasSubmodelBatch = capabilities.Value.HasSubmodelBatch;
+    private readonly bool _hasAssetKindTypeFilter = capabilities.Value.HasAssetKindTypeFilter;
 
     public ManifestData GetManifestData()
     {
@@ -33,7 +34,7 @@ public class ManifestProvider(
                 HasAssetInformation = _hasAssetInformation,
                 HasShellDescriptor = _hasShellDescriptor,
                 HasAssetIdSearch = _hasAssetIdSearch,
-                HasAssetKindTypeFilter = capabilities.Value.HasAssetKindTypeFilter
+                HasAssetKindTypeFilter = _hasAssetKindTypeFilter,
                 HasSubmodelBatch = _hasSubmodelBatch
             }
         };
