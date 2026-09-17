@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -36,6 +36,7 @@ public class PluginDataProviderTests
                                                """;
 
     private const string SimpleResponse = """{ "leaf":"value" }""";
+    private static readonly string[] inputValue = new[] { "a", "b" };
 
     public PluginDataProviderTests()
     {
@@ -122,14 +123,14 @@ public class PluginDataProviderTests
         using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
         const string HttpClientName = "plugin-data-provider-TestPlugin";
         _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
-        using var content = JsonContent.Create(new[] { new { submodelIds = new[] { "a", "b" }, schema = new { type = "object" } } });
+        using var content = JsonContent.Create(new[] { new { submodelIds = inputValue, schema = new { type = "object" } } });
         var request = new PluginRequestSubmodelBatch(HttpClientName, content);
 
         var result = await _sut.GetDataForSubmodelsBatchAsync(request, CancellationToken.None);
 
         Assert.Equal("[]", result);
         Assert.Equal(HttpMethod.Post, capturedRequest.Method);
-        Assert.Equal("https://example.com/data/batch", capturedRequest.RequestUri!.ToString());
+        Assert.Equal("https://example.com/data", capturedRequest.RequestUri!.ToString());
         Assert.Contains("\"submodelIds\":[\"a\",\"b\"]", capturedContent);
     }
 
