@@ -57,7 +57,9 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
             ? $"{SubModelRepositoryPath}/{encodedTemplateId}?{string.Join("&", queryParams)}"
             : $"{SubModelRepositoryPath}/{encodedTemplateId}";
 
-        var cacheKey = BuildTemplateCacheKey(templateId, queryOptions);
+        var cacheKey = CachedGetRequestClient.BuildCacheKey(
+            httpContextAccessor,
+            BuildTemplateCacheKey(templateId, queryOptions));
 
         try
         {

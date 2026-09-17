@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -30,6 +31,7 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateP
 public class TemplateProviderTests
 {
     private readonly ICachedGetRequestClient _cachedHttp;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly Template _sut;
     private const string TemplateId = "Nameplate";
 
@@ -39,6 +41,7 @@ public class TemplateProviderTests
     {
         var logger = Substitute.For<ILogger<Template>>();
         _cachedHttp = Substitute.For<ICachedGetRequestClient>();
+        _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
 
         var options = Substitute.For<IOptions<TemplateManagementConfig>>();
         var config = new TemplateManagementConfig
@@ -56,7 +59,7 @@ public class TemplateProviderTests
             options,
             _cachedHttp,
             new MemoryCache(new MemoryCacheOptions()),
-            Substitute.For<IHttpContextAccessor>());
+            _httpContextAccessor);
     }
 
     [Fact]
@@ -577,6 +580,23 @@ public class TemplateProviderTests
         await _cachedHttp.Received(1).GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_WhenPermissionClaimsDiffer_UsesSeparateCacheEntries()
+    {
+        var httpContext = new DefaultHttpContext();
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                   .Returns(ProviderTestData.ValidateSubmodelResponse);
+
+        httpContext.User = CreateUser("reader");
+        _ = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None);
+
+        httpContext.User = CreateUser("administrator");
+        _ = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None);
+
+        await _cachedHttp.Received(2).GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>());
+    }
+
     //template-cache-by-id-changes
     [Fact]
     public async Task GetFilteredSubmodelTemplateAsync_WhenFilterOptionsDiffer_UsesSeparateCacheEntries()
@@ -606,4 +626,12 @@ public class TemplateProviderTests
         Assert.Equal(DataEngineTracing.Spans.GetSubmodelTemplate, span.OperationName);
         Assert.Equal(TemplateIdForSpan, span.GetTagItem(DataEngineTracing.Attributes.TemplateId));
     }
+
+    private static ClaimsPrincipal CreateUser(string permission) =>
+        new(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "user-id"),
+                new Claim("permission", permission)
+            ],
+            "TestAuthentication"));
 }
