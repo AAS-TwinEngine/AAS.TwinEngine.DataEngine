@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.Api.Shared;
+﻿using System.Text.Json.Nodes;
+
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
@@ -20,7 +22,7 @@ public static class SubmodelsMapperProfile
             {
                 Cursor = submodelList.PagingMetaData?.Cursor
             },
-            Result = [.. submodelList.Result.Select(Jsonization.Serialize.ToJsonObject)]
+            Result = new ProjectedReadOnlyList<ISubmodel, JsonObject>(submodelList.Result, Jsonization.Serialize.ToJsonObject)
         };
     }
 
@@ -34,5 +36,34 @@ public static class SubmodelsMapperProfile
             },
             Result = [.. submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject)]
         };
+    }
+
+    private sealed class ProjectedReadOnlyList<TSource, TResult>(IList<TSource> source, Func<TSource, TResult> selector) : IList<TResult>
+    {
+        public int Count => source.Count;
+        public bool IsReadOnly => true;
+        public TResult this[int index]
+        {
+            get => selector(source[index]);
+            set => throw new NotSupportedException();
+        }
+
+        public IEnumerator<TResult> GetEnumerator() => source.Select(selector).GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        public bool Contains(TResult item) => this.Any(candidate => EqualityComparer<TResult>.Default.Equals(candidate, item));
+        public int IndexOf(TResult item) => this.Select((candidate, index) => (candidate, index)).FirstOrDefault(pair => EqualityComparer<TResult>.Default.Equals(pair.candidate, item), (default!, -1)).index;
+        public void CopyTo(TResult[] array, int arrayIndex)
+        {
+            foreach (var item in this)
+            {
+                array[arrayIndex++] = item;
+            }
+        }
+
+        public void Add(TResult item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public void Insert(int index, TResult item) => throw new NotSupportedException();
+        public bool Remove(TResult item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
     }
 }
