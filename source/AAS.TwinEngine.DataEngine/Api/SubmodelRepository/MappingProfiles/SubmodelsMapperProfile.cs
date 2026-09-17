@@ -22,8 +22,21 @@ public static class SubmodelsMapperProfile
             {
                 Cursor = submodelList.PagingMetaData?.Cursor
             },
-            Result = new ProjectedReadOnlyList<ISubmodel, JsonObject>(submodelList.Result, Jsonization.Serialize.ToJsonObject)
+            Result = SerializeSubmodelsInParallel(submodelList.Result)
         };
+    }
+
+    private static IList<JsonObject> SerializeSubmodelsInParallel(IList<ISubmodel> submodels)
+    {
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.SerializeSubmodels);
+        _ = activity?.SetTag("submodel.count", submodels.Count);
+
+        var results = new JsonObject[submodels.Count];
+        Parallel.For(0, submodels.Count, index =>
+        {
+            results[index] = Jsonization.Serialize.ToJsonObject(submodels[index]);
+        });
+        return results;
     }
 
     public static SubmodelElementsDto ToDto(this SubmodelElementsPage submodelElementsPage)
@@ -36,34 +49,5 @@ public static class SubmodelsMapperProfile
             },
             Result = [.. submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject)]
         };
-    }
-
-    private sealed class ProjectedReadOnlyList<TSource, TResult>(IList<TSource> source, Func<TSource, TResult> selector) : IList<TResult>
-    {
-        public int Count => source.Count;
-        public bool IsReadOnly => true;
-        public TResult this[int index]
-        {
-            get => selector(source[index]);
-            set => throw new NotSupportedException();
-        }
-
-        public IEnumerator<TResult> GetEnumerator() => source.Select(selector).GetEnumerator();
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-        public bool Contains(TResult item) => this.Any(candidate => EqualityComparer<TResult>.Default.Equals(candidate, item));
-        public int IndexOf(TResult item) => this.Select((candidate, index) => (candidate, index)).FirstOrDefault(pair => EqualityComparer<TResult>.Default.Equals(pair.candidate, item), (default!, -1)).index;
-        public void CopyTo(TResult[] array, int arrayIndex)
-        {
-            foreach (var item in this)
-            {
-                array[arrayIndex++] = item;
-            }
-        }
-
-        public void Add(TResult item) => throw new NotSupportedException();
-        public void Clear() => throw new NotSupportedException();
-        public void Insert(int index, TResult item) => throw new NotSupportedException();
-        public bool Remove(TResult item) => throw new NotSupportedException();
-        public void RemoveAt(int index) => throw new NotSupportedException();
     }
 }

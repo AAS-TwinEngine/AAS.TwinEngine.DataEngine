@@ -34,6 +34,7 @@ public static class DataEngineTracing
         public const string GetSubmodelValues = "Get Submodel Values";
         public const string FillSubmodelTemplates = "Fill Submodel Templates";
         public const string MapSubmodelResponse = "Map Submodel Response";
+        public const string SerializeSubmodels = "Serialize Submodels";
 
         public const string CacheFetch = "Cache Fetch";
 
