@@ -4,7 +4,7 @@
   "extensions": null,
   "administration": null,
   "assetKind": "Instance",
-  "assetType": null,
+  "assetType": "Attribute",
   "endpoints": [
     {
       "interface": "AAS-3.0",

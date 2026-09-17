@@ -21,13 +21,8 @@ public class ManifestProviderTests
     {
         _logger = Substitute.For<ILogger<Provider>>();
         var capabilities = Substitute.For<IOptions<Capabilities>>();
-        capabilities.Value.Returns(new Capabilities
-        {
-            HasAssetInformation = true,
-            HasShellDescriptor = true,
-            HasAssetIdSearch = true,
-            HasSubmodelBatch = true
-        });
+
+        capabilities.Value.Returns(new Capabilities { HasAssetInformation = true, HasShellDescriptor = true, HasAssetIdSearch = true, HasAssetKindTypeFilter = true, HasSubmodelBatch = true });
         _sut = new Provider(_logger, capabilities);
     }
 
@@ -52,6 +47,7 @@ public class ManifestProviderTests
         Assert.True(manifest.Capabilities.HasShellDescriptor);
         Assert.True(manifest.Capabilities.HasAssetIdSearch);
         Assert.True(manifest.Capabilities.HasSubmodelBatch);
+        Assert.True(manifest.Capabilities.HasAssetKindTypeFilter);
     }
 
     [Fact]
@@ -77,7 +73,7 @@ public class ManifestProviderTests
 
         SetSubmodelData(ValidSubmodelData);
         var capabilities = Substitute.For<IOptions<Capabilities>>();
-        capabilities.Value.Returns(new Capabilities { HasAssetInformation = false, HasShellDescriptor = false, HasAssetIdSearch = false });
+        capabilities.Value.Returns(new Capabilities { HasAssetInformation = false, HasShellDescriptor = false, HasAssetIdSearch = false, HasAssetKindTypeFilter = false });
         var sut = new Provider(_logger, capabilities);
 
         var manifest = sut.GetManifestData();
@@ -88,5 +84,6 @@ public class ManifestProviderTests
         Assert.False(manifest.Capabilities.HasShellDescriptor);
         Assert.False(manifest.Capabilities.HasAssetIdSearch);
         Assert.False(manifest.Capabilities.HasSubmodelBatch);
+        Assert.False(manifest.Capabilities.HasAssetKindTypeFilter);
     }
 }

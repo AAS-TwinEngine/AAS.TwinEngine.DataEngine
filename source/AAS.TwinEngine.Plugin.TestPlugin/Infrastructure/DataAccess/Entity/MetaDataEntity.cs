@@ -13,6 +13,12 @@ public class MetaDataEntity
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
 
+    [JsonPropertyName("assetKind")]
+    public string? AssetKind { get; set; }
+
+    [JsonPropertyName("assetType")]
+    public string? AssetType { get; set; }
+
     [JsonPropertyName("specificAssetIds")]
     public List<SpecificAssetIdEntity>? SpecificAssetIds { get; set; }
 

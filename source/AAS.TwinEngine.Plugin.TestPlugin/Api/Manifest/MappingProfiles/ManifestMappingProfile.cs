@@ -15,6 +15,7 @@ public static class ManifestMappingProfile
                 HasShellDescriptor = data.Capabilities.HasShellDescriptor,
                 HasAssetIdSearch = data.Capabilities.HasAssetIdSearch,
                 HasSubmodelBatch = data.Capabilities.HasSubmodelBatch
+                HasAssetKindTypeFilter = data.Capabilities.HasAssetKindTypeFilter
             },
             SupportedSemanticIds = data.SupportedSemanticIds
         };

@@ -158,7 +158,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None);
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None);
 
         Assert.NotNull(result);
         var json = result[0];
@@ -187,7 +187,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -225,7 +225,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -246,7 +246,48 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilter_SendsHeaders()
+    {
+        HttpRequestMessage? captured = null;
+        const string responseJson = """
+        {
+            "result": [
+                { "id": "urn:aas:001", "idShort": "Motor001" }
+            ],
+            "paging_metadata": { "cursor": null }
+        }
+        """;
+
+        using var messageHandler = new FakeHttpMessageHandler((req, _) =>
+        {
+            captured = req;
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(httpClient);
+
+        var metadata = new List<PluginRequestMetaData>
+        {
+            new(ApiPaths.PluginMetadata, "")
+        };
+
+        _ = await _sut.GetDataForAllShellDescriptorsAsync(25, "cursor-1", AssetKind.Instance, "YXR0cmlidXRl", metadata, CancellationToken.None);
+
+        Assert.NotNull(captured);
+        Assert.Equal("https://example.com/metadata/shells?limit=25&cursor=cursor-1", captured!.RequestUri!.ToString());
+        Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetKindHeader, out var assetKindHeader));
+        Assert.Equal("Instance", Assert.Single(assetKindHeader));
+        Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetTypeHeader, out var assetTypeHeader));
+        Assert.Equal("YXR0cmlidXRl", Assert.Single(assetTypeHeader));
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
 using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
 using Microsoft.Extensions.Logging;
@@ -19,10 +19,10 @@ public class MetaDataServiceTests
     public async Task GetShellsAsync_ReturnsShells()
     {
         var expectedShells = new ShellDescriptorsData();
-        _repository.GetShellDescriptorsAsync(null, null, null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
- 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, CancellationToken.None);
- 
+        _repository.GetShellDescriptorsAsync(null, null, null, null, null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
+
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, null, null, null, CancellationToken.None);
+
         Assert.NotNull(result);
     }
 
@@ -37,10 +37,10 @@ public class MetaDataServiceTests
             ]
         };
         var expectedShells = new ShellDescriptorsData();
-        _repository.GetShellDescriptorsAsync(null, null, filter, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
- 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, CancellationToken.None);
- 
+        _repository.GetShellDescriptorsAsync(null, null, filter, null, null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
+
+        var result = await _sut.GetShellDescriptorsAsync(null, null, filter, null, null, null, CancellationToken.None);
+
         Assert.NotNull(result);
     }
 
@@ -49,9 +49,9 @@ public class MetaDataServiceTests
     {
         const string idShort = "test-idshort";
         var expectedShells = new ShellDescriptorsData();
-        _repository.GetShellDescriptorsAsync(null, null, null, idShort, Arg.Any<CancellationToken>()).Returns(expectedShells);
+        _repository.GetShellDescriptorsAsync(null, null, null, idShort, null, null, Arg.Any<CancellationToken>()).Returns(expectedShells);
 
-        var result = await _sut.GetShellDescriptorsAsync(null, null, null, idShort, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorsAsync(null, null, null, idShort, null, null, CancellationToken.None);
 
         Assert.NotNull(result);
     }

@@ -30,6 +30,8 @@ public class ShellDescriptorDataHandlerTests
             GlobalAssetId = "testAsset",
             IdShort = "testShort",
             Id = "testId",
+            AssetKind = "Instance",
+            AssetType = "Instance",
             SpecificAssetIds =
                 [
                     new SpecificAssetId
@@ -47,6 +49,8 @@ public class ShellDescriptorDataHandlerTests
                               expectedAssetId: "testAsset",
                               expectedIdShort: "testShort",
                               expectedId: "testId",
+                              expectedAssetKind: AssetKind.Instance,
+                              expectedAssetType: "Instance",
                               expectedSpecificAssetIds:
                               [
                                   new SpecificAssetId
@@ -56,6 +60,26 @@ public class ShellDescriptorDataHandlerTests
                               ],
                               expectedHref: "http://localhost"
                              );
+    }
+
+    [Fact]
+    public void FillOut_WhenPluginAssetKindAndTypeAreMissing_KeepsTemplateValues()
+    {
+        var descriptor = CreateShellDescriptorTemplate();
+        var value = new ShellDescriptorMetaData
+        {
+            GlobalAssetId = "testAsset",
+            IdShort = "testShort",
+            Id = "testId",
+            AssetKind = null,
+            AssetType = null,
+            Href = "http://localhost"
+        };
+
+        var result = _sut.FillOut(descriptor, value);
+
+        Assert.Equal(AssetKind.Type, result.AssetKind);
+        Assert.Equal("Type", result.AssetType);
     }
 
     [Fact]
@@ -105,6 +129,8 @@ public class ShellDescriptorDataHandlerTests
             GlobalAssetId = "templateAssetId",
             IdShort = "templateIdShort",
             Id = "templateId",
+            AssetKind = AssetKind.Type,
+            AssetType = "Type",
             SpecificAssetIds =
             [
                 new SpecificAssetId(
@@ -161,12 +187,16 @@ public class ShellDescriptorDataHandlerTests
         string expectedAssetId,
         string expectedIdShort,
         string expectedId,
+        AssetKind expectedAssetKind,
+        string expectedAssetType,
         List<ISpecificAssetId> expectedSpecificAssetIds,
         string expectedHref)
     {
         Assert.Equal(expectedAssetId, descriptor.GlobalAssetId);
         Assert.Equal(expectedIdShort, descriptor.IdShort);
         Assert.Equal(expectedId, descriptor.Id);
+        Assert.Equal(expectedAssetKind, descriptor.AssetKind);
+        Assert.Equal(expectedAssetType, descriptor.AssetType);
         Assert.Equal(expectedHref, descriptor.Endpoints?[0]?.ProtocolInformation?.Href);
         for (var i = 0; i < expectedSpecificAssetIds.Count; i++)
         {

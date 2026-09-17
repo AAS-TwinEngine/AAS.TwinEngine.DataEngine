@@ -1,4 +1,5 @@
 {
+  "idShort": "MM01",
   "id": "https://mm-software.com/ids/aas/000-001",
   "assetInformation": {
     "assetKind": "Instance",
@@ -44,10 +45,7 @@
         }
       }
     ],
-    "defaultThumbnail": {
-      "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg",
-      "contentType": "image/jpeg"
-    }
+    "assetType": "Attribute"
   },
   "submodels": [
     {

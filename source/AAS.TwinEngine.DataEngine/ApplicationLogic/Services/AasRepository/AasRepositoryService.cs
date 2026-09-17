@@ -70,14 +70,42 @@ public class AasRepositoryService(
 
     public async Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
     {
-        var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-        var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+            var pluginManifests = pluginManifestConflictHandler.Manifests;
 
-        shellTemplate.AssetInformation = assetInformation;
-        shellTemplate.Id = aasIdentifier;
+            var metadata = await pluginDataHandler.GetDataForShellDescriptorAsync(pluginManifests, aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-        return shellTemplate;
+            FillShellFromMetadata(shellTemplate, metadata);
+
+            return shellTemplate;
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new ShellNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
     }
 
     public async Task<IAssetInformation> GetAssetInformationByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
@@ -235,6 +263,8 @@ public class AasRepositoryService(
         }
 
         SetDefaultThumbnail(template, pluginData);
+        SetAssetKind(template, pluginData);
+        SetAssetType(template, pluginData);
         SetGlobalAssetId(template, pluginData);
         SetSpecificAssetIds(template, pluginData);
 
@@ -251,6 +281,22 @@ public class AasRepositoryService(
         }
 
         template.DefaultThumbnail = new Resource(thumbnail.Path, thumbnail.ContentType);
+    }
+
+    private static void SetAssetKind(IAssetInformation template, AssetData pluginData)
+    {
+        if (pluginData.ParsedAssetKind.HasValue)
+        {
+            template.AssetKind = pluginData.ParsedAssetKind.Value;
+        }
+    }
+
+    private static void SetAssetType(IAssetInformation template, AssetData pluginData)
+    {
+        if (!string.IsNullOrWhiteSpace(pluginData.AssetType))
+        {
+            template.AssetType = pluginData.AssetType;
+        }
     }
 
     private static void SetGlobalAssetId(IAssetInformation template, AssetData pluginData) => template.GlobalAssetId = pluginData.GlobalAssetId;
@@ -286,9 +332,19 @@ public class AasRepositoryService(
             throw new TemplateNotValidException();
         }
 
+        if (metadata.ParsedAssetKind.HasValue)
+        {
+            shell.AssetInformation.AssetKind = metadata.ParsedAssetKind.Value;
+        }
+
+        if (!string.IsNullOrWhiteSpace(metadata.AssetType))
+        {
+            shell.AssetInformation.AssetType = metadata.AssetType;
+        }
+
         shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
 
-        foreach (var assetId in metadata.SpecificAssetIds)
+        foreach (var assetId in metadata.SpecificAssetIds ?? [])
         {
             var existingAssetId = shell.AssetInformation.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
 
@@ -313,7 +369,7 @@ public class AasRepositoryService(
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(limit, cursor, null, null, pluginManifestConflictHandler.Manifests, cancellationToken)
             .ConfigureAwait(false);
 
         return (

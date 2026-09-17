@@ -33,6 +33,7 @@ public class ManifestProvider(
                 HasAssetInformation = _hasAssetInformation,
                 HasShellDescriptor = _hasShellDescriptor,
                 HasAssetIdSearch = _hasAssetIdSearch,
+                HasAssetKindTypeFilter = capabilities.Value.HasAssetKindTypeFilter
                 HasSubmodelBatch = _hasSubmodelBatch
             }
         };
