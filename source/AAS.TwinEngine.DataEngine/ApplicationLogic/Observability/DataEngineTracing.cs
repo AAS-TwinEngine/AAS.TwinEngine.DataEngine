@@ -21,6 +21,8 @@ public static class DataEngineTracing
 
         public const string PluginRequestGeneration = "Plugin Request Generation";
         public const string GetPluginData = "Get Plugin Data";
+        public const string PrepareBatchSchemas = "Prepare Batch Schemas";
+        public const string ProcessBatchResponses = "Process Batch Responses";
 
         public const string GetPluginMetadataShells = "Get Plugin Metadata-shells";
 
