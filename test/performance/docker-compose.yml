@@ -108,7 +108,7 @@ services:
     container_name: dpp-plugin
     build:
       context: ../../../AAS.TwinEngine.Plugin.DPP/source
-      dockerfile: ./AAS.TwinEngine.Plugin.RelationalDatabase/Dockerfile
+      dockerfile: ./Aas.TwinEngine.Plugin.RelationalDatabase/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
