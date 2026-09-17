@@ -9,7 +9,11 @@ public static class JsonSchemaParser
     public static SemanticTreeNode ParseJsonSchema(string content)
     {
         using var doc = JsonDocument.Parse(content);
-        var root = doc.RootElement;
+        return ParseJsonSchema(doc.RootElement);
+    }
+
+    public static SemanticTreeNode ParseJsonSchema(JsonElement root)
+    {
 
         if (root.ValueKind != JsonValueKind.String)
         {

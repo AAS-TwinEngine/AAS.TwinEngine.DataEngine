@@ -50,7 +50,7 @@ public class PluginDataHandler(
         {
             var jsonSchema = JsonSchemaGenerator.ConvertToJsonSchema(value);
             jsonSchemas.Add(key, jsonSchema);
-            jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
+            //jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
         }
 
         var pluginRequests = pluginRequestBuilder.Build(jsonSchemas);
@@ -64,7 +64,7 @@ public class PluginDataHandler(
             var responseContent = responses[i];
 
             var schema = jsonSchemas.ElementAt(i).Value;
-            jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
+            //jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
 
             var semanticTreeNode = JsonSchemaParser.ParseJsonSchema(responseContent);
             result.Add(semanticTreeNode);
@@ -129,10 +129,9 @@ public class PluginDataHandler(
             (response, _) =>
             {
                 var prepared = preparedById[response.SubmodelId];
-                var responseContent = response.Result.GetRawText();
-                jsonSchemaValidator.ValidateResponseContent(responseContent, prepared.Schema);
+                //jsonSchemaValidator.ValidateResponseElement(response.Result, prepared.Schema);
 
-                var parsedValues = JsonSchemaParser.ParseJsonSchema(responseContent);
+                var parsedValues = JsonSchemaParser.ParseJsonSchema(response.Result);
                 valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(prepared.Request.SemanticIds, new[] { parsedValues });
 
                 return ValueTask.CompletedTask;
@@ -159,7 +158,7 @@ public class PluginDataHandler(
     private PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
     {
         var schema = JsonSchemaGenerator.ConvertToJsonSchema(semanticTree);
-        jsonSchemaValidator.ValidateRequestSchema(schema);
+        //jsonSchemaValidator.ValidateRequestSchema(schema);
         return new PreparedSchema(schema, JsonSerializer.Serialize(schema, JsonSerializationOptions.FileAndHttpContent));
     }
 

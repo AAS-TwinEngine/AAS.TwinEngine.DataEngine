@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Text.Json;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
@@ -109,6 +111,22 @@ public class JsonSchemaValidatorTests
         const string Json = "{\"name\": \"Test\"}";
 
         _sut.ValidateResponseContent(Json, schema);
+    }
+
+    [Fact]
+    public void ValidateResponseContent_JsonElementAndValidSchema_DoesNotThrow()
+    {
+        var schema = new JsonSchemaBuilder()
+            .Type(SchemaValueType.Object)
+            .Properties(new Dictionary<string, JsonSchema>
+            {
+                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String).Build()
+            })
+            .Required("name")
+            .Build();
+        using var document = JsonDocument.Parse("""{"name":"Test"}""");
+
+        _sut.ValidateResponseElement(document.RootElement, schema);
     }
 
     [Theory]
