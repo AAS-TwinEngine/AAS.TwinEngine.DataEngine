@@ -48,7 +48,15 @@ public class SubmodelHandler(
         var tasks = requests
             .SelectMany(request => request.SubmodelIds.Select(async encodedSubmodelId =>
             {
-                var submodelId = encodedSubmodelId.DecodeBase64();
+                string submodelId;
+                try
+                {
+                    submodelId = encodedSubmodelId.DecodeBase64();
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new BadRequestException("The request payload contains an invalid submodel ID.", ex);
+                }
                 var result = await GetSubmodelData(
                     new GetSubmodelDataRequest(submodelId, request.Schema),
                     cancellationToken).ConfigureAwait(false);
