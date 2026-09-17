@@ -1,6 +1,7 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
@@ -86,6 +87,8 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
+            using var collectPageActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CollectSubmodelPage);
+            _ = collectPageActivity?.SetTag("submodel.requested_count", limit);
             var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, limit, cursor, cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, queryOptions, cancellationToken).ConfigureAwait(false);
@@ -230,14 +233,20 @@ public class SubmodelRepositoryService(
             templateTasks[i] = GetSubmodelTemplateAsync(submodelIds[i], queryOptions, semaphore, cancellationToken);
         }
 
+        using var templateActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.BuildSubmodelTemplates);
+        _ = templateActivity?.SetTag("submodel.count", submodelIds.Count);
         var templates = await Task.WhenAll(templateTasks).ConfigureAwait(false);
 
+        using var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues);
+        _ = extractionActivity?.SetTag("submodel.count", templates.Length);
         var valueRequests = templates
             .Select((template, index) => new SubmodelValueRequest(submodelIds[index], semanticIdHandler.Extract(template)))
             .DistinctBy(request => request.SubmodelId, StringComparer.Ordinal)
             .ToList();
 
         var pluginManifests = pluginManifestConflictHandler.Manifests;
+        using var valuesActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelValues);
+        _ = valuesActivity?.SetTag("value.request.count", valueRequests.Count);
         var valuesById = pluginManifests.Count == 1 && pluginManifests[0].Capabilities.HasSubmodelBatch
             ? await pluginDataHandler.TryGetValuesBatchAsync(
                 pluginManifests,
@@ -248,6 +257,8 @@ public class SubmodelRepositoryService(
             : await GetValuesIndividuallyAsync(pluginManifests, valueRequests, cancellationToken).ConfigureAwait(false);
 
         var results = new ISubmodel[submodelIds.Count];
+        using var fillActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.FillSubmodelTemplates);
+        _ = fillActivity?.SetTag("submodel.count", submodelIds.Count);
         await Parallel.ForEachAsync(
             Enumerable.Range(0, submodelIds.Count),
             new ParallelOptions { MaxDegreeOfParallelism = _concurrentOperationsLimit, CancellationToken = cancellationToken },

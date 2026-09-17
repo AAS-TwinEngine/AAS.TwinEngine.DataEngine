@@ -1,5 +1,6 @@
 ﻿using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -10,6 +11,9 @@ public static class SubmodelsMapperProfile
 {
     public static SubmodelsDto ToDto(this SubmodelList submodelList)
     {
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.MapSubmodelResponse);
+        _ = activity?.SetTag("submodel.count", submodelList.Result.Count);
+
         return new SubmodelsDto
         {
             PagingMetaData = new PagingMetaDataDto
