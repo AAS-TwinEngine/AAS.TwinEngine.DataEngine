@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -88,10 +87,7 @@ public class PluginDataHandler(
             return new Dictionary<string, SemanticTreeNode>();
         }
 
-        var preparationStopwatch = Stopwatch.StartNew();
         var preparedRequests = requests.Select(request => PrepareBatchRequest(request, pluginManifests)).ToList();
-        preparationStopwatch.Stop();
-        logger.LogInformation("Plugin batch preparation completed. RequestCount: {RequestCount}, PreparedCount: {PreparedCount}, ElapsedMs: {ElapsedMs}", requests.Count, preparedRequests.Count, preparationStopwatch.ElapsedMilliseconds);
         var pluginNames = preparedRequests.Select(request => request.PluginName).Distinct(StringComparer.Ordinal).ToList();
         if (pluginNames.Count != 1)
         {
@@ -103,10 +99,7 @@ public class PluginDataHandler(
             .Chunk(batchSize)
             .ToList();
 
-        logger.LogInformation("Plugin batch groups prepared. RequestCount: {RequestCount}, BatchSize: {BatchSize}, BatchCount: {BatchCount}, MaxConcurrency: {MaxConcurrency}", preparedRequests.Count, batchSize, batches.Count, maxConcurrency);
-
         var responseItems = new ConcurrentBag<SubmodelDataBatchResponse>();
-        var pluginHttpStopwatch = Stopwatch.StartNew();
         await Parallel.ForEachAsync(
             batches,
             new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
@@ -121,31 +114,22 @@ public class PluginDataHandler(
 
                 var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
                 using var requestContent = pluginRequest.Content;
-                var httpStopwatch = Stopwatch.StartNew();
                 var responseContent = await pluginDataProvider
                     .GetDataForSubmodelsBatchAsync(pluginRequest, token)
                     .ConfigureAwait(false);
-                httpStopwatch.Stop();
 
-                logger.LogInformation("Plugin batch HTTP completed. BatchSize: {BatchSize}, GroupCount: {GroupCount}, ResponseBytes: {ResponseBytes}, ElapsedMs: {ElapsedMs}", batch.Length, groups.Count, responseContent.Length, httpStopwatch.ElapsedMilliseconds);
-
-                var deserializeStopwatch = Stopwatch.StartNew();
                 var batchResponses = DeserializeBatchResponse(responseContent);
                 ValidateBatchResponse(batch, batchResponses);
-                deserializeStopwatch.Stop();
-                logger.LogInformation("Plugin batch response deserialized. BatchSize: {BatchSize}, ResponseCount: {ResponseCount}, ElapsedMs: {ElapsedMs}", batch.Length, batchResponses.Count, deserializeStopwatch.ElapsedMilliseconds);
 
                 foreach (var response in batchResponses)
                 {
                     responseItems.Add(response);
                 }
             }).ConfigureAwait(false);
-        pluginHttpStopwatch.Stop();
 
         var preparedById = preparedRequests.ToDictionary(item => item.Request.SubmodelId, StringComparer.Ordinal);
         var valuesById = new ConcurrentDictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
 
-        var responseValidationStopwatch = Stopwatch.StartNew();
         await Parallel.ForEachAsync(
             responseItems,
             new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
@@ -162,9 +146,6 @@ public class PluginDataHandler(
 
                 return ValueTask.CompletedTask;
             }).ConfigureAwait(false);
-        responseValidationStopwatch.Stop();
-
-        logger.LogInformation("Plugin batch processing completed. RequestCount: {RequestCount}, ResponseCount: {ResponseCount}, HttpAndDeserializeMs: {HttpAndDeserializeMs}, ValidateParseMergeMs: {ValidateParseMergeMs}", requests.Count, responseItems.Count, pluginHttpStopwatch.ElapsedMilliseconds, responseValidationStopwatch.ElapsedMilliseconds);
 
         return valuesById;
     }
