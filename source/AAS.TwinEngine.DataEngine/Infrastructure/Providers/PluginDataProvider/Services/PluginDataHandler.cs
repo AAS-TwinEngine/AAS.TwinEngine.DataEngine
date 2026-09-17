@@ -87,7 +87,13 @@ public class PluginDataHandler(
             return new Dictionary<string, SemanticTreeNode>();
         }
 
-        var preparedRequests = requests.Select(request => PrepareBatchRequest(request, pluginManifests)).ToList();
+        List<PreparedBatchRequest> preparedRequests;
+        using (var prepareActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
+        {
+            _ = prepareActivity?.SetTag("value.request.count", requests.Count);
+            preparedRequests = requests.Select(request => PrepareBatchRequest(request, pluginManifests)).ToList();
+        }
+
         var pluginNames = preparedRequests.Select(request => request.PluginName).Distinct(StringComparer.Ordinal).ToList();
         if (pluginNames.Count != 1)
         {
@@ -123,6 +129,8 @@ public class PluginDataHandler(
         var preparedById = preparedRequests.ToDictionary(item => item.Request.SubmodelId, StringComparer.Ordinal);
         var valuesById = new ConcurrentDictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
 
+        using var processActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ProcessBatchResponses);
+        _ = processActivity?.SetTag("response.count", responseItems.Count);
         await Parallel.ForEachAsync(
             responseItems,
             new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
