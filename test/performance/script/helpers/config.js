@@ -17,16 +17,16 @@ const defaultConfig = {
     },
 
     endpoints: {
-        getShells: { enabled: true, requests: 10, limit: 100 },
-        getShellById: { enabled: true, requests: 10 },
-        getAssetInformation: { enabled: true, requests: 10 },
-        getSubmodelReferences: { enabled: true, requests: 10 },
-        getShellDescriptors: { enabled: true, requests: 10, limit: 100 },
-        getShellDescriptorById: { enabled: true, requests: 10 },
-        getSubmodelDescriptors: { enabled: true, requests: 10, limit: 100 },
-        getSubmodelDescriptorById: { enabled: true, requests: 10 },
-        getSubmodels: { enabled: false, requests: 10, limit: 100 },
-        getSubmodelById: { enabled: true, requests: 10 },
+        getShells: { enabled: false, requests: 10, limit: 100 },
+        getShellById: { enabled: false, requests: 10 },
+        getAssetInformation: { enabled: false, requests: 10 },
+        getSubmodelReferences: { enabled: false, requests: 10 },
+        getShellDescriptors: { enabled: false, requests: 10, limit: 100 },
+        getShellDescriptorById: { enabled: false, requests: 10 },
+        getSubmodelDescriptors: { enabled: false, requests: 10, limit: 100 },
+        getSubmodelDescriptorById: { enabled: false, requests: 10 },
+        getSubmodels: { enabled: true, requests: 100, limit: 250 },
+        getSubmodelById: { enabled: false, requests: 10 },
         loadAllShellDescriptors: { enabled: false, requests: 2, limit: 1000 }
     },
     reports: {
