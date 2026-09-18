@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
@@ -16,8 +14,6 @@ public class SubmodelFiller(
     IEnumerable<ISubmodelElementTypeHandler> handlers,
     ILogger<SubmodelFiller> logger) : ISubmodelFiller
 {
-    private readonly ConcurrentDictionary<Type, ISubmodelElementTypeHandler> _handlerByElementType = new();
-
     public ISubmodel FillOutTemplate(ISubmodel submodelTemplate, SemanticTreeNode values)
     {
         if (submodelTemplate is null)
@@ -141,10 +137,7 @@ if (values is null)
 
     private ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values, IReadOnlyDictionary<SemanticTreeNode, SemanticValueIndex> semanticValueIndexes)
     {
-        var handler = _handlerByElementType.GetOrAdd(
-            element.GetType(),
-            _ => handlers.FirstOrDefault(h => h.CanHandle(element))
-                ?? throw new InternalDataProcessingException());
+        var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
         if (handler == null)
         {
             logger.LogError("InValid submodelElementTemplate Type. IdShort : {IdShort}", element.IdShort);

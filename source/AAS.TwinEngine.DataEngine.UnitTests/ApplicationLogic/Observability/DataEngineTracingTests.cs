@@ -37,7 +37,6 @@ public class DataEngineTracingTests
         Assert.Equal("Get Submodel Values", DataEngineTracing.Spans.GetSubmodelValues);
         Assert.Equal("Fill Submodel Templates", DataEngineTracing.Spans.FillSubmodelTemplates);
         Assert.Equal("Map Submodel Response", DataEngineTracing.Spans.MapSubmodelResponse);
-        Assert.Equal("Serialize Submodels", DataEngineTracing.Spans.SerializeSubmodels);
     }
 
     [Fact]

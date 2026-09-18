@@ -296,48 +296,6 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
-    public async Task GetAllSubmodelsAsync_ReusesSemanticTreeForRepeatedTemplate_WhileFetchingFreshValues()
-    {
-        const string ShellId = "https://example.com/shells/001";
-        const string FirstSubmodelId = "https://example.com/submodels/Nameplate-001";
-        const string SecondSubmodelId = "https://example.com/submodels/Nameplate-002";
-
-        ArrangeShellsResponse([new ShellDescriptorMetaData { Id = ShellId }]);
-        ArrangeSubmodelRefsForShell(ShellId, [FirstSubmodelId, SecondSubmodelId]);
-        ArrangeValidateSemanticIdFilterForAll(true);
-
-        _templateService
-            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
-            .Returns(_ => new Submodel("https://example.com/templates/Nameplate"));
-
-        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
-        _pluginDataHandler
-            .TryGetValuesBatchAsync(
-                Arg.Any<IReadOnlyList<PluginManifest>>(),
-                Arg.Any<IReadOnlyList<SubmodelValueRequest>>(),
-                Arg.Any<int>(),
-                Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns(call => call.ArgAt<IReadOnlyList<SubmodelValueRequest>>(1)
-                .ToDictionary(request => request.SubmodelId, _ => CreateSubmodelTreeNode("fresh") as SemanticTreeNode));
-        _semanticIdHandler
-            .FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>())
-            .Returns(call => call.ArgAt<ISubmodel>(0));
-
-        await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
-
-        _ = _semanticIdHandler.Received(1).Extract(Arg.Any<ISubmodel>());
-        await _pluginDataHandler.Received(1).TryGetValuesBatchAsync(
-            Arg.Any<IReadOnlyList<PluginManifest>>(),
-            Arg.Is<IReadOnlyList<SubmodelValueRequest>>(requests => requests.Count == 2 &&
-                requests.Select(request => request.SubmodelId).ToHashSet(StringComparer.Ordinal)
-                    .SetEquals(new[] { FirstSubmodelId, SecondSubmodelId })),
-            Arg.Any<int>(),
-            Arg.Any<int>(),
-            Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
     public async Task GetAllSubmodelsAsync_PreservesOriginalOrder_WhenBatchResultsUseDifferentOrder()
     {
         const string ShellId = "https://example.com/shells/001";

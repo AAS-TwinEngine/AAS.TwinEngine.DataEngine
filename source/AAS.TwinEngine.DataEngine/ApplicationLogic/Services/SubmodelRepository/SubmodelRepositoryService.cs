@@ -87,12 +87,9 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
-            SubmodelPageResult paginationResult;
-            using (var collectPageActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CollectSubmodelPage))
-            {
-                _ = collectPageActivity?.SetTag("submodel.requested_count", limit);
-                paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, limit, cursor, cancellationToken).ConfigureAwait(false);
-            }
+            using var collectPageActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CollectSubmodelPage);
+            _ = collectPageActivity?.SetTag("submodel.requested_count", limit);
+            var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, limit, cursor, cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, queryOptions, cancellationToken).ConfigureAwait(false);
 
@@ -242,11 +239,8 @@ public class SubmodelRepositoryService(
 
         using var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues);
         _ = extractionActivity?.SetTag("submodel.count", templates.Length);
-        var semanticTreesByTemplateId = new Dictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
         var valueRequests = templates
-            .Select((template, index) => new SubmodelValueRequest(
-                submodelIds[index],
-                ExtractSemanticTree(template, semanticTreesByTemplateId)))
+            .Select((template, index) => new SubmodelValueRequest(submodelIds[index], semanticIdHandler.Extract(template)))
             .DistinctBy(request => request.SubmodelId, StringComparer.Ordinal)
             .ToList();
 
@@ -278,23 +272,6 @@ public class SubmodelRepositoryService(
             }).ConfigureAwait(false);
 
         return [.. results];
-    }
-
-    private SemanticTreeNode ExtractSemanticTree(ISubmodel template, IDictionary<string, SemanticTreeNode> semanticTreesByTemplateId)
-    {
-        if (string.IsNullOrWhiteSpace(template.Id))
-        {
-            return semanticIdHandler.Extract(template);
-        }
-
-        if (semanticTreesByTemplateId.TryGetValue(template.Id, out var semanticTree))
-        {
-            return semanticTree;
-        }
-
-        semanticTree = semanticIdHandler.Extract(template);
-        semanticTreesByTemplateId[template.Id] = semanticTree;
-        return semanticTree;
     }
 
     private async Task<IReadOnlyDictionary<string, SemanticTreeNode>> GetValuesIndividuallyAsync(
