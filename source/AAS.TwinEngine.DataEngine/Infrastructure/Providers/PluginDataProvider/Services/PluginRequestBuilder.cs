@@ -24,6 +24,17 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
                 CreateHttpContent(kvp.Value)))];
     }
 
+    public PluginRequestSubmodelBatch Build(string pluginName, IReadOnlyList<SubmodelDataBatchRequestGroup> groups)
+    {
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PluginRequestGeneration);
+
+        EnsureManifestIsHealthy();
+
+        return new PluginRequestSubmodelBatch(
+            $"{HttpClientNames.PluginDataProviderPrefix}{pluginName}",
+            JsonContent.Create(groups, options: JsonSerializationOptions.Serialization));
+    }
+
     public IList<PluginRequestMetaData> Build(IList<string> plugins, string? aasIdentifier = null)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PluginRequestGeneration);

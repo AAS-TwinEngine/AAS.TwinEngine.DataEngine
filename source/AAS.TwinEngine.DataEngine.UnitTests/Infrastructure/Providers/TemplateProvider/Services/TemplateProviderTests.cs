@@ -1,17 +1,21 @@
 ﻿using System.Net;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -27,6 +31,7 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateP
 public class TemplateProviderTests
 {
     private readonly ICachedGetRequestClient _cachedHttp;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly Template _sut;
     private const string TemplateId = "Nameplate";
 
@@ -36,6 +41,7 @@ public class TemplateProviderTests
     {
         var logger = Substitute.For<ILogger<Template>>();
         _cachedHttp = Substitute.For<ICachedGetRequestClient>();
+        _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
 
         var options = Substitute.For<IOptions<TemplateManagementConfig>>();
         var config = new TemplateManagementConfig
@@ -48,7 +54,12 @@ public class TemplateProviderTests
         };
         options.Value.Returns(config);
 
-        _sut = new Template(logger, options, _cachedHttp);
+        _sut = new Template(
+            logger,
+            options,
+            _cachedHttp,
+            new MemoryCache(new MemoryCacheOptions()),
+            _httpContextAccessor);
     }
 
     [Fact]
@@ -521,6 +532,84 @@ public class TemplateProviderTests
         Assert.Null(result);
     }
 
+    //template-cache-by-id-changes
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_WhenSameTemplateIsLoadedConcurrently_FetchesItOnce()
+    {
+        var fetchStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFetch = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var fetchCount = 0;
+
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                   .Returns(async _ =>
+                   {
+                       Interlocked.Increment(ref fetchCount);
+                       fetchStarted.TrySetResult();
+                       return await releaseFetch.Task.ConfigureAwait(false);
+                   });
+
+        var firstRequest = _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None);
+        await fetchStarted.Task;
+
+        var concurrentRequests = Enumerable.Range(0, 49)
+                                            .Select(_ => _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None))
+                                            .ToArray();
+
+        var duplicateFetchObserved = SpinWait.SpinUntil(() => Volatile.Read(ref fetchCount) > 1, TimeSpan.FromSeconds(1));
+        releaseFetch.SetResult(ProviderTestData.ValidateSubmodelResponse);
+
+        await Task.WhenAll(concurrentRequests.Prepend(firstRequest));
+
+        Assert.False(duplicateFetchObserved);
+        Assert.Equal(1, fetchCount);
+    }
+
+    //template-cache-by-id-changes
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_WhenTemplateIsCached_ReturnsIndependentInstances()
+    {
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                   .Returns(ProviderTestData.ValidateSubmodelResponse);
+
+        var firstResult = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None);
+        firstResult!.IdShort = "ChangedByCaller";
+
+        var secondResult = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None);
+
+        Assert.NotEqual(firstResult.IdShort, secondResult!.IdShort);
+        await _cachedHttp.Received(1).GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_WhenPermissionClaimsDiffer_UsesSeparateCacheEntries()
+    {
+        var httpContext = new DefaultHttpContext();
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                   .Returns(ProviderTestData.ValidateSubmodelResponse);
+
+        httpContext.User = CreateUser("reader");
+        _ = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None);
+
+        httpContext.User = CreateUser("administrator");
+        _ = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, null, CancellationToken.None);
+
+        await _cachedHttp.Received(2).GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>());
+    }
+
+    //template-cache-by-id-changes
+    [Fact]
+    public async Task GetFilteredSubmodelTemplateAsync_WhenFilterOptionsDiffer_UsesSeparateCacheEntries()
+    {
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                   .Returns(ProviderTestData.ValidateSubmodelResponse);
+
+        _ = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, new SubmodelQueryOptions("deep", "withoutBlobValue"), CancellationToken.None);
+        _ = await _sut.GetFilteredSubmodelTemplateAsync(TemplateId, new SubmodelQueryOptions("core", "withBlobValue"), CancellationToken.None);
+
+        await _cachedHttp.Received(2).GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelTemplateRepository, Arg.Any<int>(), Arg.Any<CancellationToken>());
+    }
+
     [Fact]
     public async Task GetSubmodelTemplateAsync_StartsFetchTemplateSpan_WithTemplateIdTag()
     {
@@ -537,4 +626,12 @@ public class TemplateProviderTests
         Assert.Equal(DataEngineTracing.Spans.GetSubmodelTemplate, span.OperationName);
         Assert.Equal(TemplateIdForSpan, span.GetTagItem(DataEngineTracing.Attributes.TemplateId));
     }
+
+    private static ClaimsPrincipal CreateUser(string permission) =>
+        new(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "user-id"),
+                new Claim("permission", permission)
+            ],
+            "TestAuthentication"));
 }

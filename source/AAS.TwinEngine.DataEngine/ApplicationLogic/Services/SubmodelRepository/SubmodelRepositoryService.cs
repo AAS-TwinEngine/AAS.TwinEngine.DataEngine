@@ -1,12 +1,14 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -32,6 +34,8 @@ public class SubmodelRepositoryService(
     IOptions<GeneralConfig> generalConfig) : ISubmodelRepositoryService
 {
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.SubmodelTemplateRepository.ConcurrentOperationsLimit;
+    private readonly int _submodelBatchSize = templateManagementConfig.Value.SubmodelBatchProcessing.BatchSize;
+    private readonly int _submodelBatchMaxConcurrency = templateManagementConfig.Value.SubmodelBatchProcessing.BatchMaxConcurrency;
     private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
 
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
@@ -83,6 +87,8 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
+            using var collectPageActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CollectSubmodelPage);
+            _ = collectPageActivity?.SetTag("submodel.requested_count", limit);
             var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, limit, cursor, cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, queryOptions, cancellationToken).ConfigureAwait(false);
@@ -220,29 +226,89 @@ public class SubmodelRepositoryService(
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(List<string> submodelIds, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
-        var tasks = new Task<ISubmodel?>[submodelIds.Count];
+        var templateTasks = new Task<ISubmodel>[submodelIds.Count];
 
         for (var i = 0; i < submodelIds.Count; i++)
         {
-            tasks[i] = BuildSingleSubmodelAsync(submodelIds[i], queryOptions, semaphore, cancellationToken);
+            templateTasks[i] = GetSubmodelTemplateAsync(submodelIds[i], queryOptions, semaphore, cancellationToken);
         }
 
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        using var templateActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.BuildSubmodelTemplates);
+        _ = templateActivity?.SetTag("submodel.count", submodelIds.Count);
+        var templates = await Task.WhenAll(templateTasks).ConfigureAwait(false);
 
-        var submodels = new List<ISubmodel>(results.Length);
-        submodels.AddRange(results.Where(result => result is not null));
+        using var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues);
+        _ = extractionActivity?.SetTag("submodel.count", templates.Length);
+        var valueRequests = templates
+            .Select((template, index) => new SubmodelValueRequest(submodelIds[index], semanticIdHandler.Extract(template)))
+            .DistinctBy(request => request.SubmodelId, StringComparer.Ordinal)
+            .ToList();
 
-        return submodels;
+        var pluginManifests = pluginManifestConflictHandler.Manifests;
+        using var valuesActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelValues);
+        _ = valuesActivity?.SetTag("value.request.count", valueRequests.Count);
+        var valuesById = pluginManifests.Count == 1 && pluginManifests[0].Capabilities.HasSubmodelBatch
+            ? await pluginDataHandler.TryGetValuesBatchAsync(
+                pluginManifests,
+                valueRequests,
+                _submodelBatchSize,
+                _submodelBatchMaxConcurrency,
+                cancellationToken).ConfigureAwait(false)
+            : await GetValuesIndividuallyAsync(pluginManifests, valueRequests, cancellationToken).ConfigureAwait(false);
+
+        var results = new ISubmodel[submodelIds.Count];
+        using var fillActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.FillSubmodelTemplates);
+        _ = fillActivity?.SetTag("submodel.count", submodelIds.Count);
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, submodelIds.Count),
+            new ParallelOptions { MaxDegreeOfParallelism = _concurrentOperationsLimit, CancellationToken = cancellationToken },
+            (index, _) =>
+            {
+                var submodelId = submodelIds[index];
+                var submodel = semanticIdHandler.FillOutTemplate(templates[index], valuesById[submodelId]);
+                submodel.Id = submodelId;
+                results[index] = submodel;
+                return ValueTask.CompletedTask;
+            }).ConfigureAwait(false);
+
+        return [.. results];
     }
 
-    private async Task<ISubmodel?> BuildSingleSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+    private async Task<IReadOnlyDictionary<string, SemanticTreeNode>> GetValuesIndividuallyAsync(
+        IReadOnlyList<PluginManifest> pluginManifests,
+        IReadOnlyList<SubmodelValueRequest> requests,
+        CancellationToken cancellationToken)
+    {
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
+        var tasks = requests.Select(async request =>
+        {
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var values = await pluginDataHandler.TryGetValuesAsync(
+                    pluginManifests,
+                    request.SemanticIds,
+                    request.SubmodelId,
+                    cancellationToken).ConfigureAwait(false);
+
+                return new KeyValuePair<string, SemanticTreeNode>(request.SubmodelId, values);
+            }
+            finally
+            {
+                _ = semaphore.Release();
+            }
+        });
+
+        var valuesById = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return valuesById.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+    }
+
+    private async Task<ISubmodel> GetSubmodelTemplateAsync(string submodelId, SubmodelQueryOptions? queryOptions, SemaphoreSlim semaphore, CancellationToken cancellationToken)
     {
         await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var template = await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, queryOptions, cancellationToken).ConfigureAwait(false);
-
-            return await BuildSubmodelWithValuesAsync(template, submodelId, cancellationToken).ConfigureAwait(false);
+            return await submodelTemplateService.GetFilteredSubmodelTemplateAsync(submodelId, queryOptions, cancellationToken).ConfigureAwait(false);
         }
         finally
         {

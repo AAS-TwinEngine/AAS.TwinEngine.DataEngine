@@ -57,5 +57,11 @@ CREATE TABLE IF NOT EXISTS "SpecificAssetIds" (
     "Value" TEXT
 );
 
-CREATE INDEX idx_asset_productid
+CREATE INDEX IF NOT EXISTS idx_asset_productid
 ON "Asset"("ProductId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_aas_id
+ON "Asset" ("AasId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_global_asset_id
+ON "Asset" ("GlobalAssetId");

@@ -11,6 +11,7 @@ public static class ResponseCompressionConfigurationExtension
         _ = services.AddResponseCompression(options =>
         {
             options.EnableForHttps = true;
+            options.MimeTypes = ["application/json", "application/problem+json"];
             options.Providers.Add<BrotliCompressionProvider>();
             options.Providers.Add<GzipCompressionProvider>();
         });

@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+﻿using System.Text.Json;
+
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Helper;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Helper;
@@ -21,6 +23,18 @@ public class JsonSchemaParserTests
         Assert.Equal("value1", leaf.Value);
         Assert.Equal(DataType.Unknown, leaf.DataType);
         Assert.Equal(Cardinality.Unknown, leaf.Cardinality);
+    }
+
+    [Fact]
+    public void ParseJsonSchema_JsonElement_ShouldParseWithoutStringConversion()
+    {
+        using var document = JsonDocument.Parse("""{"leaf1":"value1"}""");
+
+        var result = JsonSchemaParser.ParseJsonSchema(document.RootElement);
+
+        var leaf = Assert.IsType<SemanticLeafNode>(result);
+        Assert.Equal("leaf1", leaf.SemanticId);
+        Assert.Equal("value1", leaf.Value);
     }
 
     [Fact]

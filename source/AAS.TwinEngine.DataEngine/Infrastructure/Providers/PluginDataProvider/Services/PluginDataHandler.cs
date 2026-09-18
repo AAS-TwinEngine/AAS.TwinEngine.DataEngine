@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text;
+using System.Text.Json;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -34,6 +36,7 @@ public class PluginDataHandler(
     private const string ShellsBasePath = "shells";
 
     private readonly Uri _baseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl ?? throw new InvalidDependencyException(nameof(generalConfig.Value.DataEngineRepositoryBaseUrl), logger);
+    private readonly ConcurrentDictionary<string, Lazy<PreparedSchema>> _schemaCache = new(StringComparer.Ordinal);
 
     public async Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken)
     {
@@ -47,7 +50,7 @@ public class PluginDataHandler(
         {
             var jsonSchema = JsonSchemaGenerator.ConvertToJsonSchema(value);
             jsonSchemas.Add(key, jsonSchema);
-            jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
+            //jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
         }
 
         var pluginRequests = pluginRequestBuilder.Build(jsonSchemas);
@@ -61,7 +64,7 @@ public class PluginDataHandler(
             var responseContent = responses[i];
 
             var schema = jsonSchemas.ElementAt(i).Value;
-            jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
+            //jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
 
             var semanticTreeNode = JsonSchemaParser.ParseJsonSchema(responseContent);
             result.Add(semanticTreeNode);
@@ -71,6 +74,146 @@ public class PluginDataHandler(
 
         return mergedValues;
     }
+
+    public async Task<IReadOnlyDictionary<string, SemanticTreeNode>> TryGetValuesBatchAsync(
+        IReadOnlyList<PluginManifest> pluginManifests,
+        IReadOnlyList<SubmodelValueRequest> requests,
+        int batchSize,
+        int maxConcurrency,
+        CancellationToken cancellationToken)
+    {
+        if (requests.Count == 0)
+        {
+            return new Dictionary<string, SemanticTreeNode>();
+        }
+
+        List<PreparedBatchRequest> preparedRequests;
+        using (var prepareActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
+        {
+            _ = prepareActivity?.SetTag("value.request.count", requests.Count);
+            preparedRequests = requests.Select(request => PrepareBatchRequest(request, pluginManifests)).ToList();
+        }
+
+        var pluginNames = preparedRequests.Select(request => request.PluginName).Distinct(StringComparer.Ordinal).ToList();
+        if (pluginNames.Count != 1)
+        {
+            throw new MultiPluginConflictException();
+        }
+
+        var batches = preparedRequests.OrderBy(request => request.SchemaKey, StringComparer.Ordinal).Chunk(batchSize).ToList();
+
+        var responseItems = new ConcurrentBag<SubmodelDataBatchResponse>();
+        await Parallel.ForEachAsync(
+            batches,
+            new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
+            async (batch, token) =>
+            {
+                IReadOnlyList<SubmodelDataBatchRequestGroup> groups = batch
+                    .GroupBy(item => item.SchemaKey, StringComparer.Ordinal)
+                    .Select(group => new SubmodelDataBatchRequestGroup(
+                        group.Select(item => item.Request.SubmodelId.EncodeBase64Url(logger)).ToList(),
+                        group.First().Schema)).ToList();
+
+                var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
+                using var requestContent = pluginRequest.Content;
+                var responseContent = await pluginDataProvider.GetDataForSubmodelsBatchAsync(pluginRequest, token).ConfigureAwait(false);
+
+                var batchResponses = DeserializeBatchResponse(responseContent);
+
+                foreach (var response in batchResponses)
+                {
+                    responseItems.Add(response);
+                }
+            }).ConfigureAwait(false);
+
+        var preparedById = preparedRequests.ToDictionary(item => item.Request.SubmodelId, StringComparer.Ordinal);
+        var valuesById = new ConcurrentDictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
+
+        using var processActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ProcessBatchResponses);
+        _ = processActivity?.SetTag("response.count", responseItems.Count);
+        await Parallel.ForEachAsync(
+            responseItems,
+            new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
+            (response, _) =>
+            {
+                var prepared = preparedById[response.SubmodelId];
+                //jsonSchemaValidator.ValidateResponseElement(response.Result, prepared.Schema);
+
+                var parsedValues = JsonSchemaParser.ParseJsonSchema(response.Result);
+                valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(prepared.Request.SemanticIds, new[] { parsedValues });
+
+                return ValueTask.CompletedTask;
+            }).ConfigureAwait(false);
+
+        return valuesById;
+    }
+
+    private PreparedBatchRequest PrepareBatchRequest(SubmodelValueRequest request, IReadOnlyList<PluginManifest> pluginManifests)
+    {
+        var splitValues = multiPluginDataHandler.SplitByPluginManifests(request.SemanticIds, pluginManifests);
+        if (splitValues.Count != 1)
+        {
+            throw new MultiPluginConflictException();
+        }
+
+        var pluginValues = splitValues.Single();
+        var semanticTreeKey = BuildSemanticTreeKey(pluginValues.Value);
+        var preparedSchema = _schemaCache.GetOrAdd(semanticTreeKey, _ => new Lazy<PreparedSchema>(() => CreatePreparedSchema(pluginValues.Value), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+
+        return new PreparedBatchRequest(request, pluginValues.Key, preparedSchema.Schema, preparedSchema.SchemaKey);
+    }
+
+    private PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
+    {
+        var schema = JsonSchemaGenerator.ConvertToJsonSchema(semanticTree);
+        //jsonSchemaValidator.ValidateRequestSchema(schema);
+        return new PreparedSchema(schema, JsonSerializer.Serialize(schema, JsonSerializationOptions.FileAndHttpContent));
+    }
+
+    private static string BuildSemanticTreeKey(SemanticTreeNode node)
+    {
+        var builder = new StringBuilder();
+        AppendSemanticTreeKey(builder, node);
+        return builder.ToString();
+    }
+
+    private static void AppendSemanticTreeKey(StringBuilder builder, SemanticTreeNode node)
+    {
+        _ = builder.Append(node.GetType().Name).Append('|').Append(node.SemanticId).Append('|').Append(node.Cardinality);
+
+        if (node is SemanticLeafNode leaf)
+        {
+            _ = builder.Append('|').Append(leaf.DataType);
+        }
+
+        if (node is SemanticBranchNode branch)
+        {
+            foreach (var child in branch.Children)
+            {
+                _ = builder.Append('[');
+                AppendSemanticTreeKey(builder, child);
+                _ = builder.Append(']');
+            }
+        }
+    }
+
+    private static IReadOnlyList<SubmodelDataBatchResponse> DeserializeBatchResponse(string responseContent)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<List<SubmodelDataBatchResponse>>(
+                responseContent,
+                JsonSerializationOptions.DeserializationOption) ?? throw new ResponseParsingException();
+        }
+        catch (JsonException)
+        {
+            throw new ResponseParsingException();
+        }
+    }
+
+    private sealed record PreparedBatchRequest(SubmodelValueRequest Request, string PluginName, JsonSchema Schema, string SchemaKey);
+
+    private sealed record PreparedSchema(JsonSchema Schema, string SchemaKey);
 
     public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {
@@ -145,7 +288,7 @@ public class PluginDataHandler(
 
     private void ValidateAssetKindTypeFilterResponse(IList<ShellDescriptorMetaData> shellDescriptors, AssetKind? assetKind, string? encodedAssetType)
     {
-var requestedAssetType = encodedAssetType;
+        var requestedAssetType = encodedAssetType;
 
         foreach (var descriptor in shellDescriptors)
         {

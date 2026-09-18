@@ -80,6 +80,7 @@ public class PluginManifestProviderTests
         Assert.False(manifest.Capabilities.HasAssetInformation);
         Assert.True(manifest.Capabilities.HasAssetIdSearch);
         Assert.True(manifest.Capabilities.HasAssetKindTypeFilter);
+        Assert.False(manifest.Capabilities.HasSubmodelBatch);
     }
 
     [Fact]

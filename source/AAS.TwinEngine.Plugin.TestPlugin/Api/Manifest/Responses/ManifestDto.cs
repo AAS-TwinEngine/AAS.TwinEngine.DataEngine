@@ -24,4 +24,7 @@ public class CapabilitiesDto
 
     [JsonPropertyName("hasAssetKindTypeFilter")]
     public bool HasAssetKindTypeFilter { get; set; }
+
+    [JsonPropertyName("hasSubmodelBatch")]
+    public bool HasSubmodelBatch { get; set; }
 }

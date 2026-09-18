@@ -84,7 +84,7 @@ public sealed class CachedGetRequestClient(
         };
     }
 
-    private static string BuildCacheKey(IHttpContextAccessor httpContextAccessor, string requestParts)
+    internal static string BuildCacheKey(IHttpContextAccessor httpContextAccessor, string requestParts)
     {
         var requestHash = ComputeHash(requestParts);
 

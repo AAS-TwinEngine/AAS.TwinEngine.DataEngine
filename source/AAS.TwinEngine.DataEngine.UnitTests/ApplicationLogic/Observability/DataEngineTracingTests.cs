@@ -31,6 +31,12 @@ public class DataEngineTracingTests
         Assert.Equal("Get Plugin Data", DataEngineTracing.Spans.GetPluginData);
         Assert.Equal("Get Plugin Metadata-shells", DataEngineTracing.Spans.GetPluginMetadataShells);
         Assert.Equal("Get Plugin Metadata-assets", DataEngineTracing.Spans.GetPluginMetadataAssets);
+        Assert.Equal("Collect Submodel Page", DataEngineTracing.Spans.CollectSubmodelPage);
+        Assert.Equal("Build Submodel Templates", DataEngineTracing.Spans.BuildSubmodelTemplates);
+        Assert.Equal("Extract Semantic Values", DataEngineTracing.Spans.ExtractSemanticValues);
+        Assert.Equal("Get Submodel Values", DataEngineTracing.Spans.GetSubmodelValues);
+        Assert.Equal("Fill Submodel Templates", DataEngineTracing.Spans.FillSubmodelTemplates);
+        Assert.Equal("Map Submodel Response", DataEngineTracing.Spans.MapSubmodelResponse);
     }
 
     [Fact]

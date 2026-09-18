@@ -1,9 +1,12 @@
-﻿using Json.Schema;
+﻿using System.Text.Json;
+
+using Json.Schema;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 
 public interface IJsonSchemaValidator
 {
     void ValidateResponseContent(string responseJson, JsonSchema requestSchema);
+    void ValidateResponseElement(JsonElement responseJson, JsonSchema requestSchema);
     void ValidateRequestSchema(JsonSchema schema);
 }

@@ -116,4 +116,32 @@ public class TemplateManagementConfigValidatorTests
         Assert.Contains("AasTemplateRegistry.ConcurrentOperationsLimit", result.FailureMessage);
         Assert.Contains("SubmodelTemplateRegistry.ConcurrentOperationsLimit", result.FailureMessage);
     }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Validate_SubmodelBatchSizeNotPositive_Fails(int batchSize)
+    {
+        var config = CreateValidConfig();
+        config.SubmodelBatchProcessing.BatchSize = batchSize;
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Failed);
+        Assert.Contains("SubmodelBatchProcessing.BatchSize", result.FailureMessage);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Validate_SubmodelBatchMaxConcurrencyNotPositive_Fails(int maxConcurrency)
+    {
+        var config = CreateValidConfig();
+        config.SubmodelBatchProcessing.BatchMaxConcurrency = maxConcurrency;
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Failed);
+        Assert.Contains("SubmodelBatchProcessing.BatchMaxConcurrency", result.FailureMessage);
+    }
 }
