@@ -12,8 +12,9 @@ public abstract class SemanticTreeNode(string semanticId, Cardinality cardinalit
 public class SemanticBranchNode(string semanticId, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality)
 {
     private readonly List<SemanticTreeNode> _children = [];
+    private ReadOnlyCollection<SemanticTreeNode>? _readOnlyChildren;
 
-    public ReadOnlyCollection<SemanticTreeNode> Children => _children.AsReadOnly();
+    public ReadOnlyCollection<SemanticTreeNode> Children => _readOnlyChildren ??= _children.AsReadOnly();
 
     public void AddChild(SemanticTreeNode child) => _children.Add(child);
 }

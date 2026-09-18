@@ -38,6 +38,9 @@ public class SubmodelRepositoryService(
     private readonly int _submodelBatchMaxConcurrency = templateManagementConfig.Value.SubmodelBatchProcessing.BatchMaxConcurrency;
     private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
 
+    // Filling templates is CPU bound, so it scales with cores rather than with the I/O concurrency limit.
+    private static readonly int _fillParallelism = System.Environment.ProcessorCount;
+
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
@@ -261,7 +264,7 @@ public class SubmodelRepositoryService(
         _ = fillActivity?.SetTag("submodel.count", submodelIds.Count);
         await Parallel.ForEachAsync(
             Enumerable.Range(0, submodelIds.Count),
-            new ParallelOptions { MaxDegreeOfParallelism = _concurrentOperationsLimit, CancellationToken = cancellationToken },
+            new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
             (index, _) =>
             {
                 var submodelId = submodelIds[index];

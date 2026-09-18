@@ -24,6 +24,25 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
         return Jsonization.Deserialize.ISubmodelElementFrom(jsonElement);
     }
 
+    public IReadOnlyList<ISubmodelElement> CloneElements(ISubmodelElement element, int count)
+    {
+        if (count <= 0)
+        {
+            return [];
+        }
+
+        // Serializing once and deserializing N times halves the cost of producing N clones.
+        var jsonElement = Jsonization.Serialize.ToJsonObject(element);
+        var clones = new ISubmodelElement[count];
+
+        for (var i = 0; i < count; i++)
+        {
+            clones[i] = Jsonization.Deserialize.ISubmodelElementFrom(jsonElement);
+        }
+
+        return clones;
+    }
+
     public ISubmodelElement? GetElementByIdShort(IEnumerable<ISubmodelElement>? submodelElements, string idShort)
     {
         if (TryParseIdShortWithBracketIndex(idShort, out var idShortWithoutIndex, out var index))
