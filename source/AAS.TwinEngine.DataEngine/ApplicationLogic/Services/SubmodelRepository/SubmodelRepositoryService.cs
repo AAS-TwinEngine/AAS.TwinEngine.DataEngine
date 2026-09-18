@@ -229,28 +229,35 @@ public class SubmodelRepositoryService(
     private async Task<List<ISubmodel>> BuildSubmodelsAsync(List<string> submodelIds, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
-        var templateTasks = new Task<ISubmodel>[submodelIds.Count];
 
-        for (var i = 0; i < submodelIds.Count; i++)
+        ISubmodel[] templates;
+        using (var templateActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.BuildSubmodelTemplates))
         {
-            templateTasks[i] = GetSubmodelTemplateAsync(submodelIds[i], queryOptions, semaphore, cancellationToken);
+            _ = templateActivity?.SetTag("submodel.count", submodelIds.Count);
+
+            // Task creation is scoped inside the span so per-template fetch spans nest under it correctly.
+            var templateTasks = new Task<ISubmodel>[submodelIds.Count];
+            for (var i = 0; i < submodelIds.Count; i++)
+            {
+                templateTasks[i] = GetSubmodelTemplateAsync(submodelIds[i], queryOptions, semaphore, cancellationToken);
+            }
+
+            templates = await Task.WhenAll(templateTasks).ConfigureAwait(false);
         }
 
-        using var templateActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.BuildSubmodelTemplates);
-        _ = templateActivity?.SetTag("submodel.count", submodelIds.Count);
-        var templates = await Task.WhenAll(templateTasks).ConfigureAwait(false);
-
-        using var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues);
-        _ = extractionActivity?.SetTag("submodel.count", templates.Length);
         var extractedValues = new SemanticTreeNode[templates.Length];
-        await Parallel.ForEachAsync(
-            Enumerable.Range(0, templates.Length),
-            new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
-            (index, _) =>
-            {
-                extractedValues[index] = semanticIdHandler.Extract(templates[index]);
-                return ValueTask.CompletedTask;
-            }).ConfigureAwait(false);
+        using (var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues))
+        {
+            _ = extractionActivity?.SetTag("submodel.count", templates.Length);
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, templates.Length),
+                new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
+                (index, _) =>
+                {
+                    extractedValues[index] = semanticIdHandler.Extract(templates[index]);
+                    return ValueTask.CompletedTask;
+                }).ConfigureAwait(false);
+        }
 
         var valueRequests = extractedValues
             .Select((values, index) => new SubmodelValueRequest(submodelIds[index], values))
@@ -258,31 +265,36 @@ public class SubmodelRepositoryService(
             .ToList();
 
         var pluginManifests = pluginManifestConflictHandler.Manifests;
-        using var valuesActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelValues);
-        _ = valuesActivity?.SetTag("value.request.count", valueRequests.Count);
-        var valuesById = pluginManifests.Count == 1 && pluginManifests[0].Capabilities.HasSubmodelBatch
-            ? await pluginDataHandler.TryGetValuesBatchAsync(
-                pluginManifests,
-                valueRequests,
-                _submodelBatchSize,
-                _submodelBatchMaxConcurrency,
-                cancellationToken).ConfigureAwait(false)
-            : await GetValuesIndividuallyAsync(pluginManifests, valueRequests, cancellationToken).ConfigureAwait(false);
+        IReadOnlyDictionary<string, SemanticTreeNode> valuesById;
+        using (var valuesActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelValues))
+        {
+            _ = valuesActivity?.SetTag("value.request.count", valueRequests.Count);
+            valuesById = pluginManifests.Count == 1 && pluginManifests[0].Capabilities.HasSubmodelBatch
+                ? await pluginDataHandler.TryGetValuesBatchAsync(
+                    pluginManifests,
+                    valueRequests,
+                    _submodelBatchSize,
+                    _submodelBatchMaxConcurrency,
+                    cancellationToken).ConfigureAwait(false)
+                : await GetValuesIndividuallyAsync(pluginManifests, valueRequests, cancellationToken).ConfigureAwait(false);
+        }
 
         var results = new ISubmodel[submodelIds.Count];
-        using var fillActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.FillSubmodelTemplates);
-        _ = fillActivity?.SetTag("submodel.count", submodelIds.Count);
-        await Parallel.ForEachAsync(
-            Enumerable.Range(0, submodelIds.Count),
-            new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
-            (index, _) =>
-            {
-                var submodelId = submodelIds[index];
-                var submodel = semanticIdHandler.FillOutTemplate(templates[index], valuesById[submodelId]);
-                submodel.Id = submodelId;
-                results[index] = submodel;
-                return ValueTask.CompletedTask;
-            }).ConfigureAwait(false);
+        using (var fillActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.FillSubmodelTemplates))
+        {
+            _ = fillActivity?.SetTag("submodel.count", submodelIds.Count);
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, submodelIds.Count),
+                new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
+                (index, _) =>
+                {
+                    var submodelId = submodelIds[index];
+                    var submodel = semanticIdHandler.FillOutTemplate(templates[index], valuesById[submodelId]);
+                    submodel.Id = submodelId;
+                    results[index] = submodel;
+                    return ValueTask.CompletedTask;
+                }).ConfigureAwait(false);
+        }
 
         return [.. results];
     }

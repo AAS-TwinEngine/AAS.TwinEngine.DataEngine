@@ -91,7 +91,11 @@ public class PluginDataHandler(
         using (var prepareActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
         {
             _ = prepareActivity?.SetTag("value.request.count", requests.Count);
-            preparedRequests = requests.Select(request => PrepareBatchRequest(request, pluginManifests)).ToList();
+
+            // Schema prep is CPU-bound and _schemaCache is a thread-safe Lazy cache, so this parallelizes safely.
+            var prepared = new PreparedBatchRequest[requests.Count];
+            _ = Parallel.For(0, requests.Count, index => prepared[index] = PrepareBatchRequest(requests[index], pluginManifests));
+            preparedRequests = [.. prepared];
         }
 
         var pluginNames = preparedRequests.Select(request => request.PluginName).Distinct(StringComparer.Ordinal).ToList();
