@@ -242,8 +242,18 @@ public class SubmodelRepositoryService(
 
         using var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues);
         _ = extractionActivity?.SetTag("submodel.count", templates.Length);
-        var valueRequests = templates
-            .Select((template, index) => new SubmodelValueRequest(submodelIds[index], semanticIdHandler.Extract(template)))
+        var extractedValues = new SemanticTreeNode[templates.Length];
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, templates.Length),
+            new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
+            (index, _) =>
+            {
+                extractedValues[index] = semanticIdHandler.Extract(templates[index]);
+                return ValueTask.CompletedTask;
+            }).ConfigureAwait(false);
+
+        var valueRequests = extractedValues
+            .Select((values, index) => new SubmodelValueRequest(submodelIds[index], values))
             .DistinctBy(request => request.SubmodelId, StringComparer.Ordinal)
             .ToList();
 

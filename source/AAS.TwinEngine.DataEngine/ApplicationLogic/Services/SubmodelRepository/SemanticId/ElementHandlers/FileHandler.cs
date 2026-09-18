@@ -21,7 +21,7 @@ public class FileHandler(ISemanticIdResolver semanticIdResolver) : ISubmodelElem
     {
         if (values is SemanticLeafNode leafValueNode)
         {
-            ((File)element).Value = leafValueNode.Value;
+            ((File)element).Value = (string?)leafValueNode.Value;
         }
     }
 }

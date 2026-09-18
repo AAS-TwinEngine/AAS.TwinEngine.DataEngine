@@ -88,7 +88,8 @@ public class ReferenceHelper(
 
             if (leafNode != null)
             {
-                keyList[i].Value = !string.IsNullOrEmpty(leafNode.Value) ? leafNode.Value : keyList[i].Value;
+                var leafValue = (string?)leafNode.Value;
+                keyList[i].Value = !string.IsNullOrEmpty(leafValue) ? leafValue : keyList[i].Value;
             }
             else
             {

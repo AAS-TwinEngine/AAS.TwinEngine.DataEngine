@@ -19,7 +19,7 @@ public class PropertyHandler(ISemanticIdResolver semanticIdResolver) : ISubmodel
     {
         if (values is SemanticLeafNode leafValueNode)
         {
-            ((Property)element).Value = leafValueNode.Value;
+            ((Property)element).Value = (string?)leafValueNode.Value;
         }
     }
 }

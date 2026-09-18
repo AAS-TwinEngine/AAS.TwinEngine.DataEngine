@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Collections.Concurrent;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
@@ -13,6 +15,9 @@ public class SemanticTreeExtractor(
     IEnumerable<ISubmodelElementTypeHandler> handlers,
     ILogger<SemanticTreeExtractor> logger) : ISemanticTreeExtractor
 {
+    // Handler selection depends only on the element type, so the lookup is resolved once per type.
+    private readonly ConcurrentDictionary<Type, ISubmodelElementTypeHandler?> _handlersByElementType = new();
+
     public SemanticTreeNode Extract(ISubmodel submodelTemplate)
     {
         if (submodelTemplate == null)
@@ -74,10 +79,25 @@ public class SemanticTreeExtractor(
             throw new InvalidDependencyException(nameof(element), logger);
         }
 
-        var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
+        var handler = ResolveHandler(element);
         return handler != null
                    ? handler.Extract(element, ExtractElement)
                    : CreateLeafNode(element);
+    }
+
+    private ISubmodelElementTypeHandler? ResolveHandler(ISubmodelElement element)
+    {
+        var elementType = element.GetType();
+
+        if (_handlersByElementType.TryGetValue(elementType, out var cached))
+        {
+            return cached;
+        }
+
+        var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
+        _handlersByElementType[elementType] = handler;
+
+        return handler;
     }
 
     private SemanticLeafNode CreateLeafNode(ISubmodelElement element)

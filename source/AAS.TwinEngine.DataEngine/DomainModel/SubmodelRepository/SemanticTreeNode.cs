@@ -19,9 +19,10 @@ public class SemanticBranchNode(string semanticId, Cardinality cardinality) : Se
     public void AddChild(SemanticTreeNode child) => _children.Add(child);
 }
 
-public class SemanticLeafNode(string semanticId, dynamic value, DataType dataType, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality)
+public class SemanticLeafNode(string semanticId, object? value, DataType dataType, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality)
 {
-    public dynamic Value { get; set; } = value;
+    // Holds a string for single values or a List<object?> when Cardinality merges multiple candidates.
+    public object? Value { get; set; } = value;
 
     public DataType DataType { get; set; } = dataType;
 }
