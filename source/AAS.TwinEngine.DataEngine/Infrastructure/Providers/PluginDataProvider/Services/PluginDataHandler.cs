@@ -116,9 +116,7 @@ public class PluginDataHandler(
 
                 var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
                 using var requestContent = pluginRequest.Content;
-                var responseContent = await pluginDataProvider.GetDataForSubmodelsBatchAsync(pluginRequest, token).ConfigureAwait(false);
-
-                var batchResponses = DeserializeBatchResponse(responseContent);
+                var batchResponses = await pluginDataProvider.GetDataForSubmodelsBatchDeserializedAsync(pluginRequest, token).ConfigureAwait(false);
 
                 foreach (var response in batchResponses)
                 {

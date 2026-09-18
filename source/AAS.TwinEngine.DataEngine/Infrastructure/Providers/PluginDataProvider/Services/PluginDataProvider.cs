@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -65,6 +66,40 @@ public class PluginDataProvider(
         {
             using var response = await httpClient.PostAsync(relativeUri, pluginRequest.Content, cancellationToken).ConfigureAwait(false);
             return await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException)
+        {
+            throw new RequestTimeoutException();
+        }
+    }
+
+    public async Task<IReadOnlyList<SubmodelDataBatchResponse>> GetDataForSubmodelsBatchDeserializedAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken)
+    {
+        var url = BuildUrl(DataEndpoint);
+        ValidatePluginRequest(pluginRequest, url);
+        var relativeUri = new Uri(url, UriKind.Relative);
+
+        using var httpClient = CreateClient(pluginRequest.HttpClientName);
+        try
+        {
+            using var response = await httpClient.PostAsync(relativeUri, pluginRequest.Content, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await JsonSerializer.DeserializeAsync<List<SubmodelDataBatchResponse>>(
+                    stream,
+                    JsonSerializationOptions.DeserializationOption,
+                    cancellationToken).ConfigureAwait(false) ?? throw new ResponseParsingException();
+            }
+            catch (JsonException)
+            {
+                throw new ResponseParsingException();
+            }
         }
         catch (TaskCanceledException)
         {

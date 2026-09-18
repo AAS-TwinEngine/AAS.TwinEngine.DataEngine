@@ -32,29 +32,49 @@ public class SubmodelFiller(
         }
 
         var semanticValueIndexes = BuildSemanticValueIndexes(values);
-        var submodelElements = submodelTemplate.SubmodelElements.ToList();
-        foreach (var submodelElement in submodelElements)
+        var originalElements = submodelTemplate.SubmodelElements;
+        var elementSnapshot = originalElements.ToArray();
+
+        // Rebuild the elements list in one O(N) pass instead of Remove+Add per match (O(N²)).
+        // Semantics preserved: unmatched elements keep their original order at the front,
+        // matched (and cloned) elements are appended at the end.
+        var newElements = new List<ISubmodelElement>(elementSnapshot.Length);
+        var matchedElements = new List<ISubmodelElement>();
+
+        foreach (var submodelElement in elementSnapshot)
         {
             var semanticId = semanticIdResolver.ExtractSemanticId(submodelElement);
-
             var matchingNodes = GetDirectSemanticNodes(semanticValueIndexes[values], semanticId);
 
             if (matchingNodes == null || matchingNodes.Count == 0)
             {
+                newElements.Add(submodelElement);
                 continue;
             }
 
-            _ = submodelTemplate.SubmodelElements.Remove(submodelElement);
-
             if (matchingNodes.Count > 1)
             {
-                HandleMultipleMatchingNodes(matchingNodes, submodelElement, submodelTemplate, semanticValueIndexes);
+                for (var i = 0; i < matchingNodes.Count; i++)
+                {
+                    var cloned = elementHelper.CloneElement(submodelElement);
+                    if (submodelElement is SubmodelElementCollection)
+                    {
+                        cloned.IdShort = $"{cloned.IdShort}{i}";
+                    }
+                    _ = FillOutElement(cloned, matchingNodes[i], semanticValueIndexes);
+                    matchedElements.Add(cloned);
+                }
             }
             else
             {
-                HandleSingleMatchingNode(matchingNodes[0], submodelElement, submodelTemplate, semanticValueIndexes);
+                _ = FillOutElement(submodelElement, matchingNodes[0], semanticValueIndexes);
+                matchedElements.Add(submodelElement);
             }
         }
+
+        newElements.AddRange(matchedElements);
+        originalElements.Clear();
+        originalElements.AddRange(newElements);
 
         RemoveInternalSemanticIdQualifiers(submodelTemplate.SubmodelElements);
 
@@ -97,29 +117,6 @@ public class SubmodelFiller(
         }
     }
 
-    private void HandleMultipleMatchingNodes(List<SemanticTreeNode> matchingNodes, ISubmodelElement baseElement, ISubmodel submodelTemplate, IReadOnlyDictionary<SemanticTreeNode, SemanticValueIndex> semanticValueIndexes)
-    {
-        for (var i = 0; i < matchingNodes.Count; i++)
-        {
-            var node = matchingNodes[i];
-            var clonedElement = elementHelper.CloneElement(baseElement);
-
-            if (baseElement is SubmodelElementCollection)
-            {
-                clonedElement.IdShort = $"{clonedElement.IdShort}{i}";
-            }
-
-            _ = FillOutElement(clonedElement, node, semanticValueIndexes);
-            submodelTemplate.SubmodelElements?.Add(clonedElement);
-        }
-    }
-
-    private void HandleSingleMatchingNode(SemanticTreeNode node, ISubmodelElement element, ISubmodel submodelTemplate, IReadOnlyDictionary<SemanticTreeNode, SemanticValueIndex> semanticValueIndexes)
-    {
-        _ = FillOutElement(element, node, semanticValueIndexes);
-        submodelTemplate.SubmodelElements?.Add(element);
-    }
-
     public ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values)
     {
 if (element is null)
@@ -137,7 +134,15 @@ if (values is null)
 
     private ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values, IReadOnlyDictionary<SemanticTreeNode, SemanticValueIndex> semanticValueIndexes)
     {
-        var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
+        ISubmodelElementTypeHandler? handler = null;
+        foreach (var candidate in handlers)
+        {
+            if (candidate.CanHandle(element))
+            {
+                handler = candidate;
+                break;
+            }
+        }
         if (handler == null)
         {
             logger.LogError("InValid submodelElementTemplate Type. IdShort : {IdShort}", element.IdShort);

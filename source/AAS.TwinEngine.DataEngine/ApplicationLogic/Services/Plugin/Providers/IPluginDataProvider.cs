@@ -10,6 +10,8 @@ public interface IPluginDataProvider
 
     Task<string> GetDataForSubmodelsBatchAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<SubmodelDataBatchResponse>> GetDataForSubmodelsBatchDeserializedAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken);
+
     Task<IList<string>> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);
 
     Task<IList<string>> GetDataForShellDescriptorByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken);

@@ -16,6 +16,7 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
+using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
@@ -190,10 +191,10 @@ public class PluginDataHandlerTests
                 return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
             });
         _pluginDataProvider
-            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .GetDataForSubmodelsBatchDeserializedAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
             .Returns(
-                """[{"submodelId":"submodel/b","result":{"Contact":"b"}},{"submodelId":"submodel/a","result":{"Contact":"a"}}]""",
-                """[{"submodelId":"submodel/c","result":{"Contact":"c"}}]""");
+                ParseBatch("""[{"submodelId":"submodel/b","result":{"Contact":"b"}},{"submodelId":"submodel/a","result":{"Contact":"a"}}]"""),
+                ParseBatch("""[{"submodelId":"submodel/c","result":{"Contact":"c"}}]"""));
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
@@ -258,8 +259,8 @@ public class PluginDataHandlerTests
                 return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
             });
         _pluginDataProvider
-            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
-            .Returns(_ => responses.Dequeue());
+            .GetDataForSubmodelsBatchDeserializedAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns(_ => ParseBatch(responses.Dequeue()));
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
@@ -304,8 +305,8 @@ public class PluginDataHandlerTests
             .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
             .Returns(call => new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1))));
         _pluginDataProvider
-            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
-            .Returns("[{\"submodelId\":\"submodel/a\",\"result\":{\"Contact\":\"a\"}},{\"submodelId\":\"submodel/b\",\"result\":{\"Contact\":\"b\"}}]");
+            .GetDataForSubmodelsBatchDeserializedAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns(ParseBatch("[{\"submodelId\":\"submodel/a\",\"result\":{\"Contact\":\"a\"}},{\"submodelId\":\"submodel/b\",\"result\":{\"Contact\":\"b\"}}]"));
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
@@ -348,8 +349,8 @@ public class PluginDataHandlerTests
             .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
             .Returns(call => new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1))));
         _pluginDataProvider
-            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
-            .Returns("[{\"submodelId\":\"contact-1\",\"result\":{\"Contact\":\"a\"}},{\"submodelId\":\"nameplate-1\",\"result\":{\"Nameplate\":\"b\"}},{\"submodelId\":\"contact-2\",\"result\":{\"Contact\":\"c\"}},{\"submodelId\":\"nameplate-2\",\"result\":{\"Nameplate\":\"d\"}}]");
+            .GetDataForSubmodelsBatchDeserializedAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns(ParseBatch("[{\"submodelId\":\"contact-1\",\"result\":{\"Contact\":\"a\"}},{\"submodelId\":\"nameplate-1\",\"result\":{\"Nameplate\":\"b\"}},{\"submodelId\":\"contact-2\",\"result\":{\"Contact\":\"c\"}},{\"submodelId\":\"nameplate-2\",\"result\":{\"Nameplate\":\"d\"}}]"));
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
@@ -361,6 +362,11 @@ public class PluginDataHandlerTests
 
     private static string DecodeBase64Url(string encodedValue) =>
         Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(encodedValue));
+
+    private static IReadOnlyList<SubmodelDataBatchResponse> ParseBatch(string json) =>
+        JsonSerializer.Deserialize<List<SubmodelDataBatchResponse>>(
+            json,
+            JsonSerializationOptions.DeserializationOption) ?? [];
 
     [Fact]
     public async Task GetDataForAllShellDescriptorsAsync_ReturnsListWithHrefSet()
