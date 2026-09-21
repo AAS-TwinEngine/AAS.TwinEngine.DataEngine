@@ -72,7 +72,7 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
         ValidateResponseElement(parsedResponse.RootElement, requestSchema);
     }
 
-    public void ValidateResponseElement(JsonElement responseJson, JsonSchema requestSchema)
+    private void ValidateResponseElement(JsonElement responseJson, JsonSchema requestSchema)
     {
         JsonSchema schema;
         try

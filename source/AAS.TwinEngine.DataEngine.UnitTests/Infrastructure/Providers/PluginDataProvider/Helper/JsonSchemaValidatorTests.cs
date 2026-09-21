@@ -113,22 +113,6 @@ public class JsonSchemaValidatorTests
         _sut.ValidateResponseContent(Json, schema);
     }
 
-    [Fact]
-    public void ValidateResponseContent_JsonElementAndValidSchema_DoesNotThrow()
-    {
-        var schema = new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(new Dictionary<string, JsonSchema>
-            {
-                ["name"] = new JsonSchemaBuilder().Type(SchemaValueType.String).Build()
-            })
-            .Required("name")
-            .Build();
-        using var document = JsonDocument.Parse("""{"name":"Test"}""");
-
-        _sut.ValidateResponseElement(document.RootElement, schema);
-    }
-
     [Theory]
     [MemberData(nameof(InvalidPrimitives))]
     public void ValidateResponseContent_InvalidValueType_ThrowsBadRequest(
