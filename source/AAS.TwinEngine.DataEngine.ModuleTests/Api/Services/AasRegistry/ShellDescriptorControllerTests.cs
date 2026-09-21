@@ -9,6 +9,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Provide
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
+using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
@@ -31,13 +32,14 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     private readonly ISubmodelDescriptorProvider _mockSubmodelDescriptorProvider;
     private readonly HttpClient _client;
     private readonly ICreateClient _httpClientFactory;
+    private readonly IPluginManifestConflictHandler _mockPluginManifestConflictHandler;
 
     protected ShellDescriptorControllerTests(string configDir)
     {
         _mockTemplateProvider = Substitute.For<ITemplateProvider>();
         _mockSubmodelDescriptorProvider = Substitute.For<ISubmodelDescriptorProvider>();
         var mockPluginManifestProvider = Substitute.For<IPluginManifestProvider>();
-        var mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
+        _mockPluginManifestConflictHandler = Substitute.For<IPluginManifestConflictHandler>();
         _httpClientFactory = Substitute.For<ICreateClient>();
 
         _factory = new ConfigTestFactory(configDir, services =>
@@ -46,11 +48,11 @@ public abstract class ShellDescriptorControllerTests : IDisposable
             _ = services.AddSingleton(mockPluginManifestProvider);
             _ = services.AddSingleton(_mockTemplateProvider);
             _ = services.AddSingleton(_mockSubmodelDescriptorProvider);
-            _ = services.AddSingleton(mockPluginManifestConflictHandler);
+            _ = services.AddSingleton(_mockPluginManifestConflictHandler);
         });
 
         _client = _factory.CreateClient();
-        _ = mockPluginManifestConflictHandler.Manifests.Returns(TestData.CreatePluginManifests());
+        SetPluginManifests(TestData.CreatePluginManifests());
     }
 
     public void Dispose()
@@ -95,41 +97,24 @@ public abstract class ShellDescriptorControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAllShellDescriptorsAsync_WithAssetKindAndAssetType_ReturnsEmptyResultAsync()
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindAndAssetTypeAndNoCapablePlugin_Returns501Async()
     {
-        using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(TestData.CreatePlugin1ResponseForShellDescriptors())
-        }));
-        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(TestData.CreatePlugin2ResponseForShellDescriptors())
-        }));
-        using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
-        httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
-        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
-        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
-        const string HttpClientNamePlugin1 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
-        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin1).Returns(httpClientPlugin1);
-        const string HttpClientNamePlugin2 = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2";
-        _ = _httpClientFactory.CreateClient(HttpClientNamePlugin2).Returns(httpClientPlugin2);
-        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-                     .Returns(_ => TestData.CreateShellDescriptorsTemplate());
-
         var assetType = "asset-type-value".EncodeBase64Url();
-        var response = await _client.GetAsync($"/shell-descriptors?limit=2&cursor=bmV4dDEyMw==&assetKind=Instance&assetType={assetType}");
+        var response = await _client.GetAsync(new Uri($"/shell-descriptors?limit=2&cursor=bmV4dDEyMw==&assetKind=Instance&assetType={assetType}", UriKind.Relative));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
-        Assert.NotNull(json);
-        Assert.Empty(json["result"]!.AsArray());
+        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Plugin Capability Not Supported", content, StringComparison.OrdinalIgnoreCase);
+        _ = _httpClientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
     }
 
     [Fact]
     public async Task GetAllShellDescriptorsAsync_WithMatchingAssetKindAndAssetType_ReturnsOkAsync()
     {
+        SetPluginManifests(TestData.CreatePluginManifestsWithShellDescriptorCapabilities(
+            ("TestPlugin1", true, true),
+            ("TestPlugin2", true, true)));
+
         using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
@@ -153,7 +138,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
 
         // Template has assetKind="Type" and assetType="Type" → filter by Type matches all descriptors.
         var assetType = "Type".EncodeBase64Url();
-        var response = await _client.GetAsync($"/shell-descriptors?limit=2&cursor=bmV4dDEyMw==&assetKind=Type&assetType={assetType}");
+        var response = await _client.GetAsync(new Uri($"/shell-descriptors?limit=2&cursor=bmV4dDEyMw==&assetKind=Type&assetType={assetType}", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
@@ -161,6 +146,112 @@ public abstract class ShellDescriptorControllerTests : IDisposable
         var result = json["result"]?.AsArray();
         Assert.NotNull(result);
         Assert.NotEmpty(result);
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithMixedAssetKindTypeFilterCapabilities_SkipsUnsupportedPluginsAndPreservesManifestOrderAsync()
+    {
+        SetPluginManifests(TestData.CreatePluginManifestsWithShellDescriptorCapabilities(
+            ("TestPluginWithoutFilter", true, false),
+            ("TestPlugin2", true, true),
+            ("TestPluginWithoutShellDescriptor", false, true),
+            ("TestPlugin3", true, true)));
+
+        var pluginCalls = new List<(string PluginName, HttpRequestMessage Request)>();
+        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((request, _) =>
+        {
+            pluginCalls.Add(("TestPlugin2", CloneRequest(request)));
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(TestData.CreatePluginResponseForShellDescriptorsByIds("shell-from-plugin-2"))
+            });
+        });
+        using var messageHandlerPlugin3 = new FakeHttpMessageHandler((request, _) =>
+        {
+            pluginCalls.Add(("TestPlugin3", CloneRequest(request)));
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(TestData.CreatePluginResponseForShellDescriptorsByIds("shell-from-plugin-3a", "shell-from-plugin-3b"))
+            });
+        });
+        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
+        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
+        using var httpClientPlugin3 = new HttpClient(messageHandlerPlugin3);
+        httpClientPlugin3.BaseAddress = new Uri("https://testendpoint3.com");
+        _ = _httpClientFactory.CreateClient($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2").Returns(httpClientPlugin2);
+        _ = _httpClientFactory.CreateClient($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin3").Returns(httpClientPlugin3);
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                     .Returns(_ => TestData.CreateShellDescriptorsTemplate());
+
+        var assetType = "Type".EncodeBase64Url();
+        var response = await _client.GetAsync(new Uri($"/shell-descriptors?limit=3&cursor=bmV4dDEyMw==&assetKind=Instance&assetType={assetType}", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(["TestPlugin2", "TestPlugin3"], pluginCalls.Select(call => call.PluginName));
+        Assert.Equal([
+            "https://example.com/ids/aas/shell-from-plugin-2",
+            "https://example.com/ids/aas/shell-from-plugin-3a",
+            "https://example.com/ids/aas/shell-from-plugin-3b"
+        ], await ReadShellDescriptorIdsAsync(response));
+
+        var firstQuery = QueryHelpers.ParseQuery(pluginCalls[0].Request.RequestUri!.Query);
+        Assert.Equal("3", firstQuery["limit"]);
+        Assert.Equal("bmV4dDEyMw==", firstQuery["cursor"]);
+        Assert.Equal("Instance", pluginCalls[0].Request.Headers.GetValues("aastwinengine-assetkind").Single());
+        Assert.Equal("Type", pluginCalls[0].Request.Headers.GetValues("aastwinengine-assettype").Single());
+
+        var secondQuery = QueryHelpers.ParseQuery(pluginCalls[1].Request.RequestUri!.Query);
+        Assert.Equal("2", secondQuery["limit"]);
+        Assert.False(secondQuery.ContainsKey("cursor"));
+        Assert.Equal("Instance", pluginCalls[1].Request.Headers.GetValues("aastwinengine-assetkind").Single());
+        Assert.Equal("Type", pluginCalls[1].Request.Headers.GetValues("aastwinengine-assettype").Single());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WhenFirstCapablePluginSatisfiesLimit_DoesNotCallLaterCapablePluginsAsync()
+    {
+        SetPluginManifests(TestData.CreatePluginManifestsWithShellDescriptorCapabilities(
+            ("TestPlugin1", true, true),
+            ("TestPlugin2", true, true)));
+
+        var calledPlugins = new List<string>();
+        using var messageHandlerPlugin1 = new FakeHttpMessageHandler((_, _) =>
+        {
+            calledPlugins.Add("TestPlugin1");
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(TestData.CreatePluginResponseForShellDescriptorsByIds("shell-from-plugin-1a", "shell-from-plugin-1b"))
+            });
+        });
+        using var messageHandlerPlugin2 = new FakeHttpMessageHandler((_, _) =>
+        {
+            calledPlugins.Add("TestPlugin2");
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+        });
+        using var httpClientPlugin1 = new HttpClient(messageHandlerPlugin1);
+        httpClientPlugin1.BaseAddress = new Uri("https://testendpoint1.com");
+        using var httpClientPlugin2 = new HttpClient(messageHandlerPlugin2);
+        httpClientPlugin2.BaseAddress = new Uri("https://testendpoint2.com");
+        _ = _httpClientFactory.CreateClient($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1").Returns(httpClientPlugin1);
+        _ = _httpClientFactory.CreateClient($"{HttpClientNames.PluginDataProviderPrefix}TestPlugin2").Returns(httpClientPlugin2);
+        _ = _mockTemplateProvider.GetShellDescriptorTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                     .Returns(_ => TestData.CreateShellDescriptorsTemplate());
+
+        var assetType = "Type".EncodeBase64Url();
+        var response = await _client.GetAsync(new Uri($"/shell-descriptors?limit=2&assetKind=Type&assetType={assetType}", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(["TestPlugin1"], calledPlugins);
+        Assert.Equal([
+            "https://example.com/ids/aas/shell-from-plugin-1a",
+            "https://example.com/ids/aas/shell-from-plugin-1b"
+        ], await ReadShellDescriptorIdsAsync(response));
     }
 
     [Fact]
@@ -655,6 +746,31 @@ public abstract class ShellDescriptorControllerTests : IDisposable
 
         var bytes = Encoding.UTF8.GetBytes(plainText);
         return WebEncoders.Base64UrlEncode(bytes);
+    }
+
+    private void SetPluginManifests(IReadOnlyList<PluginManifest> pluginManifests)
+        => _mockPluginManifestConflictHandler.Manifests.Returns(pluginManifests);
+
+    private static HttpRequestMessage CloneRequest(HttpRequestMessage request)
+    {
+        var clone = new HttpRequestMessage(request.Method, request.RequestUri);
+
+        foreach (var header in request.Headers)
+        {
+            _ = clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        return clone;
+    }
+
+    private static async Task<string[]> ReadShellDescriptorIdsAsync(HttpResponseMessage response)
+    {
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var result = json["result"]?.AsArray();
+        Assert.NotNull(result);
+
+        return [.. result.Select(item => item!["id"]!.GetValue<string>())];
     }
 }
 

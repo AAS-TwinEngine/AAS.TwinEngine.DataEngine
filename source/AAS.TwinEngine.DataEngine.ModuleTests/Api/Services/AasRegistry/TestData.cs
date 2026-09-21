@@ -2,6 +2,7 @@
 
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.AasRegistry;
 
@@ -110,6 +111,25 @@ internal static class TestData
                      ]
                    }
                    """;
+
+    public static string CreatePluginResponseForShellDescriptorsByIds(params string[] shellIds)
+    {
+        var shellDescriptors = shellIds
+          .Select(shellId => new ShellDescriptorMetaData
+          {
+              GlobalAssetId = $"https://example.com/ids/assets/{shellId}",
+              IdShort = shellId,
+              Id = $"https://example.com/ids/aas/{shellId}",
+              SpecificAssetIds = []
+          })
+          .ToList();
+
+        return JsonSerializer.Serialize(new ShellDescriptorsMetaData
+        {
+            PagingMetaData = new PagingMetaData { Cursor = null },
+            ShellDescriptors = shellDescriptors
+        });
+    }
 
     public static string CreatePlugin1ResponseForShellDescriptor()
            => """
@@ -250,4 +270,19 @@ internal static class TestData
           },
       };
     }
+
+    public static IReadOnlyList<PluginManifest> CreatePluginManifestsWithShellDescriptorCapabilities(
+      params (string PluginName, bool HasShellDescriptor, bool HasAssetKindTypeFilter)[] plugins)
+      => [.. plugins.Select(plugin => new PluginManifest
+          {
+            PluginName = plugin.PluginName,
+            PluginUrl = new Uri("https://example.com/plugin"),
+            SupportedSemanticIds = [],
+            Capabilities = new Capabilities
+            {
+              HasShellDescriptor = plugin.HasShellDescriptor,
+              HasAssetInformation = false,
+              HasAssetKindTypeFilter = plugin.HasAssetKindTypeFilter
+            }
+          })];
 }
