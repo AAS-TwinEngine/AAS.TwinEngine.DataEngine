@@ -1,0 +1,37 @@
+receivers:
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 10s
+    timeout: 20s
+    api_version: "1.44"
+    metrics:
+      container.cpu.utilization:
+        enabled: true
+      container.memory.percent:
+        enabled: true
+      container.memory.usage.total:
+        enabled: true
+      container.memory.usage.limit:
+        enabled: true
+
+processors:
+  batch:
+    send_batch_size: 1000
+    timeout: 5s
+  filter/containers:
+    metrics:
+      datapoint:
+        - 'not (resource.attributes["container.name"] == "twinengine-dataengine" or resource.attributes["container.name"] == "dpp-plugin" or resource.attributes["container.name"] == "postgres")'
+
+exporters:
+  otlp:
+    endpoint: otel-lgtm:4317
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    metrics:
+      receivers: [docker_stats]
+      processors: [filter/containers, batch]
+      exporters: [otlp]
