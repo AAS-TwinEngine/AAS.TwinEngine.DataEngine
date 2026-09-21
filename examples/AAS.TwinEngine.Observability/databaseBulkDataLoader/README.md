@@ -54,7 +54,7 @@ postgres://username:password@host:port/database
 
 ### Local PostgreSQL from the `example` stack
 
-The `example/docker-compose.yml` PostgreSQL service already exposes this mapping:
+The `examples/AAS.TwinEngine.Observability/docker-compose.yml` PostgreSQL service already exposes this mapping:
 
 ```yaml
 ports:

@@ -40,6 +40,119 @@ function fromRandomId(
     };
 }
 
+function fromRandomIds(
+    firstDataProperty,
+    secondDataProperty,
+    pathBuilder
+) {
+
+    return ({ baseUrl, data }) => {
+
+        const firstIds =
+            data[firstDataProperty];
+
+        const secondIds =
+            data[secondDataProperty];
+
+        if (
+            !firstIds ||
+            firstIds.length === 0 ||
+            !secondIds ||
+            secondIds.length === 0
+        ) {
+            return null;
+        }
+
+        const firstEncodedId =
+            toBase64Url(
+                randomItem(firstIds)
+            );
+
+        const secondEncodedId =
+            toBase64Url(
+                randomItem(secondIds)
+            );
+
+        return `${baseUrl}${pathBuilder(firstEncodedId, secondEncodedId)}`;
+    };
+}
+
+function fromRandomIdWithElementPath(
+    dataProperty,
+    pathBuilder
+) {
+
+    return ({ baseUrl, config, data }) => {
+
+        if (!config.submodelElementPath) {
+            return null;
+        }
+
+        const ids =
+            data[dataProperty];
+
+        if (!ids || ids.length === 0) {
+            return null;
+        }
+
+        const encodedId =
+            toBase64Url(
+                randomItem(ids)
+            );
+
+        const encodedPath =
+            encodeURIComponent(
+                config.submodelElementPath
+            );
+
+        return `${baseUrl}${pathBuilder(encodedId, encodedPath)}`;
+    };
+}
+
+function fromRandomIdsWithElementPath(
+    pathBuilder
+) {
+
+    return ({ baseUrl, config, data }) => {
+
+        if (!config.submodelElementPath) {
+            return null;
+        }
+
+        const shellIds =
+            data.shellIds;
+
+        const submodelIds =
+            data.submodelIds;
+
+        if (
+            !shellIds ||
+            shellIds.length === 0 ||
+            !submodelIds ||
+            submodelIds.length === 0
+        ) {
+            return null;
+        }
+
+        const shellId =
+            toBase64Url(
+                randomItem(shellIds)
+            );
+
+        const submodelId =
+            toBase64Url(
+                randomItem(submodelIds)
+            );
+
+        const encodedPath =
+            encodeURIComponent(
+                config.submodelElementPath
+            );
+
+        return `${baseUrl}${pathBuilder(shellId, submodelId, encodedPath)}`;
+    };
+}
+
 function appendLimitQuery(url, limit) {
 
     const parsedLimit =
@@ -96,6 +209,18 @@ export const endpointScenarios = [
     },
 
     {
+        key: 'getAssetInformationThumbnail',
+        name: 'GetAssetInformationThumbnail',
+        metricName: 'get_asset_information_thumbnail_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
+        resolveUrl: fromRandomId(
+            'shellIds',
+            id => `/shells/${id}/asset-information/thumbnail`
+        )
+    },
+
+    {
         key: 'getSubmodelReferences',
         name: 'GetSubmodelReferences',
         metricName: 'get_submodel_references_duration',
@@ -104,6 +229,72 @@ export const endpointScenarios = [
         resolveUrl: fromRandomId(
             'shellIds',
             id => `/shells/${id}/submodel-refs`
+        )
+    },
+
+    {
+        key: 'getSubmodelByAasId',
+        name: 'GetSubmodelByAasId',
+        metricName: 'get_submodel_by_aas_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
+        resolveUrl: fromRandomIds(
+            'shellIds',
+            'submodelIds',
+            (shellId, submodelId) =>
+                `/shells/${shellId}/submodels/${submodelId}`
+        )
+    },
+
+    {
+        key: 'getSubmodelElementsByAasId',
+        name: 'GetSubmodelElementsByAasId',
+        metricName: 'get_submodel_elements_by_aas_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
+        resolveUrl: ({ baseUrl, config, data }) => {
+
+            const shellIds = data.shellIds;
+            const submodelIds = data.submodelIds;
+
+            if (
+                !shellIds?.length ||
+                !submodelIds?.length
+            ) {
+                return null;
+            }
+
+            const shellId = toBase64Url(randomItem(shellIds));
+            const submodelId = toBase64Url(randomItem(submodelIds));
+
+            return appendLimitQuery(
+                `${baseUrl}/shells/${shellId}/submodels/${submodelId}/submodel-elements`,
+                config.endpointLimits?.getSubmodelElementsByAasId
+            );
+        }
+    },
+
+    {
+        key: 'getSubmodelElementByAasId',
+        name: 'GetSubmodelElementByAasId',
+        metricName: 'get_submodel_element_by_aas_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
+        resolveUrl: fromRandomIdsWithElementPath(
+            (shellId, submodelId, path) =>
+                `/shells/${shellId}/submodels/${submodelId}/submodel-elements/${path}`
+        )
+    },
+
+    {
+        key: 'getFileAttachmentByAasId',
+        name: 'GetFileAttachmentByAasId',
+        metricName: 'get_file_attachment_by_aas_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
+        resolveUrl: fromRandomIdsWithElementPath(
+            (shellId, submodelId, path) =>
+                `/shells/${shellId}/submodels/${submodelId}/submodel-elements/${path}/attachment`
         )
     },
 
@@ -127,6 +318,43 @@ export const endpointScenarios = [
         resolveUrl: fromRandomId(
             'shellIds',
             id => `/shell-descriptors/${id}`
+        )
+    },
+
+    {
+        key: 'getSubmodelDescriptorsByAasId',
+        name: 'GetSubmodelDescriptorsByAasId',
+        metricName: 'get_submodel_descriptors_by_aas_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
+        resolveUrl: ({ baseUrl, config, data }) => {
+
+            const shellIds = data.shellIds;
+
+            if (!shellIds?.length) {
+                return null;
+            }
+
+            const shellId = toBase64Url(randomItem(shellIds));
+
+            return appendLimitQuery(
+                `${baseUrl}/shell-descriptors/${shellId}/submodel-descriptors`,
+                config.endpointLimits?.getSubmodelDescriptorsByAasId
+            );
+        }
+    },
+
+    {
+        key: 'getSubmodelDescriptorByAasId',
+        name: 'GetSubmodelDescriptorByAasId',
+        metricName: 'get_submodel_descriptor_by_aas_id_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'shellIds',
+        resolveUrl: fromRandomIds(
+            'shellIds',
+            'submodelIds',
+            (shellId, submodelId) =>
+                `/shell-descriptors/${shellId}/submodel-descriptors/${submodelId}`
         )
     },
 
@@ -173,6 +401,55 @@ export const endpointScenarios = [
         resolveUrl: fromRandomId(
             'submodelIds',
             id => `/submodels/${id}`
+        )
+    },
+
+    {
+        key: 'getSubmodelElements',
+        name: 'GetSubmodelElements',
+        metricName: 'get_submodel_elements_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'submodelIds',
+        resolveUrl: ({ baseUrl, config, data }) => {
+
+            const submodelIds = data.submodelIds;
+
+            if (!submodelIds?.length) {
+                return null;
+            }
+
+            const submodelId = toBase64Url(randomItem(submodelIds));
+
+            return appendLimitQuery(
+                `${baseUrl}/submodels/${submodelId}/submodel-elements`,
+                config.endpointLimits?.getSubmodelElements
+            );
+        }
+    },
+
+    {
+        key: 'getSubmodelElement',
+        name: 'GetSubmodelElement',
+        metricName: 'get_submodel_element_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'submodelIds',
+        resolveUrl: fromRandomIdWithElementPath(
+            'submodelIds',
+            (submodelId, path) =>
+                `/submodels/${submodelId}/submodel-elements/${path}`
+        )
+    },
+
+    {
+        key: 'getFileAttachment',
+        name: 'GetFileAttachment',
+        metricName: 'get_file_attachment_duration',
+        requiresDiscoveredIds: true,
+        requiredDataProperty: 'submodelIds',
+        resolveUrl: fromRandomIdWithElementPath(
+            'submodelIds',
+            (submodelId, path) =>
+                `/submodels/${submodelId}/submodel-elements/${path}/attachment`
         )
     },
 
@@ -244,13 +521,13 @@ export function resolveScenarioByKey(
 
     const endpoint =
         endpointScenarioMap[
-            endpointKey
+        endpointKey
         ];
 
     if (
         !endpoint ||
         !config.endpoints[
-            endpointKey
+        endpointKey
         ]
     ) {
         return null;

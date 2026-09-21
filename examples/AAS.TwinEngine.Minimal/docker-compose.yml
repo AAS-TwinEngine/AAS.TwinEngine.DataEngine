@@ -24,6 +24,8 @@ services:
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:develop
     container_name: twinengine-dataengine
+    ports:
+      - "8085:8080"
     build:
       context: ../../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
@@ -170,7 +172,7 @@ services:
       - twinengine-network
 
   aas-web-ui:
-    image: eclipsebasyx/aas-gui:SNAPSHOT
+    image: eclipsebasyx/aas-gui:v2-260801
     container_name: aas-ui
     volumes:
       - ../shared/logo:/usr/src/app/dist/Logo
