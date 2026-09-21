@@ -82,9 +82,6 @@ public class PluginDataHandler(
         int maxConcurrency,
         CancellationToken cancellationToken)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(batchSize);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxConcurrency);
-
         if (requests.Count == 0)
         {
             return new Dictionary<string, SemanticTreeNode>();
@@ -150,7 +147,7 @@ public class PluginDataHandler(
         return new PreparedBatchRequest(request, pluginValues.Key, preparedSchema.Schema, preparedSchema.SchemaKey);
     }
 
-    private PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
+    private static PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
     {
         var schema = JsonSchemaGenerator.ConvertToJsonSchema(semanticTree);
         return new PreparedSchema(schema, JsonSerializer.Serialize(schema, JsonSerializationOptions.FileAndHttpContent));

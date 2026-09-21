@@ -322,7 +322,7 @@ requestHeaders[AssetTypeHeader] = assetType;
             queryParams["cursor"] = cursor;
         }
 
-        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams!) : BaseUrl;
+        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams) : BaseUrl;
     }
 
     private static string BuildShellsByAssetIdsUrl(int limit, string? cursor)
