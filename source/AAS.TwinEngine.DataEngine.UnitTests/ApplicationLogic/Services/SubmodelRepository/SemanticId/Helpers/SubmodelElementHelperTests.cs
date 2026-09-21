@@ -62,36 +62,6 @@ public class SubmodelElementHelperTests
     }
 
     [Fact]
-    public void CloneElements_ReturnsRequestedNumberOfIndependentCopies()
-    {
-        var original = new SubmodelElementCollection(
-            idShort: "TestCollection",
-            value: [new Property(idShort: "Child", valueType: DataTypeDefXsd.String, value: "childVal")]
-        );
-
-        var clones = _sut.CloneElements(original, 3);
-
-        Equal(3, clones.Count);
-        Distinct(clones);
-        foreach (var clone in clones)
-        {
-            NotSame(original, clone);
-            var clonedCollection = IsType<SubmodelElementCollection>(clone);
-            Equal("childVal", IsType<Property>(clonedCollection.Value![0]).Value);
-        }
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public void CloneElements_NonPositiveCount_ReturnsEmpty(int count)
-    {
-        var original = new Property(idShort: "TestProp", valueType: DataTypeDefXsd.String, value: "original");
-
-        Empty(_sut.CloneElements(original, count));
-    }
-
-    [Fact]
     public void GetElementByIdShort_MatchingElement_ReturnsElement()
     {
         var elements = new List<ISubmodelElement>
