@@ -88,11 +88,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
             return Jsonization.Deserialize.SubmodelFrom(cachedTemplate);
         }
 
-        var lazyLoad = _inFlightTemplateLoads.GetOrAdd(
-            cacheKey,
-            cacheKey => new Lazy<Task<JsonNode>>(
-                () => LoadAndCacheSubmodelTemplateAsync(url, cacheKey, templateId, errorMessage, cancellationToken),
-                LazyThreadSafetyMode.ExecutionAndPublication));
+        var lazyLoad = _inFlightTemplateLoads.GetOrAdd(cacheKey, cacheKey => new Lazy<Task<JsonNode>>(() => LoadAndCacheSubmodelTemplateAsync(url, cacheKey, templateId, errorMessage, cancellationToken), LazyThreadSafetyMode.ExecutionAndPublication));
 
         try
         {
@@ -112,7 +108,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
     {
         var submodel = await LoadSubmodelTemplateAsync(url, templateId, errorMessage, cancellationToken).ConfigureAwait(false);
         var template = Jsonization.Serialize.ToJsonObject(submodel);
-        memoryCache.Set(cacheKey, template, TimeSpan.FromMinutes(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes));
+        _ = memoryCache.Set(cacheKey, template, TimeSpan.FromMinutes(_config.SubmodelTemplateRepository.LocalCacheExpirationInMinutes));
         return template;
     }
 
@@ -323,9 +319,6 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
         }
         catch (Exception ex)
         {
-            // Intentionally catching all exceptions without rethrowing.
-            // Failures in fetching concept descriptions should not break the serialization process.
-            // We log the error for observability and return null to allow the caller to continue gracefully.
             logger.LogError(ex, "Failed to fetch or deserialize concept description. CdIdentifier: {CdIdentifier}", cdIdentifier);
             return null;
         }

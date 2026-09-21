@@ -8,9 +8,7 @@ using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 
-public class SemanticIdHandler(
-    ISemanticTreeExtractor extractor,
-    ISubmodelFiller filler) : ISemanticIdHandler
+public class SemanticIdHandler(ISemanticTreeExtractor extractor, ISubmodelFiller filler) : ISemanticIdHandler
 {
     private readonly ConcurrentDictionary<string, SemanticTreeNode> _extractedTemplates = new(StringComparer.Ordinal);
 
@@ -29,9 +27,7 @@ public class SemanticIdHandler(
             return extractor.Extract(submodelTemplate);
         }
 
-        return _extractedTemplates.GetOrAdd(
-            templateId,
-            _ => extractor.Extract(submodelTemplate));
+        return _extractedTemplates.GetOrAdd(templateId, _ => extractor.Extract(submodelTemplate));
     }
 
     public ISubmodelElement Extract(ISubmodel submodelTemplate, string idShortPath) => extractor.Extract(submodelTemplate, idShortPath);

@@ -15,7 +15,6 @@ public class SemanticTreeExtractor(
     IEnumerable<ISubmodelElementTypeHandler> handlers,
     ILogger<SemanticTreeExtractor> logger) : ISemanticTreeExtractor
 {
-    // Handler selection depends only on the element type, so the lookup is resolved once per type.
     private readonly ConcurrentDictionary<Type, ISubmodelElementTypeHandler?> _handlersByElementType = new();
 
     public SemanticTreeNode Extract(ISubmodel submodelTemplate)

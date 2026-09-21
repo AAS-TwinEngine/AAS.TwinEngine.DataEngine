@@ -13,7 +13,7 @@ public class PluginsConfig
     public string SubmodelElementIndexContextPrefix { get; set; } = "_aastwinengineindex_";
     public PluginMultiLanguagePropertyConfig MultiLanguageProperty { get; set; } = new();
     public ResiliencePoliciesConfig ResiliencePolicies { get; set; } = new();
-    public IList<ServiceInstance> Instances { get; set; } = [];
+    public IList<ServiceInstance>  Instances { get; set; } = [];
 }
 
 /// <summary>

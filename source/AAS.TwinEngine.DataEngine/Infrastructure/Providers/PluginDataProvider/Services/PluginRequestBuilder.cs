@@ -18,10 +18,7 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 
         EnsureManifestIsHealthy();
 
-        return [.. jsonSchema
-            .Select(kvp => new PluginRequestSubmodel(
-                $"{HttpClientNames.PluginDataProviderPrefix}{kvp.Key}",
-                CreateHttpContent(kvp.Value)))];
+        return [.. jsonSchema.Select(kvp => new PluginRequestSubmodel($"{HttpClientNames.PluginDataProviderPrefix}{kvp.Key}", CreateHttpContent(kvp.Value)))];
     }
 
     public PluginRequestSubmodelBatch Build(string pluginName, IReadOnlyList<SubmodelDataBatchRequestGroup> groups)
@@ -30,9 +27,7 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 
         EnsureManifestIsHealthy();
 
-        return new PluginRequestSubmodelBatch(
-            $"{HttpClientNames.PluginDataProviderPrefix}{pluginName}",
-            JsonContent.Create(groups, options: JsonSerializationOptions.Serialization));
+        return new PluginRequestSubmodelBatch($"{HttpClientNames.PluginDataProviderPrefix}{pluginName}", JsonContent.Create(groups, options: JsonSerializationOptions.Serialization));
     }
 
     public IList<PluginRequestMetaData> Build(IList<string> plugins, string? aasIdentifier = null)
@@ -41,10 +36,7 @@ public class PluginRequestBuilder(IPluginManifestHealthStatus pluginManifestHeal
 
         EnsureManifestIsHealthy();
 
-        return [.. plugins
-            .Select(plugin => new PluginRequestMetaData(
-                $"{HttpClientNames.PluginDataProviderPrefix}{plugin}",
-                aasIdentifier ?? string.Empty))];
+        return [.. plugins.Select(plugin => new PluginRequestMetaData($"{HttpClientNames.PluginDataProviderPrefix}{plugin}", aasIdentifier ?? string.Empty))];
     }
 
     private void EnsureManifestIsHealthy()

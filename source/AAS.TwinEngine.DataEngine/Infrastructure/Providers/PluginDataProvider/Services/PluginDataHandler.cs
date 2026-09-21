@@ -50,7 +50,7 @@ public class PluginDataHandler(
         {
             var jsonSchema = JsonSchemaGenerator.ConvertToJsonSchema(value);
             jsonSchemas.Add(key, jsonSchema);
-            //jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
+            jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
         }
 
         var pluginRequests = pluginRequestBuilder.Build(jsonSchemas);
@@ -64,7 +64,7 @@ public class PluginDataHandler(
             var responseContent = responses[i];
 
             var schema = jsonSchemas.ElementAt(i).Value;
-            //jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
+            jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
 
             var semanticTreeNode = JsonSchemaParser.ParseJsonSchema(responseContent);
             result.Add(semanticTreeNode);
@@ -82,26 +82,21 @@ public class PluginDataHandler(
         int maxConcurrency,
         CancellationToken cancellationToken)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(batchSize);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxConcurrency);
+
         if (requests.Count == 0)
         {
             return new Dictionary<string, SemanticTreeNode>();
         }
 
+        _ = pluginManifests.Single();
         List<PreparedBatchRequest> preparedRequests;
         using (var prepareActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
         {
-            _ = prepareActivity?.SetTag("value.request.count", requests.Count);
-
-            // Schema prep is CPU-bound and _schemaCache is a thread-safe Lazy cache, so this parallelizes safely.
             var prepared = new PreparedBatchRequest[requests.Count];
             _ = Parallel.For(0, requests.Count, index => prepared[index] = PrepareBatchRequest(requests[index], pluginManifests));
             preparedRequests = [.. prepared];
-        }
-
-        var pluginNames = preparedRequests.Select(request => request.PluginName).Distinct(StringComparer.Ordinal).ToList();
-        if (pluginNames.Count != 1)
-        {
-            throw new MultiPluginConflictException();
         }
 
         var batches = preparedRequests.OrderBy(request => request.SchemaKey, StringComparer.Ordinal).Chunk(batchSize).ToList();
@@ -114,11 +109,9 @@ public class PluginDataHandler(
             {
                 IReadOnlyList<SubmodelDataBatchRequestGroup> groups = batch
                     .GroupBy(item => item.SchemaKey, StringComparer.Ordinal)
-                    .Select(group => new SubmodelDataBatchRequestGroup(
-                        group.Select(item => item.Request.SubmodelId.EncodeBase64Url(logger)).ToList(),
-                        group.First().Schema)).ToList();
+                    .Select(group => new SubmodelDataBatchRequestGroup(group.Select(item => item.Request.SubmodelId.EncodeBase64Url(logger)).ToList(), group.First().Schema)).ToList();
 
-                var pluginRequest = pluginRequestBuilder.Build(pluginNames[0], groups);
+                var pluginRequest = pluginRequestBuilder.Build(batch[0].PluginName, groups);
                 using var requestContent = pluginRequest.Content;
                 var responseContent = await pluginDataProvider.GetDataForSubmodelsBatchAsync(pluginRequest, token).ConfigureAwait(false);
 
@@ -134,17 +127,13 @@ public class PluginDataHandler(
         var valuesById = new ConcurrentDictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
 
         using var processActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ProcessBatchResponses);
-        _ = processActivity?.SetTag("response.count", responseItems.Count);
-        await Parallel.ForEachAsync(
-            responseItems,
-            new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
+        await Parallel.ForEachAsync(responseItems, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
             (response, _) =>
             {
                 var prepared = preparedById[response.SubmodelId];
-                //jsonSchemaValidator.ValidateResponseElement(response.Result, prepared.Schema);
 
                 var parsedValues = JsonSchemaParser.ParseJsonSchema(response.Result);
-                valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(prepared.Request.SemanticIds, new[] { parsedValues });
+                valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(prepared.Request.SemanticIds, [parsedValues]);
 
                 return ValueTask.CompletedTask;
             }).ConfigureAwait(false);
@@ -154,13 +143,7 @@ public class PluginDataHandler(
 
     private PreparedBatchRequest PrepareBatchRequest(SubmodelValueRequest request, IReadOnlyList<PluginManifest> pluginManifests)
     {
-        var splitValues = multiPluginDataHandler.SplitByPluginManifests(request.SemanticIds, pluginManifests);
-        if (splitValues.Count != 1)
-        {
-            throw new MultiPluginConflictException();
-        }
-
-        var pluginValues = splitValues.Single();
+        var pluginValues = multiPluginDataHandler.SplitByPluginManifests(request.SemanticIds, pluginManifests).Single();
         var semanticTreeKey = BuildSemanticTreeKey(pluginValues.Value);
         var preparedSchema = _schemaCache.GetOrAdd(semanticTreeKey, _ => new Lazy<PreparedSchema>(() => CreatePreparedSchema(pluginValues.Value), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
 
@@ -170,7 +153,6 @@ public class PluginDataHandler(
     private PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
     {
         var schema = JsonSchemaGenerator.ConvertToJsonSchema(semanticTree);
-        //jsonSchemaValidator.ValidateRequestSchema(schema);
         return new PreparedSchema(schema, JsonSerializer.Serialize(schema, JsonSerializationOptions.FileAndHttpContent));
     }
 

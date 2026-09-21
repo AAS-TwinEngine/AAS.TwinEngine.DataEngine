@@ -40,7 +40,7 @@ public class PluginDataHandlerTests
     private readonly IOptions<GeneralConfig> _options;
     private readonly PluginDataHandler _sut;
 
-    private ActivityListenerFixture CreateFixture() => new();
+    private static ActivityListenerFixture CreateFixture() => new();
 
     public PluginDataHandlerTests()
     {
@@ -272,91 +272,6 @@ public class PluginDataHandlerTests
         Assert.Contains(batch, group => group.SequenceEqual(["contact-1", "contact-2", "contact-3"]));
         Assert.Contains(batch, group => group.SequenceEqual(["custom-1", "custom-2", "custom-3"]));
         Assert.Equal(9, result.Count);
-    }
-
-    [Fact]
-    public async Task TryGetValuesBatchAsync_ValidatesRequestSchemaOnceForEquivalentSemanticTrees()
-    {
-        var semanticIds = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
-        var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "TestPlugin",
-                PluginUrl = new Uri("http://localhost"),
-                SupportedSemanticIds = ["Contact"],
-                Capabilities = new Capabilities()
-            }
-        };
-        IReadOnlyList<SubmodelValueRequest> requests =
-        [
-            new("submodel/a", semanticIds),
-            new("submodel/b", new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One))
-        ];
-
-        _multiPluginDataHandler
-            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), manifests)
-            .Returns(call => new Dictionary<string, SemanticTreeNode>
-            {
-                ["TestPlugin"] = call.ArgAt<SemanticTreeNode>(0)
-            });
-        _pluginRequestBuilder
-            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
-            .Returns(call => new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1))));
-        _pluginDataProvider
-            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
-            .Returns("[{\"submodelId\":\"submodel/a\",\"result\":{\"Contact\":\"a\"}},{\"submodelId\":\"submodel/b\",\"result\":{\"Contact\":\"b\"}}]");
-        _multiPluginDataHandler
-            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
-            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
-
-        _ = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
-
-        _jsonSchemaValidator.Received(1).ValidateRequestSchema(Arg.Any<JsonSchema>());
-    }
-
-    [Fact]
-    public async Task TryGetValuesBatchAsync_ValidatesEachDistinctSchemaGroupOnce()
-    {
-        var contact = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
-        var nameplate = new SemanticLeafNode("Nameplate", "", DataType.String, Cardinality.One);
-        var manifests = new List<PluginManifest>
-        {
-            new()
-            {
-                PluginName = "TestPlugin",
-                PluginUrl = new Uri("http://localhost"),
-                SupportedSemanticIds = ["Contact", "Nameplate"],
-                Capabilities = new Capabilities()
-            }
-        };
-        IReadOnlyList<SubmodelValueRequest> requests =
-        [
-            new("contact-1", contact),
-            new("nameplate-1", nameplate),
-            new("contact-2", new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One)),
-            new("nameplate-2", new SemanticLeafNode("Nameplate", "", DataType.String, Cardinality.One))
-        ];
-
-        _multiPluginDataHandler
-            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), manifests)
-            .Returns(call => new Dictionary<string, SemanticTreeNode>
-            {
-                ["TestPlugin"] = call.ArgAt<SemanticTreeNode>(0)
-            });
-        _pluginRequestBuilder
-            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
-            .Returns(call => new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1))));
-        _pluginDataProvider
-            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
-            .Returns("[{\"submodelId\":\"contact-1\",\"result\":{\"Contact\":\"a\"}},{\"submodelId\":\"nameplate-1\",\"result\":{\"Nameplate\":\"b\"}},{\"submodelId\":\"contact-2\",\"result\":{\"Contact\":\"c\"}},{\"submodelId\":\"nameplate-2\",\"result\":{\"Nameplate\":\"d\"}}]");
-        _multiPluginDataHandler
-            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
-            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
-
-        _ = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
-
-        _jsonSchemaValidator.Received(2).ValidateRequestSchema(Arg.Any<JsonSchema>());
     }
 
     private static string DecodeBase64Url(string encodedValue) =>

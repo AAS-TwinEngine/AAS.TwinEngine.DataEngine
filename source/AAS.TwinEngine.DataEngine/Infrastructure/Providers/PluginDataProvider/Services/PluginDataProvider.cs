@@ -182,7 +182,7 @@ requestHeaders[AssetTypeHeader] = assetType;
 
                 exceptions.Add(HandleFailureResponse(response.StatusCode));
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
                 exceptions.Add(new RequestTimeoutException());
             }
@@ -322,9 +322,7 @@ requestHeaders[AssetTypeHeader] = assetType;
             queryParams["cursor"] = cursor;
         }
 
-        return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
-                   : BaseUrl;
+        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams!) : BaseUrl;
     }
 
     private static string BuildShellsByAssetIdsUrl(int limit, string? cursor)
@@ -342,9 +340,7 @@ requestHeaders[AssetTypeHeader] = assetType;
             queryParams["cursor"] = cursor;
         }
 
-        return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams)
-                   : BaseUrl;
+        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams) : BaseUrl;
     }
 
     private static Exception HandleFailureResponse(System.Net.HttpStatusCode statusCode)

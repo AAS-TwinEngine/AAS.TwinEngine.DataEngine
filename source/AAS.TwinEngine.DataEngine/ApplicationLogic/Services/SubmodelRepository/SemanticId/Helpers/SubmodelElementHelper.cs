@@ -97,7 +97,6 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
         return languages;
     }
 
-    // Native field-by-field cloning avoids the reflection-heavy Jsonization serialize/deserialize round-trip.
     private static ISubmodelElement CloneSubmodelElement(ISubmodelElement element) => element switch
     {
         Property p => new Property(p.ValueType, CloneExtensions(p.Extensions), p.Category, p.IdShort, CloneDisplayNames(p.DisplayName), CloneDescriptions(p.Description), CloneReference(p.SemanticId), CloneReferenceList(p.SupplementalSemanticIds), CloneQualifiers(p.Qualifiers), CloneEmbeddedDataSpecifications(p.EmbeddedDataSpecifications), p.Value, CloneReference(p.ValueId)),
@@ -121,33 +120,33 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
 
     private static List<IDataElement>? CloneAnnotations(List<IDataElement>? annotations) => annotations?.ConvertAll(a => (IDataElement)CloneSubmodelElement(a));
 
-    private static List<IOperationVariable>? CloneOperationVariables(List<IOperationVariable>? variables) =>
-        variables?.ConvertAll(v => (IOperationVariable)new OperationVariable(CloneSubmodelElement(v.Value)));
+    private static List<IOperationVariable>? CloneOperationVariables(List<IOperationVariable>? variables)
+        => variables?.ConvertAll(v => (IOperationVariable)new OperationVariable(CloneSubmodelElement(v.Value)));
 
-    private static List<IExtension>? CloneExtensions(List<IExtension>? extensions) =>
-        extensions?.ConvertAll(e => (IExtension)new Extension(e.Name, CloneReference(e.SemanticId), CloneReferenceList(e.SupplementalSemanticIds), e.ValueType, e.Value, CloneReferenceList(e.RefersTo)));
+    private static List<IExtension>? CloneExtensions(List<IExtension>? extensions)
+        => extensions?.ConvertAll(e => (IExtension)new Extension(e.Name, CloneReference(e.SemanticId), CloneReferenceList(e.SupplementalSemanticIds), e.ValueType, e.Value, CloneReferenceList(e.RefersTo)));
 
-    private static List<IQualifier>? CloneQualifiers(List<IQualifier>? qualifiers) =>
-        qualifiers?.ConvertAll(q => (IQualifier)new Qualifier(q.Type, q.ValueType, CloneReference(q.SemanticId), CloneReferenceList(q.SupplementalSemanticIds), q.Kind, q.Value, CloneReference(q.ValueId)));
+    private static List<IQualifier>? CloneQualifiers(List<IQualifier>? qualifiers)
+        => qualifiers?.ConvertAll(q => (IQualifier)new Qualifier(q.Type, q.ValueType, CloneReference(q.SemanticId), CloneReferenceList(q.SupplementalSemanticIds), q.Kind, q.Value, CloneReference(q.ValueId)));
 
-    private static List<ISpecificAssetId>? CloneSpecificAssetIds(List<ISpecificAssetId>? assetIds) =>
-        assetIds?.ConvertAll(a => (ISpecificAssetId)new SpecificAssetId(a.Name, a.Value, CloneReference(a.SemanticId), CloneReferenceList(a.SupplementalSemanticIds), CloneReference(a.ExternalSubjectId)));
+    private static List<ISpecificAssetId>? CloneSpecificAssetIds(List<ISpecificAssetId>? assetIds)
+        => assetIds?.ConvertAll(a => (ISpecificAssetId)new SpecificAssetId(a.Name, a.Value, CloneReference(a.SemanticId), CloneReferenceList(a.SupplementalSemanticIds), CloneReference(a.ExternalSubjectId)));
 
-    private static List<ILangStringNameType>? CloneDisplayNames(List<ILangStringNameType>? names) =>
-        names?.ConvertAll(n => (ILangStringNameType)new LangStringNameType(n.Language, n.Text));
+    private static List<ILangStringNameType>? CloneDisplayNames(List<ILangStringNameType>? names)
+        => names?.ConvertAll(n => (ILangStringNameType)new LangStringNameType(n.Language, n.Text));
 
-    private static List<ILangStringTextType>? CloneDescriptions(List<ILangStringTextType>? texts) =>
-        texts?.ConvertAll(t => (ILangStringTextType)new LangStringTextType(t.Language, t.Text));
+    private static List<ILangStringTextType>? CloneDescriptions(List<ILangStringTextType>? texts)
+        => texts?.ConvertAll(t => (ILangStringTextType)new LangStringTextType(t.Language, t.Text));
 
-    private static IReference? CloneReference(IReference? reference) =>
-        reference is null
+    private static IReference? CloneReference(IReference? reference)
+        => reference is null
             ? null
             : new Reference(reference.Type, reference.Keys.ConvertAll(k => (IKey)new Key(k.Type, k.Value)), CloneReference(reference.ReferredSemanticId));
 
     private static List<IReference>? CloneReferenceList(List<IReference>? references) => references?.ConvertAll(r => CloneReference(r)!);
 
-    private static List<IEmbeddedDataSpecification>? CloneEmbeddedDataSpecifications(List<IEmbeddedDataSpecification>? specifications) =>
-        specifications?.ConvertAll(s => (IEmbeddedDataSpecification)new EmbeddedDataSpecification(CloneReference(s.DataSpecification), CloneDataSpecificationContent(s.DataSpecificationContent)));
+    private static List<IEmbeddedDataSpecification>? CloneEmbeddedDataSpecifications(List<IEmbeddedDataSpecification>? specifications)
+        => specifications?.ConvertAll(s => (IEmbeddedDataSpecification)new EmbeddedDataSpecification(CloneReference(s.DataSpecification), CloneDataSpecificationContent(s.DataSpecificationContent)));
 
     private static IDataSpecificationContent? CloneDataSpecificationContent(IDataSpecificationContent? content) => content switch
     {
@@ -168,13 +167,12 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
         _ => throw new InternalDataProcessingException()
     };
 
-    private static IValueList? CloneValueList(IValueList? valueList) =>
-        valueList is null
+    private static IValueList? CloneValueList(IValueList? valueList)
+        => valueList is null
             ? null
             : new ValueList(valueList.ValueReferencePairs.ConvertAll(p => (IValueReferencePair)new ValueReferencePair(p.Value, CloneReference(p.ValueId))));
 
-    private static ILevelType? CloneLevelType(ILevelType? levelType) =>
-        levelType is null ? null : new LevelType(levelType.Min, levelType.Nom, levelType.Typ, levelType.Max);
+    private static ILevelType? CloneLevelType(ILevelType? levelType) => levelType is null ? null : new LevelType(levelType.Min, levelType.Nom, levelType.Typ, levelType.Max);
 
     private static bool TryParseIdShortWithBracketIndex(string idShort, out string idShortWithoutIndex, out int index)
     {

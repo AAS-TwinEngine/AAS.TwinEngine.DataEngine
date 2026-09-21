@@ -39,7 +39,7 @@ public class SubmodelRepositoryService(
     private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
 
     // Filling templates is CPU bound, so it scales with cores rather than with the I/O concurrency limit.
-    private static readonly int _fillParallelism = System.Environment.ProcessorCount;
+    private static readonly int FillParallelism = System.Environment.ProcessorCount;
 
     public async Task<ISubmodel> GetSubmodelAsync(string submodelId, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
     {
@@ -90,8 +90,6 @@ public class SubmodelRepositoryService(
                 IdShort = filter?.IdShort
             };
 
-            using var collectPageActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CollectSubmodelPage);
-            _ = collectPageActivity?.SetTag("submodel.requested_count", limit);
             var paginationResult = await CollectSubmodelPageAsync(shellSearchFilter, filteredTemplateId, limit, cursor, cancellationToken).ConfigureAwait(false);
 
             var submodels = await BuildSubmodelsAsync(paginationResult.SubmodelIds, queryOptions, cancellationToken).ConfigureAwait(false);
@@ -233,9 +231,6 @@ public class SubmodelRepositoryService(
         ISubmodel[] templates;
         using (var templateActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.BuildSubmodelTemplates))
         {
-            _ = templateActivity?.SetTag("submodel.count", submodelIds.Count);
-
-            // Task creation is scoped inside the span so per-template fetch spans nest under it correctly.
             var templateTasks = new Task<ISubmodel>[submodelIds.Count];
             for (var i = 0; i < submodelIds.Count; i++)
             {
@@ -248,10 +243,9 @@ public class SubmodelRepositoryService(
         var extractedValues = new SemanticTreeNode[templates.Length];
         using (var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues))
         {
-            _ = extractionActivity?.SetTag("submodel.count", templates.Length);
             await Parallel.ForEachAsync(
                 Enumerable.Range(0, templates.Length),
-                new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
+                new ParallelOptions { MaxDegreeOfParallelism = FillParallelism, CancellationToken = cancellationToken },
                 (index, _) =>
                 {
                     extractedValues[index] = semanticIdHandler.Extract(templates[index]);
@@ -268,7 +262,6 @@ public class SubmodelRepositoryService(
         IReadOnlyDictionary<string, SemanticTreeNode> valuesById;
         using (var valuesActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetSubmodelValues))
         {
-            _ = valuesActivity?.SetTag("value.request.count", valueRequests.Count);
             valuesById = pluginManifests.Count == 1 && pluginManifests[0].Capabilities.HasSubmodelBatch
                 ? await pluginDataHandler.TryGetValuesBatchAsync(
                     pluginManifests,
@@ -282,10 +275,9 @@ public class SubmodelRepositoryService(
         var results = new ISubmodel[submodelIds.Count];
         using (var fillActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.FillSubmodelTemplates))
         {
-            _ = fillActivity?.SetTag("submodel.count", submodelIds.Count);
             await Parallel.ForEachAsync(
                 Enumerable.Range(0, submodelIds.Count),
-                new ParallelOptions { MaxDegreeOfParallelism = _fillParallelism, CancellationToken = cancellationToken },
+                new ParallelOptions { MaxDegreeOfParallelism = FillParallelism, CancellationToken = cancellationToken },
                 (index, _) =>
                 {
                     var submodelId = submodelIds[index];
@@ -436,7 +428,7 @@ public class SubmodelRepositoryService(
 
     private async Task<File> GetFileElementAsync(string submodelId, string idShortPath, CancellationToken cancellationToken)
     {
-        var element = await GetSubmodelElementAsync(submodelId, idShortPath, null, cancellationToken);
+        var element = await GetSubmodelElementAsync(submodelId, idShortPath, null, cancellationToken).ConfigureAwait(false);
 
         return GetFileElement(element, idShortPath);
     }
