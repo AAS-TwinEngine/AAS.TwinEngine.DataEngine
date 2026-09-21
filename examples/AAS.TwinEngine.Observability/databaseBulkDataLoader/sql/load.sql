@@ -631,7 +631,7 @@ BEGIN
         -- MAINTENANCE TOOL  (1 per asset)
         -- ============================================================
         INSERT INTO "MaintenanceTool" (
-            "Index","ToolID","OrderCodeOfManufacturer","AddressOfAdditionalLink",
+            "Index","ToolID","OrderCodeToolOfManufacturer","AddressOfAdditionalLinkTool",
             "ToolName_en","ToolName_de",
             "CompanyNameToolSupplier_en","CompanyNameToolSupplier_de",
             "ToolDescription_en","ToolDescription_de","MaxQuantityOfTool"
@@ -653,8 +653,8 @@ BEGIN
         -- MAINTENANCE CONSUMABLE  (1 per asset)
         -- ============================================================
         INSERT INTO "MaintenanceConsumable" (
-            "Index","ConsumableID","UnitMaxQuantityOfConsumable","OrderCodeOfManufacturer",
-            "AddressOfAdditionalLink",
+            "Index","ConsumableID","UnitMaxQuantityOfConsumable","OrderCodeConsumableOfManufacturer",
+            "AddressOfAdditionalLinkConsumable",
             "ConsumableName_en","ConsumableName_de",
             "CompanyNameSupplierConsumable_en","CompanyNameSupplierConsumable_de",
             "ConsumableDescription_en","ConsumableDescription_de",
@@ -680,7 +680,7 @@ BEGIN
         -- MAINTENANCE SPARE PART  (1 per asset)
         -- ============================================================
         INSERT INTO "MaintenanceSparePart" (
-            "Index","SparePartID","OrderCodeOfManufacturer","AddressOfAdditionalLink",
+            "Index","SparePartID","OrderCodeSparePartOfManufacturer","AddressOfAdditionalLinkSparePart",
             "SparePartName_en","SparePartName_de",
             "CompanyNameSupplierSparePart_en","CompanyNameSupplierSparePart_de",
             "SparePartDescription_en","SparePartDescription_de",

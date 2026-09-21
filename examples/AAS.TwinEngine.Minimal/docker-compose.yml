@@ -24,6 +24,9 @@ services:
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:develop
     container_name: twinengine-dataengine
+    build:
+      context: ../../source
+      dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
     depends_on:
       dpp-plugin:
         condition: service_started
@@ -78,6 +81,9 @@ services:
   dpp-plugin:
     image: ghcr.io/aas-twinengine/plugindpp:develop
     container_name: dpp-plugin
+    build:
+      context: ../../../AAS.TwinEngine.Plugin.DPP/source
+      dockerfile: ./AAS.TwinEngine.Plugin.RelationalDatabase/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy

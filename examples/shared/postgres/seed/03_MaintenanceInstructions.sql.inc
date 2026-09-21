@@ -443,7 +443,7 @@ VALUES
 (5,8);
 
 INSERT INTO "MaintenanceTool" (
-"Index","ToolID","OrderCodeOfManufacturer","AddressOfAdditionalLink",
+"Index","ToolID","OrderCodeToolOfManufacturer","AddressOfAdditionalLinkTool",
 "ToolName_en","ToolName_de",
 "CompanyNameToolSupplier_en","CompanyNameToolSupplier_de",
 "ToolDescription_en","ToolDescription_de",
@@ -503,8 +503,8 @@ VALUES
 INSERT INTO "MaintenanceConsumable" (
 "Index","ConsumableID",
 "UnitMaxQuantityOfConsumable",
-"OrderCodeOfManufacturer",
-"AddressOfAdditionalLink",
+"OrderCodeConsumableOfManufacturer",
+"AddressOfAdditionalLinkConsumable",
 "ConsumableName_en","ConsumableName_de",
 "CompanyNameSupplierConsumable_en","CompanyNameSupplierConsumable_de",
 "ConsumableDescription_en","ConsumableDescription_de",
@@ -566,8 +566,8 @@ VALUES
 
 INSERT INTO "MaintenanceSparePart" (
 "Index","SparePartID",
-"OrderCodeOfManufacturer",
-"AddressOfAdditionalLink",
+"OrderCodeSparePartOfManufacturer",
+"AddressOfAdditionalLinkSparePart",
 "SparePartName_en","SparePartName_de",
 "CompanyNameSupplierSparePart_en","CompanyNameSupplierSparePart_de",
 "SparePartDescription_en","SparePartDescription_de",

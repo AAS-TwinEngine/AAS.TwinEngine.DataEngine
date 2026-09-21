@@ -4,12 +4,12 @@
 
 CREATE TABLE IF NOT EXISTS "Asset" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "ProductId" VARCHAR(50) UNIQUE,
+    "ProductId" VARCHAR(50) UNIQUE NOT NULL,
     "IdShort" VARCHAR(100),
     "GlobalAssetId" TEXT,
+    "AssetKind" TEXT NOT NULL,
+    "AssetType" TEXT,
     "AasId" TEXT,
-    "AssetKind" VARCHAR(50) NOT NULL,
-    "AssetType" VARCHAR(100),
     "ThumbnailContentType" VARCHAR(50),
     "ThumbnailPath" TEXT,
     "MaintenanceFreeAsset" BOOLEAN,
