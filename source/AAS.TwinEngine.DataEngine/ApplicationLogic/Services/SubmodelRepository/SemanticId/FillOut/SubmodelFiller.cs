@@ -159,7 +159,10 @@ public class SubmodelFiller(
         }
 
         var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
-        _handlersByElementType[elementType] = handler;
+        if (handler is not null)
+        {
+            _ = _handlersByElementType.TryAdd(elementType, handler);
+        }
 
         return handler;
     }
