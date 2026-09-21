@@ -83,7 +83,7 @@ When a client requests AAS data (shell descriptor, submodel, or submodel element
 1. **Clone or extract this repository:**
    ```bash
    git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine.git
-   cd AAS.TwinEngine.DataEngine/example
+   cd AAS.TwinEngine.DataEngine/examples/AAS.TwinEngine.Minimal
    ```
 
 2. **Start all services:**

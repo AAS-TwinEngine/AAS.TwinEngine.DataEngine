@@ -7,7 +7,7 @@ volumes:
 
 services:
   nginx:
-    image: nginx:trixie-perl
+    image: nginx:1.31.2
     container_name: nginx
     ports:
       - "8080:80"
