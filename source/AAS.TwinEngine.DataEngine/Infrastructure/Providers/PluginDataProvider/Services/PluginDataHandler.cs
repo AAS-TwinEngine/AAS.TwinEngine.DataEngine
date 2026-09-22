@@ -203,13 +203,14 @@ public class PluginDataHandler(
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
         var requiresAssetKindTypeFilter = assetKind.HasValue || !string.IsNullOrWhiteSpace(assetType);
-        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor && (!requiresAssetKindTypeFilter || c.HasAssetKindTypeFilter == true));
-        var usingFilterCapablePlugins = requiresAssetKindTypeFilter && availablePlugins.Count > 0;
+        var availablePlugins = requiresAssetKindTypeFilter
+            ? multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor && c.HasAssetKindTypeFilter == true)
+            : multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         if (requiresAssetKindTypeFilter && availablePlugins.Count == 0)
         {
-            logger.LogWarning("No plugins available that support asset kind/type filtering. Falling back to plugins with shell descriptor capability.");
-            availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+            logger.LogWarning("No plugins available that support asset kind/type filtering.");
+            throw new PluginCapabilityNotSupportedException();
         }
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
@@ -232,11 +233,6 @@ public class PluginDataHandler(
                 }
 
                 var shellDescriptors = shellDescriptorData.ShellDescriptors ?? [];
-
-                if (usingFilterCapablePlugins)
-                {
-                    ValidateAssetKindTypeFilterResponse(shellDescriptors, assetKind, assetType);
-                }
 
                 var invalidDescriptors = shellDescriptors
                                          .Where(x => string.IsNullOrWhiteSpace(x.Id))

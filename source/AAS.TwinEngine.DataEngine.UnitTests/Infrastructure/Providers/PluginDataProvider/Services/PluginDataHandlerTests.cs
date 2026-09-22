@@ -525,7 +525,7 @@ public class PluginDataHandlerTests
     }
 
     [Fact]
-    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilterAndNoFilterCapablePlugins_FallsBackToShellDescriptorPlugins()
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilterAndNoFilterCapablePlugins_ThrowsPluginCapabilityNotSupportedException()
     {
         var manifests = new List<PluginManifest>
         {
@@ -540,19 +540,13 @@ public class PluginDataHandlerTests
 
         _multiPluginDataHandler
             .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
-            .Returns([], ["PluginA"]);
+            .Returns([]);
 
-        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
-            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+        await Assert.ThrowsAsync<PluginCapabilityNotSupportedException>(() =>
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None));
 
-        _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([JsonSerializer.Serialize(new ShellDescriptorsMetaData { ShellDescriptors = [] }, _jsonoptions)]);
-
-        _ = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
-
-        await _pluginDataProvider.Received(1)
-            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>());
+        await _pluginDataProvider.DidNotReceive()
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<AssetKind?>(), Arg.Any<string?>(), Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -599,7 +593,7 @@ public class PluginDataHandlerTests
     }
 
     [Fact]
-    public async Task GetDataForAllShellDescriptorsAsync_WithFilterCapablePluginAndMismatchedAssetKind_ThrowsValidationFailedException()
+    public async Task GetDataForAllShellDescriptorsAsync_WithFilterCapablePluginAndMismatchedAssetKind_ReturnsDescriptors()
     {
         var manifests = new List<PluginManifest>
         {
@@ -635,8 +629,10 @@ public class PluginDataHandlerTests
             .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
             .Returns([JsonSerializer.Serialize(response, _jsonoptions)]);
 
-        await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None));
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+
+        Assert.Single(result.ShellDescriptors ?? []);
+        Assert.Equal("shell-1", result.ShellDescriptors![0].Id);
     }
 
     [Fact]
