@@ -89,7 +89,7 @@ public class PluginDataHandler(
 
         _ = pluginManifests.Single();
         List<PreparedBatchRequest> preparedRequests;
-        using (var prepareActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
+        using (DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
         {
             var prepared = new PreparedBatchRequest[requests.Count];
             _ = Parallel.For(0, requests.Count, index => prepared[index] = PrepareBatchRequest(requests[index], pluginManifests));
@@ -164,18 +164,21 @@ public class PluginDataHandler(
     {
         _ = builder.Append(node.GetType().Name).Append('|').Append(node.SemanticId).Append('|').Append(node.Cardinality);
 
-        if (node is SemanticLeafNode leaf)
+        switch (node)
         {
-            _ = builder.Append('|').Append(leaf.DataType);
-        }
-
-        if (node is SemanticBranchNode branch)
-        {
-            foreach (var child in branch.Children)
+            case SemanticLeafNode leaf:
+                _ = builder.Append('|').Append(leaf.DataType);
+                break;
+            case SemanticBranchNode branch:
             {
-                _ = builder.Append('[');
-                AppendSemanticTreeKey(builder, child);
-                _ = builder.Append(']');
+                foreach (var child in branch.Children)
+                {
+                    _ = builder.Append('[');
+                    AppendSemanticTreeKey(builder, child);
+                    _ = builder.Append(']');
+                }
+
+                break;
             }
         }
     }
@@ -263,33 +266,6 @@ public class PluginDataHandler(
         }
 
         return result;
-    }
-
-    private void ValidateAssetKindTypeFilterResponse(IList<ShellDescriptorMetaData> shellDescriptors, AssetKind? assetKind, string? encodedAssetType)
-    {
-        var requestedAssetType = encodedAssetType;
-
-        foreach (var descriptor in shellDescriptors)
-        {
-            if (assetKind.HasValue && !string.Equals(descriptor.AssetKind, assetKind.Value.ToString(), StringComparison.OrdinalIgnoreCase))
-            {
-                logger.LogError("Plugin returned mismatched assetKind. Requested: {RequestedAssetKind}, Actual: {ActualAssetKind}, DescriptorId: {DescriptorId}",
-                    assetKind.Value,
-                    descriptor.AssetKind,
-                    descriptor.Id);
-                throw new ValidationFailedException();
-            }
-
-            if (!string.IsNullOrWhiteSpace(requestedAssetType)
-                && !string.Equals(descriptor.AssetType, requestedAssetType, StringComparison.OrdinalIgnoreCase))
-            {
-                logger.LogError("Plugin returned mismatched assetType. Requested: {RequestedAssetType}, Actual: {ActualAssetType}, DescriptorId: {DescriptorId}",
-                    requestedAssetType,
-                    descriptor.AssetType,
-                    descriptor.Id);
-                throw new ValidationFailedException();
-            }
-        }
     }
 
     public async Task<ShellDescriptorMetaData> GetDataForShellDescriptorAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken)

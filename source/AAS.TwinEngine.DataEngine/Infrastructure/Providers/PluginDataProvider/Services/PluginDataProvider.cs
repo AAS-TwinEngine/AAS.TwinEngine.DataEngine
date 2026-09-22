@@ -166,6 +166,7 @@ public class PluginDataProvider(
                 {
                     _ = request.Headers.TryAddWithoutValidation(AssetIdsHeader, assetIdsHeaderValue);
                 }
+
                 if (idShortHeaderValue is not null)
                 {
                     _ = request.Headers.TryAddWithoutValidation(IdShortHeader, idShortHeaderValue);

@@ -109,6 +109,7 @@ public class SubmodelRepositoryService(
         {
             throw new InvalidUserInputException();
         }
+
         var state = new SubmodelPaginationState(incomingCursor, pageSize);
         var pluginCursor = state.TrackingAasId;
 
@@ -241,16 +242,16 @@ public class SubmodelRepositoryService(
         }
 
         var extractedValues = new SemanticTreeNode[templates.Length];
-        using (var extractionActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues))
+        using (DataEngineTracing.StartSpan(DataEngineTracing.Spans.ExtractSemanticValues))
         {
             await Parallel.ForEachAsync(
-                Enumerable.Range(0, templates.Length),
-                new ParallelOptions { MaxDegreeOfParallelism = FillParallelism, CancellationToken = cancellationToken },
-                (index, _) =>
-                {
-                    extractedValues[index] = semanticIdHandler.Extract(templates[index]);
-                    return ValueTask.CompletedTask;
-                }).ConfigureAwait(false);
+                                        Enumerable.Range(0, templates.Length),
+                                        new ParallelOptions { MaxDegreeOfParallelism = FillParallelism, CancellationToken = cancellationToken },
+                                        (index, _) =>
+                                        {
+                                            extractedValues[index] = semanticIdHandler.Extract(templates[index]);
+                                            return ValueTask.CompletedTask;
+                                        }).ConfigureAwait(false);
         }
 
         var valueRequests = extractedValues
@@ -273,19 +274,19 @@ public class SubmodelRepositoryService(
         }
 
         var results = new ISubmodel[submodelIds.Count];
-        using (var fillActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.FillSubmodelTemplates))
+        using (DataEngineTracing.StartSpan(DataEngineTracing.Spans.FillSubmodelTemplates))
         {
             await Parallel.ForEachAsync(
-                Enumerable.Range(0, submodelIds.Count),
-                new ParallelOptions { MaxDegreeOfParallelism = FillParallelism, CancellationToken = cancellationToken },
-                (index, _) =>
-                {
-                    var submodelId = submodelIds[index];
-                    var submodel = semanticIdHandler.FillOutTemplate(templates[index], valuesById[submodelId]);
-                    submodel.Id = submodelId;
-                    results[index] = submodel;
-                    return ValueTask.CompletedTask;
-                }).ConfigureAwait(false);
+                                        Enumerable.Range(0, submodelIds.Count),
+                                        new ParallelOptions { MaxDegreeOfParallelism = FillParallelism, CancellationToken = cancellationToken },
+                                        (index, _) =>
+                                        {
+                                            var submodelId = submodelIds[index];
+                                            var submodel = semanticIdHandler.FillOutTemplate(templates[index], valuesById[submodelId]);
+                                            submodel.Id = submodelId;
+                                            results[index] = submodel;
+                                            return ValueTask.CompletedTask;
+                                        }).ConfigureAwait(false);
         }
 
         return [.. results];
