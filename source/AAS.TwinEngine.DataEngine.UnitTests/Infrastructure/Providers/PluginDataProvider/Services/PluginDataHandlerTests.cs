@@ -135,7 +135,7 @@ public class PluginDataHandlerTests
                 Arg.Any<IList<PluginRequestSubmodel>>(),
                 Arg.Any<string>(),
                 Arg.Any<CancellationToken>())
-           .Returns(_ => Task.FromResult<IList<HttpContent>>([httpResponse.Content]));
+           .Returns(_ => Task.FromResult<IList<string>>([ExpectedJsonResponse]));
 
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
@@ -188,10 +188,10 @@ public class PluginDataHandlerTests
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([json]);
 
-        var result = await _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None);
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None);
 
         Assert.Equal(2, result.ShellDescriptors.Count);
         Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));
@@ -220,11 +220,11 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns(["null"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None));
     }
 
     [Fact]
@@ -263,11 +263,11 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([json]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None));
 
         _logger.Received(1).Log(
             LogLevel.Error,
@@ -315,11 +315,11 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([json]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForAllShellDescriptorsAsync(null, null, manifests, CancellationToken.None));
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None));
 
         _logger.Received(1).Log(
             LogLevel.Error,
@@ -330,6 +330,186 @@ public class PluginDataHandlerTests
                 state.ToString()!.Contains("GlobalAssetId = <null>")),
             null,
             Arg.Any<Func<object, Exception?, string>>()!);
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilter_UsesOnlyCapablePlugins()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            }
+        };
+
+        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(new ShellDescriptorsMetaData { ShellDescriptors = [] }, _jsonoptions)]);
+
+        _ = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+
+        await _pluginDataProvider.Received(1)
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilterAndMixedPluginCapabilities_UsesOnlyFilterCapablePlugins()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginCapable",
+                PluginUrl = new Uri("http://plugin-capable"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            },
+            new()
+            {
+                PluginName = "PluginFallbackOnly",
+                PluginUrl = new Uri("http://plugin-fallback"),
+                SupportedSemanticIds = ["id-2"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = false }
+            }
+        };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginCapable"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginCapable", "")]);
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(new ShellDescriptorsMetaData { ShellDescriptors = [] }, _jsonoptions)]);
+
+        _ = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+
+        _pluginRequestBuilder.Received(1).Build(Arg.Is<IList<string>>(plugins =>
+            plugins.Count == 1 &&
+            plugins[0] == "PluginCapable"));
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilterAndNoFilterCapablePlugins_ThrowsPluginCapabilityNotSupportedException()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = false }
+            }
+        };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns([]);
+
+        await Assert.ThrowsAsync<PluginCapabilityNotSupportedException>(() =>
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None));
+
+        await _pluginDataProvider.DidNotReceive()
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<AssetKind?>(), Arg.Any<string?>(), Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithFilterCapablePluginAndMatchingAssetKindType_ReturnsDescriptors()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            }
+        };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var response = new ShellDescriptorsMetaData
+        {
+            ShellDescriptors = [
+                new ShellDescriptorMetaData
+                {
+                    Id = "shell-1",
+                    AssetKind = "Instance",
+                    AssetType = "attribute"
+                }
+            ]
+        };
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "attribute", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(response, _jsonoptions)]);
+
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "attribute", manifests, CancellationToken.None);
+
+        Assert.Single(result.ShellDescriptors ?? []);
+        Assert.Equal("shell-1", result.ShellDescriptors![0].Id);
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithFilterCapablePluginAndMismatchedAssetKind_ReturnsDescriptors()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            }
+        };
+
+        _multiPluginDataHandler
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var response = new ShellDescriptorsMetaData
+        {
+            ShellDescriptors = [
+                new ShellDescriptorMetaData
+                {
+                    Id = "shell-1",
+                    AssetKind = "Type",
+                    AssetType = "attribute"
+                }
+            ]
+        };
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(response, _jsonoptions)]);
+
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+
+        Assert.Single(result.ShellDescriptors ?? []);
+        Assert.Equal("shell-1", result.ShellDescriptors![0].Id);
     }
 
     [Fact]
@@ -366,7 +546,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{\n  \"id\": \"\",\n  \"idShort\": \"test\"\n}"]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForShellDescriptorAsync(manifests, RequestedId, CancellationToken.None));
@@ -411,7 +591,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns([json]);
 
         var result = await _sut.GetDataForShellDescriptorAsync(manifests, "ContactInformation", CancellationToken.None);
 
@@ -451,7 +631,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{\n  \"id\": null,\n  \"idShort\": \"test\"\n}"]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
             _sut.GetDataForShellDescriptorAsync(manifests, "id", CancellationToken.None));
@@ -481,7 +661,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForShellDescriptorByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{ invalid json }"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForShellDescriptorAsync(manifests, "id", CancellationToken.None));
@@ -514,7 +694,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns([AssetData]);
 
         var result = await _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None);
 
@@ -546,7 +726,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["{ invalid json }"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None));
@@ -576,7 +756,7 @@ public class PluginDataHandlerTests
 
         _pluginDataProvider
             .GetDataForAssetInformationByIdAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .Returns(["null"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
             _sut.GetDataForAssetInformationByIdAsync(manifests, "ContactInformation", CancellationToken.None));
@@ -624,20 +804,15 @@ public class PluginDataHandlerTests
         }
         """;
 
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
-        };
-
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(new List<HttpContent> { httpResponse.Content });
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<string> { responseJson });
 
         const string Json = """[{"name":"sn","value":"123"}]""";
 
         var assetIds = JsonSerializer.Deserialize<List<SpecificAssetId>>(Json)!;
         var filter = new ShellSearchFilter { SpecificAssetIds = assetIds };
-        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None);
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result.ShellDescriptors);
@@ -667,18 +842,13 @@ public class PluginDataHandlerTests
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("null", Encoding.UTF8, "application/json")
-        };
-
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<string> { "null" });
 
         var filter = new ShellSearchFilter { SpecificAssetIds = [] };
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -704,18 +874,13 @@ public class PluginDataHandlerTests
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("invalid json!", Encoding.UTF8, "application/json")
-        };
-
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<string> { "invalid json!" });
 
         var filter = new ShellSearchFilter { SpecificAssetIds = [] };
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -751,17 +916,12 @@ public class PluginDataHandlerTests
         }
         """;
 
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
-        };
-
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<string> { responseJson });
 
         var filter = new ShellSearchFilter { SpecificAssetIds = [] };
-        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None);
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, 100, null, CancellationToken.None);
 
         Assert.Equal(2, result.ShellDescriptors.Count);
         Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));
@@ -786,7 +946,7 @@ public class PluginDataHandlerTests
 
         var filter = new ShellSearchFilter { SpecificAssetIds = [] };
         await Assert.ThrowsAsync<PluginCapabilityNotSupportedException>(() =>
-            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None));
+            _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -821,25 +981,20 @@ public class PluginDataHandlerTests
         }
         """;
 
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
-        };
-
         const string targetIdShort = "Motor001";
 
         _pluginDataProvider
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), null, targetIdShort, Arg.Any<CancellationToken>())
-            .Returns([httpResponse.Content]);
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Is<string?>(s => s == null), targetIdShort, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<string> { responseJson });
 
         var filter = new ShellSearchFilter { IdShort = targetIdShort };
-        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, CancellationToken.None);
+        var result = await _sut.GetDataForShellsByAssetIdsAsync(manifests, filter, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result.ShellDescriptors);
         Assert.Equal("urn:aas:001", result.ShellDescriptors[0].Id);
         await _pluginDataProvider.Received(1)
-            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), null, targetIdShort, Arg.Any<CancellationToken>());
+            .GetDataForShellDescriptorsByAssetIdsAsync(Arg.Any<IList<PluginRequestMetaData>>(), Arg.Is<string?>(s => s == null), targetIdShort, Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     private const string AssetData = """
@@ -896,7 +1051,7 @@ public class PluginDataHandlerTests
         _jsonSchemaValidator.When(x => x.ValidateResponseContent(Arg.Any<string>(), Arg.Any<JsonSchema>())).Do(_ => { });
         _pluginDataProvider
             .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), SubmodelId, Arg.Any<CancellationToken>())
-            .Returns(_ => Task.FromResult<IList<HttpContent>>([new StringContent(ResponseJson, Encoding.UTF8, "application/json")]));
+            .Returns(_ => Task.FromResult<IList<string>>([ResponseJson]));
         _multiPluginDataHandler
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(inputNode);

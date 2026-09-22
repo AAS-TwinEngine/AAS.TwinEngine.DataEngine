@@ -16,9 +16,9 @@ public class SerializationHandler(
         SerializeAasxRequest request,
         CancellationToken cancellationToken)
         => GetSerializationResourceAsync(
-                                         request?.AasIdentifier,
-                                         request?.SubmodelIdentifier,
-                                         request?.IncludeConceptDescriptions,
+                                         request.AasIdentifier,
+                                         request.SubmodelIdentifier,
+                                         request.IncludeConceptDescriptions,
                                          cancellationToken);
 
     private async Task<FileStreamResult> GetSerializationResourceAsync(

@@ -5,6 +5,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared.Results;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
 using AasCore.Aas3_1;
@@ -62,7 +63,7 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodel(Arg.Any<GetSubmodelRequest>(), Arg.Any<CancellationToken>())
         .Returns(_expectedSubmodel);
 
-        var result = await _sut.GetSubmodelAsync(encodedId, null, null, CancellationToken.None);
+        var result = await _sut.GetSubmodelAsync(encodedId, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<JsonObject>(okResult.Value);
@@ -76,12 +77,11 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodel(Arg.Any<GetSubmodelRequest>(), Arg.Any<CancellationToken>())
             .Returns(_expectedSubmodel);
 
-        await _sut.GetSubmodelAsync(encodedId, AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep,
-            AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue, CancellationToken.None);
+        await _sut.GetSubmodelAsync(encodedId, CancellationToken.None, Level.deep, Extent.withBlobValue);
 
         await _handler.Received(1).GetSubmodel(
-            Arg.Is<GetSubmodelRequest>(r => r.Level == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Level.deep
-                                         && r.Extent == AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests.Extent.withBlobValue),
+            Arg.Is<GetSubmodelRequest>(r => r.Level == Level.deep
+                                         && r.Extent == Extent.withBlobValue),
             Arg.Any<CancellationToken>());
     }
 
@@ -93,11 +93,25 @@ public class SubmodelRepositoryControllerTests
         _handler.GetSubmodelElement(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
         .Returns(_expectedElement);
 
-        var result = await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, CancellationToken.None);
+        var result = await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, CancellationToken.None, Level.deep, Extent.withBlobValue);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<JsonObject>(okResult.Value);
         Assert.Equal(expectedJson.ToJsonString(), json.ToJsonString());
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementAsync_WithLevelAndExtent_PassesThemToHandler()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        _handler.GetSubmodelElement(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(_expectedElement);
+
+        await _sut.GetSubmodelElementAsync(encodedId, _idShortPath, CancellationToken.None, Level.deep, Extent.withBlobValue);
+
+        await _handler.Received(1).GetSubmodelElement(
+            Arg.Is<GetSubmodelElementRequest>(r => r.Level == Level.deep && r.Extent == Extent.withBlobValue),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -111,7 +125,7 @@ public class SubmodelRepositoryControllerTests
         _handler.GetAllSubmodels(Arg.Any<GetAllSubmodelsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedDto);
 
-        var result = await _sut.GetAllSubmodelsAsync(null, null, null, null, null, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelsAsync(null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var dto = Assert.IsType<SubmodelsDto>(okResult.Value);
@@ -127,12 +141,38 @@ public class SubmodelRepositoryControllerTests
         var expectedDto = new SubmodelsDto { PagingMetaData = new AAS.TwinEngine.DataEngine.Api.Shared.PagingMetaDataDto(), Result = [] };
         _handler.GetAllSubmodels(Arg.Any<GetAllSubmodelsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expectedDto);
-        var request = new GetAllSubmodelsRequest { SemanticId = SemanticId, IdShort = IdShort, Limit = Limit };
+        var request = new GetAllSubmodelsRequest(SemanticId, IdShort, Limit, null, null, null);
 
-        await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, Limit, null, null, null, CancellationToken.None);
+        await _sut.GetAllSubmodelsAsync(SemanticId, IdShort, null, CancellationToken.None, Limit);
 
         await _handler.Received(1).GetAllSubmodels(
             Arg.Is<GetAllSubmodelsRequest>(r => r.SemanticId == SemanticId && r.IdShort == IdShort && r.Limit == Limit),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_ReturnsFileContentStreamResult_WhenHandlerCompletes()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(Stream.Null, "application/pdf", "document.pdf", 100 * 1024 * 1024));
+
+        var result = await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
+
+        Assert.IsType<FileContentStreamResult>(result);
+    }
+
+    [Fact]
+    public async Task GetFileAttachmentAsync_PassesRouteValuesToHandler()
+    {
+        var encodedId = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(_submodelId));
+        _handler.GetFileAttachment(Arg.Any<GetSubmodelElementRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FileAttachmentResult(Stream.Null, "application/octet-stream", null, 100 * 1024 * 1024));
+
+        await _sut.GetFileAttachmentAsync(encodedId, _idShortPath, CancellationToken.None);
+
+        await _handler.Received(1).GetFileAttachment(
+            Arg.Is<GetSubmodelElementRequest>(r => r.SubmodelId == encodedId && r.IdShortPath == _idShortPath),
             Arg.Any<CancellationToken>());
     }
 }

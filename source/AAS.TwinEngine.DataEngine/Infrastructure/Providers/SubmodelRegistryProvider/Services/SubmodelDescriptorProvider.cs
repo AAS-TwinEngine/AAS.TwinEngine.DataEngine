@@ -1,26 +1,29 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry.Providers;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
 using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
+
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 
-public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logger, ICreateClient clientFactory) : ISubmodelDescriptorProvider
+public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logger, IOptions<TemplateManagementConfig> options, ICachedGetRequestClient cachedHttp) : ISubmodelDescriptorProvider
 {
     private const string SubModelRegistryPath = ApiPaths.SubmodelDescriptors;
+    private readonly TemplateManagementConfig _config = options.Value;
 
     public async Task<SubmodelDescriptor> GetDataForSubmodelDescriptorByIdAsync(string id, CancellationToken cancellationToken)
     {
@@ -30,15 +33,7 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
 
         var url = $"/{SubModelRegistryPath}/{encodedAasId}";
 
-        var relativeUri = new Uri(url, UriKind.Relative);
-
-        var httpClient = clientFactory.CreateClient(HttpClientNames.SubmodelRegistry);
-
-        var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);
-
-        var httpResponseContent = await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
-
-        var responseContent = await httpResponseContent.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var responseContent = await cachedHttp.GetStringAsync(url, HttpClientNames.SubmodelRegistry, _config.SubmodelTemplateRegistry.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -80,40 +75,5 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
             SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["supplementalSemanticId"], Jsonization.Deserialize.ReferenceFrom),
             Endpoints = descriptorNode["endpoints"]?.Deserialize<List<EndpointData>>()
         };
-    }
-
-    private async Task<HttpContent> ProcessResponseAsync(HttpResponseMessage response, string url, CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Sending HTTP GET request to {Url}", url);
-
-        if (response.IsSuccessStatusCode)
-        {
-            logger.LogInformation("Received successful HTTP response from {Url} with status code: {StatusCode}", url, response.StatusCode);
-            return response.Content;
-        }
-
-        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-        logger.LogError("Received HTTP response from {Url} with status code: {StatusCode}. Response message: {ResponseMessage}", url, response.StatusCode, responseContent);
-
-        switch (response.StatusCode)
-        {
-            case HttpStatusCode.NotFound:
-                logger.LogError("Requested resource could not be found. Endpoint: {Url}", url);
-                throw new ResourceNotFoundException();
-
-            case HttpStatusCode.Unauthorized:
-            case HttpStatusCode.Forbidden:
-                logger.LogError("Unauthorized access. Endpoint: {Url}", url);
-                throw new UnauthorizedAccessException();
-
-            case HttpStatusCode.RequestTimeout:
-                logger.LogError("Request timed out. Endpoint: {Url}", url);
-                throw new RequestTimeoutException();
-
-            default:
-                logger.LogError("Validation error encountered. Endpoint: {Url}", url);
-                throw new ValidationFailedException();
-        }
     }
 }

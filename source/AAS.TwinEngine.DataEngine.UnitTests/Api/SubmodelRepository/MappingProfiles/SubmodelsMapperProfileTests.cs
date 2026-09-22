@@ -107,4 +107,76 @@ public class SubmodelsMapperProfileTests
         Assert.Equal("https://mm-software.com/submodels/sm-2", result.Result![1]["id"]?.GetValue<string>());
         Assert.Equal("https://mm-software.com/submodels/sm-3", result.Result![2]["id"]?.GetValue<string>());
     }
+
+    // SubmodelElementsPage → SubmodelElementsDto
+
+    [Fact]
+    public void ToDto_SubmodelElementList_ReturnsDto_WithPagingMetadataAndResults()
+    {
+        var elementList = new SubmodelElementsPage
+        {
+            PagingMetaData = new PagingMetaData { Cursor = "nextCursor" },
+            Result =
+            [
+                new Property(idShort: "ManufacturerName", valueType: DataTypeDefXsd.String, value: "Acme")
+            ]
+        };
+
+        var result = elementList.ToDto();
+
+        Assert.NotNull(result);
+        Assert.Equal("nextCursor", result.PagingMetaData?.Cursor);
+        Assert.Single(result.Result);
+    }
+
+    [Fact]
+    public void ToDto_SubmodelElementList_ReturnsEmptyResultList_WhenResultIsEmpty()
+    {
+        var elementList = new SubmodelElementsPage
+        {
+            PagingMetaData = new PagingMetaData { Cursor = null },
+            Result = []
+        };
+
+        var result = elementList.ToDto();
+
+        Assert.NotNull(result);
+        Assert.Empty(result.Result);
+        Assert.Null(result.PagingMetaData?.Cursor);
+    }
+
+    [Fact]
+    public void ToDto_SubmodelElementList_ReturnsNullCursor_WhenPagingMetaDataIsNull()
+    {
+        var elementList = new SubmodelElementsPage
+        {
+            PagingMetaData = null,
+            Result = []
+        };
+
+        var result = elementList.ToDto();
+
+        Assert.NotNull(result);
+        Assert.Null(result.PagingMetaData?.Cursor);
+    }
+
+    [Fact]
+    public void ToDto_SubmodelElementList_SerializesElementsToJsonObjects()
+    {
+        var elementList = new SubmodelElementsPage
+        {
+            PagingMetaData = new PagingMetaData(),
+            Result =
+            [
+                new Property(idShort: "ManufacturerName", valueType: DataTypeDefXsd.String, value: "Acme"),
+                new Property(idShort: "SerialNumber", valueType: DataTypeDefXsd.String, value: "SN-001")
+            ]
+        };
+
+        var result = elementList.ToDto();
+
+        Assert.Equal(2, result.Result.Count);
+        Assert.Equal("ManufacturerName", result.Result[0]["idShort"]?.GetValue<string>());
+        Assert.Equal("SerialNumber", result.Result[1]["idShort"]?.GetValue<string>());
+    }
 }

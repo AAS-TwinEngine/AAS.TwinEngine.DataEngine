@@ -2,11 +2,17 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
+
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -16,9 +22,15 @@ public class AasRepositoryService(
     ILogger<AasRepositoryService> logger,
     IAasRepositoryTemplateService templateService,
     IPluginDataHandler pluginDataHandler,
-    IPluginManifestConflictHandler pluginManifestConflictHandler) : IAasRepositoryService
+    IPluginManifestConflictHandler pluginManifestConflictHandler,
+    IFileContentProvider fileContentProvider,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    ISubmodelRepositoryService submodelRepositoryService,
+    IOptions<GeneralConfig> generalConfig) : IAasRepositoryService
 {
-    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int? limit, string? cursor, CancellationToken cancellationToken)
+    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRepository.ConcurrentOperationsLimit;
+    private readonly long _maxFileAttachmentSizeBytes = generalConfig.Value.MaxFileAttachmentSizeBytes;
+    public async Task<Shells> GetShellsByFiltersAsync(ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken)
     {
         try
         {
@@ -58,14 +70,42 @@ public class AasRepositoryService(
 
     public async Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
     {
-        var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-        var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+            var pluginManifests = pluginManifestConflictHandler.Manifests;
 
-        shellTemplate.AssetInformation = assetInformation;
-        shellTemplate.Id = aasIdentifier;
+            var metadata = await pluginDataHandler.GetDataForShellDescriptorAsync(pluginManifests, aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-        return shellTemplate;
+            FillShellFromMetadata(shellTemplate, metadata);
+
+            return shellTemplate;
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new ShellNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
     }
 
     public async Task<IAssetInformation> GetAssetInformationByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
@@ -119,6 +159,97 @@ public class AasRepositoryService(
         };
     }
 
+    public async Task<FileAttachmentResult> GetThumbnailAsync(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var thumbnail = await GetThumbnail(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+            var thumbnailUrl = GetValidatedThumbnailUrl(thumbnail, aasIdentifier);
+
+            var thumbnailContent = await fileContentProvider.GetFileContentAsync(thumbnailUrl, cancellationToken).ConfigureAwait(false);
+
+            var contentType = string.IsNullOrWhiteSpace(thumbnail.ContentType) ? "application/octet-stream" : thumbnail.ContentType;
+            var fileName = GetFileName(thumbnailUrl);
+
+            return new FileAttachmentResult(thumbnailContent.Content, contentType, fileName, _maxFileAttachmentSizeBytes)
+            {
+                Upstream = thumbnailContent
+            };
+
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new AssetInformationNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
+        catch (ValidationFailedException ex)
+        {
+            throw new TemplateNotValidException(ex);
+        }
+    }
+
+    public async Task<ISubmodel> GetSubmodelByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetSubmodelAsync(submodelIdentifier, queryOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<SubmodelElementsPage> GetAllSubmodelElementsByAasIdAsync(string aasIdentifier, string submodelIdentifier, SubmodelQueryOptions? queryOptions, int limit, string? cursor, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetAllSubmodelElementsAsync(submodelIdentifier, queryOptions, limit, cursor, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelIdentifier, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetSubmodelElementAsync(submodelIdentifier, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<FileAttachmentResult> GetFileAttachmentByAasIdAsync(string aasIdentifier, string submodelId, string idShortPath, CancellationToken cancellationToken)
+    {
+        await ValidateSubmodelBelongsToAasAsync(aasIdentifier, submodelId, cancellationToken).ConfigureAwait(false);
+
+        return await submodelRepositoryService.GetFileAttachmentAsync(submodelId, idShortPath, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ValidateSubmodelBelongsToAasAsync(string aasIdentifier, string submodelIdentifier, CancellationToken cancellationToken)
+    {
+        var submodelRefs = await GetSubmodelRefByIdAsync(aasIdentifier, null, null, cancellationToken).ConfigureAwait(false);
+
+        var submodelExists = submodelRefs.Result?.SelectMany(r => r.Keys ?? [])
+                               .Any(k => string.Equals(k.Value, submodelIdentifier, StringComparison.Ordinal)) ?? false;
+
+        if (!submodelExists)
+        {
+            logger.LogError("Submodel {SubmodelId} not referenced by AAS {AasId}", submodelIdentifier, aasIdentifier);
+            throw new SubmodelNotFoundException(submodelIdentifier);
+        }
+    }
+
     private static IAssetInformation FillOutAssetInformation(IAssetInformation template, AssetData pluginData)
     {
         if (template is null)
@@ -132,6 +263,8 @@ public class AasRepositoryService(
         }
 
         SetDefaultThumbnail(template, pluginData);
+        SetAssetKind(template, pluginData);
+        SetAssetType(template, pluginData);
         SetGlobalAssetId(template, pluginData);
         SetSpecificAssetIds(template, pluginData);
 
@@ -148,6 +281,22 @@ public class AasRepositoryService(
         }
 
         template.DefaultThumbnail = new Resource(thumbnail.Path, thumbnail.ContentType);
+    }
+
+    private static void SetAssetKind(IAssetInformation template, AssetData pluginData)
+    {
+        if (pluginData.ParsedAssetKind.HasValue)
+        {
+            template.AssetKind = pluginData.ParsedAssetKind.Value;
+        }
+    }
+
+    private static void SetAssetType(IAssetInformation template, AssetData pluginData)
+    {
+        if (!string.IsNullOrWhiteSpace(pluginData.AssetType))
+        {
+            template.AssetType = pluginData.AssetType;
+        }
     }
 
     private static void SetGlobalAssetId(IAssetInformation template, AssetData pluginData) => template.GlobalAssetId = pluginData.GlobalAssetId;
@@ -183,9 +332,19 @@ public class AasRepositoryService(
             throw new TemplateNotValidException();
         }
 
+        if (metadata.ParsedAssetKind.HasValue)
+        {
+            shell.AssetInformation.AssetKind = metadata.ParsedAssetKind.Value;
+        }
+
+        if (!string.IsNullOrWhiteSpace(metadata.AssetType))
+        {
+            shell.AssetInformation.AssetType = metadata.AssetType;
+        }
+
         shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
 
-        foreach (var assetId in metadata.SpecificAssetIds)
+        foreach (var assetId in metadata.SpecificAssetIds ?? [])
         {
             var existingAssetId = shell.AssetInformation.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
 
@@ -198,7 +357,7 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {
@@ -207,10 +366,10 @@ public class AasRepositoryService(
             : await GetFilteredShellMetadataAsync(filter, limit, cursor, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(limit, cursor, null, null, pluginManifestConflictHandler.Manifests, cancellationToken)
             .ConfigureAwait(false);
 
         return (
@@ -220,49 +379,53 @@ public class AasRepositoryService(
 
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetFilteredShellMetadataAsync(
         ShellSearchFilter? filter,
-        int? limit,
+        int limit,
         string? cursor,
         CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, cancellationToken)
+            .GetDataForShellsByAssetIdsAsync(pluginManifestConflictHandler.Manifests, filter, limit, cursor, cancellationToken)
             .ConfigureAwait(false);
 
-        var allMetadata = metadata.ShellDescriptors?
-            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
-            .ToList() ?? [];
-
-        var (pagedItems, pagingMetaData) = PagingExtensions.GetPagedResult(allMetadata, m => m.Id!, limit, cursor);
-
-        return (pagedItems, pagingMetaData);
+        return (
+              metadata.ShellDescriptors ?? [],
+              metadata.PagingMetaData ?? new PagingMetaData());
     }
 
     private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)
     {
-        var shells = new List<IAssetAdministrationShell>();
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
 
-        foreach (var metadata in metadataItems)
+        var tasks = metadataItems.Select(async metadata =>
         {
             if (string.IsNullOrWhiteSpace(metadata.Id))
             {
-                continue;
+                return null;
             }
 
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var shell = await templateService.GetShellTemplateAsync(metadata.Id, cancellationToken).ConfigureAwait(false);
 
                 FillShellFromMetadata(shell, metadata);
 
-                shells.Add(shell);
+                return shell;
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Failed to build AAS for id {AasId}. Skipping.", metadata.Id);
+                return null;
             }
-        }
+            finally
+            {
+                _ = semaphore.Release();
+            }
+        });
 
-        return shells;
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        return [.. results.Where(s => s is not null).Select(s => s)];
     }
 
     private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetId>? filters)
@@ -306,5 +469,44 @@ public class AasRepositoryService(
             .All(pair =>
                 pair.First.Type == pair.Second.Type &&
                 pair.First.Value == pair.Second.Value);
+    }
+
+    private async Task<IResource> GetThumbnail(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+        var thumbnail = assetInformation?.DefaultThumbnail;
+
+        return thumbnail ?? throw new AssetInformationNotFoundException(aasIdentifier);
+    }
+
+    private string GetValidatedThumbnailUrl(IResource thumbnail, string aasIdentifier)
+    {
+        var thumbnailUrl = thumbnail.Path;
+
+        if (string.IsNullOrWhiteSpace(thumbnailUrl))
+        {
+            throw new AssetInformationNotFoundException(aasIdentifier);
+        }
+
+        if (!Uri.TryCreate(thumbnailUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            logger.LogError("Thumbnail URL is invalid. FileUrl: {FileUrl}", thumbnailUrl);
+            throw new InternalDataProcessingException();
+        }
+
+        return thumbnailUrl;
+    }
+
+    private static string GetFileName(string fileUrl)
+    {
+        var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = "thumbnail";
+        }
+
+        return fileName;
     }
 }

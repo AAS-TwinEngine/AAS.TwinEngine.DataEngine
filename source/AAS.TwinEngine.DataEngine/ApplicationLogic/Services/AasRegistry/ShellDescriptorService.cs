@@ -1,8 +1,19 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
+using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_1;
+
+using Microsoft.Extensions.Options;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -14,28 +25,30 @@ public class ShellDescriptorService(
     IShellDescriptorDataHandler shellDescriptorDataHandler,
     IPluginDataHandler pluginDataHandler,
     IPluginManifestConflictHandler pluginManifestConflictHandler,
-    ILogger<ShellDescriptorService> logger) : IShellDescriptorService
+    ILogger<ShellDescriptorService> logger,
+    IOptions<TemplateManagementConfig> templateManagementConfig,
+    ISubmodelDescriptorService submodelDescriptorService,
+    IAasRepositoryService aasRepositoryService,
+    IOptions<GeneralConfig> generalConfig) : IShellDescriptorService
 {
-    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int? limit, string? cursor, CancellationToken cancellationToken)
+    private const string SubmodelUrlSegment = "submodel";
+
+    private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
+    private readonly Uri _customerDomainUrl = generalConfig.Value.CustomerDomainUrl;
+    private readonly Uri? _dataEngineRepositoryBaseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl;
+
+    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, CancellationToken cancellationToken)
     {
         try
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
+
             var metadata = await pluginDataHandler
-                .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken)
+                .GetDataForAllShellDescriptorsAsync(limit, cursor, assetKind, assetType, pluginManifests, cancellationToken)
                 .ConfigureAwait(false);
 
             var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
-            var shellDescriptors = new List<ShellDescriptor>(shellDescriptorMetadataList.Count);
-
-            foreach (var shellDescriptorMetadata in shellDescriptorMetadataList)
-            {
-                var shellDescriptor = await TryBuildShellDescriptorAsync(shellDescriptorMetadata, cancellationToken).ConfigureAwait(false);
-                if (shellDescriptor is not null)
-                {
-                    shellDescriptors.Add(shellDescriptor);
-                }
-            }
+            var shellDescriptors = await BuildShellDescriptorsInParallelAsync(shellDescriptorMetadataList, cancellationToken).ConfigureAwait(false);
 
             return new ShellDescriptors
             {
@@ -99,14 +112,39 @@ public class ShellDescriptorService(
         }
     }
 
+    public async Task<SubmodelDescriptor?> GetSubmodelDescriptorByAasIdAsync(string aasId, string submodelId, CancellationToken cancellationToken)
+    {
+        await aasRepositoryService.ValidateSubmodelBelongsToAasAsync(aasId, submodelId, cancellationToken).ConfigureAwait(false);
+
+        return await submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<SubmodelDescriptors?> GetAllSubmodelDescriptorsByAasIdAsync(string aasId, int limit, string? cursor, CancellationToken cancellationToken)
+    {
+        var submodelRefs = await aasRepositoryService.GetSubmodelRefByIdAsync(aasId, null, null, cancellationToken).ConfigureAwait(false);
+
+        var submodelIds = submodelRefs.Result?
+            .SelectMany(reference => reference.Keys ?? [])
+            .Select(key => key.Value)
+            .Distinct(StringComparer.Ordinal)
+            .ToList() ?? [];
+
+        var descriptors = (await Task.WhenAll(submodelIds.Select(submodelId =>
+                                        submodelDescriptorService.GetSubmodelDescriptorByIdAsync(submodelId, cancellationToken))).ConfigureAwait(false))
+                                        .OfType<SubmodelDescriptor>()
+                                        .ToList();
+
+        var (items, pagingMetaData) = PagingExtensions.GetPagedResult(descriptors, descriptor => descriptor.Id, limit, cursor);
+
+        return new SubmodelDescriptors
+        {
+            Result = items,
+            PagingMetaData = pagingMetaData
+        };
+    }
+
     private async Task<ShellDescriptor?> TryBuildShellDescriptorAsync(ShellDescriptorMetaData shellDescriptorMetadata, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(shellDescriptorMetadata.Id))
-        {
-            logger.LogError("Failed to process ShellDescriptor. DescriptorId is missing. Continuing with remaining descriptors.");
-            return null;
-        }
-
         try
         {
             var templateId = shellTemplateMappingProvider.GetTemplateId(shellDescriptorMetadata.Id)!;
@@ -119,6 +157,28 @@ public class ShellDescriptorService(
         }
     }
 
+    private async Task<List<ShellDescriptor>> BuildShellDescriptorsInParallelAsync(
+        List<ShellDescriptorMetaData> metadataList,
+        CancellationToken cancellationToken)
+    {
+        using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
+        var tasks = metadataList.Select(async metadata =>
+        {
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await TryBuildShellDescriptorAsync(metadata, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _ = semaphore.Release();
+            }
+        });
+
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return [.. results.OfType<ShellDescriptor>()];
+    }
+
     private async Task<ShellDescriptor> BuildShellDescriptorAsync(
         ShellDescriptorMetaData shellDescriptorMetadata,
         string templateId,
@@ -128,6 +188,57 @@ public class ShellDescriptorService(
             .GetShellDescriptorTemplateAsync(templateId, cancellationToken)
             .ConfigureAwait(false);
 
-        return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
+        var descriptor = shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
+        UpdateSubmodelDescriptors(descriptor, shellDescriptorMetadata.Id);
+        return descriptor;
+    }
+
+    private void UpdateSubmodelDescriptors(ShellDescriptor descriptor, string shellId)
+    {
+        if (descriptor.SubmodelDescriptors is null || descriptor.SubmodelDescriptors.Count == 0)
+        {
+            return;
+        }
+
+        string? productId;
+        try
+        {
+            productId = shellTemplateMappingProvider.GetProductIdFromRule(shellId);
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            logger.LogWarning(ex, "No product ID found while updating submodel descriptors for shell {ShellId}", shellId);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(productId))
+        {
+            return;
+        }
+
+        foreach (var submodelDescriptor in descriptor.SubmodelDescriptors)
+        {
+            if (string.IsNullOrWhiteSpace(submodelDescriptor.Id))
+            {
+                continue;
+            }
+
+            var updatedId = _customerDomainUrl + string.Join('/', SubmodelUrlSegment, productId, submodelDescriptor.Id);
+            submodelDescriptor.Id = updatedId;
+
+            if (_dataEngineRepositoryBaseUrl is null)
+            {
+                continue;
+            }
+
+            var encodedSubmodelId = updatedId.EncodeBase64Url(logger);
+            var updatedHref = $"{_dataEngineRepositoryBaseUrl}{ApiPaths.Submodels}/{encodedSubmodelId}";
+
+            foreach (var endpoint in submodelDescriptor.Endpoints ?? [])
+            {
+                endpoint.ProtocolInformation ??= new ProtocolInformationData();
+                endpoint.ProtocolInformation.Href = updatedHref;
+            }
+        }
     }
 }

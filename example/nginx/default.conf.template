@@ -35,7 +35,7 @@ server {
     }
 
     location /lookup {
-        limit_except POST OPTIONS {
+        limit_except POST GET OPTIONS {
             deny all;
         }
 		proxy_pass http://twinengine-dataengine:8080;

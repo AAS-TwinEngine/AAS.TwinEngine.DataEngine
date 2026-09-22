@@ -46,7 +46,7 @@ public class SubmodelDescriptorControllerTests
             .GetAllSubmodelDescriptors(Arg.Any<GetSubmodelDescriptorsRequest>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
-        var result = await _sut.GetAllSubmodelDescriptorsAsync(10, null, CancellationToken.None);
+        var result = await _sut.GetAllSubmodelDescriptorsAsync(null, CancellationToken.None, 10);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var dto = Assert.IsType<SubmodelDescriptorsDto>(okResult.Value);
@@ -63,7 +63,7 @@ public class SubmodelDescriptorControllerTests
             .GetAllSubmodelDescriptors(Arg.Any<GetSubmodelDescriptorsRequest>(), Arg.Any<CancellationToken>())
             .Returns(new SubmodelDescriptorsDto());
 
-        await _sut.GetAllSubmodelDescriptorsAsync(limit, cursor, CancellationToken.None);
+        await _sut.GetAllSubmodelDescriptorsAsync(cursor, CancellationToken.None, limit);
 
         await _handler.Received(1).GetAllSubmodelDescriptors(
             Arg.Is<GetSubmodelDescriptorsRequest>(r =>r.Limit == limit && r.Cursor == cursor), CancellationToken.None);
@@ -77,7 +77,7 @@ public class SubmodelDescriptorControllerTests
             .Throws(new InternalServerException("Internal error"));
 
         var ex = await Record.ExceptionAsync(() =>
-            _sut.GetAllSubmodelDescriptorsAsync(10, null, CancellationToken.None));
+            _sut.GetAllSubmodelDescriptorsAsync(null, CancellationToken.None, 10));
 
         Assert.IsType<InternalServerException>(ex);
     }

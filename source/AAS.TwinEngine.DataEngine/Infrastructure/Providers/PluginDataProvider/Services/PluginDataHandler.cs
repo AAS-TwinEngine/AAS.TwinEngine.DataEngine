@@ -15,6 +15,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using AasCore.Aas3_1;
+
 using Json.Schema;
 
 using Microsoft.Extensions.Options;
@@ -50,13 +52,13 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(jsonSchemas);
 
-        var response = await pluginDataProvider.GetDataForSemanticIdsAsync(pluginRequests, submodelId, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForSemanticIdsAsync(pluginRequests, submodelId, cancellationToken).ConfigureAwait(false);
 
         var result = new List<SemanticTreeNode>();
 
-        for (var i = 0; i < response.Count; i++)
+        for (var i = 0; i < responses.Count; i++)
         {
-            var responseContent = await response[i].ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = responses[i];
 
             var schema = jsonSchemas.ElementAt(i).Value;
             jsonSchemaValidator.ValidateResponseContent(responseContent, schema);
@@ -70,24 +72,31 @@ public class PluginDataHandler(
         return mergedValues;
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
-        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+        var requiresAssetKindTypeFilter = assetKind.HasValue || !string.IsNullOrWhiteSpace(assetType);
+        var availablePlugins = requiresAssetKindTypeFilter
+            ? multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor && c.HasAssetKindTypeFilter == true)
+            : multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+
+        if (requiresAssetKindTypeFilter && availablePlugins.Count == 0)
+        {
+            logger.LogWarning("No plugins available that support asset kind/type filtering.");
+            throw new PluginCapabilityNotSupportedException();
+        }
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins);
 
-        var response = await pluginDataProvider.GetDataForAllShellDescriptorsAsync(limit, cursor, pluginRequests, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForAllShellDescriptorsAsync(limit, cursor, assetKind, assetType, pluginRequests, cancellationToken).ConfigureAwait(false);
 
         var result = new ShellDescriptorsMetaData();
 
         const string Url = $"{ShellsBasePath}";
 
-        foreach (var shellDiscriptor in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await shellDiscriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorsMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
@@ -138,14 +147,12 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
 
-        var response = await pluginDataProvider.GetDataForShellDescriptorByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForShellDescriptorByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
 
         var url = $"{ShellsBasePath}/{id.EncodeBase64Url()}";
 
-        foreach (var shellDescriptor in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await shellDescriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);
@@ -180,14 +187,12 @@ public class PluginDataHandler(
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
 
-        var response = await pluginDataProvider.GetDataForAssetInformationByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForAssetInformationByIdAsync(pluginRequests, cancellationToken).ConfigureAwait(false);
 
         var url = $"assets/{id.EncodeBase64Url()}";
 
-        foreach (var assetInfo in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await assetInfo.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var assetData = JsonSerializer.Deserialize<AssetData>(responseContent);
@@ -207,7 +212,7 @@ public class PluginDataHandler(
         throw new ResponseParsingException();
     }
 
-    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, CancellationToken cancellationToken)
+    public async Task<ShellDescriptorsMetaData> GetDataForShellsByAssetIdsAsync(IReadOnlyList<PluginManifest> pluginManifests, ShellSearchFilter? filter, int limit, string? cursor, CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
@@ -230,14 +235,12 @@ public class PluginDataHandler(
                                        }))
             : null;
 
-        var response = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, filter?.IdShort, cancellationToken).ConfigureAwait(false);
+        var responses = await pluginDataProvider.GetDataForShellDescriptorsByAssetIdsAsync(pluginRequests, assetIdsHeaderValue, filter?.IdShort, limit, cursor, cancellationToken).ConfigureAwait(false);
 
         var result = new ShellDescriptorsMetaData();
 
-        foreach (var shellDescriptor in response)
+        foreach (var responseContent in responses)
         {
-            var responseContent = await shellDescriptor.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 var shellDescriptorData = JsonSerializer.Deserialize<ShellDescriptorsMetaData>(responseContent, JsonSerializationOptions.DeserializationOption);

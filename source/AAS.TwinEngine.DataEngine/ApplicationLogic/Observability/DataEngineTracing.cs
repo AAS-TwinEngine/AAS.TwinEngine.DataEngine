@@ -25,6 +25,12 @@ public static class DataEngineTracing
         public const string GetPluginMetadataShells = "Get Plugin Metadata-shells";
 
         public const string GetPluginMetadataAssets = "Get Plugin Metadata-assets";
+
+        public const string CacheFetch = "Cache Fetch";
+
+        public const string HttpFetch = "Http Fetch";
+        public const string LoadFileAttachment = "Load File Attachment";
+        public const string StreamResponse = "Stream Response";
     }
 
     public static class Attributes
@@ -36,6 +42,9 @@ public static class DataEngineTracing
 
     public static Activity? StartSpan(string spanName)
         => Source.StartActivity(spanName);
+
+    public static Activity? StartSpan(string spanName, ActivityContext parentContext)
+        => Source.StartActivity(spanName, ActivityKind.Internal, parentContext);
 
     public static Activity? StartSpan(string spanName, string tagName, object? tagValue)
     {

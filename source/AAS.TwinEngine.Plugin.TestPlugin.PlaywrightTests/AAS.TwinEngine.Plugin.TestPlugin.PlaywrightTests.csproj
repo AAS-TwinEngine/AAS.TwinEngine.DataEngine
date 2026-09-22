@@ -33,6 +33,12 @@
     <None Update="AasRegistry\TestData\GetShellDescriptorById_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="AasRegistry\TestData\GetAllSubmodelDescriptorsByAasId_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRegistry\TestData\GetSubmodelDescriptorByAasId_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="AasRepository\TestData\GetAssetInformationById_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -63,6 +69,15 @@
     <None Update="AasRepository\TestData\GetAssetInformationById_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="AasRepository\TestData\GetAllSubmodelElementsByAasId_WithCursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\GetAllSubmodelElementsByAasId_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\GetSubmodelByAasId_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Discovery\TestData\SearchShellByAssetLink_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -87,6 +102,9 @@
     <None Update="SubmodelRegistry\TestData\GetSubmodelDescriptorById_CustomSubmodel_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="SubmodelRegistry\TestData\GetAllSubmodelDescriptors_WithTwoFieldCursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -105,6 +123,34 @@
     <None Update="SubmodelRepository\TestData\GetSubmodel_CustomSubmodel_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_By_SemanticId_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_ByIdShort_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_WithLimit100_LevelDeep_ExtentWithBlobValue_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_With_Limit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_With_Limit1_And_Cursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_With_Cursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_WithTwoFieldCursor_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Discovery\TestData\GetSpecificAssetIdByAasIdentifier_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+
   </ItemGroup>
 
 </Project>

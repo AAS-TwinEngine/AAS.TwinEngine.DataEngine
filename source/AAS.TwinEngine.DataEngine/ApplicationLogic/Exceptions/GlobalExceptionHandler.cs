@@ -18,22 +18,12 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
     {
         logger.LogError(exception, "An unhandled exception occurred.");
 
-        var statusCode = exception switch
-        {
-            BadRequestException => StatusCodes.Status400BadRequest,
-            ForbiddenException => StatusCodes.Status403Forbidden,
-            NotFoundException => StatusCodes.Status404NotFound,
-            UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
-            TimeoutException => StatusCodes.Status408RequestTimeout,
-            ServiceUnavailableException => StatusCodes.Status503ServiceUnavailable,
-            NotImplementedException => StatusCodes.Status501NotImplemented,
-            _ => StatusCodes.Status500InternalServerError
-        };
+        var (statusCode, message) = GetErrorDetails(exception);
 
         var traceId = httpContext.TraceIdentifier;
 
         var response = new ServiceErrorResponse().Create((HttpStatusCode)statusCode,
-                                                         title: exception.Message,
+                                                         title: message,
                                                          traceId: traceId);
 
         httpContext.Response.ContentType = "application/json";
@@ -41,5 +31,31 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         await httpContext.Response.WriteAsJsonAsync(response, cancellationToken).ConfigureAwait(false);
 
         return true;
+    }
+
+    private static (int StatusCode, string Message) GetErrorDetails(Exception exception)
+    {
+        return exception switch
+        {
+            BadRequestException => (StatusCodes.Status400BadRequest, exception.Message),
+
+            ForbiddenException => (StatusCodes.Status403Forbidden, exception.Message),
+
+            NotFoundException => (StatusCodes.Status404NotFound, exception.Message),
+
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, exception.Message),
+
+            TimeoutException => (StatusCodes.Status408RequestTimeout, exception.Message),
+
+            ServiceUnavailableException => (StatusCodes.Status503ServiceUnavailable, exception.Message),
+
+            NotImplementedException => (StatusCodes.Status501NotImplemented, exception.Message),
+
+            InternalServerException => (StatusCodes.Status500InternalServerError, exception.Message),
+
+            ContentTooLargeException => (StatusCodes.Status413PayloadTooLarge, exception.Message),
+
+            _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred while processing your request.")
+        };
     }
 }

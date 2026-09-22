@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests.AasRepository;
@@ -51,7 +51,7 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_ByIdShort()
     {
         // Arrange
-        var idShort = "M%26M03";
+        var idShort = "MM03";
         var url = $"/shells?idShort={idShort}";
 
         // Act
@@ -73,7 +73,7 @@ public class AasRepositoryTests : ApiTestBase
     {
         // Arrange
         var assetId = EncodeBase64Url("{\"name\":\"SerialNumber\",\"value\":\"SN-1111\"}");
-        var idShort = "M%26M03";
+        var idShort = "MM03";
         var url = $"/shells?assetIds={assetId}&idShort={idShort}";
 
         // Act
@@ -209,7 +209,6 @@ public class AasRepositoryTests : ApiTestBase
         var content = await response.TextAsync();
         Assert.False(string.IsNullOrEmpty(content));
 
-        // Verify it's valid JSON
         var json = JsonDocument.Parse(content);
         Assert.NotNull(json);
 
@@ -237,6 +236,22 @@ public class AasRepositoryTests : ApiTestBase
     }
 
     [Fact]
+    public async Task GetThumbnailById_ShouldReturnSuccess_ContentAsExpected()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/asset-information/thumbnail";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var bytes = await response.BodyAsync();
+        Assert.NotNull(bytes);
+        Assert.True(bytes.Length > 0);
+    }
+
+    [Fact]
     public async Task GetSubmodelRefById_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
@@ -254,6 +269,177 @@ public class AasRepositoryTests : ApiTestBase
         Assert.NotNull(json);
 
         await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetSubmodelRefById_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasId_ShouldReturnSuccess_ContentAsExpected()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierCustomSubmodel}";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetSubmodelByAasId_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasId_WithLevelAndExtent_ShouldReturnSuccess()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierCustomSubmodel}" + "?level=deep&extent=withoutBlobValue";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetSubmodelByAasId_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetSubmodelByAasId_WithInvalidSubmodelId_ShouldReturnNotFound()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/submodels/invalid//submodel";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        Assert.Equal(404, response.Status);
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasId_ShouldReturnSuccess_ContentAsExpected()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetAllSubmodelElementsByAasId_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasId_WithPagination()
+    {
+        // Arrange
+        var urlLimit2 = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements?limit=1";
+
+        var urlLimit3 = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements?limit=2";
+
+        // Act
+        var responseLimit2 = await ApiContext.GetAsync(urlLimit2);
+        var responseLimit3 = await ApiContext.GetAsync(urlLimit3);
+
+        // Assert
+        AssertSuccessResponse(responseLimit2);
+        AssertSuccessResponse(responseLimit3);
+
+        var jsonLimit2 = JsonDocument.Parse(await responseLimit2.TextAsync());
+        var jsonLimit3 = JsonDocument.Parse(await responseLimit3.TextAsync());
+
+        var resultLimit2 = jsonLimit2.RootElement.GetProperty("result");
+        var resultLimit3 = jsonLimit3.RootElement.GetProperty("result");
+
+        Assert.Equal(resultLimit2.GetArrayLength() + 1, resultLimit3.GetArrayLength());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasId_WithCursor_ShouldReturnNextPage()
+    {
+        // Arrange
+        var firstPageUrl = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements?limit=1";
+
+        // Act
+        var firstResponse = await ApiContext.GetAsync(firstPageUrl);
+
+        // Assert first page
+        AssertSuccessResponse(firstResponse);
+
+        var firstRoot = await ParseResponseRootAsync(firstResponse);
+        var firstResult = firstRoot.GetProperty("result");
+
+        Assert.Single(firstResult.EnumerateArray());
+
+        var cursor = firstRoot.GetProperty("paging_metadata").GetProperty("cursor").GetString();
+
+        Assert.False(string.IsNullOrWhiteSpace(cursor));
+
+        var firstIdShort = firstResult[0].GetProperty("idShort").GetString();
+
+        // Act second page
+        var secondResponse = await ApiContext.GetAsync($"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements?limit=1&cursor={cursor}");
+
+        // Assert second page
+        AssertSuccessResponse(secondResponse);
+
+        var secondRoot = await ParseResponseRootAsync(secondResponse);
+        var secondResult = secondRoot.GetProperty("result");
+
+        Assert.Single(secondResult.EnumerateArray());
+
+        var secondIdShort = secondResult[0].GetProperty("idShort").GetString();
+
+        Assert.NotEqual(firstIdShort, secondIdShort);
+
+        var json = JsonDocument.Parse(secondRoot.GetRawText());
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "AasRepository", "TestData", "GetAllSubmodelElementsByAasId_WithCursor_Expected.json"));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsByAasId_WithInvalidLimit_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var url =
+            $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierHandoverDocumentation}/submodel-elements?limit=0";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        Assert.Equal(400, response.Status);
+    }
+
+    [Fact]
+    public async Task GetFileByPathByAasId_WithUnknownElement_ShouldReturnNotFound()
+    {
+        // Arrange
+        var url = $"/shells/{AasIdentifier}/submodels/{SubmodelIdentifierContact}/submodel-elements/ContactName/attachment";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        Assert.Equal(404, response.Status);
     }
 
     private static async Task<JsonElement> ParseResponseRootAsync(Microsoft.Playwright.IAPIResponse response)

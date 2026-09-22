@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN groupadd -r appuser \
+    && useradd -r -g appuser appuser \
+    && pip install --no-cache-dir \
+        --only-binary=:all: \
+        prometheus-client==0.20.0 \
+        docker==7.1.0
+
+COPY cpu-limits-exporter.py .
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+CMD ["python", "cpu-limits-exporter.py"]

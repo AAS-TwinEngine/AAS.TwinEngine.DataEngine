@@ -1,0 +1,21 @@
+meta {
+  name: Get Submodel Descriptor by submodelId and aasId
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shell-descriptors/:aasIdentifier/submodel-descriptors/:submodelIdentifier
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation}}
+  aasIdentifier: {{aasIdentifier}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

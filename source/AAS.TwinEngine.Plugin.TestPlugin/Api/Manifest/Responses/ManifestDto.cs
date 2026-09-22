@@ -21,4 +21,7 @@ public class CapabilitiesDto
 
     [JsonPropertyName("hasAssetIdSearch")]
     public bool HasAssetIdSearch { get; set; }
+
+    [JsonPropertyName("hasAssetKindTypeFilter")]
+    public bool HasAssetKindTypeFilter { get; set; }
 }

@@ -8,5 +8,9 @@ public class InvalidUserInputException : BadRequestException
 
     public InvalidUserInputException() : base(DefaultMessage) { }
 
+    public InvalidUserInputException(string message) : base(message) { }
+
     public InvalidUserInputException(Exception ex) : base(DefaultMessage, ex) { }
+
+    public InvalidUserInputException(string message, Exception ex) : base(message, ex) { }
 }

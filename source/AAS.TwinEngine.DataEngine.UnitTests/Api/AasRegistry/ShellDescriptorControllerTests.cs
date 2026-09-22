@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 
@@ -51,7 +52,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
 
-        var result = await _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 100);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<ShellDescriptorsDto>(okResult.Value);
@@ -59,11 +60,55 @@ public class ShellDescriptorControllerTests
     }
 
     [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindFilter_PassesAssetKindToHandler()
+    {
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(null, AssetKind.Instance, null, CancellationToken.None, 100);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == AssetKind.Instance && r.AssetType == null),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetTypeFilter_PassesAssetTypeToHandler()
+    {
+        const string AssetType = "dHlwZS12YWx1ZQ==";
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, AssetType, CancellationToken.None, 100);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == null && r.AssetType == AssetType),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllShellDescriptorsAsync_WithAssetKindAndAssetTypeFilters_PassesBothToHandler()
+    {
+        const string AssetType = "dHlwZS12YWx1ZQ==";
+        _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(_expectedShellDescriptors);
+
+        var result = await _sut.GetAllShellDescriptorsAsync(null, AssetKind.Type, AssetType, CancellationToken.None, 100);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<ShellDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllShellDescriptors(
+            Arg.Is<GetShellDescriptorsRequest>(r => r.AssetKind == AssetKind.Type && r.AssetType == AssetType),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task GetAllShellDescriptorsAsync_ThrowsException_ReturnsInternalServerError()
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new InternalServerException("Internal error"));
 
-        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+        var result = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 100));
 
         Assert.NotNull(result);
         Assert.IsType<InternalServerException>(result);
@@ -74,7 +119,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<ShellDescriptorsDto>(null!));
 
-        var result = await _sut.GetAllShellDescriptorsAsync(2, null, CancellationToken.None);
+        var result = await _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 2);
 
         var notFoundResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Null(notFoundResult.Value);
@@ -85,7 +130,7 @@ public class ShellDescriptorControllerTests
     {
         _handler.GetAllShellDescriptors(Arg.Any<GetShellDescriptorsRequest>(), Arg.Any<CancellationToken>()).Throws(new UnauthorizedAccessException("Unauthorized"));
 
-        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, CancellationToken.None));
+        var exception = await Record.ExceptionAsync(() => _sut.GetAllShellDescriptorsAsync(null, null, null, CancellationToken.None, 100));
 
         Assert.NotNull(exception);
         Assert.IsType<UnauthorizedAccessException>(exception);
@@ -152,7 +197,7 @@ public class ShellDescriptorControllerTests
             Extensions = null!,
             Administration = null!,
             AssetKind = AssetKind.Type,
-            AssetType = AssetKind.Type,
+            AssetType = "Type",
             Endpoints =
             [
                 new EndpointDto {
@@ -175,5 +220,42 @@ public class ShellDescriptorControllerTests
             SpecificAssetIds = null,
             SubmodelDescriptors = null!
         };
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelDescriptorsByAasIdAsync_ReturnsOkResult()
+    {
+        const string AasId = "https://example.com/ids/aas/1170_1160_3052_6568";
+        var encodedId = AasId.EncodeBase64Url();
+        var expected = new SubmodelDescriptorsDto { PagingMetaData = new PagingMetaDataDto(), Result = [] };
+        _handler.GetAllSubmodelDescriptorsByAasId(Arg.Any<GetSubmodelDescriptorsByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _sut.GetAllSubmodelDescriptorsByAasIdAsync(encodedId, null, CancellationToken.None, 100);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<SubmodelDescriptorsDto>(okResult.Value);
+        await _handler.Received(1).GetAllSubmodelDescriptorsByAasId(
+            Arg.Is<GetSubmodelDescriptorsByAasRequest>(r => r.AasIdentifier == encodedId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelDescriptorByAasIdAsync_ReturnsOkResult()
+    {
+        const string AasId = "https://example.com/ids/aas/1170_1160_3052_6568";
+        const string SubmodelId = "https://example.com/submodel/1";
+        var encodedAasId = AasId.EncodeBase64Url();
+        var encodedSubmodelId = SubmodelId.EncodeBase64Url();
+        _handler.GetSubmodelDescriptorByAasId(Arg.Any<GetSubmodelDescriptorByAasRequest>(), Arg.Any<CancellationToken>())
+            .Returns(_expectedShellDescriptor.SubmodelDescriptors?.FirstOrDefault() ?? new SubmodelDescriptorDto());
+
+        var result = await _sut.GetSubmodelDescriptorByAasIdAsync(encodedAasId, encodedSubmodelId, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.NotNull(okResult.Value);
+        await _handler.Received(1).GetSubmodelDescriptorByAasId(
+            Arg.Is<GetSubmodelDescriptorByAasRequest>(r => r.AasIdentifier == encodedAasId && r.SubmodelIdentifier == encodedSubmodelId),
+            Arg.Any<CancellationToken>());
     }
 }

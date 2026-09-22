@@ -25,7 +25,7 @@ public class ShellDescriptorDto
     public AssetKind? AssetKind { get; set; }
 
     [JsonPropertyName("assetType")]
-    public AssetKind? AssetType { get; set; }
+    public string? AssetType { get; set; }
 
     [JsonPropertyName("endpoints")]
     public IList<EndpointDto>? Endpoints { get; init; }

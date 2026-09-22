@@ -33,7 +33,7 @@ public class SubmodelRegistryTests : ApiTestBase
     public async Task GetAllSubmodelDescriptors_WithCursor_ShouldReturnSuccess_ContentAsExpected()
     {
         // Arrange
-        var url = "/submodel-descriptors?limit=2&cursor=aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9Db250YWN0SW5mb3JtYXRpb24";
+        var url = "/submodel-descriptors?limit=2&cursor=aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9Db250YWN0SW5mb3JtYXRpb258";
 
         // Act
         var response = await ApiContext.GetAsync(url);
@@ -129,5 +129,28 @@ public class SubmodelRegistryTests : ApiTestBase
         Assert.NotNull(json);
 
         await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRegistry", "TestData", "GetSubmodelDescriptorById_CustomSubmodel_Expected.json"));
+    }
+
+    [Fact]
+
+    public async Task GetAllSubmodelDescriptors_WithTwoFieldCursor_ShouldReturnSuccess_ContentAsExpected()
+    {
+
+        // Arrange
+        var url = "/submodel-descriptors?limit=2&cursor=aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMi9DdXN0b21TdWJtb2RlbHxodHRwczovL21tLXNvZnR3YXJlLmNvbS9pZHMvYWFzLzAwMC0wMDE";
+
+        // Act
+        var response = await ApiContext.GetAsync(url);
+
+        // Assert
+        AssertSuccessResponse(response);
+        var content = await response.TextAsync();
+        Assert.False(string.IsNullOrEmpty(content));
+
+        var json = JsonDocument.Parse(content);
+        Assert.NotNull(json);
+
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), "SubmodelRegistry", "TestData", "GetAllSubmodelDescriptors_WithTwoFieldCursor_Expected.json"));
+
     }
 }

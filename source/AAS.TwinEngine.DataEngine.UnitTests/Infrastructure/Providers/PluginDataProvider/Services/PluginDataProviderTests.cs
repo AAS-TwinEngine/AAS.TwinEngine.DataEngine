@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -76,7 +76,7 @@ public class PluginDataProviderTests
         Assert.NotNull(contentList);
         Assert.Single(contentList);
 
-        var text = await contentList[0].ReadAsStringAsync();
+        var text = contentList[0];
         Assert.Equal(SimpleResponse, text);
 
         Assert.NotNull(capturedRequest);
@@ -129,15 +129,15 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        var result = await _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None);
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None);
 
         Assert.NotNull(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.ShellDescriptors.Trim(), json.Trim());
 
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
-        Assert.Equal("https://example.com/metadata/shells", captured.RequestUri!.ToString());
+        Assert.Equal("https://example.com/metadata/shells?limit=100", captured.RequestUri!.ToString());
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -217,7 +217,48 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(null, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilter_SendsHeaders()
+    {
+        HttpRequestMessage? captured = null;
+        const string responseJson = """
+        {
+            "result": [
+                { "id": "urn:aas:001", "idShort": "Motor001" }
+            ],
+            "paging_metadata": { "cursor": null }
+        }
+        """;
+
+        using var messageHandler = new FakeHttpMessageHandler((req, _) =>
+        {
+            captured = req;
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(httpClient);
+
+        var metadata = new List<PluginRequestMetaData>
+        {
+            new(ApiPaths.PluginMetadata, "")
+        };
+
+        _ = await _sut.GetDataForAllShellDescriptorsAsync(25, "cursor-1", AssetKind.Instance, "YXR0cmlidXRl", metadata, CancellationToken.None);
+
+        Assert.NotNull(captured);
+        Assert.Equal("https://example.com/metadata/shells?limit=25&cursor=cursor-1", captured!.RequestUri!.ToString());
+        Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetKindHeader, out var assetKindHeader));
+        Assert.Equal("Instance", Assert.Single(assetKindHeader));
+        Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetTypeHeader, out var assetTypeHeader));
+        Assert.Equal("YXR0cmlidXRl", Assert.Single(assetTypeHeader));
     }
 
     [Fact]
@@ -249,7 +290,7 @@ public class PluginDataProviderTests
         var result = await _sut.GetDataForShellDescriptorByIdAsync(metadata, CancellationToken.None);
 
         Assert.NotNull(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.ShellDescriptor.Trim(), json.Trim());
 
         Assert.NotNull(captured);
@@ -289,7 +330,7 @@ public class PluginDataProviderTests
         var result = await _sut.GetDataForAssetInformationByIdAsync(metadata, CancellationToken.None);
 
         Assert.NotNull(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.AssetInformation.Trim(), json.Trim());
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
@@ -391,16 +432,16 @@ public class PluginDataProviderTests
 
         var assetIdsHeaderValue = """[{"name":"SerialNumber","value":"SN-4711"}]""";
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, null, CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, assetIdsHeaderValue, null, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result);
-        var json = await result[0].ReadAsStringAsync();
+        var json = result[0];
         Assert.Equal(ProviderTestData.ShellDescriptors, json);
 
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
-        Assert.Equal("https://testendpoint.com/metadata/shells", captured.RequestUri!.ToString());
+        Assert.Equal("https://testendpoint.com/metadata/shells?limit=100", captured.RequestUri!.ToString());
         Assert.True(captured.Headers.Contains("aastwinengine-assetids"));
         Assert.Equal(assetIdsHeaderValue, captured.Headers.GetValues("aastwinengine-assetids").First());
     }
@@ -431,14 +472,14 @@ public class PluginDataProviderTests
 
         const string idShort = "test-idshort-value";
 
-        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, null, idShort, CancellationToken.None);
+        var result = await _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, null, idShort, 100, null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Single(result);
 
         Assert.NotNull(captured);
         Assert.Equal(HttpMethod.Get, captured!.Method);
-        Assert.Equal("https://testendpoint.com/metadata/shells", captured.RequestUri!.ToString());
+        Assert.Equal("https://testendpoint.com/metadata/shells?limit=100", captured.RequestUri!.ToString());
         Assert.True(captured.Headers.Contains("aastwinengine-idshort"));
         Assert.Equal(idShort, captured.Headers.GetValues("aastwinengine-idshort").First());
         Assert.False(captured.Headers.Contains("aastwinengine-assetids"));
@@ -461,7 +502,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -481,7 +522,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -495,7 +536,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<RequestTimeoutException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -504,7 +545,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { null! };
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     [Fact]
@@ -524,7 +565,7 @@ public class PluginDataProviderTests
         var metadata = new List<PluginRequestMetaData> { new(httpClientName, "") };
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, CancellationToken.None));
+            _sut.GetDataForShellDescriptorsByAssetIdsAsync(metadata, "[]", null, 100, null, CancellationToken.None));
     }
 
     private static List<ShellDescriptorMetaData> GetTestShellDescriptorDataList()

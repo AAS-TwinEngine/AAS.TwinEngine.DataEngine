@@ -1,5 +1,7 @@
 {
-  "paging_metadata": { "cursor": null },
+  "paging_metadata": {
+    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vaWRzL2Fhcy8wMDAtMDAz"
+  },
   "result": [
     {
       "description": null,
@@ -7,7 +9,7 @@
       "extensions": null,
       "administration": null,
       "assetKind": "Instance",
-      "assetType": null,
+      "assetType": "Attribute",
       "endpoints": [
         {
           "interface": "AAS-3.0",
@@ -23,7 +25,7 @@
         }
       ],
       "globalAssetId": "https://mm-software.com/ids/assets/000-001",
-      "idShort": "M&M01",
+      "idShort": "MM01",
       "id": "https://mm-software.com/ids/aas/000-001",
       "specificAssetIds": [
         {
@@ -83,7 +85,7 @@
       "extensions": null,
       "administration": null,
       "assetKind": "Instance",
-      "assetType": null,
+      "assetType": "Attribute",
       "endpoints": [
         {
           "interface": "AAS-3.0",
@@ -99,7 +101,7 @@
         }
       ],
       "globalAssetId": "https://mm-software.com/ids/assets/000-002",
-      "idShort": "M&M02",
+      "idShort": "MM02",
       "id": "https://mm-software.com/ids/aas/000-002",
       "specificAssetIds": [
         {
@@ -158,8 +160,8 @@
       "displayName": null,
       "extensions": null,
       "administration": null,
-      "assetKind": "Instance",
-      "assetType": null,
+      "assetKind": "Type",
+      "assetType": "Template",
       "endpoints": [
         {
           "interface": "AAS-3.0",
@@ -175,7 +177,7 @@
         }
       ],
       "globalAssetId": "https://mm-software.com/ids/assets/000-003",
-      "idShort": "M&M03",
+      "idShort": "MM03",
       "id": "https://mm-software.com/ids/aas/000-003",
       "specificAssetIds": [
         {

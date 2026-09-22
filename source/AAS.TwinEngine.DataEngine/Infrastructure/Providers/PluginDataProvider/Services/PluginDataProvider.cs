@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using AasCore.Aas3_1;
+
 using Microsoft.AspNetCore.WebUtilities;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
@@ -23,41 +25,47 @@ public class PluginDataProvider(
     private const string DataEndpoint = "data";
     public const string AssetIdsHeader = "aastwinengine-assetids";
     public const string IdShortHeader = "aastwinengine-idshort";
+    public const string AssetKindHeader = "aastwinengine-assetkind";
+    public const string AssetTypeHeader = "aastwinengine-assettype";
 
-    public async Task<IList<HttpContent>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequests, string submodelId, CancellationToken cancellationToken)
+    public async Task<IList<string>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequests, string submodelId, CancellationToken cancellationToken)
     {
         var url = BuildUrl(DataEndpoint, submodelId.EncodeBase64Url());
 
         ValidatePluginRequest(pluginRequests, url);
 
         var relativeUri = new Uri(url, UriKind.Relative);
-        var result = new List<HttpContent>();
-        foreach (var pluginRequest in pluginRequests)
+
+        var tasks = pluginRequests.Select(async pluginRequest =>
         {
             using var httpClient = CreateClient(pluginRequest.HttpClientName);
-            HttpResponseMessage response;
             try
             {
-                response = await httpClient.PostAsync(relativeUri, pluginRequest.JsonSchema, cancellationToken).ConfigureAwait(false);
+                using var response = await httpClient.PostAsync(relativeUri, pluginRequest.JsonSchema, cancellationToken).ConfigureAwait(false);
+                return await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
                 logger.LogError("Request timed out. Endpoint: {Url}", url);
                 throw new RequestTimeoutException();
             }
+        });
 
-            var processedResponse = await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
-            result.Add(processedResponse);
-        }
-
-        return result;
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results.ToList();
     }
 
-    public async Task<IList<HttpContent>> GetDataForAllShellDescriptorsAsync(int? limit, string? cursor, IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
+    public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
+        int limit,
+        string? cursor,
+        AssetKind? assetKind,
+        string? assetType,
+        IList<PluginRequestMetaData> pluginRequests,
+        CancellationToken cancellationToken)
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
-        var result = new List<HttpContent>();
+        var result = new List<string>();
         var exceptions = new List<Exception>();
         var remainingLimit = limit;
 
@@ -65,55 +73,66 @@ public class PluginDataProvider(
         {
             var url = BuildShellsUrl(remainingLimit, cursor);
 
-            var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken);
+            var requestHeaders = new Dictionary<string, string>();
+            if (assetKind.HasValue)
+            {
+                requestHeaders[AssetKindHeader] = assetKind.Value.ToString();
+            }
+
+            if (!string.IsNullOrWhiteSpace(assetType))
+            {
+requestHeaders[AssetTypeHeader] = assetType;
+            }
+
+            var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken, requestHeaders);
             if (response == null)
             {
                 continue;
             }
 
-            if (response.IsSuccessStatusCode)
+            using (response)
             {
-                if (remainingLimit.HasValue)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var itemsReceived = await CountShellDescriptorsAsync(response.Content).ConfigureAwait(false);
-                    remainingLimit -= itemsReceived;
-
-                    if (remainingLimit <= 0)
-                    {
-                        result.Add(response.Content);
-                        break;
-                    }
-
-                    if (itemsReceived >= 0 && remainingLimit > 0)
-                    {
-                        cursor = null;
-                    }
+                    exceptions.Add(HandleFailureResponse(response.StatusCode));
+                    continue;
                 }
 
-                result.Add(response.Content);
-                continue;
-            }
+                var responseContent = await response.Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
 
-            exceptions.Add(HandleFailureResponse(response.StatusCode));
+                result.Add(responseContent);
+
+                var itemsReceived = CountShellDescriptors(responseContent);
+                remainingLimit -= itemsReceived;
+
+                if (remainingLimit <= 0)
+                {
+                    break;
+                }
+
+                cursor = null;
+            }
         }
+
         return HandleResultOrThrow(result, exceptions);
     }
 
-    public Task<IList<HttpContent>> GetDataForShellDescriptorByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
+    public Task<IList<string>> GetDataForShellDescriptorByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
         => GetAndProcessAsync(pluginRequests, ShellsEndpoint, cancellationToken);
 
-    public Task<IList<HttpContent>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
+    public Task<IList<string>> GetDataForAssetInformationByIdAsync(IList<PluginRequestMetaData> pluginRequests, CancellationToken cancellationToken)
         => GetAndProcessAsync(pluginRequests, AssetInformationEndpoint, cancellationToken);
 
-    public async Task<IList<HttpContent>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, CancellationToken cancellationToken)
+    public async Task<IList<string>> GetDataForShellDescriptorsByAssetIdsAsync(IList<PluginRequestMetaData> pluginRequests, string? assetIdsHeaderValue, string? idShortHeaderValue, int limit, string? cursor, CancellationToken cancellationToken)
     {
-        var result = new List<HttpContent>();
+        var result = new List<string>();
         var exceptions = new List<Exception>();
 
         foreach (var pluginRequest in pluginRequests)
         {
-            var url = BuildUrl(ApiPaths.PluginMetadata, ShellsEndpoint);
-
+            var url = BuildShellsByAssetIdsUrl(limit, cursor);
             if (pluginRequest == null)
             {
                 logger.LogWarning("Plugin request is null. Skipping request to {Url}", url);
@@ -132,15 +151,15 @@ public class PluginDataProvider(
                 }
                 if (idShortHeaderValue is not null)
                 {
-                    _ = request.Headers.TryAddWithoutValidation(IdShortHeader , idShortHeaderValue);
+                    _ = request.Headers.TryAddWithoutValidation(IdShortHeader, idShortHeaderValue);
                 }
 
-                var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
                     logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
-                    result.Add(response.Content);
+                    result.Add(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
                     continue;
                 }
 
@@ -156,14 +175,14 @@ public class PluginDataProvider(
         return HandleResultOrThrow(result, exceptions);
     }
 
-    private async Task<HttpContent> ProcessResponseAsync(HttpResponseMessage response, string url, CancellationToken cancellationToken)
+    private async Task<string> ProcessResponseAsync(HttpResponseMessage response, string url, CancellationToken cancellationToken)
     {
         logger.LogInformation("HTTP request to {Url}", url);
 
         if (response.IsSuccessStatusCode)
         {
             logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
-            return response.Content;
+            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         }
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -186,9 +205,9 @@ public class PluginDataProvider(
         }
     }
 
-    private async Task<IList<HttpContent>> GetAndProcessAsync(IList<PluginRequestMetaData> pluginRequests, string path, CancellationToken cancellationToken)
+    private async Task<IList<string>> GetAndProcessAsync(IList<PluginRequestMetaData> pluginRequests, string path, CancellationToken cancellationToken)
     {
-        var result = new List<HttpContent>();
+        var result = new List<string>();
         var exceptions = new List<Exception>();
 
         foreach (var pluginRequest in pluginRequests)
@@ -200,19 +219,28 @@ public class PluginDataProvider(
                 continue;
             }
 
-            if (response.IsSuccessStatusCode)
+            using (response)
             {
-                logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
-                result.Add(response.Content);
-                continue;
-            }
+                if (response.IsSuccessStatusCode)
+                {
+                    logger.LogInformation("Successful response from {Url} with status: {StatusCode}", url, response.StatusCode);
+                    result.Add(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+                    continue;
+                }
 
-            exceptions.Add(HandleFailureResponse(response.StatusCode));
+                exceptions.Add(HandleFailureResponse(response.StatusCode));
+            }
         }
+
         return HandleResultOrThrow(result, exceptions);
     }
 
-    private async Task<HttpResponseMessage?> SendPluginRequestAsync(PluginRequestMetaData pluginRequest, string url, IList<Exception> exceptions, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage?> SendPluginRequestAsync(
+        PluginRequestMetaData pluginRequest,
+        string url,
+        IList<Exception> exceptions,
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? requestHeaders = null)
     {
         if (pluginRequest == null)
         {
@@ -225,7 +253,17 @@ public class PluginDataProvider(
 
         try
         {
-            return await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (requestHeaders != null)
+            {
+                foreach (var (headerName, headerValue) in requestHeaders)
+                {
+                    _ = request.Headers.TryAddWithoutValidation(headerName, headerValue);
+                }
+            }
+
+            return await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {
@@ -235,12 +273,18 @@ public class PluginDataProvider(
         }
     }
 
-    private static async Task<int> CountShellDescriptorsAsync(HttpContent responseContent)
+    private static int CountShellDescriptors(string responseContent)
     {
-        await using var stream = await responseContent.ReadAsStreamAsync().ConfigureAwait(false);
-        using var doc = await JsonDocument.ParseAsync(stream).ConfigureAwait(false);
+        using var doc = JsonDocument.Parse(responseContent);
 
-        if (doc.RootElement.TryGetProperty("result", out var itemsElement) && itemsElement.ValueKind == JsonValueKind.Array)
+        if (doc.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            return doc.RootElement.GetArrayLength();
+        }
+
+        if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+            doc.RootElement.TryGetProperty("result", out var itemsElement) &&
+            itemsElement.ValueKind == JsonValueKind.Array)
         {
             return itemsElement.GetArrayLength();
         }
@@ -248,14 +292,14 @@ public class PluginDataProvider(
         return 0;
     }
 
-    private static string BuildShellsUrl(int? limit, string? cursor)
+    private static string BuildShellsUrl(int limit, string? cursor)
     {
         const string BaseUrl = $"{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
         var queryParams = new Dictionary<string, string>();
 
         if (limit is > 0)
         {
-            queryParams["limit"] = limit.Value.ToString();
+            queryParams["limit"] = limit.ToString();
         }
 
         if (!string.IsNullOrWhiteSpace(cursor))
@@ -265,6 +309,26 @@ public class PluginDataProvider(
 
         return queryParams.Count > 0
                    ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
+                   : BaseUrl;
+    }
+
+    private static string BuildShellsByAssetIdsUrl(int limit, string? cursor)
+    {
+        const string BaseUrl = $"/{ApiPaths.PluginMetadata}/{ShellsEndpoint}";
+        var queryParams = new Dictionary<string, string>();
+
+        if (limit is > 0)
+        {
+            queryParams["limit"] = limit.ToString();
+        }
+
+        if (!string.IsNullOrWhiteSpace(cursor))
+        {
+            queryParams["cursor"] = cursor;
+        }
+
+        return queryParams.Count > 0
+                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams)
                    : BaseUrl;
     }
 
@@ -289,7 +353,7 @@ public class PluginDataProvider(
         }
     }
 
-    private static IList<HttpContent> HandleResultOrThrow(IList<HttpContent> result, IList<Exception> exceptions)
+    private static IList<string> HandleResultOrThrow(IList<string> result, IList<Exception> exceptions)
     {
         if (result.Count > 0)
         {

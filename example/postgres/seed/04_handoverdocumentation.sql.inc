@@ -87,7 +87,7 @@ INSERT INTO "DocumentVersion" (
 ) VALUES
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1',
     '2023-01-01',
@@ -108,7 +108,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     1,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1.1',
     '2024-05-05',
@@ -129,7 +129,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '2.1',
     '2026-01-01',
@@ -150,7 +150,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '2.3',
     '2025-10-10',
@@ -171,7 +171,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '0.9',
     '2024-01-01',
@@ -192,7 +192,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1.2',
     '2024-03-03',
@@ -213,7 +213,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     1,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1.4',
     '2023-01-01',
@@ -234,7 +234,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     2,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '2',
     '2024-03-03',
@@ -255,7 +255,7 @@ INSERT INTO "DocumentVersion" (
 
 (
     0,
-    'https://docs.google.com/viewer?url=https://raw.githubusercontent.com/'
+    'https://raw.githubusercontent.com/'
     'AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf',
     '1',
     '2022-02-02',

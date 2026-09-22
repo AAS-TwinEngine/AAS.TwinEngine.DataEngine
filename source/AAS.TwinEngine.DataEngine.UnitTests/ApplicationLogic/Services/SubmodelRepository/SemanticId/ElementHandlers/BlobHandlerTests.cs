@@ -55,7 +55,7 @@ public class BlobHandlerTests
     [Fact]
     public void FillOut_WithLeafNode_SetsBase64Value()
     {
-        var blob = new Blob(contentType: "image/png", idShort: "MyBlob");
+        var blob = new Blob(contentType: "image/png", idShort: "MyBlob", value: [9]);
         var base64 = Convert.ToBase64String(new byte[] { 1, 2, 3 });
         var values = new SemanticLeafNode("http://test/blob", base64, DataType.String, Cardinality.One);
 
@@ -63,6 +63,18 @@ public class BlobHandlerTests
 
         NotNull(blob.Value);
         Equal([1, 2, 3], blob.Value);
+    }
+
+    [Fact]
+    public void FillOut_WithLeafNodeAndNoTemplateValue_LeavesValueUnset()
+    {
+        var blob = new Blob(contentType: "image/png", idShort: "MyBlob");
+        var base64 = Convert.ToBase64String(new byte[] { 1, 2, 3 });
+        var values = new SemanticLeafNode("http://test/blob", base64, DataType.String, Cardinality.One);
+
+        _sut.FillOut(blob, values, (_, _, _) => { });
+
+        Null(blob.Value);
     }
 
     [Fact]
