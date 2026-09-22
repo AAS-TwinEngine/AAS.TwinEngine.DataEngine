@@ -9,8 +9,6 @@ using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
-using Range = AasCore.Aas3_1.Range;
-
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
 public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger, IOptions<PluginsConfig> pluginsConfig) : ISubmodelElementHelper

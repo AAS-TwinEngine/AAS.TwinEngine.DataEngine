@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using AasCore.Aas3_1;
+﻿using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
 

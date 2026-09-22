@@ -1,6 +1,4 @@
-﻿using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config.Helpers;
-
-namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+﻿namespace AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 /// <summary>
 /// V2 config — binds to the "Plugins" section.
@@ -13,7 +11,7 @@ public class PluginsConfig
     public string SubmodelElementIndexContextPrefix { get; set; } = "_aastwinengineindex_";
     public PluginMultiLanguagePropertyConfig MultiLanguageProperty { get; set; } = new();
     public ResiliencePoliciesConfig ResiliencePolicies { get; set; } = new();
-    public IList<ServiceInstance>  Instances { get; set; } = [];
+    public IList<ServiceInstance> Instances { get; set; } = [];
 }
 
 /// <summary>

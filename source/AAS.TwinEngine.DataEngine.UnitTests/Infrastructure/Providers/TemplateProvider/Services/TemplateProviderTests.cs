@@ -1,16 +1,13 @@
-﻿using System.Net;
-using System.Linq;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
-using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 using AasCore.Aas3_1;
 
@@ -24,7 +21,6 @@ using NSubstitute.ExceptionExtensions;
 
 using Template = AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services.TemplateProvider;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
-using AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Observability;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.TemplateProvider.Services;
 
@@ -308,10 +304,10 @@ public class TemplateProviderTests
         Assert.Null(result.SubmodelDescriptors);
     }
 
-        [Fact]
-        public async Task GetShellDescriptorTemplateAsync_MapsSubmodelDescriptorIdAndProtocolInformation_FromPayload()
-        {
-                const string JsonResponse = """
+    [Fact]
+    public async Task GetShellDescriptorTemplateAsync_MapsSubmodelDescriptorIdAndProtocolInformation_FromPayload()
+    {
+        const string JsonResponse = """
                                                                         {
                                                                             "assetKind": "Instance",
                                                                             "id": "https://mm-software.com/ids/aas/000-001",
@@ -349,27 +345,27 @@ public class TemplateProviderTests
                                                                         }
                                                                         """;
 
-                _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.AasRegistry, Arg.Any<int>(), Arg.Any<CancellationToken>())
-                                     .Returns(JsonResponse);
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.AasRegistry, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                             .Returns(JsonResponse);
 
-                var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
+        var result = await _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None);
 
-                Assert.NotNull(result.SubmodelDescriptors);
-                Assert.Equal(2, result.SubmodelDescriptors!.Count);
+        Assert.NotNull(result.SubmodelDescriptors);
+        Assert.Equal(2, result.SubmodelDescriptors!.Count);
 
-                var nameplate = result.SubmodelDescriptors[0];
-                Assert.Equal("Nameplate", nameplate.Id);
-                Assert.NotNull(nameplate.Endpoints);
-                Assert.Equal("SUBMODEL-3.0", nameplate.Endpoints![0].Interface);
-                Assert.NotNull(nameplate.Endpoints[0].ProtocolInformation);
-                Assert.Equal("http://localhost:8082/submodels/TmFtZXBsYXRl", nameplate.Endpoints[0].ProtocolInformation!.Href);
-                Assert.Equal("http", nameplate.Endpoints[0].ProtocolInformation.EndpointProtocol);
+        var nameplate = result.SubmodelDescriptors[0];
+        Assert.Equal("Nameplate", nameplate.Id);
+        Assert.NotNull(nameplate.Endpoints);
+        Assert.Equal("SUBMODEL-3.0", nameplate.Endpoints![0].Interface);
+        Assert.NotNull(nameplate.Endpoints[0].ProtocolInformation);
+        Assert.Equal("http://localhost:8082/submodels/TmFtZXBsYXRl", nameplate.Endpoints[0].ProtocolInformation!.Href);
+        Assert.Equal("http", nameplate.Endpoints[0].ProtocolInformation.EndpointProtocol);
 
-                var technicalData = result.SubmodelDescriptors[1];
-                Assert.Equal("TechnicalData", technicalData.Id);
-                Assert.NotNull(technicalData.Endpoints);
-                Assert.Equal("http://localhost:8082/submodels/VGVjaG5pY2FsRGF0YQ", technicalData.Endpoints![0].ProtocolInformation!.Href);
-        }
+        var technicalData = result.SubmodelDescriptors[1];
+        Assert.Equal("TechnicalData", technicalData.Id);
+        Assert.NotNull(technicalData.Endpoints);
+        Assert.Equal("http://localhost:8082/submodels/VGVjaG5pY2FsRGF0YQ", technicalData.Endpoints![0].ProtocolInformation!.Href);
+    }
 
     [Fact]
     public async Task GetShellTemplateAsync_ReturnsShell_WhenValidResponse()

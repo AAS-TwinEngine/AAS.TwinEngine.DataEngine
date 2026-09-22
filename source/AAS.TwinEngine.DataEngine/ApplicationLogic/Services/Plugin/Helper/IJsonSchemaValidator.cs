@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-using Json.Schema;
+﻿using Json.Schema;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Helper;
 

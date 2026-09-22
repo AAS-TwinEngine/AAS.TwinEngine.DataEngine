@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;

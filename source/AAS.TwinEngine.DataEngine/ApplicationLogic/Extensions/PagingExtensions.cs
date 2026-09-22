@@ -1,6 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 

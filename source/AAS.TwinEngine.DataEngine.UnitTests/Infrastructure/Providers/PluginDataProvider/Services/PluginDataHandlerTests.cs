@@ -201,10 +201,10 @@ public class PluginDataHandlerTests
         var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 2, 1, CancellationToken.None);
 
         Assert.Equal([2, 1], capturedBatchSizes);
-    Assert.Equal(["c3VibW9kZWwvYQ", "c3VibW9kZWwvYg", "c3VibW9kZWwvYw"], capturedIds);
-    Assert.Equal("a", Assert.IsType<SemanticLeafNode>(result["submodel/a"]).Value);
-    Assert.Equal("b", Assert.IsType<SemanticLeafNode>(result["submodel/b"]).Value);
-    Assert.Equal("c", Assert.IsType<SemanticLeafNode>(result["submodel/c"]).Value);
+        Assert.Equal(["c3VibW9kZWwvYQ", "c3VibW9kZWwvYg", "c3VibW9kZWwvYw"], capturedIds);
+        Assert.Equal("a", Assert.IsType<SemanticLeafNode>(result["submodel/a"]).Value);
+        Assert.Equal("b", Assert.IsType<SemanticLeafNode>(result["submodel/b"]).Value);
+        Assert.Equal("c", Assert.IsType<SemanticLeafNode>(result["submodel/c"]).Value);
     }
 
     [Fact]
