@@ -65,6 +65,31 @@ public class SubmodelsMapperProfileTests
     }
 
     [Fact]
+    public void ToDto_ReturnsEmptyResult_WhenSubmodelListIsNull()
+    {
+        SubmodelList? submodelList = null;
+
+        var result = submodelList.ToDto();
+
+        Assert.Empty(result.Result!);
+        Assert.Null(result.PagingMetaData?.Cursor);
+    }
+
+    [Fact]
+    public void ToDto_SkipsNullSubmodels_WhenResultContainsNullItem()
+    {
+        var submodelList = new SubmodelList
+        {
+            Result = [null!, new Submodel(id: "https://mm-software.com/submodels/valid")]
+        };
+
+        var result = submodelList.ToDto();
+
+        Assert.Single(result.Result!);
+        Assert.Equal("https://mm-software.com/submodels/valid", result.Result![0]["id"]?.GetValue<string>());
+    }
+
+    [Fact]
     public void ToDto_SerializesSubmodelToJsonObject_WithCorrectId()
     {
         const string SubmodelId = "https://mm-software.com/submodels/ContactInformation";
