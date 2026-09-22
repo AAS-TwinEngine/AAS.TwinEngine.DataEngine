@@ -22,6 +22,18 @@ public static class SubmodelsMapperProfile
         };
     }
 
+    public static SubmodelElementsDto ToDto(this SubmodelElementsPage submodelElementsPage)
+    {
+        return new SubmodelElementsDto
+        {
+            PagingMetaData = new PagingMetaDataDto
+            {
+                Cursor = submodelElementsPage.PagingMetaData?.Cursor
+            },
+            Result = [.. submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject)]
+        };
+    }
+
     private static IList<JsonObject> SerializeSubmodelsInParallel(IList<ISubmodel>? submodels)
     {
         if (submodels is null || submodels.Count == 0)
@@ -49,17 +61,5 @@ public static class SubmodelsMapperProfile
         });
 
         return [.. results.OfType<JsonObject>()];
-    }
-
-    public static SubmodelElementsDto ToDto(this SubmodelElementsPage submodelElementsPage)
-    {
-        return new SubmodelElementsDto
-        {
-            PagingMetaData = new PagingMetaDataDto
-            {
-                Cursor = submodelElementsPage.PagingMetaData?.Cursor
-            },
-            Result = [.. submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject)]
-        };
     }
 }
