@@ -129,7 +129,7 @@ public class PluginDataProviderTests
 
         Assert.Equal("[]", result);
         Assert.Equal(HttpMethod.Post, capturedRequest.Method);
-        Assert.Equal("https://example.com/data", capturedRequest.RequestUri!.ToString());
+        Assert.Equal("https://example.com/data/batch", capturedRequest.RequestUri!.ToString());
         Assert.Contains("\"submodelIds\":[\"a\",\"b\"]", capturedContent);
     }
 

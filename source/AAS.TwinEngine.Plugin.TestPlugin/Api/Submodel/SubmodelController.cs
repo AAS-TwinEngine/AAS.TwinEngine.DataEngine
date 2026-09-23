@@ -19,7 +19,7 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel;
 [ApiVersion(1)]
 public class SubmodelController(ISubmodelHandler submodelHandler) : ControllerBase
 {
-    [HttpPost("data")]
+    [HttpPost("data/batch")]
     [ProducesResponseType(typeof(IReadOnlyList<SubmodelDataBatchResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status500InternalServerError)]

@@ -23,6 +23,7 @@ public class PluginDataProvider(
     private const string ShellsEndpoint = "shells";
     private const string AssetInformationEndpoint = "assets";
     private const string DataEndpoint = "data";
+    private const string BatchEndpoint = "batch";
     public const string AssetIdsHeader = "aastwinengine-assetids";
     public const string IdShortHeader = "aastwinengine-idshort";
     public const string AssetKindHeader = "aastwinengine-assetkind";
@@ -56,7 +57,7 @@ public class PluginDataProvider(
 
     public async Task<string> GetDataForSubmodelsBatchAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken)
     {
-        var url = BuildUrl(DataEndpoint);
+        var url = BuildUrl(DataEndpoint, BatchEndpoint);
         ValidatePluginRequest(pluginRequest, url);
         var relativeUri = new Uri(url, UriKind.Relative);
 
