@@ -76,7 +76,7 @@ public class MultiLanguagePropertyHandler(
 
             if (leafNode != null)
             {
-                languageValue.Text = leafNode.Value;
+                languageValue.Text = (string?)leafNode.Value;
             }
         }
     }

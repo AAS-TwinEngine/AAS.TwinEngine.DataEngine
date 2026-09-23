@@ -10,5 +10,5 @@ public class ShellDescriptorsMetaData
     public PagingMetaData? PagingMetaData { get; set; }
 
     [JsonPropertyName("result")]
-    public List<ShellDescriptorMetaData>? ShellDescriptors { get; set; } = new();
+    public List<ShellDescriptorMetaData>? ShellDescriptors { get; set; } = [];
 }

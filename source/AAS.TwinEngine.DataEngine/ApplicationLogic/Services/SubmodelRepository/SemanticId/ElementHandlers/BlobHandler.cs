@@ -19,7 +19,7 @@ public class BlobHandler(ISemanticIdResolver semanticIdResolver) : ISubmodelElem
     {
         if (values is SemanticLeafNode leafValueNode && element is Blob { Value: not null } blob)
         {
-            blob.Value = Convert.FromBase64String(leafValueNode.Value);
+            blob.Value = Convert.FromBase64String((string)leafValueNode.Value!);
         }
     }
 }

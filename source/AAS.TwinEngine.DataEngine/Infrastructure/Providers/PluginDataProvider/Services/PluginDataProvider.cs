@@ -23,6 +23,7 @@ public class PluginDataProvider(
     private const string ShellsEndpoint = "shells";
     private const string AssetInformationEndpoint = "assets";
     private const string DataEndpoint = "data";
+    private const string BatchEndpoint = "batch";
     public const string AssetIdsHeader = "aastwinengine-assetids";
     public const string IdShortHeader = "aastwinengine-idshort";
     public const string AssetKindHeader = "aastwinengine-assetkind";
@@ -46,13 +47,30 @@ public class PluginDataProvider(
             }
             catch (TaskCanceledException)
             {
-                logger.LogError("Request timed out. Endpoint: {Url}", url);
                 throw new RequestTimeoutException();
             }
         });
 
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.ToList();
+        return [.. results];
+    }
+
+    public async Task<string> GetDataForSubmodelsBatchAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken)
+    {
+        var url = BuildUrl(DataEndpoint, BatchEndpoint);
+        ValidatePluginRequest(pluginRequest, url);
+        var relativeUri = new Uri(url, UriKind.Relative);
+
+        using var httpClient = CreateClient(pluginRequest.HttpClientName);
+        try
+        {
+            using var response = await httpClient.PostAsync(relativeUri, pluginRequest.Content, cancellationToken).ConfigureAwait(false);
+            return await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException)
+        {
+            throw new RequestTimeoutException();
+        }
     }
 
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
@@ -81,7 +99,7 @@ public class PluginDataProvider(
 
             if (!string.IsNullOrWhiteSpace(assetType))
             {
-requestHeaders[AssetTypeHeader] = assetType;
+                requestHeaders[AssetTypeHeader] = assetType;
             }
 
             var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken, requestHeaders);
@@ -149,6 +167,7 @@ requestHeaders[AssetTypeHeader] = assetType;
                 {
                     _ = request.Headers.TryAddWithoutValidation(AssetIdsHeader, assetIdsHeaderValue);
                 }
+
                 if (idShortHeaderValue is not null)
                 {
                     _ = request.Headers.TryAddWithoutValidation(IdShortHeader, idShortHeaderValue);
@@ -165,9 +184,8 @@ requestHeaders[AssetTypeHeader] = assetType;
 
                 exceptions.Add(HandleFailureResponse(response.StatusCode));
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                logger.LogError(ex, "Request timed out. Endpoint: {Url}", url);
                 exceptions.Add(new RequestTimeoutException());
             }
         }
@@ -267,7 +285,6 @@ requestHeaders[AssetTypeHeader] = assetType;
         }
         catch (TaskCanceledException)
         {
-            logger.LogError("Request timed out. Endpoint: {Url}", url);
             exceptions.Add(new RequestTimeoutException());
             return null;
         }
@@ -307,9 +324,7 @@ requestHeaders[AssetTypeHeader] = assetType;
             queryParams["cursor"] = cursor;
         }
 
-        return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
-                   : BaseUrl;
+        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams) : BaseUrl;
     }
 
     private static string BuildShellsByAssetIdsUrl(int limit, string? cursor)
@@ -327,9 +342,7 @@ requestHeaders[AssetTypeHeader] = assetType;
             queryParams["cursor"] = cursor;
         }
 
-        return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams)
-                   : BaseUrl;
+        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams) : BaseUrl;
     }
 
     private static Exception HandleFailureResponse(System.Net.HttpStatusCode statusCode)

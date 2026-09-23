@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS "DocumentDocumentId" (
     "DocumentIdentifierId" INT REFERENCES "DocumentId"("Id") ON DELETE CASCADE
 );
 
+
 CREATE TABLE IF NOT EXISTS "DocumentClassification" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
@@ -90,5 +91,17 @@ CREATE TABLE IF NOT EXISTS "DocumentDocumentVersion" (
     "DocumentVersionId" INT REFERENCES "DocumentVersion"("Id") ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS ix_document_version_languages_version_language
+ON "DocumentVersionLanguages" ("DocumentVersionId", "LanguageId");
 
+CREATE INDEX IF NOT EXISTS ix_asset_document_asset_document
+ON "AssetDocument" ("AssetId", "DocumentId");
 
+CREATE INDEX IF NOT EXISTS ix_document_document_id_document_identifier
+ON "DocumentDocumentId" ("DocumentId", "DocumentIdentifierId");
+
+CREATE INDEX IF NOT EXISTS ix_document_document_classification_document_classification
+ON "DocumentDocumentClassification" ("DocumentId", "DocumentClassificationId");
+
+CREATE INDEX IF NOT EXISTS ix_document_document_version_document_version
+ON "DocumentDocumentVersion" ("DocumentId", "DocumentVersionId");

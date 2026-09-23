@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
@@ -43,6 +42,7 @@ public class Program
         });
 
         _ = builder.Services.AddHybridCache();
+        _ = builder.Services.AddMemoryCache();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
         builder.Services.ConfigureResponseCompression();

@@ -13,12 +13,19 @@ public class TemplateManagementConfig
     public ResiliencePoliciesConfig ResiliencePolicies { get; set; } = new();
     public TemplateMappingRules TemplateMappingRules { get; set; } = new();
     public TemplateSemanticsConfig Semantics { get; set; } = new();
+    public SubmodelBatchProcessingConfig SubmodelBatchProcessing { get; set; } = new();
 
     public ServiceInstance AasTemplateRepository { get; set; } = new();
     public ServiceInstance SubmodelTemplateRepository { get; set; } = new();
     public ServiceInstance ConceptDescriptionTemplateRepository { get; set; } = new();
     public ServiceInstance AasTemplateRegistry { get; set; } = new();
     public ServiceInstance SubmodelTemplateRegistry { get; set; } = new();
+}
+
+public class SubmodelBatchProcessingConfig
+{
+    public int BatchSize { get; set; } = 50;
+    public int BatchMaxConcurrency { get; set; } = 4;
 }
 
 /// <summary>

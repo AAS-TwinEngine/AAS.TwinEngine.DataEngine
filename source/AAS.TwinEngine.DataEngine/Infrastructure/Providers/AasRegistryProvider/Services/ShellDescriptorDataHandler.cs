@@ -1,11 +1,6 @@
-﻿using System.Text.Json;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
-using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
-
-using AasCore.Aas3_1;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 

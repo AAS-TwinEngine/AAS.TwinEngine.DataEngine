@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -17,8 +18,6 @@ using NSubstitute;
 
 using PluginDataProviderRepo = AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
-
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -36,6 +35,7 @@ public class PluginDataProviderTests
                                                """;
 
     private const string SimpleResponse = """{ "leaf":"value" }""";
+    private static readonly string[] inputValue = new[] { "a", "b" };
 
     public PluginDataProviderTests()
     {
@@ -103,6 +103,34 @@ public class PluginDataProviderTests
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
             _sut.GetDataForSemanticIdsAsync(pluginRequests, "asdf", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForSubmodelsBatchAsync_PostsToBatchEndpoint()
+    {
+        HttpRequestMessage capturedRequest = null!;
+        string? capturedContent = null;
+        using var messageHandler = new FakeHttpMessageHandler(async (request, cancellationToken) =>
+        {
+            capturedRequest = request;
+            capturedContent = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]")
+            };
+        });
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
+        const string HttpClientName = "plugin-data-provider-TestPlugin";
+        _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+        using var content = JsonContent.Create(new[] { new { submodelIds = inputValue, schema = new { type = "object" } } });
+        var request = new PluginRequestSubmodelBatch(HttpClientName, content);
+
+        var result = await _sut.GetDataForSubmodelsBatchAsync(request, CancellationToken.None);
+
+        Assert.Equal("[]", result);
+        Assert.Equal(HttpMethod.Post, capturedRequest.Method);
+        Assert.Equal("https://example.com/data/batch", capturedRequest.RequestUri!.ToString());
+        Assert.Contains("\"submodelIds\":[\"a\",\"b\"]", capturedContent);
     }
 
     [Fact]

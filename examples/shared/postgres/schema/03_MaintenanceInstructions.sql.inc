@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS "MaintenanceInstructionContactForMaintenanceAuthoriza
     "ContactForMaintenanceAuthorizationId" INT REFERENCES "ContactForMaintenanceAuthorization"("Id") ON DELETE CASCADE
 );
 
+
 CREATE TABLE IF NOT EXISTS "MaintenanceStep" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "Index" INT,
@@ -251,4 +252,14 @@ CREATE TABLE IF NOT EXISTS "AssetMaintenanceSparePart" (
     "MaintenanceSparePartId" INT REFERENCES "MaintenanceSparePart"("Id") ON DELETE CASCADE,
     PRIMARY KEY ("AssetId", "MaintenanceSparePartId")
 );
+
+CREATE INDEX IF NOT EXISTS ix_asset_maintenance_instruction_asset_instruction
+ON "AssetMaintenanceInstruction" ("AssetId", "MaintenanceInstructionId");
+
+CREATE INDEX IF NOT EXISTS ix_maintenance_instruction_contact_instruction_contact
+ON "MaintenanceInstructionContactForMaintenanceAuthorization"
+    ("MaintenanceInstructionId", "ContactForMaintenanceAuthorizationId");
+
+CREATE INDEX IF NOT EXISTS ix_maintenance_instruction_alarm_instruction_alarm
+ON "MaintenanceInstructionAlarm" ("MaintenanceInstructionId", "AlarmId");
 

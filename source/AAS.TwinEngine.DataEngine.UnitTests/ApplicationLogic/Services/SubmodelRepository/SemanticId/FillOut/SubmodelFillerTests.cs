@@ -488,7 +488,7 @@ public class SubmodelFillerTests
             {
                 var element = (Property)call.ArgAt<ISubmodelElement>(0);
                 var valueNode = call.ArgAt<SemanticTreeNode>(1);
-                element.Value = (valueNode as SemanticLeafNode)?.Value;
+                element.Value = (string?)(valueNode as SemanticLeafNode)?.Value;
             });
 
         _handlers.Add(collectionHandler);
@@ -544,7 +544,7 @@ public class SubmodelFillerTests
             {
                 var element = (Property)call.ArgAt<ISubmodelElement>(0);
                 var valueNode = call.ArgAt<SemanticTreeNode>(1);
-                element.Value = (valueNode as SemanticLeafNode)?.Value;
+                element.Value = (string?)(valueNode as SemanticLeafNode)?.Value;
             });
 
         _handlers.Add(collectionHandler);

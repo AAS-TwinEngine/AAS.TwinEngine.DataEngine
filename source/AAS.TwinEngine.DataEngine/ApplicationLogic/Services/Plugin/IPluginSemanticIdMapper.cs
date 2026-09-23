@@ -3,9 +3,11 @@ using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 
-public interface IMultiPluginDataHandler
+public interface IPluginSemanticIdMapper
 {
     IDictionary<string, SemanticTreeNode> SplitByPluginManifests(SemanticTreeNode globalTree, IReadOnlyList<PluginManifest> pluginManifests);
+
+    SemanticTreeNode FilterForPlugin(SemanticTreeNode globalTree, PluginManifest pluginManifest);
 
     SemanticTreeNode Merge(SemanticTreeNode globalTree, IList<SemanticTreeNode> valueTrees);
 

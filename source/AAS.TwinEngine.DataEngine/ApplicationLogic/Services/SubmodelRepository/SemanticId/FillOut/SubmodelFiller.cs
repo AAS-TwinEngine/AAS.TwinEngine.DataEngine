@@ -1,6 +1,7 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Collections.Concurrent;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.ElementHandlers;
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
@@ -14,6 +15,9 @@ public class SubmodelFiller(
     IEnumerable<ISubmodelElementTypeHandler> handlers,
     ILogger<SubmodelFiller> logger) : ISubmodelFiller
 {
+    // Handler selection depends only on the element type, so the lookup is resolved once per type.
+    private readonly ConcurrentDictionary<Type, ISubmodelElementTypeHandler?> _handlersByElementType = new();
+
     public ISubmodel FillOutTemplate(ISubmodel submodelTemplate, SemanticTreeNode values)
     {
         if (submodelTemplate is null)
@@ -31,14 +35,15 @@ public class SubmodelFiller(
             throw new InvalidDependencyException(nameof(values), logger);
         }
 
+        var index = SemanticValueIndex.Build(values);
         var submodelElements = submodelTemplate.SubmodelElements.ToList();
         foreach (var submodelElement in submodelElements)
         {
             var semanticId = semanticIdResolver.ExtractSemanticId(submodelElement);
 
-            var matchingNodes = SemanticTreeNavigator.FindBranchNodesBySemanticId(values, semanticId)?.ToList();
+            var matchingNodes = index.GetDirectChildren(values, semanticId);
 
-            if (matchingNodes == null || matchingNodes.Count == 0)
+            if (matchingNodes.Count == 0)
             {
                 continue;
             }
@@ -47,11 +52,11 @@ public class SubmodelFiller(
 
             if (matchingNodes.Count > 1)
             {
-                HandleMultipleMatchingNodes(matchingNodes, submodelElement, submodelTemplate);
+                HandleMultipleMatchingNodes(matchingNodes, submodelElement, submodelTemplate, index);
             }
             else
             {
-                HandleSingleMatchingNode(matchingNodes[0], submodelElement, submodelTemplate);
+                HandleSingleMatchingNode(matchingNodes[0], submodelElement, submodelTemplate, index);
             }
         }
 
@@ -67,18 +72,13 @@ public class SubmodelFiller(
             return;
         }
 
+        var internalSemanticIdType = semanticIdResolver.InternalSemanticIdType;
+
         foreach (var element in elements)
         {
-            if (element.Qualifiers != null)
+            if (element.Qualifiers is { Count: > 0 } qualifiers)
             {
-                var internalQualifiers = element.Qualifiers
-                    .Where(q => q.Type == semanticIdResolver.InternalSemanticIdType)
-                    .ToList();
-
-                foreach (var qualifier in internalQualifiers)
-                {
-                    _ = element.Qualifiers.Remove(qualifier);
-                }
+                _ = qualifiers.RemoveAll(qualifier => qualifier.Type == internalSemanticIdType);
             }
 
             switch (element)
@@ -96,101 +96,122 @@ public class SubmodelFiller(
         }
     }
 
-    private void HandleMultipleMatchingNodes(List<SemanticTreeNode> matchingNodes, ISubmodelElement baseElement, ISubmodel submodelTemplate)
+    private void HandleMultipleMatchingNodes(IReadOnlyList<SemanticTreeNode> matchingNodes, ISubmodelElement baseElement, ISubmodel submodelTemplate, SemanticValueIndex index)
     {
+        var clones = elementHelper.CloneElements(baseElement, matchingNodes.Count);
+        var appendIndex = baseElement is SubmodelElementCollection;
+
         for (var i = 0; i < matchingNodes.Count; i++)
         {
-            var node = matchingNodes[i];
-            var clonedElement = elementHelper.CloneElement(baseElement);
+            var clonedElement = clones[i];
 
-            if (baseElement is SubmodelElementCollection)
+            if (appendIndex)
             {
                 clonedElement.IdShort = $"{clonedElement.IdShort}{i}";
             }
 
-            _ = FillOutElement(clonedElement, node);
+            _ = FillOutElement(clonedElement, matchingNodes[i], index);
             submodelTemplate.SubmodelElements?.Add(clonedElement);
         }
     }
 
-    private void HandleSingleMatchingNode(SemanticTreeNode node, ISubmodelElement element, ISubmodel submodelTemplate)
+    private void HandleSingleMatchingNode(SemanticTreeNode node, ISubmodelElement element, ISubmodel submodelTemplate, SemanticValueIndex index)
     {
-        _ = FillOutElement(element, node);
+        _ = FillOutElement(element, node, index);
         submodelTemplate.SubmodelElements?.Add(element);
     }
 
     public ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values)
     {
-if (element is null)
-{
-    throw new InvalidDependencyException(nameof(element));
-}
+        if (element is null)
+        {
+            throw new InvalidDependencyException(nameof(element));
+        }
 
-if (values is null)
-{
-    throw new InvalidDependencyException(nameof(values));
-}
+        if (values is null)
+        {
+            throw new InvalidDependencyException(nameof(values));
+        }
 
-        var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
+        return FillOutElement(element, values, SemanticValueIndex.Build(values));
+    }
+
+    private ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values, SemanticValueIndex index)
+    {
+        var handler = ResolveHandler(element);
         if (handler == null)
         {
             logger.LogError("InValid submodelElementTemplate Type. IdShort : {IdShort}", element.IdShort);
             throw new InternalDataProcessingException();
         }
 
-        handler.FillOut(element, values, FillOutSubmodelElementValue);
+        handler.FillOut(element, values, (elements, childValues, updateIdShort) => FillOutSubmodelElementValue(elements, childValues, updateIdShort, index));
         return element;
     }
 
-    private void FillOutSubmodelElementValue(List<ISubmodelElement> elements, SemanticTreeNode values, bool updateIdShort)
+    private ISubmodelElementTypeHandler? ResolveHandler(ISubmodelElement element)
+    {
+        var elementType = element.GetType();
+
+        if (_handlersByElementType.TryGetValue(elementType, out var cached))
+        {
+            return cached;
+        }
+
+        var handler = handlers.FirstOrDefault(h => h.CanHandle(element));
+        if (handler is not null)
+        {
+            _ = _handlersByElementType.TryAdd(elementType, handler);
+        }
+
+        return handler;
+    }
+
+    private void FillOutSubmodelElementValue(List<ISubmodelElement> elements, SemanticTreeNode values, bool updateIdShort, SemanticValueIndex index)
     {
         var originalElements = elements.ToList();
         foreach (var element in originalElements)
         {
-            var semanticTreeNodes = GetSemanticNodes(element, values);
+            var semanticId = semanticIdResolver.ExtractSemanticId(element);
+            var semanticTreeNodes = IsBranchElement(element)
+                ? index.GetDirectBranchChildren(values, semanticId)
+                : index.GetLeafDescendants(values, semanticId);
 
-            if (semanticTreeNodes == null || semanticTreeNodes.Count == 0)
+            if (semanticTreeNodes.Count == 0)
             {
                 continue;
             }
 
             if (ShouldCloneElements(semanticTreeNodes, element))
             {
-                ReplaceWithClones(elements, element, semanticTreeNodes, updateIdShort);
+                ReplaceWithClones(elements, element, semanticTreeNodes, updateIdShort, index);
                 continue;
             }
 
-            _ = FillOutElement(element, semanticTreeNodes[0]);
+            _ = FillOutElement(element, semanticTreeNodes[0], index);
         }
     }
 
-    private static bool ShouldCloneElements(List<SemanticTreeNode> nodes, ISubmodelElement element) => nodes.Count > 1 && element is not Property && element is not ReferenceElement;
-
-    private List<SemanticTreeNode>? GetSemanticNodes(ISubmodelElement element, SemanticTreeNode values)
-    {
-        var semanticId = semanticIdResolver.ExtractSemanticId(element);
-
-        return IsBranchElement(element)
-            ? [.. SemanticTreeNavigator.FindNodeBySemanticId<SemanticBranchNode>(values, semanticId).Cast<SemanticTreeNode>()]
-            : [.. SemanticTreeNavigator.FindNodeBySemanticId<SemanticLeafNode>(values, semanticId).Cast<SemanticTreeNode>()];
-    }
+    private static bool ShouldCloneElements(IReadOnlyList<SemanticTreeNode> nodes, ISubmodelElement element) => nodes.Count > 1 && element is not Property && element is not ReferenceElement;
 
     private static bool IsBranchElement(ISubmodelElement element) => element is not (Property or AasCore.Aas3_1.File or Blob);
 
-    private void ReplaceWithClones(List<ISubmodelElement> elements, ISubmodelElement element, List<SemanticTreeNode> nodes, bool updateIdShort)
+    private void ReplaceWithClones(List<ISubmodelElement> elements, ISubmodelElement element, IReadOnlyList<SemanticTreeNode> nodes, bool updateIdShort, SemanticValueIndex index)
     {
         _ = elements.Remove(element);
 
+        var clones = elementHelper.CloneElements(element, nodes.Count);
+
         for (var i = 0; i < nodes.Count; i++)
         {
-            var cloned = elementHelper.CloneElement(element);
+            var cloned = clones[i];
 
             if (updateIdShort)
             {
                 cloned.IdShort = $"{cloned.IdShort}{i}";
             }
 
-            _ = FillOutElement(cloned, nodes[i]);
+            _ = FillOutElement(cloned, nodes[i], index);
             elements.Add(cloned);
         }
     }

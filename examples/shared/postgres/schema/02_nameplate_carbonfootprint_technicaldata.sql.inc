@@ -94,4 +94,16 @@ CREATE TABLE IF NOT EXISTS "ProductOrSectorSpecificCarbonFootprint" (
     "PcfApiQuery" TEXT
 );
 
+CREATE INDEX IF NOT EXISTS ix_asset_marking_asset_marking
+ON "AssetMarking" ("AssetId", "MarkingId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_product_image_asset_image
+ON "AssetProductImage" ("AssetId", "ProductImageId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_product_classifications_asset_classification
+ON "AssetProductClassifications" ("AssetId", "ProductClassificationsId");
+
+CREATE INDEX IF NOT EXISTS ix_product_sector_pcf_asset
+ON "ProductOrSectorSpecificCarbonFootprint" ("AssetId");
+
 

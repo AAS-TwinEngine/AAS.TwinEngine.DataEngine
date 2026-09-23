@@ -12,15 +12,17 @@ public abstract class SemanticTreeNode(string semanticId, Cardinality cardinalit
 public class SemanticBranchNode(string semanticId, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality)
 {
     private readonly List<SemanticTreeNode> _children = [];
+    private ReadOnlyCollection<SemanticTreeNode>? _readOnlyChildren;
 
-    public ReadOnlyCollection<SemanticTreeNode> Children => _children.AsReadOnly();
+    public ReadOnlyCollection<SemanticTreeNode> Children => _readOnlyChildren ??= _children.AsReadOnly();
 
     public void AddChild(SemanticTreeNode child) => _children.Add(child);
 }
 
-public class SemanticLeafNode(string semanticId, dynamic value, DataType dataType, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality)
+public class SemanticLeafNode(string semanticId, object? value, DataType dataType, Cardinality cardinality) : SemanticTreeNode(semanticId, cardinality)
 {
-    public dynamic Value { get; set; } = value;
+    // Holds a string for single values or a List<object?> when Cardinality merges multiple candidates.
+    public object? Value { get; set; } = value;
 
     public DataType DataType { get; set; } = dataType;
 }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
-public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogger<MultiPluginDataHandler> logger) : IMultiPluginDataHandler
+public class PluginSemanticIdMapper(IOptions<PluginsConfig> pluginsConfig, ILogger<PluginSemanticIdMapper> logger) : IPluginSemanticIdMapper
 {
     private readonly string _submodelElementIndexContextPrefix = pluginsConfig.Value.SubmodelElementIndexContextPrefix;
 
@@ -30,6 +30,14 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
 
         return result;
     }
+    public SemanticTreeNode FilterForPlugin(SemanticTreeNode globalTree, PluginManifest pluginManifest)
+    {
+        ValidateSemanticIds(globalTree, [pluginManifest]);
+        return FilterTree(globalTree, pluginManifest.SupportedSemanticIds);
+    }
+
+    private static SemanticTreeNode CreateEmptyTree(SemanticTreeNode globalTree)
+        => globalTree is SemanticBranchNode branch ? new SemanticBranchNode(branch.SemanticId, branch.Cardinality) : globalTree;
 
     private void ValidateSemanticIds(SemanticTreeNode globalTree, IReadOnlyList<PluginManifest> pluginManifests)
     {
@@ -179,14 +187,6 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
 
         switch (template.Cardinality)
         {
-            case Cardinality.ZeroToOne or Cardinality.One:
-                {
-                    var merged = CreateMergedBranchFromChildren(branches.SelectMany(b => b.Children), template.SemanticId, template.Cardinality);
-
-                    result.Add(merged);
-                    break;
-                }
-
             case Cardinality.ZeroToMany or Cardinality.OneToMany:
             case Cardinality.Unknown when branches.Any(b => IsMany(b.Cardinality)):
                 {
@@ -194,7 +194,7 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
                     break;
                 }
 
-            case Cardinality.Unknown:
+            case Cardinality.ZeroToOne or Cardinality.One or Cardinality.Unknown:
                 {
                     var merged = CreateMergedBranchFromChildren(branches.SelectMany(b => b.Children), template.SemanticId, template.Cardinality);
 
@@ -217,7 +217,7 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
         {
             case Cardinality.ZeroToOne or Cardinality.One:
                 {
-                    var first = candidates.First();
+                    var first = candidates[0];
                     return new SemanticLeafNode(template.SemanticId, first.Value, template.DataType, template.Cardinality);
                 }
 
@@ -230,7 +230,7 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
 
             case Cardinality.Unknown:
                 {
-                    var first = candidates.First();
+                    var first = candidates[0];
                     return new SemanticLeafNode(template.SemanticId, first.Value, template.DataType, template.Cardinality);
                 }
 

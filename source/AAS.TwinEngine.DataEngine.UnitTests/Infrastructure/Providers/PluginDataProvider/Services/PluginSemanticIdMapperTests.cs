@@ -12,17 +12,17 @@ using NSubstitute;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
-public class MultiPluginDataHandlerTests
+public class PluginSemanticIdMapperTests
 {
-    private readonly MultiPluginDataHandler _sut;
-    private readonly ILogger<MultiPluginDataHandler> _logger;
+    private readonly PluginSemanticIdMapper _sut;
+    private readonly ILogger<PluginSemanticIdMapper> _logger;
 
-    public MultiPluginDataHandlerTests()
+    public PluginSemanticIdMapperTests()
     {
         var pluginsConfig = Substitute.For<IOptions<PluginsConfig>>();
-        _logger = Substitute.For<ILogger<MultiPluginDataHandler>>();
+        _logger = Substitute.For<ILogger<PluginSemanticIdMapper>>();
         pluginsConfig.Value.Returns(new PluginsConfig { SubmodelElementIndexContextPrefix = "_index_" });
-        _sut = new MultiPluginDataHandler(pluginsConfig, _logger);
+        _sut = new PluginSemanticIdMapper(pluginsConfig, _logger);
     }
 
     [Fact]
@@ -154,6 +154,45 @@ public class MultiPluginDataHandlerTests
         Assert.Equal(2, result.Count);
         Assert.Contains("abc", ((SemanticBranchNode)result["TestPlugin1"]).Children[0].SemanticId);
         Assert.Contains("xyz", ((SemanticBranchNode)result["TestPlugin2"]).Children[0].SemanticId);
+    }
+
+    [Fact]
+    public void FilterForPlugin_ShouldFilterBySupportedIds()
+    {
+        var globalTree = new SemanticBranchNode("root", Cardinality.One);
+        globalTree.AddChild(new SemanticLeafNode("abc", "val1", DataType.String, Cardinality.One));
+        globalTree.AddChild(new SemanticLeafNode("def", "val2", DataType.String, Cardinality.ZeroToOne));
+
+        var manifest = new PluginManifest
+        {
+            PluginName = "TestPlugin",
+            PluginUrl = new Uri("https://example.com/plugin"),
+            SupportedSemanticIds = ["abc"],
+            Capabilities = new Capabilities { HasShellDescriptor = true }
+        };
+
+        var result = _sut.FilterForPlugin(globalTree, manifest);
+
+        var branch = Assert.IsType<SemanticBranchNode>(result);
+        var child = Assert.Single(branch.Children);
+        Assert.Equal("abc", child.SemanticId);
+    }
+
+    [Fact]
+    public void FilterForPlugin_ShouldThrow_WhenRequiredSemanticIdNotSupported()
+    {
+        var globalTree = new SemanticBranchNode("root", Cardinality.One);
+        globalTree.AddChild(new SemanticLeafNode("abc", "val1", DataType.String, Cardinality.One));
+
+        var manifest = new PluginManifest
+        {
+            PluginName = "TestPlugin",
+            PluginUrl = new Uri("https://example.com/plugin"),
+            SupportedSemanticIds = [],
+            Capabilities = new Capabilities { HasShellDescriptor = true }
+        };
+
+        Assert.Throws<MultiPluginConflictException>(() => _sut.FilterForPlugin(globalTree, manifest));
     }
 
     [Fact]

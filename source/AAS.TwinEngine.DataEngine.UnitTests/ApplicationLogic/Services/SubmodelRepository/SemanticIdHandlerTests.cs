@@ -136,6 +136,26 @@ public class SemanticIdHandlerTests
     }
 
     [Fact]
+    public void Extract_SubmodelsWithSameTemplateId_ExtractsOnlyOnce()
+    {
+        var extractor = Substitute.For<ISemanticTreeExtractor>();
+        var filler = Substitute.For<ISubmodelFiller>();
+        var handler = new SemanticIdHandler(extractor, filler);
+        var firstTemplate = TestData.CreateSubmodel();
+        var secondTemplate = TestData.CreateSubmodel();
+        firstTemplate.Id = "template-1";
+        secondTemplate.Id = "template-1";
+        var extracted = new SemanticLeafNode("template-1", string.Empty, DataType.String, Cardinality.One);
+        extractor.Extract(firstTemplate).Returns(extracted);
+
+        _ = handler.Extract(firstTemplate);
+        var result = handler.Extract(secondTemplate);
+
+        Same(extracted, result);
+        extractor.Received(1).Extract(Arg.Any<ISubmodel>());
+    }
+
+    [Fact]
     public void Extract_SubmodelWithReferenceElement_ReturnsExpectedStructure()
     {
         var submodel = TestData.CreateSubmodelWithReferenceElement();
