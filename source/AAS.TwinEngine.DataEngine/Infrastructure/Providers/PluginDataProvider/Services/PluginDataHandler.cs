@@ -29,7 +29,7 @@ public class PluginDataHandler(
     IPluginRequestBuilder pluginRequestBuilder,
     IPluginDataProvider pluginDataProvider,
     IJsonSchemaValidator jsonSchemaValidator,
-    IMultiPluginDataHandler multiPluginDataHandler,
+    IPluginSemanticIdMapper pluginSemanticIdMapper,
     ILogger<PluginDataHandler> logger,
     IOptions<GeneralConfig> generalConfig) : IPluginDataHandler
 {
@@ -44,7 +44,7 @@ public class PluginDataHandler(
 
         var jsonSchemas = new Dictionary<string, JsonSchema>();
 
-        var dicSemanticTreeNode = multiPluginDataHandler.SplitByPluginManifests(semanticIds, pluginManifests);
+        var dicSemanticTreeNode = pluginSemanticIdMapper.SplitByPluginManifests(semanticIds, pluginManifests);
 
         foreach (var (key, value) in dicSemanticTreeNode)
         {
@@ -70,7 +70,7 @@ public class PluginDataHandler(
             result.Add(semanticTreeNode);
         }
 
-        var mergedValues = multiPluginDataHandler.Merge(semanticIds, result);
+        var mergedValues = pluginSemanticIdMapper.Merge(semanticIds, result);
 
         return mergedValues;
     }
@@ -87,12 +87,12 @@ public class PluginDataHandler(
             return new Dictionary<string, SemanticTreeNode>();
         }
 
-        _ = pluginManifests.Single();
+        var pluginManifest = pluginManifests.Single();
         List<PreparedBatchRequest> preparedRequests;
         using (DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
         {
             var prepared = new PreparedBatchRequest[requests.Count];
-            _ = Parallel.For(0, requests.Count, index => prepared[index] = PrepareBatchRequest(requests[index], pluginManifests));
+            _ = Parallel.For(0, requests.Count, index => prepared[index] = PrepareBatchRequest(requests[index], pluginManifest));
             preparedRequests = [.. prepared];
         }
 
@@ -130,7 +130,7 @@ public class PluginDataHandler(
                 var prepared = preparedById[response.SubmodelId];
 
                 var parsedValues = JsonSchemaParser.ParseJsonSchema(response.Result);
-                valuesById[response.SubmodelId] = multiPluginDataHandler.Merge(prepared.Request.SemanticIds, [parsedValues]);
+                valuesById[response.SubmodelId] = pluginSemanticIdMapper.Merge(prepared.Request.SemanticIds, [parsedValues]);
 
                 return ValueTask.CompletedTask;
             }).ConfigureAwait(false);
@@ -138,13 +138,13 @@ public class PluginDataHandler(
         return valuesById;
     }
 
-    private PreparedBatchRequest PrepareBatchRequest(SubmodelValueRequest request, IReadOnlyList<PluginManifest> pluginManifests)
+    private PreparedBatchRequest PrepareBatchRequest(SubmodelValueRequest request, PluginManifest pluginManifest)
     {
-        var pluginValues = multiPluginDataHandler.SplitByPluginManifests(request.SemanticIds, pluginManifests).Single();
-        var semanticTreeKey = BuildSemanticTreeKey(pluginValues.Value);
-        var preparedSchema = _schemaCache.GetOrAdd(semanticTreeKey, _ => new Lazy<PreparedSchema>(() => CreatePreparedSchema(pluginValues.Value), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+        var filteredTree = pluginSemanticIdMapper.FilterForPlugin(request.SemanticIds, pluginManifest);
+        var semanticTreeKey = BuildSemanticTreeKey(filteredTree);
+        var preparedSchema = _schemaCache.GetOrAdd(semanticTreeKey, _ => new Lazy<PreparedSchema>(() => CreatePreparedSchema(filteredTree), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
 
-        return new PreparedBatchRequest(request, pluginValues.Key, preparedSchema.Schema, preparedSchema.SchemaKey);
+        return new PreparedBatchRequest(request, pluginManifest.PluginName, preparedSchema.Schema, preparedSchema.SchemaKey);
     }
 
     private static PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
@@ -207,8 +207,8 @@ public class PluginDataHandler(
 
         var requiresAssetKindTypeFilter = assetKind.HasValue || !string.IsNullOrWhiteSpace(assetType);
         var availablePlugins = requiresAssetKindTypeFilter
-            ? multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor && c.HasAssetKindTypeFilter == true)
-            : multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+            ? pluginSemanticIdMapper.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor && c.HasAssetKindTypeFilter == true)
+            : pluginSemanticIdMapper.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         if (requiresAssetKindTypeFilter && availablePlugins.Count == 0)
         {
@@ -272,7 +272,7 @@ public class PluginDataHandler(
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells, DataEngineTracing.Attributes.ShellId, id);
 
-        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
+        var availablePlugins = pluginSemanticIdMapper.GetAvailablePlugins(pluginManifests, c => c.HasShellDescriptor);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
 
@@ -312,7 +312,7 @@ public class PluginDataHandler(
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataAssets, DataEngineTracing.Attributes.ShellId, id);
 
-        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetInformation);
+        var availablePlugins = pluginSemanticIdMapper.GetAvailablePlugins(pluginManifests, c => c.HasAssetInformation);
 
         var pluginRequests = pluginRequestBuilder.Build(availablePlugins, id);
 
@@ -345,7 +345,7 @@ public class PluginDataHandler(
     {
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetPluginMetadataShells);
 
-        var availablePlugins = multiPluginDataHandler.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
+        var availablePlugins = pluginSemanticIdMapper.GetAvailablePlugins(pluginManifests, c => c.HasAssetIdSearch == true);
 
         if (availablePlugins.Count == 0)
         {

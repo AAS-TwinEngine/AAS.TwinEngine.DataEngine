@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 
-public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogger<MultiPluginDataHandler> logger) : IMultiPluginDataHandler
+public class PluginSemanticIdMapper(IOptions<PluginsConfig> pluginsConfig, ILogger<PluginSemanticIdMapper> logger) : IPluginSemanticIdMapper
 {
     private readonly string _submodelElementIndexContextPrefix = pluginsConfig.Value.SubmodelElementIndexContextPrefix;
 
@@ -30,6 +30,14 @@ public class MultiPluginDataHandler(IOptions<PluginsConfig> pluginsConfig, ILogg
 
         return result;
     }
+    public SemanticTreeNode FilterForPlugin(SemanticTreeNode globalTree, PluginManifest pluginManifest)
+    {
+        ValidateSemanticIds(globalTree, [pluginManifest]);
+        return FilterTree(globalTree, pluginManifest.SupportedSemanticIds);
+    }
+
+    private static SemanticTreeNode CreateEmptyTree(SemanticTreeNode globalTree)
+        => globalTree is SemanticBranchNode branch ? new SemanticBranchNode(branch.SemanticId, branch.Cardinality) : globalTree;
 
     private void ValidateSemanticIds(SemanticTreeNode globalTree, IReadOnlyList<PluginManifest> pluginManifests)
     {

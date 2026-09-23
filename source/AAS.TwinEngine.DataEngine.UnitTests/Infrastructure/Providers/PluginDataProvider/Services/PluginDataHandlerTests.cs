@@ -35,7 +35,7 @@ public class PluginDataHandlerTests
     private readonly IPluginRequestBuilder _pluginRequestBuilder;
     private readonly IPluginDataProvider _pluginDataProvider;
     private readonly IJsonSchemaValidator _jsonSchemaValidator;
-    private readonly IMultiPluginDataHandler _multiPluginDataHandler;
+    private readonly IPluginSemanticIdMapper _pluginSemanticIdMapper;
     private readonly ILogger<PluginDataHandler> _logger;
     private readonly IOptions<GeneralConfig> _options;
     private readonly PluginDataHandler _sut;
@@ -47,14 +47,14 @@ public class PluginDataHandlerTests
         _pluginRequestBuilder = Substitute.For<IPluginRequestBuilder>();
         _pluginDataProvider = Substitute.For<IPluginDataProvider>();
         _jsonSchemaValidator = Substitute.For<IJsonSchemaValidator>();
-        _multiPluginDataHandler = Substitute.For<IMultiPluginDataHandler>();
+        _pluginSemanticIdMapper = Substitute.For<IPluginSemanticIdMapper>();
         _logger = Substitute.For<ILogger<PluginDataHandler>>();
         _options = Options.Create(new GeneralConfig
         {
             DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com"),
         });
 
-        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, _multiPluginDataHandler, _logger, _options);
+        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, _pluginSemanticIdMapper, _logger, _options);
     }
 
     private readonly JsonSerializerOptions _jsonoptions = new()
@@ -109,7 +109,7 @@ public class PluginDataHandlerTests
         }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
             .Returns(new Dictionary<string, SemanticTreeNode> { { "TestPlugin", inputSemanticTreeNode } });
 
@@ -137,7 +137,7 @@ public class PluginDataHandlerTests
                 Arg.Any<CancellationToken>())
            .Returns(_ => Task.FromResult<IList<string>>([ExpectedJsonResponse]));
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(ci => ci.ArgAt<IList<SemanticTreeNode>>(1).First());
 
@@ -177,9 +177,9 @@ public class PluginDataHandlerTests
         var capturedBatchSizes = new List<int>();
         var capturedIds = new List<string>();
 
-        _multiPluginDataHandler
-            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), manifests)
-            .Returns(new Dictionary<string, SemanticTreeNode> { ["TestPlugin"] = semanticIds });
+        _pluginSemanticIdMapper
+            .FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0])
+            .Returns(semanticIds);
         _pluginRequestBuilder
             .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
             .Returns(call =>
@@ -194,7 +194,7 @@ public class PluginDataHandlerTests
             .Returns(
                 """[{"submodelId":"submodel/b","result":{"Contact":"b"}},{"submodelId":"submodel/a","result":{"Contact":"a"}}]""",
                 """[{"submodelId":"submodel/c","result":{"Contact":"c"}}]""");
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
 
@@ -241,12 +241,9 @@ public class PluginDataHandlerTests
             """[{"submodelId":"nameplate-1","result":{"Nameplate":"1"}},{"submodelId":"contact-1","result":{"Contact":"1"}},{"submodelId":"custom-1","result":{"Custom":"1"}},{"submodelId":"nameplate-2","result":{"Nameplate":"2"}},{"submodelId":"contact-2","result":{"Contact":"2"}},{"submodelId":"custom-2","result":{"Custom":"2"}},{"submodelId":"nameplate-3","result":{"Nameplate":"3"}},{"submodelId":"contact-3","result":{"Contact":"3"}},{"submodelId":"custom-3","result":{"Custom":"3"}}]"""
         ]);
 
-        _multiPluginDataHandler
-            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), manifests)
-            .Returns(call => new Dictionary<string, SemanticTreeNode>
-            {
-                ["TestPlugin"] = call.ArgAt<SemanticTreeNode>(0)
-            });
+        _pluginSemanticIdMapper
+            .FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0])
+            .Returns(call => call.ArgAt<SemanticTreeNode>(0));
         _pluginRequestBuilder
             .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
             .Returns(call =>
@@ -260,7 +257,7 @@ public class PluginDataHandlerTests
         _pluginDataProvider
             .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
             .Returns(_ => responses.Dequeue());
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
 
@@ -272,6 +269,45 @@ public class PluginDataHandlerTests
         Assert.Contains(batch, group => group.SequenceEqual(["contact-1", "contact-2", "contact-3"]));
         Assert.Contains(batch, group => group.SequenceEqual(["custom-1", "custom-2", "custom-3"]));
         Assert.Equal(9, result.Count);
+    }
+
+    [Fact]
+    public async Task TryGetValuesBatchAsync_DoesNotThrow_WhenTemplateIsOptionalOnlyAndUnsupportedByPlugin()
+    {
+        var semanticIds = new SemanticBranchNode("root", Cardinality.One);
+        semanticIds.AddChild(new SemanticLeafNode("Unsupported", "", DataType.String, Cardinality.ZeroToOne));
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = [],
+                Capabilities = new Capabilities()
+            }
+        };
+        var requests = new List<SubmodelValueRequest> { new("submodel/a", semanticIds) };
+
+        _pluginSemanticIdMapper
+            .FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0])
+            .Returns(new SemanticBranchNode("root", Cardinality.One));
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call =>
+            {
+                var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
+                return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
+            });
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns("""[{"submodelId":"submodel/a","result":{}}]""");
+        _pluginSemanticIdMapper
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<SemanticTreeNode>(0));
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 2, 1, CancellationToken.None);
+
+        Assert.True(result.ContainsKey("submodel/a"));
     }
 
     private static string DecodeBase64Url(string encodedValue) =>
@@ -304,7 +340,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
@@ -334,7 +370,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -364,7 +400,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
@@ -417,7 +453,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
@@ -469,7 +505,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
@@ -506,7 +542,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginCapable"]);
 
@@ -538,7 +574,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns([]);
 
@@ -563,7 +599,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
@@ -606,7 +642,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
@@ -651,7 +687,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -706,7 +742,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -736,7 +772,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -774,7 +810,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -809,7 +845,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -839,7 +875,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -869,7 +905,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -909,7 +945,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -956,7 +992,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -988,7 +1024,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -1020,7 +1056,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -1064,7 +1100,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns([]);
 
         var filter = new ShellSearchFilter { SpecificAssetIds = [] };
@@ -1086,7 +1122,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -1166,7 +1202,7 @@ public class PluginDataHandlerTests
             new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", jsonContent)
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
             .Returns(new Dictionary<string, SemanticTreeNode> { { "PluginA", inputNode } });
         _pluginRequestBuilder.Build(Arg.Any<IDictionary<string, JsonSchema>>()).Returns(requestList);
@@ -1175,7 +1211,7 @@ public class PluginDataHandlerTests
         _pluginDataProvider
             .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), SubmodelId, Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult<IList<string>>([ResponseJson]));
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(inputNode);
 
