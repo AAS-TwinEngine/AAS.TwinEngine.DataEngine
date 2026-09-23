@@ -1,6 +1,6 @@
 # TwinEngine Observability Example
 
-This example runs TwinEngine DataEngine with the BaSyx Go services and a local observability stack. It includes the relational database plugin, PostgreSQL, pgAdmin, Grafana, Prometheus, OpenTelemetry, Docker resource metrics, and the BaSyx web UI behind Nginx.
+This example runs TwinEngine DataEngine with the BaSyx Go services and a local observability stack. It includes the dpp plugin, PostgreSQL, pgAdmin, Grafana, Prometheus, OpenTelemetry, Docker resource metrics, and the BaSyx web UI behind Nginx.
 
 ## Prerequisites
 
@@ -69,7 +69,7 @@ Inside the Compose network, PostgreSQL is available at host `postgres`, port `54
 | ------------------------------ | -------------------------------------------------- | ---------------------------------------------------- |
 | `nginx`                        | `nginx:1.31.2`                                     | API gateway and UI proxy                             |
 | `twinengine-dataengine`        | Local build or GHCR image                          | TwinEngine DataEngine with OpenTelemetry export      |
-| `dpp-plugin`                   | Local build or GHCR image                          | Relational database plugin with OpenTelemetry export |
+| `dpp-plugin`                   | Local build or GHCR image                          | dpp plugin with OpenTelemetry export |
 | `template-repository-registry` | `eclipsebasyx/aasenvironment-go:1.0.12`            | BaSyx Go AAS environment and repositories            |
 | `basyx_configuration`          | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | BaSyx Go database configuration initialization       |
 | `postgres`                     | `postgres:16-alpine`                               | Plugin and BaSyx persistence                         |
