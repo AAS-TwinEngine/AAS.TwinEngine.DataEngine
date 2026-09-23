@@ -104,7 +104,7 @@ public abstract class ShellDescriptorControllerTests : IDisposable
 
         Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Functionality Not Supported", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Requested Operation Not Supported", content, StringComparison.OrdinalIgnoreCase);
         _ = _httpClientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
     }
 
