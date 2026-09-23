@@ -4,7 +4,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 
 public class PluginCapabilityNotSupportedException : NotImplementedException
 {
-    public const string ServiceName = "Plugin Capability Not Supported.";
+    public const string ServiceName = "Functionality Not Supported.";
 
     public PluginCapabilityNotSupportedException() : base(ServiceName) { }
 
