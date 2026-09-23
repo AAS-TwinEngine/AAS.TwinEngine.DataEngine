@@ -20,13 +20,23 @@ const defaultConfig = {
         getShells: { enabled: true, requests: 10, limit: 100 },
         getShellById: { enabled: true, requests: 10 },
         getAssetInformation: { enabled: true, requests: 10 },
+        getAssetInformationThumbnail: { enabled: false, requests: 10 },
         getSubmodelReferences: { enabled: true, requests: 10 },
+        getSubmodelByAasId: { enabled: false, requests: 10 },
+        getSubmodelElementsByAasId: { enabled: false, requests: 10, limit: 100 },
+        getSubmodelElementByAasId: { enabled: false, requests: 10 },
+        getFileAttachmentByAasId: { enabled: false, requests: 10 },
         getShellDescriptors: { enabled: true, requests: 10, limit: 100 },
         getShellDescriptorById: { enabled: true, requests: 10 },
+        getSubmodelDescriptorsByAasId: { enabled: false, requests: 10, limit: 100 },
+        getSubmodelDescriptorByAasId: { enabled: false, requests: 10 },
         getSubmodelDescriptors: { enabled: true, requests: 10, limit: 100 },
         getSubmodelDescriptorById: { enabled: true, requests: 10 },
         getSubmodels: { enabled: false, requests: 10, limit: 100 },
         getSubmodelById: { enabled: true, requests: 10 },
+        getSubmodelElements: { enabled: false, requests: 10, limit: 100 },
+        getSubmodelElement: { enabled: false, requests: 10 },
+        getFileAttachment: { enabled: false, requests: 10 },
         loadAllShellDescriptors: { enabled: false, requests: 2, limit: 1000 }
     },
     reports: {
@@ -277,6 +287,10 @@ export const config = {
         )
     },
 
+    submodelElementPath:
+        getEnvValue('SUBMODEL_ELEMENT_ID_SHORT_PATH') ||
+        '',
+
     loadAllShellDescriptors: {
         limit: parsePositiveInteger(
             getEnvValue('LIMIT_FOR_ALL_SHELL_DESCRIPTORS') ?? getEnvValue('LIMIT_FOR_ALL_DATA_LOAD') ?? getEnvValue('LIMITFORALLDATALOAD'),
@@ -284,20 +298,20 @@ export const config = {
         )
     },
 
-   reports: {
-    outputPath:
-        getEnvValue('REPORT_OUTPUT_PATH') ||
-        'results',
+    reports: {
+        outputPath:
+            getEnvValue('REPORT_OUTPUT_PATH') ||
+            'results',
 
-    exportCsv: parseBoolean(
-        getEnvValue('EXPORT_CSV'),
-        true
-    ),
+        exportCsv: parseBoolean(
+            getEnvValue('EXPORT_CSV'),
+            true
+        ),
 
-    exportJson: parseBoolean(
-        getEnvValue('EXPORT_JSON'),
-        true
-    )
+        exportJson: parseBoolean(
+            getEnvValue('EXPORT_JSON'),
+            true
+        )
     },
 
     endpoints:

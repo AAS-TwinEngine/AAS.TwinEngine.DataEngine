@@ -29,7 +29,6 @@
           }
         ]
       },
-      "kind": "ConceptQualifier",
       "type": "SMT/Cardinality",
       "valueType": "xs:string",
       "value": "OneToMany"
@@ -44,7 +43,6 @@
           }
         ]
       },
-      "kind": "ConceptQualifier",
       "type": "ExampleValue",
       "valueType": "xs:string",
       "value": "en"
