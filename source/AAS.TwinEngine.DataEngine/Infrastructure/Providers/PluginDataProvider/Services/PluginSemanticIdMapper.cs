@@ -187,14 +187,6 @@ public class PluginSemanticIdMapper(IOptions<PluginsConfig> pluginsConfig, ILogg
 
         switch (template.Cardinality)
         {
-            case Cardinality.ZeroToOne or Cardinality.One:
-                {
-                    var merged = CreateMergedBranchFromChildren(branches.SelectMany(b => b.Children), template.SemanticId, template.Cardinality);
-
-                    result.Add(merged);
-                    break;
-                }
-
             case Cardinality.ZeroToMany or Cardinality.OneToMany:
             case Cardinality.Unknown when branches.Any(b => IsMany(b.Cardinality)):
                 {
@@ -202,7 +194,7 @@ public class PluginSemanticIdMapper(IOptions<PluginsConfig> pluginsConfig, ILogg
                     break;
                 }
 
-            case Cardinality.Unknown:
+            case Cardinality.ZeroToOne or Cardinality.One or Cardinality.Unknown:
                 {
                     var merged = CreateMergedBranchFromChildren(branches.SelectMany(b => b.Children), template.SemanticId, template.Cardinality);
 
@@ -225,7 +217,7 @@ public class PluginSemanticIdMapper(IOptions<PluginsConfig> pluginsConfig, ILogg
         {
             case Cardinality.ZeroToOne or Cardinality.One:
                 {
-                    var first = candidates.First();
+                    var first = candidates[0];
                     return new SemanticLeafNode(template.SemanticId, first.Value, template.DataType, template.Cardinality);
                 }
 
@@ -238,7 +230,7 @@ public class PluginSemanticIdMapper(IOptions<PluginsConfig> pluginsConfig, ILogg
 
             case Cardinality.Unknown:
                 {
-                    var first = candidates.First();
+                    var first = candidates[0];
                     return new SemanticLeafNode(template.SemanticId, first.Value, template.DataType, template.Cardinality);
                 }
 
