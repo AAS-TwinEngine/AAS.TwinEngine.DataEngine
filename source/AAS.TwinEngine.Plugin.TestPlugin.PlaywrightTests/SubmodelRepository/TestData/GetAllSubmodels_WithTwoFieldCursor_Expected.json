@@ -73,29 +73,6 @@
               "modelType": "Property"
             },
             {
-              "idShort": "AddressOfAdditionalLink",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAQ326#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "valueType": "xs:string",
-              "value": "https://www.mm-software.com/more-the-newsroom/",
-              "modelType": "Property"
-            },
-            {
               "idShort": "Company",
               "semanticId": {
                 "type": "ExternalReference",
@@ -145,120 +122,6 @@
                 {
                   "language": "de",
                   "text": "Marketing"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "Street",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO128#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "Bahnhofstraße 25"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "Zipcode",
-              "description": [
-                {
-                  "language": "en",
-                  "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                }
-              ],
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO129#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "80335"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "StateCounty",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO133#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "Bayern"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "NameOfContact",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO205#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "en",
-                  "text": "John Doe"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -435,6 +298,143 @@
               "modelType": "SubmodelElementCollection"
             },
             {
+              "idShort": "Street",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO128#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "Bahnhofstraße 25"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "Zipcode",
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                }
+              ],
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO129#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "80335"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "StateCounty",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO133#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "Bayern"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "NameOfContact",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO205#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "en",
+                  "text": "John Doe"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "AddressOfAdditionalLink",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAQ326#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "https://www.mm-software.com/more-the-newsroom/",
+              "modelType": "Property"
+            },
+            {
               "idShort": "Phone0",
               "semanticId": {
                 "type": "ExternalReference",
@@ -488,33 +488,6 @@
                   "modelType": "MultiLanguageProperty"
                 },
                 {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
                   "idShort": "TypeOfTelephone",
                   "description": [
                     {
@@ -542,6 +515,33 @@
                   "valueType": "xs:string",
                   "value": "Office",
                   "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
                 }
               ],
               "modelType": "SubmodelElementCollection"
@@ -600,33 +600,6 @@
                   "modelType": "MultiLanguageProperty"
                 },
                 {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Montags, 10-16 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
                   "idShort": "TypeOfTelephone",
                   "description": [
                     {
@@ -654,6 +627,33 @@
                   "valueType": "xs:string",
                   "value": "Mobile",
                   "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Montags, 10-16 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
                 }
               ],
               "modelType": "SubmodelElementCollection"
@@ -717,29 +717,6 @@
               "modelType": "Property"
             },
             {
-              "idShort": "AddressOfAdditionalLink",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAQ326#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "valueType": "xs:string",
-              "value": "https://www.mm-software.com/",
-              "modelType": "Property"
-            },
-            {
               "idShort": "Company",
               "semanticId": {
                 "type": "ExternalReference",
@@ -789,120 +766,6 @@
                 {
                   "language": "de",
                   "text": "Vertrieb"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "Street",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO128#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "Ringstraße 2"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "Zipcode",
-              "description": [
-                {
-                  "language": "en",
-                  "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                }
-              ],
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO129#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "50667"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "StateCounty",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO133#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "Nordrhein-Westfalen"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "NameOfContact",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO205#002"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "en",
-                  "text": "Jane Doe"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -961,33 +824,6 @@
                   "modelType": "MultiLanguageProperty"
                 },
                 {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
                   "idShort": "TypeOfTelephone",
                   "description": [
                     {
@@ -1015,6 +851,33 @@
                   "valueType": "xs:string",
                   "value": "assistant",
                   "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
                 }
               ],
               "modelType": "SubmodelElementCollection"
@@ -1189,6 +1052,143 @@
                 }
               ],
               "modelType": "SubmodelElementCollection"
+            },
+            {
+              "idShort": "Street",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO128#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "Ringstraße 2"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "Zipcode",
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                }
+              ],
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO129#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "50667"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "StateCounty",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO133#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "Nordrhein-Westfalen"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "NameOfContact",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO205#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "en",
+                  "text": "Jane Doe"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "AddressOfAdditionalLink",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAQ326#002"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "https://www.mm-software.com/",
+              "modelType": "Property"
             }
           ],
           "modelType": "SubmodelElementCollection"
@@ -1275,13 +1275,11 @@
                   }
                 ]
               },
-              "kind": "ConceptQualifier",
               "type": "SMT/Cardinality",
               "valueType": "xs:string",
               "value": "One"
             }
           ],
-          "orderRelevant": false,
           "semanticIdListElement": {
             "type": "ExternalReference",
             "keys": [
@@ -1335,7 +1333,6 @@
                       }
                     ]
                   },
-                  "kind": "ConceptQualifier",
                   "type": "SMT/Cardinality",
                   "valueType": "xs:string",
                   "value": "OneToMany"
@@ -1385,13 +1382,11 @@
                           }
                         ]
                       },
-                      "kind": "ConceptQualifier",
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "One"
                     }
                   ],
-                  "orderRelevant": false,
                   "semanticIdListElement": {
                     "type": "ExternalReference",
                     "keys": [
@@ -1455,7 +1450,6 @@
                               }
                             ]
                           },
-                          "kind": "ConceptQualifier",
                           "type": "SMT/Cardinality",
                           "valueType": "xs:string",
                           "value": "OneToMany"
@@ -1506,7 +1500,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -1521,7 +1514,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "https://domain.com/..."
@@ -1575,7 +1567,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -1590,7 +1581,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "XF90-884"
@@ -1644,7 +1634,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "ZeroToOne"
@@ -1659,7 +1648,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "true"
@@ -1718,13 +1706,11 @@
                           }
                         ]
                       },
-                      "kind": "ConceptQualifier",
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "One"
                     }
                   ],
-                  "orderRelevant": false,
                   "semanticIdListElement": {
                     "type": "ExternalReference",
                     "keys": [
@@ -1788,7 +1774,6 @@
                               }
                             ]
                           },
-                          "kind": "ConceptQualifier",
                           "type": "SMT/Cardinality",
                           "valueType": "xs:string",
                           "value": "OneToMany"
@@ -1839,7 +1824,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -1854,7 +1838,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "03-02"
@@ -1862,75 +1845,6 @@
                           ],
                           "valueType": "xs:string",
                           "value": "CLS-005",
-                          "modelType": "Property"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "ClassificationSystem",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Classification system"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Klassifizierungssystem"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABH997#003"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH997-003"
-                                }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "One"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "VDI2770:2020"
-                            }
-                          ],
-                          "valueType": "xs:string",
-                          "value": "ISO-81346",
                           "modelType": "Property"
                         },
                         {
@@ -1977,7 +1891,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -1992,13 +1905,79 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "ClassificationSystem",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Classification system"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Klassifizierungssystem"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABH997#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH997-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "One"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "VDI2770:2020"
+                            }
+                          ],
+                          "valueType": "xs:string",
+                          "value": "ISO-81346",
+                          "modelType": "Property"
                         }
                       ],
                       "modelType": "SubmodelElementCollection"
@@ -2049,13 +2028,11 @@
                           }
                         ]
                       },
-                      "kind": "ConceptQualifier",
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "One"
                     }
                   ],
-                  "orderRelevant": false,
                   "semanticIdListElement": {
                     "type": "ExternalReference",
                     "keys": [
@@ -2113,7 +2090,6 @@
                               }
                             ]
                           },
-                          "kind": "ConceptQualifier",
                           "type": "SMT/Cardinality",
                           "valueType": "xs:string",
                           "value": "OneToMany"
@@ -2163,13 +2139,11 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
                             }
                           ],
-                          "orderRelevant": false,
                           "typeValueListElement": "Property",
                           "valueTypeListElement": "xs:string",
                           "value": [
@@ -2204,7 +2178,6 @@
                                       }
                                     ]
                                   },
-                                  "kind": "ConceptQualifier",
                                   "type": "SMT/Cardinality",
                                   "valueType": "xs:string",
                                   "value": "OneToMany"
@@ -2219,7 +2192,6 @@
                                       }
                                     ]
                                   },
-                                  "kind": "ConceptQualifier",
                                   "type": "ExampleValue",
                                   "valueType": "xs:string",
                                   "value": "en"
@@ -2237,132 +2209,6 @@
                                 ]
                               },
                               "modelType": "Property"
-                            }
-                          ],
-                          "modelType": "SubmodelElementList"
-                        },
-                        {
-                          "idShort": "DigitalFiles",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Digital files"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Digitale Dateien"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABK126#002"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABK126-002"
-                                }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "One"
-                            }
-                          ],
-                          "orderRelevant": false,
-                          "typeValueListElement": "File",
-                          "value": [
-                            {
-                              "displayName": [
-                                {
-                                  "language": "en",
-                                  "text": "Name of the specific digital file@en"
-                                },
-                                {
-                                  "language": "de",
-                                  "text": "Name der spezifischen digitalen Datei@de"
-                                }
-                              ],
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "0173-1#02-ABK126#002"
-                                  }
-                                ]
-                              },
-                              "qualifiers": [
-                                {
-                                  "semanticId": {
-                                    "type": "ExternalReference",
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                      }
-                                    ]
-                                  },
-                                  "kind": "ConceptQualifier",
-                                  "type": "SMT/Cardinality",
-                                  "valueType": "xs:string",
-                                  "value": "OneToMany"
-                                },
-                                {
-                                  "semanticId": {
-                                    "type": "ExternalReference",
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                      }
-                                    ]
-                                  },
-                                  "kind": "ConceptQualifier",
-                                  "type": "ExampleValue",
-                                  "valueType": "xs:string",
-                                  "value": "docu_cecc_fullmanual_DE.PDF"
-                                },
-                                {
-                                  "semanticId": {
-                                    "type": "ExternalReference",
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0"
-                                      }
-                                    ]
-                                  },
-                                  "kind": "ConceptQualifier",
-                                  "type": "AllowedIdShort",
-                                  "valueType": "xs:string",
-                                  "value": "DigitalFile[\\d{2,3}]"
-                                }
-                              ],
-                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
-                              "contentType": "application/pdf",
-                              "modelType": "File"
                             }
                           ],
                           "modelType": "SubmodelElementList"
@@ -2411,7 +2257,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -2426,7 +2271,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "V1.2"
@@ -2435,6 +2279,266 @@
                           "valueType": "xs:string",
                           "value": "0.9",
                           "modelType": "Property"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "Title",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Document title"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Dokumententitel"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABG940#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABG940-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "One"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Examplary title@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "Subtitle",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Subtitle"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Untertitel"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABH998#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH998-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "ZeroToOne"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Examplary subtitle@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "Description",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Document description"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Dokumentenbeschreibung"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-AAN466#004"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-AAN466-004"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "One"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Abstract@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "KeyWords",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Keywords"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Stichworte"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABH999#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH999-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "ZeroToOne"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Examplary keywords@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
                         },
                         {
                           "category": "PARAMETER",
@@ -2480,7 +2584,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -2495,7 +2598,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "2020-02-06"
@@ -2549,7 +2651,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -2564,7 +2665,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Released"
@@ -2607,7 +2707,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -2622,7 +2721,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Example company"
@@ -2676,7 +2774,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -2691,7 +2788,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Example company Ltd."
@@ -2702,16 +2798,15 @@
                           "modelType": "Property"
                         },
                         {
-                          "category": "PARAMETER",
-                          "idShort": "Title",
+                          "idShort": "DigitalFiles",
                           "displayName": [
                             {
                               "language": "en",
-                              "text": "Document title"
+                              "text": "Digital files"
                             },
                             {
                               "language": "de",
-                              "text": "Dokumententitel"
+                              "text": "Digitale Dateien"
                             }
                           ],
                           "semanticId": {
@@ -2719,7 +2814,7 @@
                             "keys": [
                               {
                                 "type": "GlobalReference",
-                                "value": "0173-1#02-ABG940#003"
+                                "value": "0173-1#02-ABK126#002"
                               }
                             ]
                           },
@@ -2729,7 +2824,7 @@
                               "keys": [
                                 {
                                   "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABG940-003"
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABK126-002"
                                 }
                               ]
                             }
@@ -2741,233 +2836,87 @@
                                 "keys": [
                                   {
                                     "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Examplary title@en"
                             }
                           ],
-                          "modelType": "MultiLanguageProperty"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "Subtitle",
-                          "displayName": [
+                          "typeValueListElement": "File",
+                          "value": [
                             {
-                              "language": "en",
-                              "text": "Subtitle"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Untertitel"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABH998#003"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
+                              "displayName": [
                                 {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH998-003"
-                                }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "ZeroToOne"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Examplary subtitle@en"
-                            }
-                          ],
-                          "modelType": "MultiLanguageProperty"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "Description",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Document description"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Dokumentenbeschreibung"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-AAN466#004"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
+                                  "language": "en",
+                                  "text": "Name of the specific digital file@en"
+                                },
                                 {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-AAN466-004"
+                                  "language": "de",
+                                  "text": "Name der spezifischen digitalen Datei@de"
                                 }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
+                              ],
                               "semanticId": {
                                 "type": "ExternalReference",
                                 "keys": [
                                   {
                                     "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                    "value": "0173-1#02-ABK126#002"
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "One"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Abstract@en"
-                            }
-                          ],
-                          "modelType": "MultiLanguageProperty"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "KeyWords",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Keywords"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Stichworte"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABH999#003"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
+                              "qualifiers": [
                                 {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH999-003"
+                                  "semanticId": {
+                                    "type": "ExternalReference",
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                      }
+                                    ]
+                                  },
+                                  "type": "SMT/Cardinality",
+                                  "valueType": "xs:string",
+                                  "value": "OneToMany"
+                                },
+                                {
+                                  "semanticId": {
+                                    "type": "ExternalReference",
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                      }
+                                    ]
+                                  },
+                                  "type": "ExampleValue",
+                                  "valueType": "xs:string",
+                                  "value": "docu_cecc_fullmanual_DE.PDF"
+                                },
+                                {
+                                  "semanticId": {
+                                    "type": "ExternalReference",
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0"
+                                      }
+                                    ]
+                                  },
+                                  "type": "AllowedIdShort",
+                                  "valueType": "xs:string",
+                                  "value": "DigitalFile[\\d{2,3}]"
                                 }
-                              ]
+                              ],
+                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                              "contentType": "application/pdf",
+                              "modelType": "File"
                             }
                           ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "ZeroToOne"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Examplary keywords@en"
-                            }
-                          ],
-                          "modelType": "MultiLanguageProperty"
+                          "modelType": "SubmodelElementList"
                         },
                         {
                           "category": "PARAMETER",
@@ -3013,7 +2962,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "ZeroToOne"
@@ -3028,7 +2976,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "docu_cecc_fullmanual_DE.jpg"
@@ -3043,7 +2990,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "AllowedIdShort",
                               "valueType": "xs:string",
                               "value": "PreviewFile[\\d{2,3}]"
@@ -3104,7 +3050,6 @@
                       }
                     ]
                   },
-                  "kind": "ConceptQualifier",
                   "type": "SMT/Cardinality",
                   "valueType": "xs:string",
                   "value": "OneToMany"
@@ -3154,13 +3099,11 @@
                           }
                         ]
                       },
-                      "kind": "ConceptQualifier",
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "One"
                     }
                   ],
-                  "orderRelevant": false,
                   "semanticIdListElement": {
                     "type": "ExternalReference",
                     "keys": [
@@ -3224,7 +3167,6 @@
                               }
                             ]
                           },
-                          "kind": "ConceptQualifier",
                           "type": "SMT/Cardinality",
                           "valueType": "xs:string",
                           "value": "OneToMany"
@@ -3275,7 +3217,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -3290,7 +3231,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "https://domain.com/..."
@@ -3344,7 +3284,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -3359,7 +3298,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "XF90-884"
@@ -3413,7 +3351,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "ZeroToOne"
@@ -3428,7 +3365,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "true"
@@ -3487,13 +3423,11 @@
                           }
                         ]
                       },
-                      "kind": "ConceptQualifier",
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "One"
                     }
                   ],
-                  "orderRelevant": false,
                   "semanticIdListElement": {
                     "type": "ExternalReference",
                     "keys": [
@@ -3557,7 +3491,6 @@
                               }
                             ]
                           },
-                          "kind": "ConceptQualifier",
                           "type": "SMT/Cardinality",
                           "valueType": "xs:string",
                           "value": "OneToMany"
@@ -3608,7 +3541,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -3623,7 +3555,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "03-02"
@@ -3631,75 +3562,6 @@
                           ],
                           "valueType": "xs:string",
                           "value": "CLS-006",
-                          "modelType": "Property"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "ClassificationSystem",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Classification system"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Klassifizierungssystem"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABH997#003"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH997-003"
-                                }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "One"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "VDI2770:2020"
-                            }
-                          ],
-                          "valueType": "xs:string",
-                          "value": "IEC-61131",
                           "modelType": "Property"
                         },
                         {
@@ -3746,7 +3608,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -3761,13 +3622,79 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "ClassificationSystem",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Classification system"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Klassifizierungssystem"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABH997#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH997-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "One"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "VDI2770:2020"
+                            }
+                          ],
+                          "valueType": "xs:string",
+                          "value": "IEC-61131",
+                          "modelType": "Property"
                         }
                       ],
                       "modelType": "SubmodelElementCollection"
@@ -3818,13 +3745,11 @@
                           }
                         ]
                       },
-                      "kind": "ConceptQualifier",
                       "type": "SMT/Cardinality",
                       "valueType": "xs:string",
                       "value": "One"
                     }
                   ],
-                  "orderRelevant": false,
                   "semanticIdListElement": {
                     "type": "ExternalReference",
                     "keys": [
@@ -3882,7 +3807,6 @@
                               }
                             ]
                           },
-                          "kind": "ConceptQualifier",
                           "type": "SMT/Cardinality",
                           "valueType": "xs:string",
                           "value": "OneToMany"
@@ -3932,13 +3856,11 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
                             }
                           ],
-                          "orderRelevant": false,
                           "typeValueListElement": "Property",
                           "valueTypeListElement": "xs:string",
                           "value": [
@@ -3973,7 +3895,6 @@
                                       }
                                     ]
                                   },
-                                  "kind": "ConceptQualifier",
                                   "type": "SMT/Cardinality",
                                   "valueType": "xs:string",
                                   "value": "OneToMany"
@@ -3988,7 +3909,6 @@
                                       }
                                     ]
                                   },
-                                  "kind": "ConceptQualifier",
                                   "type": "ExampleValue",
                                   "valueType": "xs:string",
                                   "value": "en"
@@ -4006,132 +3926,6 @@
                                 ]
                               },
                               "modelType": "Property"
-                            }
-                          ],
-                          "modelType": "SubmodelElementList"
-                        },
-                        {
-                          "idShort": "DigitalFiles",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Digital files"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Digitale Dateien"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABK126#002"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABK126-002"
-                                }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "One"
-                            }
-                          ],
-                          "orderRelevant": false,
-                          "typeValueListElement": "File",
-                          "value": [
-                            {
-                              "displayName": [
-                                {
-                                  "language": "en",
-                                  "text": "Name of the specific digital file@en"
-                                },
-                                {
-                                  "language": "de",
-                                  "text": "Name der spezifischen digitalen Datei@de"
-                                }
-                              ],
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "0173-1#02-ABK126#002"
-                                  }
-                                ]
-                              },
-                              "qualifiers": [
-                                {
-                                  "semanticId": {
-                                    "type": "ExternalReference",
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                      }
-                                    ]
-                                  },
-                                  "kind": "ConceptQualifier",
-                                  "type": "SMT/Cardinality",
-                                  "valueType": "xs:string",
-                                  "value": "OneToMany"
-                                },
-                                {
-                                  "semanticId": {
-                                    "type": "ExternalReference",
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                      }
-                                    ]
-                                  },
-                                  "kind": "ConceptQualifier",
-                                  "type": "ExampleValue",
-                                  "valueType": "xs:string",
-                                  "value": "docu_cecc_fullmanual_DE.PDF"
-                                },
-                                {
-                                  "semanticId": {
-                                    "type": "ExternalReference",
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0"
-                                      }
-                                    ]
-                                  },
-                                  "kind": "ConceptQualifier",
-                                  "type": "AllowedIdShort",
-                                  "valueType": "xs:string",
-                                  "value": "DigitalFile[\\d{2,3}]"
-                                }
-                              ],
-                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
-                              "contentType": "application/pdf",
-                              "modelType": "File"
                             }
                           ],
                           "modelType": "SubmodelElementList"
@@ -4180,7 +3974,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -4195,7 +3988,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "V1.2"
@@ -4204,6 +3996,266 @@
                           "valueType": "xs:string",
                           "value": "1.2",
                           "modelType": "Property"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "Title",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Document title"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Dokumententitel"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABG940#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABG940-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "One"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Examplary title@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "Subtitle",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Subtitle"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Untertitel"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABH998#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH998-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "ZeroToOne"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Examplary subtitle@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "Description",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Document description"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Dokumentenbeschreibung"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-AAN466#004"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-AAN466-004"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "One"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Abstract@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
+                        },
+                        {
+                          "category": "PARAMETER",
+                          "idShort": "KeyWords",
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Keywords"
+                            },
+                            {
+                              "language": "de",
+                              "text": "Stichworte"
+                            }
+                          ],
+                          "semanticId": {
+                            "type": "ExternalReference",
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "0173-1#02-ABH999#003"
+                              }
+                            ]
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "type": "ExternalReference",
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH999-003"
+                                }
+                              ]
+                            }
+                          ],
+                          "qualifiers": [
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "SMT/Cardinality",
+                              "valueType": "xs:string",
+                              "value": "ZeroToOne"
+                            },
+                            {
+                              "semanticId": {
+                                "type": "ExternalReference",
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                  }
+                                ]
+                              },
+                              "type": "ExampleValue",
+                              "valueType": "xs:string",
+                              "value": "Examplary keywords@en"
+                            }
+                          ],
+                          "modelType": "MultiLanguageProperty"
                         },
                         {
                           "category": "PARAMETER",
@@ -4249,7 +4301,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -4264,7 +4315,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "2020-02-06"
@@ -4318,7 +4368,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -4333,7 +4382,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Released"
@@ -4376,7 +4424,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -4391,7 +4438,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Example company"
@@ -4445,7 +4491,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
@@ -4460,7 +4505,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Example company Ltd."
@@ -4471,16 +4515,15 @@
                           "modelType": "Property"
                         },
                         {
-                          "category": "PARAMETER",
-                          "idShort": "Title",
+                          "idShort": "DigitalFiles",
                           "displayName": [
                             {
                               "language": "en",
-                              "text": "Document title"
+                              "text": "Digital files"
                             },
                             {
                               "language": "de",
-                              "text": "Dokumententitel"
+                              "text": "Digitale Dateien"
                             }
                           ],
                           "semanticId": {
@@ -4488,7 +4531,7 @@
                             "keys": [
                               {
                                 "type": "GlobalReference",
-                                "value": "0173-1#02-ABG940#003"
+                                "value": "0173-1#02-ABK126#002"
                               }
                             ]
                           },
@@ -4498,7 +4541,7 @@
                               "keys": [
                                 {
                                   "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABG940-003"
+                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABK126-002"
                                 }
                               ]
                             }
@@ -4510,233 +4553,87 @@
                                 "keys": [
                                   {
                                     "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "One"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Examplary title@en"
                             }
                           ],
-                          "modelType": "MultiLanguageProperty"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "Subtitle",
-                          "displayName": [
+                          "typeValueListElement": "File",
+                          "value": [
                             {
-                              "language": "en",
-                              "text": "Subtitle"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Untertitel"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABH998#003"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
+                              "displayName": [
                                 {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH998-003"
-                                }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "ZeroToOne"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Examplary subtitle@en"
-                            }
-                          ],
-                          "modelType": "MultiLanguageProperty"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "Description",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Document description"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Dokumentenbeschreibung"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-AAN466#004"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
+                                  "language": "en",
+                                  "text": "Name of the specific digital file@en"
+                                },
                                 {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-AAN466-004"
+                                  "language": "de",
+                                  "text": "Name der spezifischen digitalen Datei@de"
                                 }
-                              ]
-                            }
-                          ],
-                          "qualifiers": [
-                            {
+                              ],
                               "semanticId": {
                                 "type": "ExternalReference",
                                 "keys": [
                                   {
                                     "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                    "value": "0173-1#02-ABK126#002"
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "One"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Abstract@en"
-                            }
-                          ],
-                          "modelType": "MultiLanguageProperty"
-                        },
-                        {
-                          "category": "PARAMETER",
-                          "idShort": "KeyWords",
-                          "displayName": [
-                            {
-                              "language": "en",
-                              "text": "Keywords"
-                            },
-                            {
-                              "language": "de",
-                              "text": "Stichworte"
-                            }
-                          ],
-                          "semanticId": {
-                            "type": "ExternalReference",
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "0173-1#02-ABH999#003"
-                              }
-                            ]
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "type": "ExternalReference",
-                              "keys": [
+                              "qualifiers": [
                                 {
-                                  "type": "GlobalReference",
-                                  "value": "https://api.eclass-cdp.com/0173-1-02-ABH999-003"
+                                  "semanticId": {
+                                    "type": "ExternalReference",
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                                      }
+                                    ]
+                                  },
+                                  "type": "SMT/Cardinality",
+                                  "valueType": "xs:string",
+                                  "value": "OneToMany"
+                                },
+                                {
+                                  "semanticId": {
+                                    "type": "ExternalReference",
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
+                                      }
+                                    ]
+                                  },
+                                  "type": "ExampleValue",
+                                  "valueType": "xs:string",
+                                  "value": "docu_cecc_fullmanual_DE.PDF"
+                                },
+                                {
+                                  "semanticId": {
+                                    "type": "ExternalReference",
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0"
+                                      }
+                                    ]
+                                  },
+                                  "type": "AllowedIdShort",
+                                  "valueType": "xs:string",
+                                  "value": "DigitalFile[\\d{2,3}]"
                                 }
-                              ]
+                              ],
+                              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf",
+                              "contentType": "application/pdf",
+                              "modelType": "File"
                             }
                           ],
-                          "qualifiers": [
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "SMT/Cardinality",
-                              "valueType": "xs:string",
-                              "value": "ZeroToOne"
-                            },
-                            {
-                              "semanticId": {
-                                "type": "ExternalReference",
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0"
-                                  }
-                                ]
-                              },
-                              "kind": "ConceptQualifier",
-                              "type": "ExampleValue",
-                              "valueType": "xs:string",
-                              "value": "Examplary keywords@en"
-                            }
-                          ],
-                          "modelType": "MultiLanguageProperty"
+                          "modelType": "SubmodelElementList"
                         },
                         {
                           "category": "PARAMETER",
@@ -4782,7 +4679,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "SMT/Cardinality",
                               "valueType": "xs:string",
                               "value": "ZeroToOne"
@@ -4797,7 +4693,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "docu_cecc_fullmanual_DE.jpg"
@@ -4812,7 +4707,6 @@
                                   }
                                 ]
                               },
-                              "kind": "ConceptQualifier",
                               "type": "AllowedIdShort",
                               "valueType": "xs:string",
                               "value": "PreviewFile[\\d{2,3}]"
@@ -4856,13 +4750,11 @@
                   }
                 ]
               },
-              "kind": "ConceptQualifier",
               "type": "SMT/Cardinality",
               "valueType": "xs:string",
               "value": "ZeroToOne"
             }
           ],
-          "orderRelevant": false,
           "typeValueListElement": "Entity",
           "modelType": "SubmodelElementList"
         }

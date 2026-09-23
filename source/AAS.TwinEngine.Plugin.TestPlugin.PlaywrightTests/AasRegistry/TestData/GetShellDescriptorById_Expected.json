@@ -72,5 +72,78 @@
       }
     }
   ],
-  "submodelDescriptors": null
+  "submodelDescriptors": [
+    {
+      "description": null,
+      "displayName": null,
+      "extensions": null,
+      "administration": null,
+      "idShort": null,
+      "id": "https://mm-software.com/submodel/000-001/CustomSubmodel",
+      "semanticId": null,
+      "supplementalSemanticId": null,
+      "endpoints": [
+        {
+          "interface": "SUBMODEL-3.0",
+          "protocolInformation": {
+            "href": "http://localhost:8080/submodels/aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9DdXN0b21TdWJtb2RlbA",
+            "endpointProtocol": "http",
+            "endpointProtocolVersion": null,
+            "subprotocol": null,
+            "subprotocolBody": null,
+            "subprotocolBodyEncoding": null,
+            "securityAttributes": null
+          }
+        }
+      ]
+    },
+    {
+      "description": null,
+      "displayName": null,
+      "extensions": null,
+      "administration": null,
+      "idShort": null,
+      "id": "https://mm-software.com/submodel/000-001/ContactInformation",
+      "semanticId": null,
+      "supplementalSemanticId": null,
+      "endpoints": [
+        {
+          "interface": "SUBMODEL-3.0",
+          "protocolInformation": {
+            "href": "http://localhost:8080/submodels/aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9Db250YWN0SW5mb3JtYXRpb24",
+            "endpointProtocol": "http",
+            "endpointProtocolVersion": null,
+            "subprotocol": null,
+            "subprotocolBody": null,
+            "subprotocolBodyEncoding": null,
+            "securityAttributes": null
+          }
+        }
+      ]
+    },
+    {
+      "description": null,
+      "displayName": null,
+      "extensions": null,
+      "administration": null,
+      "idShort": null,
+      "id": "https://mm-software.com/submodel/000-001/HandoverDocumentation",
+      "semanticId": null,
+      "supplementalSemanticId": null,
+      "endpoints": [
+        {
+          "interface": "SUBMODEL-3.0",
+          "protocolInformation": {
+            "href": "http://localhost:8080/submodels/aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9IYW5kb3ZlckRvY3VtZW50YXRpb24",
+            "endpointProtocol": "http",
+            "endpointProtocolVersion": null,
+            "subprotocol": null,
+            "subprotocolBody": null,
+            "subprotocolBodyEncoding": null,
+            "securityAttributes": null
+          }
+        }
+      ]
+    }
+  ]
 }
