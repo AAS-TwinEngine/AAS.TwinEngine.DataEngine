@@ -24,8 +24,6 @@ services:
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:develop
     container_name: twinengine-dataengine
-    ports:
-      - "8085:8080"
     build:
       context: ../../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
@@ -213,7 +211,7 @@ services:
       - twinengine-network
 
   pgadmin:
-    image: dpage/pgadmin4:snapshot
+    image: dpage/pgadmin4:9.16
     container_name: pgadmin
     ports:
       - "8081:80"

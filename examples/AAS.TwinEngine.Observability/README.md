@@ -104,7 +104,7 @@ The loader checks the schema, truncates existing data, and loads the requested n
 
 ## K6 Performance Tests
 
-The K6 scripts are under `script`. K6 must be installed locally. Create `script/.env` using the settings documented in [script/README.md](script/README.md), then run:
+The K6 scripts are under `k6-script`. K6 must be installed locally. Create `k6-script/.env` using the settings documented in [script/README.md](k6-script/README.md), then run:
 
 ```powershell
 Set-Location script
