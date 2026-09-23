@@ -12,37 +12,27 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ../../example/nginx/html:/usr/share/nginx/html
-      - ../../example/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ../shared/nginx/html:/usr/share/nginx/html
+      - ../shared/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
     restart: always
     depends_on:
-      aas-template-registry:
-        condition: service_healthy
-      sm-template-registry:
-        condition: service_healthy
-      template-repository:
-        condition: service_healthy
+      template-repository-registry:
+        condition: service_started
     networks:
       - twinengine-network
 
   twinengine-dataengine:
     image: ghcr.io/aas-twinengine/dataengine:develop
+    container_name: twinengine-dataengine
     build:
       context: ../../source
       dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
-    container_name: twinengine-dataengine
     depends_on:
       dpp-plugin:
         condition: service_started
-      otel-lgtm:
-        condition: service_started
-    cpus: ${TWINENGINE_CPU:-0.5}
-    mem_limit: ${TWINENGINE_MEMORY:-1g}
     restart: always
     environment:
       - General__DataEngineRepositoryBaseUrl=http://localhost:8080
-      - General__OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
-      - General__OpenTelemetry__ServiceName=TwinEngine
       - General__CustomerDomainUrl=https://mm-software.com
       - Plugins__Instances__0__Name=RelationalDatabasePlugin
       - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
@@ -66,40 +56,25 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
-      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=.+
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
       - TemplateManagement__AasTemplateRepository__Name=AasTemplateRepository
-      - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository:8081
-      - TemplateManagement__AasTemplateRepository__headerMappings__0__source=Authorization
-      - TemplateManagement__AasTemplateRepository__headerMappings__0__target=Authorization
-      - TemplateManagement__AasTemplateRepository__headerMappings__0__required=false
-      - TemplateManagement__AasTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__AasTemplateRepository__healthEndpoint=/health
       - TemplateManagement__SubmodelTemplateRepository__Name=SubmodelTemplateRepository
-      - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository:8081
-      - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__source=Authorization
-      - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__target=Authorization
-      - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__required=false
-      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/health
       - TemplateManagement__ConceptDescriptionTemplateRepository__Name=ConceptDescriptionTemplateRepository
-      - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://template-repository:8081
-      - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__source=Authorization
-      - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__target=Authorization
-      - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__required=false
-      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/health
       - TemplateManagement__AasTemplateRegistry__Name=AasTemplateRegistry
-      - TemplateManagement__AasTemplateRegistry__baseUrl=http://aas-template-registry:8080
-      - TemplateManagement__AasTemplateRegistry__headerMappings__0__source=Authorization
-      - TemplateManagement__AasTemplateRegistry__headerMappings__0__target=Authorization
-      - TemplateManagement__AasTemplateRegistry__headerMappings__0__required=false
-      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/actuator/health
+      - TemplateManagement__AasTemplateRegistry__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/health
       - TemplateManagement__SubmodelTemplateRegistry__Name=SubmodelTemplateRegistry
-      - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://sm-template-registry:8080
-      - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__source=Authorization
-      - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__target=Authorization
-      - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__required=false
-      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/actuator/health
+      - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/health
     networks:
       - twinengine-network
 
@@ -112,14 +87,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      otel-lgtm:
-        condition: service_started
-    cpus: ${DPP_PLUGIN_CPU:-0.5}
-    mem_limit: ${DPP_PLUGIN_MEMORY:-1g}
     restart: always
     environment:
-      - OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
-      - OpenTelemetry__ServiceName=Plugin.RelationalDatabase
       - Semantics__IndexContextPrefix=_aastwinengineindex_
       - Capabilities__HasShellDescriptor=true
       - Capabilities__HasAssetInformation=true
@@ -147,41 +116,56 @@ services:
     networks:
       - twinengine-network
 
-  template-repository:
-    image: eclipsebasyx/aas-environment:2.0.0-milestone-15
-    container_name: template-repository
+  template-repository-registry:
+    image: eclipsebasyx/aasenvironment-go:1.0.12
+    container_name: template-repository-registry
+    pull_policy: always
+    command: ["/app/aasenvironmentservice"]
     volumes:
-      - ../../example/aas:/application/aas
-      - ../../example/basyx/aas-env.properties:/application/application.properties
+      - ../shared/aas:/app/preconfiguration:ro
     environment:
-      BASYX_EXTERNALURL : http://localhost:8080
+      - SERVER_PORT=8082
+      - CORS_ALLOWEDORIGINS=*
+      - CORS_ALLOWEDHEADERS=*
+      - CORS_ALLOWEDCREDENTIALS=true
+      - CORS_ALLOWEDMETHODS=GET,OPTIONS
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+      - ABAC_ENABLED=false
+      - GENERAL_AASREGISTRYINTEGRATION=true
+      - GENERAL_SUBMODELREGISTRYINTEGRATION=true
+      - GENERAL_DISCOVERYINTEGRATION=true
+      - GENERAL_EXTERNALURL=http://localhost:8080
+      - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
     restart: always
     depends_on:
-      aas-template-registry:
-        condition: service_healthy
-      sm-template-registry:
-        condition: service_healthy
+      basyx_configuration:
+        condition: service_completed_successfully
     networks:
       - twinengine-network
 
-  aas-template-registry:
-    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-15
-    container_name: aas-template-registry
-    restart: always
-    depends_on:
-      - mongo
+  basyx_configuration:
+    container_name: basyx_configuration
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
+    pull_policy: always
     environment:
-      - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
-    networks:
-      - twinengine-network
-
-  sm-template-registry:
-    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-15
-    container_name: sm-template-registry
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
     depends_on:
-      - mongo
-    environment:
-      - SPRING_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+      postgres:
+        condition: service_healthy
     networks:
       - twinengine-network
 
@@ -189,7 +173,7 @@ services:
     image: eclipsebasyx/aas-gui:v2-260801
     container_name: aas-ui
     volumes:
-      - ../../example/logo:/usr/src/app/dist/Logo
+      - ../shared/logo:/usr/src/app/dist/Logo
     environment:
       AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
       SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
@@ -200,38 +184,22 @@ services:
       LOGO_PATH: "MM_Logo.svg"
       PRIMARY_DARK_COLOR: "#00F2E5"
       PRIMARY_LIGHT_COLOR: "#041b2b"
-      ALLOW_EDITING: "false"
-      SM_VIEWER_EDITOR: "false"
-      ALLOW_UPLOADING: "false"
     restart: always
     depends_on:
-      template-repository:
-        condition: service_healthy
-    networks:
-      - twinengine-network
-
-  mongo:
-    image: mongo:8.0
-    container_name: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: mongoAdmin
-      MONGO_INITDB_ROOT_PASSWORD: mongoPassword
+      template-repository-registry:
+        condition: service_started
     networks:
       - twinengine-network
 
   postgres:
-    image: postgres:14.23-alpine3.24
+    image: postgres:16-alpine
     container_name: postgres
-    cpus: ${POSTGRES_CPU:-2}
-    mem_limit: ${POSTGRES_MEMORY:-4g}
-    ports:
-      - "9999:5432"
     environment:
       POSTGRES_DB: twinengine
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
     volumes:
-      - ../../example/postgres:/docker-entrypoint-initdb.d
+      - ../shared/postgres:/docker-entrypoint-initdb.d
       - postgres-data:/var/lib/postgresql/data
     restart: always
     healthcheck:
@@ -253,46 +221,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: always
-    networks:
-      - twinengine-network
-    
-  otel-lgtm:
-    image: grafana/otel-lgtm:0.29.0
-    container_name: lgtm
-    ports:
-      - "3000:3000"
-      - "9090:9090"
-    volumes:
-      - ./grafana/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
-      - ./grafana/provisioning/dashboards/container-dashboard-provider.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/container-dashboard-provider.yaml:ro
-      - ./grafana/dashboards/container-observability.json:/otel-config/grafana/dashboards/container-observability.json:ro
-    networks:
-      - twinengine-network
-
-  docker-resource-exporter:
-    build:
-      context: ./observability
-      dockerfile: Dockerfile.exporter
-    container_name: docker-resource-exporter
-    user: "0:0"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: always
-    networks:
-      - twinengine-network
-
-  otel-docker-stats-collector:
-    image: otel/opentelemetry-collector-contrib:0.153.0
-    container_name: otel-docker-stats-collector
-    user: "0:0"
-    command: ["--config=/etc/otelcol-contrib/config.yaml"]
-    volumes:
-      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      otel-lgtm:
-        condition: service_started
     restart: always
     networks:
       - twinengine-network

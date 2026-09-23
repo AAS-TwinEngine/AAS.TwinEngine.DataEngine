@@ -59,29 +59,6 @@
           "modelType": "Property"
         },
         {
-          "idShort": "AddressOfAdditionalLink",
-          "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "0173-1#02-AAQ326#002"
-              }
-            ]
-          },
-          "qualifiers": [
-            {
-              "kind": "ConceptQualifier",
-              "type": "Multiplicity",
-              "valueType": "xs:string",
-              "value": "ZeroToOne"
-            }
-          ],
-          "valueType": "xs:string",
-          "value": "https://www.mm-software.com/mobile-arbeitsmaschinen/",
-          "modelType": "Property"
-        },
-        {
           "idShort": "Company",
           "semanticId": {
             "type": "ExternalReference",
@@ -131,120 +108,6 @@
             {
               "language": "de",
               "text": "Marketing"
-            }
-          ],
-          "modelType": "MultiLanguageProperty"
-        },
-        {
-          "idShort": "Street",
-          "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "0173-1#02-AAO128#002"
-              }
-            ]
-          },
-          "qualifiers": [
-            {
-              "kind": "ConceptQualifier",
-              "type": "Multiplicity",
-              "valueType": "xs:string",
-              "value": "ZeroToOne"
-            }
-          ],
-          "value": [
-            {
-              "language": "de",
-              "text": "Bahnhofstraße 25"
-            }
-          ],
-          "modelType": "MultiLanguageProperty"
-        },
-        {
-          "idShort": "Zipcode",
-          "description": [
-            {
-              "language": "en",
-              "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-            }
-          ],
-          "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "0173-1#02-AAO129#002"
-              }
-            ]
-          },
-          "qualifiers": [
-            {
-              "kind": "ConceptQualifier",
-              "type": "Multiplicity",
-              "valueType": "xs:string",
-              "value": "ZeroToOne"
-            }
-          ],
-          "value": [
-            {
-              "language": "de",
-              "text": "80335"
-            }
-          ],
-          "modelType": "MultiLanguageProperty"
-        },
-        {
-          "idShort": "StateCounty",
-          "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "0173-1#02-AAO133#002"
-              }
-            ]
-          },
-          "qualifiers": [
-            {
-              "kind": "ConceptQualifier",
-              "type": "Multiplicity",
-              "valueType": "xs:string",
-              "value": "ZeroToOne"
-            }
-          ],
-          "value": [
-            {
-              "language": "de",
-              "text": "Bayern"
-            }
-          ],
-          "modelType": "MultiLanguageProperty"
-        },
-        {
-          "idShort": "NameOfContact",
-          "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "0173-1#02-AAO205#002"
-              }
-            ]
-          },
-          "qualifiers": [
-            {
-              "kind": "ConceptQualifier",
-              "type": "Multiplicity",
-              "valueType": "xs:string",
-              "value": "ZeroToOne"
-            }
-          ],
-          "value": [
-            {
-              "language": "en",
-              "text": "John Doe"
             }
           ],
           "modelType": "MultiLanguageProperty"
@@ -421,6 +284,143 @@
           "modelType": "SubmodelElementCollection"
         },
         {
+          "idShort": "Street",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0173-1#02-AAO128#002"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "kind": "ConceptQualifier",
+              "type": "Multiplicity",
+              "valueType": "xs:string",
+              "value": "ZeroToOne"
+            }
+          ],
+          "value": [
+            {
+              "language": "de",
+              "text": "Bahnhofstraße 25"
+            }
+          ],
+          "modelType": "MultiLanguageProperty"
+        },
+        {
+          "idShort": "Zipcode",
+          "description": [
+            {
+              "language": "en",
+              "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+            }
+          ],
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0173-1#02-AAO129#002"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "kind": "ConceptQualifier",
+              "type": "Multiplicity",
+              "valueType": "xs:string",
+              "value": "ZeroToOne"
+            }
+          ],
+          "value": [
+            {
+              "language": "de",
+              "text": "80335"
+            }
+          ],
+          "modelType": "MultiLanguageProperty"
+        },
+        {
+          "idShort": "StateCounty",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0173-1#02-AAO133#002"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "kind": "ConceptQualifier",
+              "type": "Multiplicity",
+              "valueType": "xs:string",
+              "value": "ZeroToOne"
+            }
+          ],
+          "value": [
+            {
+              "language": "de",
+              "text": "Bayern"
+            }
+          ],
+          "modelType": "MultiLanguageProperty"
+        },
+        {
+          "idShort": "NameOfContact",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0173-1#02-AAO205#002"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "kind": "ConceptQualifier",
+              "type": "Multiplicity",
+              "valueType": "xs:string",
+              "value": "ZeroToOne"
+            }
+          ],
+          "value": [
+            {
+              "language": "en",
+              "text": "John Doe"
+            }
+          ],
+          "modelType": "MultiLanguageProperty"
+        },
+        {
+          "idShort": "AddressOfAdditionalLink",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0173-1#02-AAQ326#002"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "kind": "ConceptQualifier",
+              "type": "Multiplicity",
+              "valueType": "xs:string",
+              "value": "ZeroToOne"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "https://www.mm-software.com/mobile-arbeitsmaschinen/",
+          "modelType": "Property"
+        },
+        {
           "idShort": "Phone0",
           "semanticId": {
             "type": "ExternalReference",
@@ -474,33 +474,6 @@
               "modelType": "MultiLanguageProperty"
             },
             {
-              "idShort": "AvailableTime",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "Dienstags bis Donnerstags, 9-17 Uhr"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
               "idShort": "TypeOfTelephone",
               "description": [
                 {
@@ -528,6 +501,33 @@
               "valueType": "xs:string",
               "value": "Office",
               "modelType": "Property"
+            },
+            {
+              "idShort": "AvailableTime",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "Dienstags bis Donnerstags, 9-17 Uhr"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
             }
           ],
           "modelType": "SubmodelElementCollection"
@@ -586,33 +586,6 @@
               "modelType": "MultiLanguageProperty"
             },
             {
-              "idShort": "AvailableTime",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "Montags, 10-16 Uhr"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
               "idShort": "TypeOfTelephone",
               "description": [
                 {
@@ -640,6 +613,33 @@
               "valueType": "xs:string",
               "value": "Mobile",
               "modelType": "Property"
+            },
+            {
+              "idShort": "AvailableTime",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "Montags, 10-16 Uhr"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
             }
           ],
           "modelType": "SubmodelElementCollection"

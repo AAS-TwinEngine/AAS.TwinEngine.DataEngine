@@ -2,6 +2,9 @@ networks:
   dataengine-network:
     name: dataengine-network
 
+volumes:
+  postgres-data:
+
 services:
   nginx:
     image: nginx:1.31.2
@@ -13,12 +16,8 @@ services:
       - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template
     restart: always
     depends_on:
-      aas-template-registry:
-        condition: service_healthy
-      sm-template-registry:
-        condition: service_healthy
-      template-repository:
-        condition: service_healthy
+      template-repository-registry:
+        condition: service_started
     networks:
       - dataengine-network
 
@@ -58,32 +57,32 @@ services:
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
       - TemplateManagement__AasTemplateRepository__Name=AasTemplateRepository
-      - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository:8081
-      - TemplateManagement__AasTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__AasTemplateRepository__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__AasTemplateRepository__healthEndpoint=/health
       - TemplateManagement__AasTemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__AasTemplateRepository__headerMappings__0__target=Authorization
       - TemplateManagement__AasTemplateRepository__headerMappings__0__required=false
       - TemplateManagement__SubmodelTemplateRepository__Name=SubmodelTemplateRepository
-      - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository:8081
-      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/health
       - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__target=Authorization
       - TemplateManagement__SubmodelTemplateRepository__headerMappings__0__required=false
       - TemplateManagement__ConceptDescriptionTemplateRepository__Name=ConceptDescriptionTemplateRepository
-      - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://template-repository:8081
-      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/actuator/health
+      - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/health
       - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__source=Authorization
       - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__target=Authorization
       - TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__required=false
       - TemplateManagement__AasTemplateRegistry__Name=AasTemplateRegistry
-      - TemplateManagement__AasTemplateRegistry__baseUrl=http://aas-template-registry:8080
-      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/actuator/health
+      - TemplateManagement__AasTemplateRegistry__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/health
       - TemplateManagement__AasTemplateRegistry__headerMappings__0__source=Authorization
       - TemplateManagement__AasTemplateRegistry__headerMappings__0__target=Authorization
       - TemplateManagement__AasTemplateRegistry__headerMappings__0__required=false
       - TemplateManagement__SubmodelTemplateRegistry__Name=SubmodelTemplateRegistry
-      - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://sm-template-registry:8080
-      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/actuator/health
+      - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://template-repository-registry:8082
+      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/health
       - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__source=Authorization
       - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__target=Authorization
       - TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__required=false
@@ -111,47 +110,56 @@ services:
     networks:
       - dataengine-network
 
-  template-repository:
-    image: eclipsebasyx/aas-environment:2.0.0-milestone-11
-    container_name: template-repository
-    ports:
-      - "8081:8081"
+  template-repository-registry:
+    image: eclipsebasyx/aasenvironment-go:1.0.12
+    container_name: template-repository-registry
+    pull_policy: always
+    command: ["/app/aasenvironmentservice"]
     volumes:
-      - ./aas:/application/aas
-      - ./basyx/aas-env.properties:/application/application.properties
+      - ./aas:/app/preconfiguration:ro
     environment:
-      BASYX_EXTERNALURL : http://localhost:8080
+      - SERVER_PORT=8082
+      - CORS_ALLOWEDORIGINS=*
+      - CORS_ALLOWEDHEADERS=*
+      - CORS_ALLOWEDCREDENTIALS=true
+      - CORS_ALLOWEDMETHODS=GET,OPTIONS
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+      - ABAC_ENABLED=false
+      - GENERAL_AASREGISTRYINTEGRATION=true
+      - GENERAL_SUBMODELREGISTRYINTEGRATION=true
+      - GENERAL_DISCOVERYINTEGRATION=true
+      - GENERAL_EXTERNALURL=http://localhost:8080
+      - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
     restart: always
     depends_on:
-      aas-template-registry:
-        condition: service_healthy
-      sm-template-registry:
-        condition: service_healthy
+      basyx_configuration:
+        condition: service_completed_successfully
     networks:
       - dataengine-network
 
-  aas-template-registry:
-    image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-milestone-11
-    container_name: aas-template-registry
-    ports:
-      - '8082:8080'
-    restart: always
-    depends_on:
-      - mongo
+  basyx_configuration:
+    container_name: basyx_configuration
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
+    pull_policy: always
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
-    networks:
-      - dataengine-network
-
-  sm-template-registry:
-    image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-milestone-11
-    container_name: sm-template-registry
-    ports:
-      - '8083:8080'
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTestDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
     depends_on:
-      - mongo
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongoAdmin:mongoPassword@mongo:27017
+      postgres:
+        condition: service_healthy
     networks:
       - dataengine-network
 
@@ -175,16 +183,25 @@ services:
       ALLOW_UPLOADING: "false"
     restart: always
     depends_on:
-      template-repository:
-        condition: service_healthy
+      template-repository-registry:
+        condition: service_started
     networks:
       - dataengine-network
 
-  mongo:
-    image: mongo:8.0
-    container_name: mongo
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
     environment:
-      MONGO_INITDB_ROOT_USERNAME: mongoAdmin
-      MONGO_INITDB_ROOT_PASSWORD: mongoPassword
+      POSTGRES_DB: basyxTestDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d basyxTestDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - dataengine-network
