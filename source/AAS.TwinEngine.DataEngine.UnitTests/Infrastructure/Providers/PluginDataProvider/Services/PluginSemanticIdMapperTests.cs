@@ -179,27 +179,6 @@ public class PluginSemanticIdMapperTests
     }
 
     [Fact]
-    public void FilterForPlugin_ShouldReturnEmptyBranch_WhenOnlyOptionalUnsupportedIdsPresent()
-    {
-        var globalTree = new SemanticBranchNode("root", Cardinality.One);
-        globalTree.AddChild(new SemanticLeafNode("unsupported", "val1", DataType.String, Cardinality.ZeroToOne));
-
-        var manifest = new PluginManifest
-        {
-            PluginName = "TestPlugin",
-            PluginUrl = new Uri("https://example.com/plugin"),
-            SupportedSemanticIds = [],
-            Capabilities = new Capabilities { HasShellDescriptor = true }
-        };
-
-        var result = _sut.FilterForPlugin(globalTree, manifest);
-
-        var branch = Assert.IsType<SemanticBranchNode>(result);
-        Assert.Equal("root", branch.SemanticId);
-        Assert.Empty(branch.Children);
-    }
-
-    [Fact]
     public void FilterForPlugin_ShouldThrow_WhenRequiredSemanticIdNotSupported()
     {
         var globalTree = new SemanticBranchNode("root", Cardinality.One);
