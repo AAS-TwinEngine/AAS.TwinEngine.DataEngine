@@ -67,7 +67,7 @@ Inside the Compose network, PostgreSQL is available at host `postgres`, port `54
 
 | Service                        | Image or build                                     | Purpose                                              |
 | ------------------------------ | -------------------------------------------------- | ---------------------------------------------------- |
-| `nginx`                        | `nginx:1.31.2`                                     | API gateway and UI proxy                             |
+| `nginx`                        | `nginx:1.31.6`                                     | API gateway and UI proxy                             |
 | `twinengine-dataengine`        | Local build or GHCR image                          | TwinEngine DataEngine with OpenTelemetry export      |
 | `dpp-plugin`                   | Local build or GHCR image                          | dpp plugin with OpenTelemetry export |
 | `template-repository-registry` | `eclipsebasyx/aasenvironment-go:1.0.12`            | BaSyx Go AAS environment and repositories            |

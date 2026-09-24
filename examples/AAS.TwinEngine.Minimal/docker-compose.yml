@@ -7,7 +7,7 @@ volumes:
 
 services:
   nginx:
-    image: nginx:1.31.2
+    image: nginx:1.31.6
     container_name: nginx
     ports:
       - "8080:80"
@@ -22,7 +22,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:develop
+    image: ghcr.io/aas-twinengine/dataengine:v1.2.0
     container_name: twinengine-dataengine
     build:
       context: ../../source
@@ -79,7 +79,7 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:develop
+    image: ghcr.io/aas-twinengine/plugindpp:v1.2.0
     container_name: dpp-plugin
     build:
       context: ../../../AAS.TwinEngine.Plugin.DPP/source
@@ -93,6 +93,8 @@ services:
       - Capabilities__HasShellDescriptor=true
       - Capabilities__HasAssetInformation=true
       - Capabilities__HasAssetIdSearch=true
+      - Capabilities__HasAssetKindTypeFilter=true
+      - Capabilities__HasSubmodelBatch=true
       - RelationalDatabaseConfiguration__ConnectionString=Host=postgres;Port=5432;Database=twinengine;Username=postgres;Password=admin
       - ExtractionRules__SubmodelNameExtractionRules__0__SubmodelName=NamePlate
       - ExtractionRules__SubmodelNameExtractionRules__0__pattern__0=Nameplate
