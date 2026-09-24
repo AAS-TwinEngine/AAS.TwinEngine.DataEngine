@@ -128,7 +128,7 @@ The docker-compose setup includes the following services, all running on a share
 | **twinengine-dataengine**        | -    | `ghcr.io/aas-twinengine/dataengine:v1.2.0`         | Main TwinEngine DataEngine service    |
 | **template-registry-repository** | -    | `eclipsebasyx/aasenvironment-go:1.0.12`            | AAS Environment & Submodel repository |
 | **dpp-plugin**                   | -    | `ghcr.io/aas-twinengine/plugindpp:v1.2.0`          | Digital Product Passport Plugin       |
-| **aas-web-ui**                   | -    | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | BasyX Go configuration service        |
+| **basyx_configuration**                   | -    | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | BasyX Go configuration service        |
 | **aas-web-ui**                   | -    | `eclipsebasyx/aas-gui:v2-260801`                   | Web User Interface (served via nginx) |
 
 ### Infrastructure Services
