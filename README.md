@@ -96,6 +96,6 @@ When a client requests AAS data (shell descriptor, submodel, or submodel element
    ```
    http://localhost:8080/aas-ui/
    ```
-- For more info : [TwinEngine Demonstrator Setup](https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/blob/develop/example/README.md)
+- For more info : [TwinEngine Demonstrator Setup](examples/AAS.TwinEngine.Minimal/README.md)
 ---
 
