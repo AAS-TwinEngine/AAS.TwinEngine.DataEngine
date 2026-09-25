@@ -14,6 +14,19 @@
 -- Marking Data
 -- ============================================================
 
+CREATE TABLE IF NOT EXISTS "TechnicalPropertyArea" (
+    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
+    "Index" INT NOT NULL,
+    "Length" NUMERIC,
+    "Width" NUMERIC,
+    "Height" NUMERIC,
+    UNIQUE ("AssetId", "Index")
+);
+
+CREATE INDEX IF NOT EXISTS ix_technical_property_area_asset
+ON "TechnicalPropertyArea" ("AssetId", "Index");
+
 
 CREATE TABLE IF NOT EXISTS "Marking" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

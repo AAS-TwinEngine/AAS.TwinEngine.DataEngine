@@ -58,16 +58,6 @@ CREATE TABLE IF NOT EXISTS "Asset" (
     "ExplanatoryStatement" TEXT
 );
 
-CREATE TABLE IF NOT EXISTS "TechnicalPropertyArea" (
-    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "AssetId" INT NOT NULL REFERENCES "Asset"("Id") ON DELETE CASCADE,
-    "Index" INT NOT NULL,
-    "Length" NUMERIC,
-    "Width" NUMERIC,
-    "Height" NUMERIC,
-    UNIQUE ("AssetId", "Index")
-);
-
 CREATE TABLE IF NOT EXISTS "SpecificAssetIds" (
     "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "ProductId" VARCHAR(50) NOT NULL REFERENCES "Asset"("ProductId") ON DELETE CASCADE,
@@ -80,9 +70,6 @@ ON "Asset"("ProductId");
 
 CREATE INDEX IF NOT EXISTS ix_asset_aas_id
 ON "Asset" ("AasId");
-
-CREATE INDEX IF NOT EXISTS ix_technical_property_area_asset
-ON "TechnicalPropertyArea" ("AssetId", "Index");
 
 CREATE INDEX IF NOT EXISTS ix_asset_global_asset_id
 ON "Asset" ("GlobalAssetId");
