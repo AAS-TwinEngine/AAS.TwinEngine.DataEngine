@@ -1,3 +1,13 @@
+INSERT INTO "TechnicalPropertyArea" ("AssetId", "Index", "Length", "Width", "Height")
+SELECT "Id", 0, dimensions."Length", dimensions."Width", dimensions."Height"
+FROM "Asset"
+JOIN (VALUES
+    ('000-001', 120.5::NUMERIC, 75.0::NUMERIC, 65.0::NUMERIC),
+    ('000-002', 320.0::NUMERIC, 220.0::NUMERIC, 18.5::NUMERIC),
+    ('001-001', 50.0::NUMERIC, 30.0::NUMERIC, 110.0::NUMERIC)
+) AS dimensions("ProductId", "Length", "Width", "Height")
+    ON dimensions."ProductId" = "Asset"."ProductId";
+
 INSERT INTO "Marking"
 ("Index","MarkingName","DesignationOfCertificateOrApproval","IssueDate","ExpiryDate",
  "MarkingAdditionalText","MarkingFile")
