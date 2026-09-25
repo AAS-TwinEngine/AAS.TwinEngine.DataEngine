@@ -127,7 +127,7 @@ BEGIN
             "ManufacturerName","ManufacturerProductDesignation_en","ManufacturerProductDesignation_de",
             "ManufacturerProductRoot_en","ManufacturerProductRoot_de",
             "ManufacturerProductFamily_en","ManufacturerProductFamily_de",
-            "CompanyLogo","ManufacturerArticleNumber","ManufacturerOrderCode","Length","Width","Height",
+            "CompanyLogo","ManufacturerArticleNumber","ManufacturerOrderCode",
             "ProductImage","ManufacturerLogo","TextStatement_en","TextStatement_de",
             "ValidDate","PcfCalculationMethod","LifeCyclePhase","PcfCO2eq",
             "ReferenceImpactUnitForCalculation","QuantityOfMeasureForCalculation",
@@ -176,9 +176,6 @@ BEGIN
             'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
             lpad(asset_sequence::text, 6, '0'),
             'EEA-EX-200-S/47-Q' || asset_sequence,
-            round((100 + (asset_sequence % 500))::numeric, 1),
-            round((50 + (asset_sequence % 300))::numeric, 1),
-            round((20 + (asset_sequence % 200))::numeric, 1),
             c_product_image_url,
             'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
             'Restricted use',
@@ -193,6 +190,15 @@ BEGIN
             '2035-12-24T14:30:00Z'::TIMESTAMPTZ,
             c_dummy_document_viewer_url
         ) RETURNING "Id" INTO asset_id;
+
+        INSERT INTO "TechnicalPropertyArea" ("AssetId", "Index", "Length", "Width", "Height")
+        VALUES (
+            asset_id,
+            0,
+            round((100 + (asset_sequence % 500))::numeric, 1),
+            round((50 + (asset_sequence % 300))::numeric, 1),
+            round((20 + (asset_sequence % 200))::numeric, 1)
+        );
 
         -- ============================================================
         -- SPECIFIC ASSET IDS  (3 per asset)

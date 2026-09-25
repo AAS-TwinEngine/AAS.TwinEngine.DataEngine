@@ -9,7 +9,7 @@ INSERT INTO "Asset" (
     "AddressInformationNationalCode_en","AddressInformationNationalCode_de","ManufacturerName","ManufacturerProductDesignation_en",
     "ManufacturerProductDesignation_de","ManufacturerProductRoot_en","ManufacturerProductRoot_de",
     "ManufacturerProductFamily_en","ManufacturerProductFamily_de","CompanyLogo","ManufacturerArticleNumber",
-    "ManufacturerOrderCode","Length","Width","Height","ProductImage","ManufacturerLogo","TextStatement_en","TextStatement_de",
+    "ManufacturerOrderCode","ProductImage","ManufacturerLogo","TextStatement_en","TextStatement_de",
     "ValidDate","PcfCalculationMethod","LifeCyclePhase","PcfCO2eq","ReferenceImpactUnitForCalculation",
     "QuantityOfMeasureForCalculation","PublicationDate","ExpirationDate","ExplanatoryStatement"
 ) VALUES
@@ -54,9 +54,6 @@ TRUE,
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 '123456',
 'EEA-EX-200-S/47-Q3',
-120.5,
-75.0,
-65.0,
 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg',
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 'Restricted use',
@@ -113,9 +110,6 @@ FALSE,
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 '123456',
 'EEA-EX-200-S/47-Q4',
-320.0,
-220.0,
-18.5,
 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg',
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 'Restricted use',
@@ -172,9 +166,6 @@ TRUE,
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 '123456',
 'EEA-EX-200-S/47-Q5',
-50.0,
-30.0,
-110.0,
 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg',
 'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
 'Restricted use',
@@ -190,6 +181,16 @@ TRUE,
 ('https://raw.githubusercontent.com/AAS-TwinEngine/' ||
 'AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf')
 );
+
+INSERT INTO "TechnicalPropertyArea" ("AssetId", "Index", "Length", "Width", "Height")
+SELECT "Id", 0, dimensions."Length", dimensions."Width", dimensions."Height"
+FROM "Asset"
+JOIN (VALUES
+    ('000-001', 120.5::NUMERIC, 75.0::NUMERIC, 65.0::NUMERIC),
+    ('000-002', 320.0::NUMERIC, 220.0::NUMERIC, 18.5::NUMERIC),
+    ('001-001', 50.0::NUMERIC, 30.0::NUMERIC, 110.0::NUMERIC)
+) AS dimensions("ProductId", "Length", "Width", "Height")
+    ON dimensions."ProductId" = "Asset"."ProductId";
 
 -- ============================================================
 -- Specific Asset IDs
