@@ -45,12 +45,6 @@ services:
       - Plugins__Instances__0__healthEndpoint=/healthz
       - Plugins__MultiLanguageProperty__DefaultLanguages__0=en
       - Plugins__MultiLanguageProperty__DefaultLanguages__1=de
-      - Plugins__Instances__0__headerMappings__0__source=Authorization
-      - Plugins__Instances__0__headerMappings__0__target=X-Auth-Token
-      - Plugins__Instances__0__headerMappings__0__required=false
-      - Plugins__Instances__0__headerMappings__1__source=X-Organization-Id
-      - Plugins__Instances__0__headerMappings__1__target=X-Tenant-Context
-      - Plugins__Instances__0__headerMappings__1__required=false
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=TechnicalData
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
@@ -148,7 +142,6 @@ services:
   template-repository-registry:
     image: eclipsebasyx/aasenvironment-go:1.0.12
     container_name: template-repository-registry
-    pull_policy: always
     command: ["/app/aasenvironmentservice"]
     volumes:
       - ../shared/aas:/app/preconfiguration:ro
@@ -182,7 +175,6 @@ services:
   basyx_configuration:
     container_name: basyx_configuration
     image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
-    pull_policy: always
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
