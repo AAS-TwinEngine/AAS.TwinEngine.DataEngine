@@ -104,6 +104,10 @@ internal static class TestData
                      "assetKind": "Type",
                      "globalAssetId": "https://example.com/ids/F/5350_5407_2522_6562",
                      "id": "https://example.com/ids/aas/1170_1160_3052_6568/test/aas",
+                     "defaultThumbnail": {
+                       "path": "https://example.com/share/img/10080308_DE.jpg",
+                       "contentType": "image/svg\u002Bxml"
+                     },
                      "specificAssetIds": [
                        {
                          "name": "LotNumber",
@@ -164,7 +168,11 @@ internal static class TestData
                            "name": "SerialNumber",
                            "value": "Test"
                          }
-                       ]
+                       ],
+                       "defaultThumbnail": {
+                         "path": "https://example.com/share/img/10080308_DE.jpg",
+                         "contentType": "image/svg\u002Bxml"
+                       }
                      },
                      "submodels": [
                        {
