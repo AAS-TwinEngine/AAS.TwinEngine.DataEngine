@@ -4,11 +4,11 @@ DECLARE
         NULLIF(current_setting('app.asset_count', true), '')::INT,
         1000
     );
-    c_product_image_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg';
-    c_checkmark_image_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png';
-    c_dummy_document_pdf_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf';
-    c_dummy_document_viewer_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf';
-    c_dummy_document_preview_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg';
+    c_product_image_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg';
+    c_checkmark_image_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/checkmark.png';
+    c_dummy_document_pdf_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf';
+    c_dummy_document_viewer_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf';
+    c_dummy_document_preview_url CONSTANT TEXT := 'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg';
     c_mm_germany CONSTANT TEXT := 'M&M Germany';
     c_mm_india CONSTANT TEXT := 'M&M India';
     c_mm_china CONSTANT TEXT := 'M&M China';
@@ -173,11 +173,11 @@ BEGIN
             CASE asset_sequence % 2 WHEN 1 THEN 'Kamera' ELSE 'Parfuem' END,
             CASE asset_sequence % 2 WHEN 1 THEN 'Electronics' ELSE 'Cosmetics' END,
             CASE asset_sequence % 2 WHEN 1 THEN 'Elektronik' ELSE 'Kosmetika' END,
-            'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
+            'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/logo/MM_Logo.svg',
             lpad(asset_sequence::text, 6, '0'),
             'EEA-EX-200-S/47-Q' || asset_sequence,
             c_product_image_url,
-            'https://mmsoftwaregmbh.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638518734598723853',
+            'https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/logo/MM_Logo.svg',
             'Restricted use',
             'Eingeschraenkte Nutzung',
             ('2035-01-01'::DATE + make_interval(months => asset_sequence % 12))::DATE,

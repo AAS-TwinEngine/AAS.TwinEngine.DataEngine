@@ -177,7 +177,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "1",
@@ -201,7 +201,7 @@
                     "0173-1#02-ABH999#003_en": "DSLR, Camera, Photography, User Guide, Setup",
                     "0173-1#02-ABH999#003_de": "DSLR, Kamera, Fotografie, Benutzerhandbuch, Einrichtung"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 },
                 {
                   "0173-1#02-AAN468#008": [
@@ -220,7 +220,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "1.1",
@@ -244,7 +244,7 @@
                     "0173-1#02-ABH999#003_en": "Mirrorless, Camera, Specs, Imaging, Performance",
                     "0173-1#02-ABH999#003_de": "Spiegellos, Kamera, Spezifikationen, Bildgebung, Leistung"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 }
               ]
             },
@@ -293,7 +293,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "2.1",
@@ -317,7 +317,7 @@
                     "0173-1#02-ABH999#003_en": "Lens, Maintenance, Cleaning, Professional, Care",
                     "0173-1#02-ABH999#003_de": "Objektiv, Wartung, Reinigung, Professionell, Pflege"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 }
               ]
             },
@@ -366,7 +366,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "2.3",
@@ -390,7 +390,7 @@
                     "0173-1#02-ABH999#003_en": "Wide-Angle, Lens, Installation, Setup, Kit",
                     "0173-1#02-ABH999#003_de": "Weitwinkel, Objektiv, Installation, Einrichtung, Set"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 }
               ]
             },
@@ -462,7 +462,7 @@
               },
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
-              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/checkmark.png",
               "0112/2///61987#ABB146#007": "0044"
             }
           ]
@@ -647,7 +647,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "0.9",
@@ -671,7 +671,7 @@
                     "0173-1#02-ABH999#003_en": "Telephoto, Lens, Data Sheet, Specifications, Optics",
                     "0173-1#02-ABH999#003_de": "Teleobjektiv, Objektiv, Datenblatt, Spezifikationen, Optik"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 }
               ]
             },
@@ -720,7 +720,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "1.2",
@@ -744,7 +744,7 @@
                     "0173-1#02-ABH999#003_en": "Safety, Camera, Accessories, Guidelines, Handling",
                     "0173-1#02-ABH999#003_de": "Sicherheit, Kamera, Zubehör, Richtlinien, Handhabung"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 }
               ]
             },
@@ -816,7 +816,7 @@
               },
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
-              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/checkmark.png",
               "0112/2///61987#ABB146#007": "0047"
             }
           ]
@@ -1058,7 +1058,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "1.2",
@@ -1082,7 +1082,7 @@
                     "0173-1#02-ABH999#003_en": "Safety, Camera, Accessories, Guidelines, Handling",
                     "0173-1#02-ABH999#003_de": "Sicherheit, Kamera, Zubehör, Richtlinien, Handhabung"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 }
               ]
             },
@@ -1157,7 +1157,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "1",
@@ -1181,7 +1181,7 @@
                     "0173-1#02-ABH999#003_en": "Perfume, Fragrance, Luxury, Catalog, Collection",
                     "0173-1#02-ABH999#003_de": "Parfum, Duft, Luxus, Katalog, Kollektion"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 },
                 {
                   "0173-1#02-AAN468#008": [
@@ -1200,7 +1200,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "1.4",
@@ -1224,7 +1224,7 @@
                     "0173-1#02-ABH999#003_en": "Perfume, Fragrance, Luxury, Catalog, Collection",
                     "0173-1#02-ABH999#003_de": "Parfum, Duft, Luxus, Katalog, Kollektion"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 },
                 {
                   "0173-1#02-AAN468#008": [
@@ -1243,7 +1243,7 @@
                   ],
                   "0173-1#02-ABK126#002": [
                     {
-                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.pdf"
+                      "0173-1#02-ABK126#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
                     }
                   ],
                   "0173-1#02-AAP003#005": "2",
@@ -1267,7 +1267,7 @@
                     "0173-1#02-ABH999#003_en": "Packaging, Perfume, Bottles, Caps, Compliance",
                     "0173-1#02-ABH999#003_de": "Verpackung, Parfum, Flaschen, Verschlüsse, Konformität"
                   },
-                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/dummy_document.jpg"
+                  "0173-1#02-ABK127#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
                 }
               ]
             },
@@ -1339,7 +1339,7 @@
               },
               "0112/2///61987#ABO097#001": "2022-01-01",
               "0112/2///61987#ABH830#002": "2022-01-01",
-              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/checkmark.png",
+              "0112/2///61987#ABO100#002": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/checkmark.png",
               "0112/2///61987#ABB146#007": "0044"
             }
           ]

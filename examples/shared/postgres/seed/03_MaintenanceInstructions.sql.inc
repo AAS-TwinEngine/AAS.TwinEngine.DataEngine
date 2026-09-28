@@ -30,7 +30,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Stromversorgung trennen; Gegen Wiedereinschalten sichern; Spannungsfreiheit prüfen',
 6,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 2,
 'Qualified maintenance technician required',
 'Qualifizierter Wartungstechniker erforderlich',
@@ -47,7 +47,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Schutzhandschuhe tragen; System trennen; Filter entsorgen',
 12,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 1,
 'Certified technician required',
 'Zertifizierter Techniker erforderlich',
@@ -64,7 +64,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Fahrzeug sichern; Unterstellböcke verwenden; Schutzbrille tragen',
 3,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 0,
 'IEC/EN 60079-14 knowledge required',
 'IEC/EN 60079-14 Kenntnisse erforderlich',
@@ -81,7 +81,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Motor abkühlen lassen; Deckel langsam öffnen; Kontakt vermeiden',
 4,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 1,
 'IEC/EN 60079-19 knowledge required',
 'IEC/EN 60079-19 Kenntnisse erforderlich',
@@ -98,7 +98,7 @@ INSERT INTO "MaintenanceInstructionsForSpecificInterval" (
 'Batterie trennen; Funken vermeiden; Handschuhe tragen',
 9,'months',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 2,
 'IEC/EN 61009-1 knowledge required',
 'IEC/EN 61009-1 Kenntnisse erforderlich',
@@ -361,7 +361,7 @@ VALUES
 'System is powered off','System ist ausgeschaltet',
 'Power still active','Strom noch aktiv',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 5,'minutes'),
 (1,'MS-002',0,0,NULL,2,TRUE,FALSE,
 'Apply safety lockout','Sicherheitsverriegelung anwenden',
@@ -370,7 +370,7 @@ VALUES
 'Lockout applied','Verriegelung aktiv',
 'Lockout failed','Verriegelung fehlgeschlagen',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 10,'minutes'),
 (0,'MS-003',1,0,NULL,2,TRUE,FALSE,
 'Inspect equipment','Gerät prüfen',
@@ -379,7 +379,7 @@ VALUES
 'No damage found','Keine Schäden gefunden',
 'Damage detected','Schaden festgestellt',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 15,'minutes'),
 (0,'MS-004',2,20,'ml',3,TRUE,FALSE,
 'Replace filter','Filter austauschen',
@@ -388,7 +388,7 @@ VALUES
 'Filter OK','Filter in Ordnung',
 'Fit issue','Problem erkannt',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 20,'minutes'),
 (1,'MS-005',1,50,'ml',1,TRUE,FALSE,
 'Add lubricant','Schmiermittel hinzufügen',
@@ -397,7 +397,7 @@ VALUES
 'Lubrication OK','Schmierung OK',
 'Leak found','Leck erkannt',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 10,'minutes'),
 (2,'MS-006',0,0,NULL,2,TRUE,FALSE,
 'Test system','System testen',
@@ -406,7 +406,7 @@ VALUES
 'Test passed','Test bestanden',
 'Test failed','Test fehlgeschlagen',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 15,'minutes'),
 (1,'MS-007',0,0,NULL,1,TRUE,FALSE,
 'Reconnect power','Stromversorgung wiederherstellen',
@@ -415,7 +415,7 @@ VALUES
 'Power OK','Strom OK',
 'Failure','Fehler',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 5,'minutes'),
 (1,'MS-008',0,0,NULL,1,TRUE,TRUE,
 'End maintenance','Wartung beenden',
@@ -424,7 +424,7 @@ VALUES
 'Completed','Abgeschlossen',
 '-','-',
 ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-'main/example/data/dummy_document.pdf'),
+'main/examples/shared/data/dummy_document.pdf'),
 5,'minutes');
 
 INSERT INTO "MaintenanceInstructionsForSpecificIntervalMaintenanceStep"
