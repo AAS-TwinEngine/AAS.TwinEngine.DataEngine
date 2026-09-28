@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.PlaywrightTests.AasRepository;
@@ -12,10 +12,10 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_WithLimit_ShouldReturnExpectedPageSize()
     {
         // Arrange
-        const string url = "/shells?limit=1";
+        const string Url = "/shells?limit=1";
 
         // Act
-        var response = await ApiContext.GetAsync(url);
+        var response = await ApiContext.GetAsync(Url);
 
         // Assert
         AssertSuccessResponse(response);
@@ -73,8 +73,8 @@ public class AasRepositoryTests : ApiTestBase
     {
         // Arrange
         var assetId = EncodeBase64Url("{\"name\":\"SerialNumber\",\"value\":\"SN-1111\"}");
-        var idShort = "MM03";
-        var url = $"/shells?assetIds={assetId}&idShort={idShort}";
+        const string IdShort = "MM03";
+        var url = $"/shells?assetIds={assetId}&idShort={IdShort}";
 
         // Act
         var response = await ApiContext.GetAsync(url);
@@ -94,10 +94,10 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_WithCursor_ShouldReturnNextPage()
     {
         // Arrange
-        const string firstPageUrl = "/shells?limit=1";
+        const string FirstPageUrl = "/shells?limit=1";
 
         // Act
-        var firstPageResponse = await ApiContext.GetAsync(firstPageUrl);
+        var firstPageResponse = await ApiContext.GetAsync(FirstPageUrl);
 
         // Assert first page
         AssertSuccessResponse(firstPageResponse);
@@ -129,10 +129,10 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_WithInvalidLimit_ShouldReturnBadRequest()
     {
         // Arrange
-        const string url = "/shells?limit=0";
+        const string Url = "/shells?limit=0";
 
         // Act
-        var response = await ApiContext.GetAsync(url);
+        var response = await ApiContext.GetAsync(Url);
 
         // Assert
         Assert.Equal(400, response.Status);
@@ -142,10 +142,10 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_WithInvalidCursorEncoding_ShouldReturnBadRequest()
     {
         // Arrange
-        const string url = "/shells?cursor=https://mm-software.com/ids/aas/000-001";
+        const string Url = "/shells?cursor=https://mm-software.com/ids/aas/000-001";
 
         // Act
-        var response = await ApiContext.GetAsync(url);
+        var response = await ApiContext.GetAsync(Url);
 
         // Assert
         Assert.Equal(400, response.Status);
@@ -155,11 +155,11 @@ public class AasRepositoryTests : ApiTestBase
     public async Task GetAllShells_WithUnknownCursorValue_ShouldReturnInternalServerError()
     {
         // Arrange
-        const string firstPageUrl = "/shells?limit=1";
+        const string FirstPageUrl = "/shells?limit=1";
         var unknownCursor = EncodeBase64Url("https://mm-software.com/ids/aas/000-004");
 
         // Act
-        var firstPageResponse = await ApiContext.GetAsync(firstPageUrl);
+        var firstPageResponse = await ApiContext.GetAsync(FirstPageUrl);
         var unknownCursorResponse = await ApiContext.GetAsync($"/shells?limit=1&cursor={unknownCursor}");
 
         // Assert
