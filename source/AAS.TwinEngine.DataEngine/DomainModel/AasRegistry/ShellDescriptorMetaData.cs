@@ -2,6 +2,8 @@
 
 using AasCore.Aas3_1;
 
+using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+
 namespace AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 
 public class ShellDescriptorMetaData
@@ -20,6 +22,9 @@ public class ShellDescriptorMetaData
 
     [JsonPropertyName("assetType")]
     public string? AssetType { get; set; }
+
+    [JsonPropertyName("defaultThumbnail")]
+    public DefaultThumbnailData? DefaultThumbnail { get; set; }
 
     [JsonIgnore]
     public AasCore.Aas3_1.AssetKind? ParsedAssetKind

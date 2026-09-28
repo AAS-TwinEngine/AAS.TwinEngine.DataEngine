@@ -7,6 +7,7 @@ public class ShellDescriptorData
     public string Id { get; set; } = null!;
     public string? AssetKind { get; set; }
     public string? AssetType { get; set; }
+    public DefaultThumbnailData? DefaultThumbnail { get; set; }
     public IList<SpecificAssetIdsData>? SpecificAssetIds { get; set; } = [];
 }
 

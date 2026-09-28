@@ -143,6 +143,11 @@ public class AasRepositoryServiceTests
             AssetKind = "Instance",
             AssetType = "plugin-asset-type",
             GlobalAssetId = "plugin-global-asset-id",
+            DefaultThumbnail = new DefaultThumbnailData
+            {
+                Path = "/images/shell.png",
+                ContentType = "image/png"
+            },
             SpecificAssetIds = [new SpecificAssetId("ManufacturerId", "PluginManufacturer")]
         };
 
@@ -161,6 +166,9 @@ public class AasRepositoryServiceTests
         Assert.Equal(AssetKind.Instance, result.AssetInformation.AssetKind);
         Assert.Equal("plugin-asset-type", result.AssetInformation.AssetType);
         Assert.Equal("plugin-global-asset-id", result.AssetInformation.GlobalAssetId);
+        Assert.NotNull(result.AssetInformation.DefaultThumbnail);
+        Assert.Equal("/images/shell.png", result.AssetInformation.DefaultThumbnail.Path);
+        Assert.Equal("image/png", result.AssetInformation.DefaultThumbnail.ContentType);
         var specificAssetId = Assert.Single(result.AssetInformation.SpecificAssetIds!);
         Assert.Equal("PluginManufacturer", specificAssetId.Value);
     }
@@ -193,6 +201,40 @@ public class AasRepositoryServiceTests
         Assert.Equal("TemplateIdShort", result.IdShort);
         Assert.Equal(AssetKind.Type, result.AssetInformation!.AssetKind);
         Assert.Equal("template-asset-type", result.AssetInformation.AssetType);
+    }
+
+    [Fact]
+    public async Task GetShellByIdAsync_WhenMetadataOmitsThumbnail_UsesAssetInformationThumbnail()
+    {
+        var cancellationToken = CancellationToken.None;
+        var shellTemplate = CreateShellTemplateWithAssetInformation();
+        var manifests = new List<PluginManifest>();
+        var metadata = new ShellDescriptorMetaData { Id = "aas-1" };
+        var assetData = new AssetData
+        {
+            DefaultThumbnail = new DefaultThumbnailData
+            {
+                Path = "/images/fallback.png",
+                ContentType = "image/png"
+            }
+        };
+
+        _templateService.GetShellTemplateAsync(AasIdentifier, cancellationToken).Returns(shellTemplate);
+        _pluginManifestConflictHandler.Manifests.Returns(manifests);
+        _pluginDataHandler
+            .GetDataForShellDescriptorAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(metadata);
+        _pluginDataHandler
+            .GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken)
+            .Returns(assetData);
+
+        var result = await _sut.GetShellByIdAsync(AasIdentifier, cancellationToken);
+
+        Assert.NotNull(result?.AssetInformation?.DefaultThumbnail);
+        Assert.Equal("/images/fallback.png", result.AssetInformation.DefaultThumbnail.Path);
+        Assert.Equal("image/png", result.AssetInformation.DefaultThumbnail.ContentType);
+        await _pluginDataHandler.Received(1)
+            .GetDataForAssetInformationByIdAsync(manifests, AasIdentifier, cancellationToken);
     }
 
     [Fact]
