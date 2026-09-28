@@ -18,7 +18,7 @@
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
-        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product1.jpg"
+        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg"
       }
     }
   },
@@ -42,7 +42,7 @@
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
-        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product2.jpg"
+        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product2.jpg"
       }
     }
   },
@@ -61,7 +61,7 @@
     "assetInformationData": {
       "defaultThumbnail": {
         "contentType": "image/jpeg",
-        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/data/product3.jpg"
+        "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product3.jpg"
       }
     }
   }

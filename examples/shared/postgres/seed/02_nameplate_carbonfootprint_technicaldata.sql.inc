@@ -14,19 +14,19 @@ INSERT INTO "Marking"
 VALUES
 (0,'0173-1#07-DAA603#004','KEMA99IECEX1105/128','2022-01-01','2030-01-01','additional information on the marking - 00',
  ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/checkmark.png')),
+    'main/examples/shared/data/checkmark.png')),
 (0,'0173-1#07-DAA603#005','KEMA99IECEX1105/129','2022-02-01','2030-02-01','additional information on the marking - 01',
  ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/checkmark.png')),
+    'main/examples/shared/data/checkmark.png')),
 (1,'0173-1#07-DAA603#006','KEMA99IECEX1105/130','2022-03-01','2030-03-01','additional information on the marking - 02',
  ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/checkmark.png')),
+    'main/examples/shared/data/checkmark.png')),
 (0,'0173-1#07-DAA603#007','KEMA99IECEX1105/131','2022-04-01','2030-04-01','additional information on the marking - 03',
  ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/checkmark.png')),
+    'main/examples/shared/data/checkmark.png')),
 (1,'0173-1#07-DAA603#008','KEMA99IECEX1105/132','2022-05-01','2030-05-01','additional information on the marking - 04',
  ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/checkmark.png'));
+    'main/examples/shared/data/checkmark.png'));
 
 -- ============================================================
 -- Asset-Marking Relationships
@@ -57,7 +57,7 @@ VALUES
     1,
     0,
     ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/product1.jpg'),
+    'main/examples/shared/data/product1.jpg'),
     'Front view of the machine showing external and structure',
     'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -66,7 +66,7 @@ VALUES
     2,
     1,
     ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'develop/example/data/product1-1.png'),
+    'develop/examples/shared/data/product1-1.png'),
     'Side view of the machine showing external and structure',
     'Seitenansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -75,7 +75,7 @@ VALUES
     3,
     0,
     ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/product2.jpg'),
+    'main/examples/shared/data/product2.jpg'),
     'Front view of the machine showing external and structure',
     'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -84,7 +84,7 @@ VALUES
     4,
     1,
     ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'develop/example/data/product3-1.png'),
+    'develop/examples/shared/data/product3-1.png'),
     'Side view of the machine showing external and structure',
     'Seitenansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 ),
@@ -93,7 +93,7 @@ VALUES
     5,
     0,
     ('https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/' ||
-    'main/example/data/product3.jpg'),
+    'main/examples/shared/data/product3.jpg'),
     'Front view of the machine showing external and structure',
     'Frontansicht der Maschine, die äußere und strukturelle Ansicht zeigt'
 );
