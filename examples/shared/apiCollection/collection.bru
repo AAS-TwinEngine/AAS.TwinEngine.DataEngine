@@ -1,3 +1,24 @@
+auth {
+  mode: none
+}
+
+auth:oauth2 {
+  grant_type: password
+  access_token_url: {{keycloakTokenUrl}}
+  refresh_token_url: {{keycloakTokenUrl}}
+  username: {{authUsername}}
+  password: {{authPassword}}
+  client_id: {{authClientId}}
+  client_secret: 
+  scope: openid profile
+  credentials_placement: body
+  credentials_id: keycloak-basyx
+  token_placement: header
+  token_header_prefix: Bearer
+  auto_fetch_token: true
+  auto_refresh_token: true
+}
+
 vars:pre-request {
   aasIdentifier-1: https://mm-software.com/ids/aas/{{productId-1}}
   submodelIdentifierMaintenanceInstructions-1: https://mm-software.com/submodel/{{productId-1}}/MaintenanceInstructions
