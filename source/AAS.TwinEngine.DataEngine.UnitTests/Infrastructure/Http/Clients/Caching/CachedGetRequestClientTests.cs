@@ -174,6 +174,60 @@ public class CachedGetRequestClientTests
     }
 
     [Fact]
+    public async Task GetStringAsync_BuildsCredentialScopedCacheKey_FromAuthorizationHeader()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        const string Authorization = "Bearer admin-token";
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers.Authorization = Authorization;
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+
+        string? capturedKey = null;
+        SetupCacheCapture(key => capturedKey = key);
+
+        // Act
+        await _sut.GetStringAsync(RelativeUrl, "client", 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal($"credential:{ComputeHash(Authorization)}:req:{ComputeHash(RelativeUrl)}", capturedKey);
+        Assert.DoesNotContain(Authorization, capturedKey, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetStringAsync_AdminThenAnonymous_UsesDifferentCacheKeys()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        var adminContext = new DefaultHttpContext();
+        adminContext.Request.Headers.Authorization = "Bearer admin-token";
+        var anonymousContext = new DefaultHttpContext();
+
+        var accessor = new HttpContextAccessor { HttpContext = adminContext };
+        var sut = new CachedGetRequestClient(
+            _clientFactory,
+            _cache,
+            accessor,
+            _cacheOptions,
+            _logger);
+        var capturedKeys = new List<string>();
+        SetupCacheCapture(capturedKeys.Add);
+
+        // Act
+        await sut.GetStringAsync(RelativeUrl, "client", 5, CancellationToken.None);
+        accessor.HttpContext = anonymousContext;
+        await sut.GetStringAsync(RelativeUrl, "client", 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, capturedKeys.Count);
+        var adminCacheKey = capturedKeys[0];
+        var anonymousCacheKey = capturedKeys[1];
+        Assert.NotEqual(adminCacheKey, anonymousCacheKey);
+        Assert.StartsWith("credential:", adminCacheKey, StringComparison.Ordinal);
+        Assert.StartsWith("anonymous:", anonymousCacheKey, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task GetStringAsync_BuildsExpectedCacheKey_ForAuthenticatedUserWithNameIdentifier()
     {
         // Arrange
