@@ -113,8 +113,16 @@ public sealed class CachedGetRequestClient(
     internal static string BuildCacheKey(IHttpContextAccessor httpContextAccessor, string requestParts)
     {
         var requestHash = ComputeHash(requestParts);
+        var httpContext = httpContextAccessor.HttpContext;
 
-        var user = httpContextAccessor.HttpContext?.User;
+        if (httpContext?.Request.Headers.TryGetValue("Authorization", out var authorization) == true
+            && !StringValues.IsNullOrEmpty(authorization))
+        {
+            var credentialHash = ComputeHash(authorization.ToString());
+            return $"credential:{credentialHash}:req:{requestHash}";
+        }
+
+        var user = httpContext?.User;
 
         if (user?.Identity is { IsAuthenticated: true })
         {
