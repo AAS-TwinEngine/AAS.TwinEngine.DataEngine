@@ -121,6 +121,23 @@ public class ExportServiceConfigValidatorTests
         Assert.Contains(result.Failures, failure => failure.Contains("StateStore.ConnectionString", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Validate_WhenMaxDegreeOfParallelismIsNotPositive_ReturnsFailure(int degree)
+    {
+        // Arrange
+        var config = CreateValidConfig();
+        config.Performance.MaxDegreeOfParallelism = degree;
+
+        // Act
+        var result = _sut.Validate(null, config);
+
+        // Assert
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("Performance.MaxDegreeOfParallelism", StringComparison.Ordinal));
+    }
+
     private static ExportServiceConfig CreateValidConfig()
     {
         var endpoint = new EndpointConfig

@@ -14,6 +14,11 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
 
         ValidateScheduler(options.Scheduler, failures);
 
+        if (options.Performance.MaxDegreeOfParallelism < 1)
+        {
+            failures.Add("Performance.MaxDegreeOfParallelism must be greater than zero.");
+        }
+
         if (string.IsNullOrWhiteSpace(options.StateStore.ConnectionString))
         {
             failures.Add("StateStore.ConnectionString must be configured.");

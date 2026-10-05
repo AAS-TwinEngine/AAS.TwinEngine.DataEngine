@@ -3,8 +3,10 @@ using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
 using AAS.TwinEngine.ExportService.DomainModel;
+using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -18,8 +20,10 @@ public class PhaseExecutorTests
     private readonly IStateStore _stateStore = Substitute.For<IStateStore>();
     private readonly ICrudDecisionMaker _decisionMaker = Substitute.For<ICrudDecisionMaker>();
     private readonly ILogger<PhaseExecutor> _logger = Substitute.For<ILogger<PhaseExecutor>>();
+    private readonly ExportServiceConfig _config = new();
 
-    private PhaseExecutor CreateSut() => new(_sourceReader, _targetWriter, _stateStore, _decisionMaker, _logger);
+    private PhaseExecutor CreateSut() =>
+        new(_sourceReader, _targetWriter, _stateStore, _decisionMaker, Options.Create(_config), _logger);
 
     [Fact]
     public async Task ExecuteAsync_WhenAllOperationsSucceed_AppliesOperationsAndReturnsCounts()
@@ -396,5 +400,92 @@ public class PhaseExecutorTests
         Assert.Equal(0, result.Skipped);
         Assert.Equal(0, result.Failed);
         Assert.False(result.HasFailures);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithManyEntities_AppliesConcurrentlyWithinConfiguredLimitAndCountsCorrectly()
+    {
+        // Arrange
+        var kind = EntityKind.Submodel;
+        _config.Performance.MaxDegreeOfParallelism = 4;
+        var sut = CreateSut();
+
+        var sources = Enumerable.Range(0, 40)
+            .Select(i => new SourceEntity($"id{i}", $"{{\"id\":\"id{i}\"}}"))
+            .ToArray();
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(sources);
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        var decisions = sources.Select(s => new CrudDecision(ExportOperation.Create, kind, s.Identifier, s)).ToList();
+        _decisionMaker.Decide(kind, sources, Arg.Any<IReadOnlyList<ExportedEntity>>()).Returns(decisions);
+
+        var current = 0;
+        var maxObserved = 0;
+        _targetWriter.CreateAsync(kind, Arg.Any<SourceEntity>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                var now = Interlocked.Increment(ref current);
+                InterlockedMax(ref maxObserved, now);
+                await Task.Delay(15);
+                Interlocked.Decrement(ref current);
+            });
+
+        // Act
+        var result = await sut.ExecuteAsync(kind, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(40, result.Created);
+        Assert.Equal(0, result.Failed);
+        await _stateStore.Received(40).UpsertAsync(Arg.Any<ExportedEntity>(), Arg.Any<CancellationToken>());
+        Assert.True(maxObserved > 1, "Expected concurrent execution with a degree greater than one.");
+        Assert.True(maxObserved <= 4, $"Observed concurrency {maxObserved} exceeded the configured limit of 4.");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenMaxDegreeOfParallelismIsOne_AppliesSequentially()
+    {
+        // Arrange
+        var kind = EntityKind.Submodel;
+        _config.Performance.MaxDegreeOfParallelism = 1;
+        var sut = CreateSut();
+
+        var sources = Enumerable.Range(0, 10)
+            .Select(i => new SourceEntity($"id{i}", $"{{\"id\":\"id{i}\"}}"))
+            .ToArray();
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(sources);
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        var decisions = sources.Select(s => new CrudDecision(ExportOperation.Create, kind, s.Identifier, s)).ToList();
+        _decisionMaker.Decide(kind, sources, Arg.Any<IReadOnlyList<ExportedEntity>>()).Returns(decisions);
+
+        var current = 0;
+        var maxObserved = 0;
+        _targetWriter.CreateAsync(kind, Arg.Any<SourceEntity>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                var now = Interlocked.Increment(ref current);
+                InterlockedMax(ref maxObserved, now);
+                await Task.Delay(5);
+                Interlocked.Decrement(ref current);
+            });
+
+        // Act
+        var result = await sut.ExecuteAsync(kind, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(10, result.Created);
+        Assert.Equal(1, maxObserved);
+    }
+
+    private static void InterlockedMax(ref int target, int candidate)
+    {
+        int current;
+        while (candidate > (current = Volatile.Read(ref target)))
+        {
+            if (Interlocked.CompareExchange(ref target, candidate, current) == current)
+            {
+                return;
+            }
+        }
     }
 }

@@ -3,8 +3,10 @@ using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
 using AAS.TwinEngine.ExportService.DomainModel;
+using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 
@@ -14,6 +16,7 @@ public sealed class PhaseExecutor : IPhaseExecutor
     private readonly ITargetEntityWriter _targetWriter;
     private readonly IStateStore _stateStore;
     private readonly ICrudDecisionMaker _decisionMaker;
+    private readonly int _maxDegreeOfParallelism;
     private readonly ILogger<PhaseExecutor> _logger;
 
     public PhaseExecutor(
@@ -21,12 +24,14 @@ public sealed class PhaseExecutor : IPhaseExecutor
         ITargetEntityWriter targetWriter,
         IStateStore stateStore,
         ICrudDecisionMaker decisionMaker,
+        IOptions<ExportServiceConfig> config,
         ILogger<PhaseExecutor> logger)
     {
         _sourceReader = sourceReader;
         _targetWriter = targetWriter;
         _stateStore = stateStore;
         _decisionMaker = decisionMaker;
+        _maxDegreeOfParallelism = Math.Max(1, config.Value.Performance.MaxDegreeOfParallelism);
         _logger = logger;
     }
 
@@ -72,38 +77,41 @@ public sealed class PhaseExecutor : IPhaseExecutor
         var skipped = 0;
         var failed = 0;
 
-        foreach (var decision in decisions)
+        var applicable = decisions.Where(shouldApply).ToList();
+
+        var parallelOptions = new ParallelOptions
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            MaxDegreeOfParallelism = _maxDegreeOfParallelism,
+            CancellationToken = cancellationToken
+        };
 
-            if (!shouldApply(decision))
-            {
-                continue;
-            }
-
+        // Entities are independent (distinct identifiers), so applying them concurrently is safe.
+        // Per-entity failures are isolated; cancellation propagates out of Parallel.ForEachAsync.
+        await Parallel.ForEachAsync(applicable, parallelOptions, async (decision, token) =>
+        {
             if (decision.Operation == ExportOperation.Skip)
             {
-                skipped++;
-                continue;
+                _ = Interlocked.Increment(ref skipped);
+                return;
             }
 
             try
             {
-                var applied = await ApplyAsync(decision, cancellationToken).ConfigureAwait(false);
+                var applied = await ApplyAsync(decision, token).ConfigureAwait(false);
 
                 switch (decision.Operation)
                 {
-                    case ExportOperation.Create: created++; break;
-                    case ExportOperation.Update: updated++; break;
+                    case ExportOperation.Create: _ = Interlocked.Increment(ref created); break;
+                    case ExportOperation.Update: _ = Interlocked.Increment(ref updated); break;
                     case ExportOperation.Delete:
                         if (applied)
                         {
-                            deleted++;
+                            _ = Interlocked.Increment(ref deleted);
                         }
                         else
                         {
                             // Source still reports the entity as present — deletion was intentionally skipped.
-                            skipped++;
+                            _ = Interlocked.Increment(ref skipped);
                         }
 
                         break;
@@ -115,7 +123,7 @@ public sealed class PhaseExecutor : IPhaseExecutor
             }
             catch (Exception ex)
             {
-                failed++;
+                _ = Interlocked.Increment(ref failed);
                 _logger.LogError(
                     ex,
                     "Failed to {Operation} {EntityKind} {Identifier}. Continuing with remaining entities.",
@@ -123,7 +131,7 @@ public sealed class PhaseExecutor : IPhaseExecutor
                     kind,
                     decision.Identifier);
             }
-        }
+        }).ConfigureAwait(false);
 
         var result = new PhaseResult(kind, created, updated, deleted, skipped, failed);
         _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Created, created);

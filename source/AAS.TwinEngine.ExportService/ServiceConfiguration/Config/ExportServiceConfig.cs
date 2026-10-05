@@ -11,6 +11,8 @@ public sealed class ExportServiceConfig
 
     public ResilienceConfig Resilience { get; set; } = new();
 
+    public PerformanceConfig Performance { get; set; } = new();
+
     public StateStoreConfig StateStore { get; set; } = new();
 
     public SourceEndpointsConfig Sources { get; set; } = new();

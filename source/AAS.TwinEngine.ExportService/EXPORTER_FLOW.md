@@ -268,6 +268,23 @@ Each entity is applied in its own `try/catch`. A failure increments `failed` and
 loop **continues** with the rest. One bad entity never fails the whole phase.
 `OperationCanceledException` is re‑thrown (cancellation/timeout must propagate).
 
+### Bounded parallelism
+
+Within a phase, entities are independent (distinct identifiers), so they are applied concurrently via
+`Parallel.ForEachAsync` with `MaxDegreeOfParallelism` from
+[PerformanceConfig](ServiceConfiguration/Config/PerformanceConfig.cs) (default **8**). This cuts the
+wall‑clock time of large runs, where the bottleneck is sequential HTTP round‑trips. Counters are
+updated with `Interlocked`, per‑entity error isolation is preserved, and cancellation still
+propagates out of the parallel loop. Set `Performance.MaxDegreeOfParallelism = 1` for fully
+sequential behavior. Dependency ordering is unaffected — parallelism is **within** a phase only;
+`ExportRunner` still runs phases strictly forward (create/update) then reverse (delete).
+
+```json
+"Performance": {
+  "MaxDegreeOfParallelism": 8
+}
+```
+
 ---
 
 ## 6. The diff: `CrudDecisionMaker`
@@ -741,6 +758,7 @@ Root section `ExportService` ([ExportServiceConfig.cs](ServiceConfiguration/Conf
 |-------------|---------|
 | `Scheduler` | Cron, enable flag, run timeout |
 | `Resilience`| Retry attempts, backoff |
+| `Performance` | `MaxDegreeOfParallelism` — concurrent entity applies per phase (default 8) |
 | `StateStore`| PostgreSQL connection string + schema |
 | `Sources`   | Per‑kind source endpoint (BaseUrl, Path, Limit, Enabled, Auth) |
 | `Targets`   | Per‑kind target endpoint (BaseUrl, Path, Enabled, Auth) |
