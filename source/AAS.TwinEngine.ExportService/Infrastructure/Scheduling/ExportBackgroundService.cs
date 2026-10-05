@@ -18,13 +18,13 @@ public sealed class ExportBackgroundService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IExportRunLock _runLock;
-    private readonly IOptionsMonitor<ExportServiceConfig> _config;
+    private readonly IOptions<ExportServiceConfig> _config;
     private readonly ILogger<ExportBackgroundService> _logger;
 
     public ExportBackgroundService(
         IServiceProvider serviceProvider,
         IExportRunLock runLock,
-        IOptionsMonitor<ExportServiceConfig> config,
+        IOptions<ExportServiceConfig> config,
         ILogger<ExportBackgroundService> logger)
     {
         _serviceProvider = serviceProvider;
@@ -35,7 +35,7 @@ public sealed class ExportBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var scheduler = _config.CurrentValue.Scheduler;
+        var scheduler = _config.Value.Scheduler;
 
         if (!scheduler.Enabled)
         {
@@ -97,7 +97,7 @@ public sealed class ExportBackgroundService : BackgroundService
             return;
         }
 
-        var timeout = TimeSpan.FromMinutes(_config.CurrentValue.Scheduler.RunTimeoutMinutes);
+        var timeout = TimeSpan.FromMinutes(_config.Value.Scheduler.RunTimeoutMinutes);
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         timeoutCts.CancelAfter(timeout);
 
@@ -113,7 +113,7 @@ public sealed class ExportBackgroundService : BackgroundService
             _logger.LogCritical(
                 ex,
                 "Export run exceeded configured timeout of {TimeoutMinutes} minutes and was cancelled.",
-                _config.CurrentValue.Scheduler.RunTimeoutMinutes);
+                _config.Value.Scheduler.RunTimeoutMinutes);
         }
         catch (OperationCanceledException)
         {

@@ -18,12 +18,12 @@ namespace AAS.TwinEngine.ExportService.Infrastructure.Http.Clients;
 public sealed class TargetEntityHttpClient : ITargetEntityWriter
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IOptionsMonitor<ExportServiceConfig> _config;
+    private readonly IOptions<ExportServiceConfig> _config;
     private readonly ILogger<TargetEntityHttpClient> _logger;
 
     public TargetEntityHttpClient(
         IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ExportServiceConfig> config,
+        IOptions<ExportServiceConfig> config,
         ILogger<TargetEntityHttpClient> logger)
     {
         _httpClientFactory = httpClientFactory;
@@ -33,7 +33,7 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
 
     public async Task CreateAsync(EntityKind kind, SourceEntity entity, CancellationToken cancellationToken)
     {
-        var endpoint = EndpointResolver.TargetEndpoint(kind, _config.CurrentValue.Targets);
+        var endpoint = EndpointResolver.TargetEndpoint(kind, _config.Value.Targets);
         var client = _httpClientFactory.CreateClient(EndpointResolver.TargetClientName(kind));
 
         using var content = JsonContent(entity.RawJson);
@@ -53,7 +53,7 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
 
     public async Task UpdateAsync(EntityKind kind, SourceEntity entity, CancellationToken cancellationToken)
     {
-        var endpoint = EndpointResolver.TargetEndpoint(kind, _config.CurrentValue.Targets);
+        var endpoint = EndpointResolver.TargetEndpoint(kind, _config.Value.Targets);
         var client = _httpClientFactory.CreateClient(EndpointResolver.TargetClientName(kind));
 
         var path = BuildItemPath(endpoint.Path, entity.Identifier);
@@ -65,7 +65,7 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
 
     public async Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken)
     {
-        var endpoint = EndpointResolver.TargetEndpoint(kind, _config.CurrentValue.Targets);
+        var endpoint = EndpointResolver.TargetEndpoint(kind, _config.Value.Targets);
         var client = _httpClientFactory.CreateClient(EndpointResolver.TargetClientName(kind));
 
         var path = BuildItemPath(endpoint.Path, identifier);

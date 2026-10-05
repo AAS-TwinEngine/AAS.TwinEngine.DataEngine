@@ -17,6 +17,11 @@ public sealed class EndpointConfig
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
+    /// Maximum number of entities requested per source page.
+    /// </summary>
+    public int Limit { get; set; } = 250;
+
+    /// <summary>
     /// When <c>false</c>, this entity type is skipped by the exporter.
     /// </summary>
     public bool Enabled { get; set; } = true;

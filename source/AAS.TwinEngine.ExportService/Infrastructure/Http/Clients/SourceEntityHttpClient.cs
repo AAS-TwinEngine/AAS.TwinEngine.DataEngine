@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
@@ -21,12 +22,12 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
     private const int MaxPagesPerRead = 10_000;
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IOptionsMonitor<ExportServiceConfig> _config;
+    private readonly IOptions<ExportServiceConfig> _config;
     private readonly ILogger<SourceEntityHttpClient> _logger;
 
     public SourceEntityHttpClient(
         IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ExportServiceConfig> config,
+        IOptions<ExportServiceConfig> config,
         ILogger<SourceEntityHttpClient> logger)
     {
         _httpClientFactory = httpClientFactory;
@@ -36,7 +37,7 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
 
     public async Task<IReadOnlyList<SourceEntity>> ReadAllAsync(EntityKind kind, CancellationToken cancellationToken)
     {
-        var endpoint = EndpointResolver.SourceEndpoint(kind, _config.CurrentValue.Sources);
+        var endpoint = EndpointResolver.SourceEndpoint(kind, _config.Value.Sources);
         if (!endpoint.Enabled)
         {
             _logger.LogInformation("Source endpoint for {EntityKind} is disabled. Returning empty list.", kind);
@@ -59,7 +60,7 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
 
             do
             {
-                var requestUri = BuildPageUri(endpoint.Path, cursor);
+                var requestUri = BuildPageUri(endpoint.Path, endpoint.Limit, cursor);
 
                 using var response = await client.GetAsync(requestUri, cancellationToken).ConfigureAwait(false);
 
@@ -109,16 +110,89 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
         }
     }
 
-    private static string BuildPageUri(string basePath, string? cursor)
+    public async Task<SourceEntity?> GetByIdAsync(EntityKind kind, string identifier, CancellationToken cancellationToken)
     {
+        var endpoint = EndpointResolver.SourceEndpoint(kind, _config.Value.Sources);
+        if (!endpoint.Enabled)
+        {
+            // Cannot verify against a disabled source — treat as unavailable so the caller skips deletion.
+            throw new SourceUnavailableException(
+                $"Source endpoint for {kind} is disabled; cannot verify deletion candidate '{identifier}'.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endpoint.Path))
+        {
+            throw new SourceUnavailableException($"Source endpoint path for {kind} is not configured.");
+        }
+
+        var client = _httpClientFactory.CreateClient(EndpointResolver.SourceClientName(kind));
+        var requestUri = BuildItemUri(endpoint.Path, identifier);
+
+        try
+        {
+            using var response = await client.GetAsync(requestUri, cancellationToken).ConfigureAwait(false);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                // Source confirms the entity no longer exists.
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new SourceUnavailableException(
+                    $"Source GET-by-id for {kind} '{identifier}' failed with status {(int)response.StatusCode}.");
+            }
+
+            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            return ParseSingle(json, identifier);
+        }
+        catch (SourceUnavailableException)
+        {
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new SourceUnavailableException(
+                $"Source GET-by-id for {kind} '{identifier}' failed: {ex.Message}", ex);
+        }
+    }
+
+    private static string BuildItemUri(string basePath, string identifier)
+    {
+        var encodedId = Base64Url.Encode(identifier);
+        return basePath.TrimEnd('/') + "/" + encodedId;
+    }
+
+    private static SourceEntity ParseSingle(string json, string fallbackIdentifier)
+    {
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new SourceUnavailableException("Source GET-by-id response was not a JSON object.");
+        }
+
+        var identifier = ExtractIdentifier(root) ?? fallbackIdentifier;
+        return new SourceEntity(identifier, root.GetRawText());
+    }
+
+    private static string BuildPageUri(string basePath, int limit, string? cursor)
+    {
+        var separator = basePath.Contains('?', StringComparison.Ordinal) ? '&' : '?';
+        var requestUri = $"{basePath}{separator}limit={limit}";
         if (string.IsNullOrEmpty(cursor))
         {
-            return basePath;
+            return requestUri;
         }
 
         var encoded = Uri.EscapeDataString(cursor);
-        var separator = basePath.Contains('?', StringComparison.Ordinal) ? '&' : '?';
-        return $"{basePath}{separator}cursor={encoded}";
+        return $"{requestUri}&cursor={encoded}";
     }
 
     private static (IReadOnlyList<SourceEntity> Entities, string? NextCursor) ParsePage(string json)

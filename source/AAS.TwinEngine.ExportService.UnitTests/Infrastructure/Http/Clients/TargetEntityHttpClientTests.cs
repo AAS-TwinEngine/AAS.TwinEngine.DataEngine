@@ -14,13 +14,13 @@ namespace AAS.TwinEngine.ExportService.UnitTests.Infrastructure.Http.Clients;
 public class TargetEntityHttpClientTests
 {
     private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
-    private readonly IOptionsMonitor<ExportServiceConfig> _config = Substitute.For<IOptionsMonitor<ExportServiceConfig>>();
     private readonly ILogger<TargetEntityHttpClient> _logger = Substitute.For<ILogger<TargetEntityHttpClient>>();
     private readonly ExportServiceConfig _configValue = new();
+    private readonly IOptions<ExportServiceConfig> _config;
 
     public TargetEntityHttpClientTests()
     {
-        _config.CurrentValue.Returns(_configValue);
+        _config = Options.Create(_configValue);
         _configValue.Targets.Shells = new EndpointConfig
         {
             Enabled = true,

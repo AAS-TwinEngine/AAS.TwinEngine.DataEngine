@@ -19,6 +19,7 @@ public static class ExportServiceTracing
         public const string FetchSourceEntities = "Fetch Source Entities";
         public const string DecideCrudOperations = "Decide CRUD Operations";
         public const string WriteEntityToTarget = "Write Entity To Target";
+        public const string VerifyDeletionCandidate = "Verify Deletion Candidate";
         public const string AcquireToken = "Acquire Token";
     }
 

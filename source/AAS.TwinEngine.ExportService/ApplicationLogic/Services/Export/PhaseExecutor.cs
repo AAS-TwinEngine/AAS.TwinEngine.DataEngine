@@ -1,3 +1,4 @@
+using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
@@ -29,7 +30,16 @@ public sealed class PhaseExecutor : IPhaseExecutor
         _logger = logger;
     }
 
-    public async Task<PhaseResult> ExecuteAsync(EntityKind kind, CancellationToken cancellationToken)
+    public Task<PhaseResult> ExecuteAsync(EntityKind kind, CancellationToken cancellationToken) =>
+        ExecuteAsync(kind, decision => decision.Operation != ExportOperation.Delete, cancellationToken);
+
+    public Task<PhaseResult> ExecuteDeletionsAsync(EntityKind kind, CancellationToken cancellationToken) =>
+        ExecuteAsync(kind, decision => decision.Operation == ExportOperation.Delete, cancellationToken);
+
+    private async Task<PhaseResult> ExecuteAsync(
+        EntityKind kind,
+        Func<CrudDecision, bool> shouldApply,
+        CancellationToken cancellationToken)
     {
         using var phaseSpan = ExportServiceTracing.StartSpan(
             ExportServiceTracing.Spans.ExportPhase,
@@ -66,6 +76,11 @@ public sealed class PhaseExecutor : IPhaseExecutor
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (!shouldApply(decision))
+            {
+                continue;
+            }
+
             if (decision.Operation == ExportOperation.Skip)
             {
                 skipped++;
@@ -74,13 +89,24 @@ public sealed class PhaseExecutor : IPhaseExecutor
 
             try
             {
-                await ApplyAsync(decision, cancellationToken).ConfigureAwait(false);
+                var applied = await ApplyAsync(decision, cancellationToken).ConfigureAwait(false);
 
                 switch (decision.Operation)
                 {
                     case ExportOperation.Create: created++; break;
                     case ExportOperation.Update: updated++; break;
-                    case ExportOperation.Delete: deleted++; break;
+                    case ExportOperation.Delete:
+                        if (applied)
+                        {
+                            deleted++;
+                        }
+                        else
+                        {
+                            // Source still reports the entity as present — deletion was intentionally skipped.
+                            skipped++;
+                        }
+
+                        break;
                 }
             }
             catch (OperationCanceledException)
@@ -113,7 +139,7 @@ public sealed class PhaseExecutor : IPhaseExecutor
         return result;
     }
 
-    private async Task ApplyAsync(CrudDecision decision, CancellationToken cancellationToken)
+    private async Task<bool> ApplyAsync(CrudDecision decision, CancellationToken cancellationToken)
     {
         using var writeSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.WriteEntityToTarget);
         _ = writeSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, decision.Kind.ToString());
@@ -129,9 +155,10 @@ public sealed class PhaseExecutor : IPhaseExecutor
                         decision.Kind,
                         decision.SourceEntity!.Identifier,
                         DateTimeOffset.UtcNow,
-                        DateTimeOffset.UtcNow),
+                        DateTimeOffset.UtcNow,
+                        decision.SourceEntity.ContentHash),
                     cancellationToken).ConfigureAwait(false);
-                break;
+                return true;
 
             case ExportOperation.Update:
                 await _targetWriter.UpdateAsync(decision.Kind, decision.SourceEntity!, cancellationToken).ConfigureAwait(false);
@@ -140,14 +167,59 @@ public sealed class PhaseExecutor : IPhaseExecutor
                         decision.Kind,
                         decision.SourceEntity!.Identifier,
                         DateTimeOffset.UtcNow,
-                        DateTimeOffset.UtcNow),
+                        DateTimeOffset.UtcNow,
+                        decision.SourceEntity.ContentHash),
                     cancellationToken).ConfigureAwait(false);
-                break;
+                return true;
 
             case ExportOperation.Delete:
-                await _targetWriter.DeleteAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
-                await _stateStore.DeleteAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
-                break;
+                return await ApplyDeletionAsync(decision, cancellationToken).ConfigureAwait(false);
+
+            default:
+                return false;
         }
+    }
+
+    /// <summary>
+    /// Verifies a deletion candidate against the source by GET-by-id before touching the target.
+    /// Only deletes when the source confirms the entity is gone (404). If the source still returns
+    /// the entity, the deletion is skipped (returns <c>false</c>). A verification failure throws
+    /// <see cref="SourceUnavailableException"/>, which is counted as a per-entity failure so the
+    /// entity is retried on a future run and its ownership state is preserved.
+    /// </summary>
+    private async Task<bool> ApplyDeletionAsync(CrudDecision decision, CancellationToken cancellationToken)
+    {
+        using var verifySpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.VerifyDeletionCandidate);
+        _ = verifySpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, decision.Kind.ToString());
+        _ = verifySpan?.SetTag(ExportServiceTracing.Attributes.EntityIdentifier, decision.Identifier);
+
+        _logger.LogInformation(
+            "Verifying deletion candidate {EntityKind} {Identifier} via source GET-by-id.",
+            decision.Kind, decision.Identifier);
+
+        var stillPresent = await _sourceReader.GetByIdAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
+
+        if (stillPresent is not null)
+        {
+            // Pagination/GET-by-id discrepancy: the paginated read missed an entity that still exists.
+            _logger.LogWarning(
+                "Deletion verification for {EntityKind} {Identifier}: source still reports the entity as present. " +
+                "Skipping target deletion and keeping ownership state; reconcile the paginated-read vs GET-by-id discrepancy.",
+                decision.Kind, decision.Identifier);
+            return false;
+        }
+
+        _logger.LogInformation(
+            "Deletion verification for {EntityKind} {Identifier}: source confirmed the entity is deleted. Deleting from target.",
+            decision.Kind, decision.Identifier);
+
+        await _targetWriter.DeleteAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
+        await _stateStore.DeleteAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
+
+        _logger.LogInformation(
+            "Deletion complete for {EntityKind} {Identifier}: removed from target and ownership state.",
+            decision.Kind, decision.Identifier);
+
+        return true;
     }
 }

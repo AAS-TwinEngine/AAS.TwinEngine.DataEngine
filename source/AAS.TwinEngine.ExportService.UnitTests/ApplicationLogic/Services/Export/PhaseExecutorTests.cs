@@ -1,3 +1,4 @@
+using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
@@ -54,23 +55,200 @@ public class PhaseExecutorTests
         Assert.Equal(kind, result.Kind);
         Assert.Equal(1, result.Created);
         Assert.Equal(1, result.Updated);
-        Assert.Equal(1, result.Deleted);
+        Assert.Equal(0, result.Deleted);
         Assert.Equal(1, result.Skipped);
         Assert.Equal(0, result.Failed);
         Assert.False(result.HasFailures);
 
         await _targetWriter.Received(1).CreateAsync(kind, sourceCreate, Arg.Any<CancellationToken>());
         await _stateStore.Received(1).UpsertAsync(
-            Arg.Is<ExportedEntity>(e => e.Kind == kind && e.Identifier == "id_create"),
+            Arg.Is<ExportedEntity>(e => e.Kind == kind && e.Identifier == "id_create" && e.ContentHash == sourceCreate.ContentHash),
             Arg.Any<CancellationToken>());
 
         await _targetWriter.Received(1).UpdateAsync(kind, sourceUpdate, Arg.Any<CancellationToken>());
         await _stateStore.Received(1).UpsertAsync(
-            Arg.Is<ExportedEntity>(e => e.Kind == kind && e.Identifier == "id_update"),
+            Arg.Is<ExportedEntity>(e => e.Kind == kind && e.Identifier == "id_update" && e.ContentHash == sourceUpdate.ContentHash),
             Arg.Any<CancellationToken>());
+        await _stateStore.Received(2).UpsertAsync(Arg.Any<ExportedEntity>(), Arg.Any<CancellationToken>());
 
+        await _targetWriter.DidNotReceive().DeleteAsync(kind, "id_delete", Arg.Any<CancellationToken>());
+        await _stateStore.DidNotReceive().DeleteAsync(kind, "id_delete", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteDeletionsAsync_AppliesOnlyDeleteDecisions()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var kind = EntityKind.Submodel;
+        var source = new SourceEntity("id_update", "{\"id\":\"id_update\"}");
+        var decisions = new[]
+        {
+            new CrudDecision(ExportOperation.Update, kind, "id_update", source),
+            new CrudDecision(ExportOperation.Delete, kind, "id_delete", null)
+        };
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(new[] { source });
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        _decisionMaker.Decide(kind, Arg.Any<IReadOnlyList<SourceEntity>>(), Arg.Any<IReadOnlyList<ExportedEntity>>())
+            .Returns(decisions);
+
+        // Source confirms the entity is gone (404 → null) so the deletion proceeds.
+        _sourceReader.GetByIdAsync(kind, "id_delete", Arg.Any<CancellationToken>()).Returns((SourceEntity?)null);
+
+        // Act
+        var result = await sut.ExecuteDeletionsAsync(kind, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, result.Deleted);
+        Assert.Equal(0, result.Updated);
+        await _sourceReader.Received(1).GetByIdAsync(kind, "id_delete", Arg.Any<CancellationToken>());
         await _targetWriter.Received(1).DeleteAsync(kind, "id_delete", Arg.Any<CancellationToken>());
         await _stateStore.Received(1).DeleteAsync(kind, "id_delete", Arg.Any<CancellationToken>());
+        await _targetWriter.DidNotReceive().UpdateAsync(kind, source, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteDeletionsAsync_WhenSourceConfirmsDeleted_DeletesTargetAndState()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var kind = EntityKind.Submodel;
+        var decisions = new[] { new CrudDecision(ExportOperation.Delete, kind, "id_gone", null) };
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<SourceEntity>());
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        _decisionMaker.Decide(kind, Arg.Any<IReadOnlyList<SourceEntity>>(), Arg.Any<IReadOnlyList<ExportedEntity>>())
+            .Returns(decisions);
+        _sourceReader.GetByIdAsync(kind, "id_gone", Arg.Any<CancellationToken>()).Returns((SourceEntity?)null);
+
+        // Act
+        var result = await sut.ExecuteDeletionsAsync(kind, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, result.Deleted);
+        Assert.Equal(0, result.Skipped);
+        Assert.Equal(0, result.Failed);
+        await _targetWriter.Received(1).DeleteAsync(kind, "id_gone", Arg.Any<CancellationToken>());
+        await _stateStore.Received(1).DeleteAsync(kind, "id_gone", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteDeletionsAsync_WhenSourceStillReturnsEntity_SkipsDeletionAndKeepsState()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var kind = EntityKind.Submodel;
+        var decisions = new[] { new CrudDecision(ExportOperation.Delete, kind, "id_present", null) };
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<SourceEntity>());
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        _decisionMaker.Decide(kind, Arg.Any<IReadOnlyList<SourceEntity>>(), Arg.Any<IReadOnlyList<ExportedEntity>>())
+            .Returns(decisions);
+
+        // Source still reports the entity as present — pagination/GET-by-id discrepancy.
+        _sourceReader.GetByIdAsync(kind, "id_present", Arg.Any<CancellationToken>())
+            .Returns(new SourceEntity("id_present", "{\"id\":\"id_present\"}"));
+
+        // Act
+        var result = await sut.ExecuteDeletionsAsync(kind, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(0, result.Deleted);
+        Assert.Equal(1, result.Skipped);
+        Assert.Equal(0, result.Failed);
+        await _targetWriter.DidNotReceive().DeleteAsync(kind, "id_present", Arg.Any<CancellationToken>());
+        await _stateStore.DidNotReceive().DeleteAsync(kind, "id_present", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteDeletionsAsync_WhenVerificationFailsTransiently_DoesNotDeleteAndCountsFailure()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var kind = EntityKind.Submodel;
+        var decisions = new[] { new CrudDecision(ExportOperation.Delete, kind, "id_unknown", null) };
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<SourceEntity>());
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        _decisionMaker.Decide(kind, Arg.Any<IReadOnlyList<SourceEntity>>(), Arg.Any<IReadOnlyList<ExportedEntity>>())
+            .Returns(decisions);
+
+        // GET-by-id fails with a server/transient error → existence cannot be determined.
+        _sourceReader.GetByIdAsync(kind, "id_unknown", Arg.Any<CancellationToken>())
+            .ThrowsAsync(new SourceUnavailableException("Source GET-by-id failed with status 500."));
+
+        // Act
+        var result = await sut.ExecuteDeletionsAsync(kind, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(0, result.Deleted);
+        Assert.Equal(1, result.Failed);
+        Assert.True(result.HasFailures);
+        await _targetWriter.DidNotReceive().DeleteAsync(kind, "id_unknown", Arg.Any<CancellationToken>());
+        await _stateStore.DidNotReceive().DeleteAsync(kind, "id_unknown", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteDeletionsAsync_WithMultipleCandidates_VerifiesEachIndependently()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var kind = EntityKind.Submodel;
+        var decisions = new[]
+        {
+            new CrudDecision(ExportOperation.Delete, kind, "id_gone", null),
+            new CrudDecision(ExportOperation.Delete, kind, "id_present", null),
+            new CrudDecision(ExportOperation.Delete, kind, "id_error", null)
+        };
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<SourceEntity>());
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        _decisionMaker.Decide(kind, Arg.Any<IReadOnlyList<SourceEntity>>(), Arg.Any<IReadOnlyList<ExportedEntity>>())
+            .Returns(decisions);
+
+        _sourceReader.GetByIdAsync(kind, "id_gone", Arg.Any<CancellationToken>()).Returns((SourceEntity?)null);
+        _sourceReader.GetByIdAsync(kind, "id_present", Arg.Any<CancellationToken>())
+            .Returns(new SourceEntity("id_present", "{\"id\":\"id_present\"}"));
+        _sourceReader.GetByIdAsync(kind, "id_error", Arg.Any<CancellationToken>())
+            .ThrowsAsync(new SourceUnavailableException("timeout"));
+
+        // Act
+        var result = await sut.ExecuteDeletionsAsync(kind, CancellationToken.None);
+
+        // Assert — one deleted, one skipped (still present), one failed (could not verify).
+        Assert.Equal(1, result.Deleted);
+        Assert.Equal(1, result.Skipped);
+        Assert.Equal(1, result.Failed);
+
+        await _targetWriter.Received(1).DeleteAsync(kind, "id_gone", Arg.Any<CancellationToken>());
+        await _stateStore.Received(1).DeleteAsync(kind, "id_gone", Arg.Any<CancellationToken>());
+        await _targetWriter.DidNotReceive().DeleteAsync(kind, "id_present", Arg.Any<CancellationToken>());
+        await _targetWriter.DidNotReceive().DeleteAsync(kind, "id_error", Arg.Any<CancellationToken>());
+        await _stateStore.DidNotReceive().DeleteAsync(kind, "id_present", Arg.Any<CancellationToken>());
+        await _stateStore.DidNotReceive().DeleteAsync(kind, "id_error", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ForwardPass_DoesNotVerifyOrApplyDeletions()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var kind = EntityKind.Submodel;
+        var decisions = new[] { new CrudDecision(ExportOperation.Delete, kind, "id_delete", null) };
+
+        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<SourceEntity>());
+        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
+        _decisionMaker.Decide(kind, Arg.Any<IReadOnlyList<SourceEntity>>(), Arg.Any<IReadOnlyList<ExportedEntity>>())
+            .Returns(decisions);
+
+        // Act
+        var result = await sut.ExecuteAsync(kind, CancellationToken.None);
+
+        // Assert — the forward pass must not touch deletions or verify them.
+        Assert.Equal(0, result.Deleted);
+        await _sourceReader.DidNotReceive().GetByIdAsync(kind, Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _targetWriter.DidNotReceive().DeleteAsync(kind, Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

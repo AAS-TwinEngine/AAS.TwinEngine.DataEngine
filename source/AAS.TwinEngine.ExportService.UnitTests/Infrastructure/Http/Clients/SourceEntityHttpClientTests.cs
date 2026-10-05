@@ -15,13 +15,13 @@ namespace AAS.TwinEngine.ExportService.UnitTests.Infrastructure.Http.Clients;
 public class SourceEntityHttpClientTests
 {
     private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
-    private readonly IOptionsMonitor<ExportServiceConfig> _config = Substitute.For<IOptionsMonitor<ExportServiceConfig>>();
     private readonly ILogger<SourceEntityHttpClient> _logger = Substitute.For<ILogger<SourceEntityHttpClient>>();
     private readonly ExportServiceConfig _configValue = new();
+    private readonly IOptions<ExportServiceConfig> _config;
 
     public SourceEntityHttpClientTests()
     {
-        _config.CurrentValue.Returns(_configValue);
+        _config = Options.Create(_configValue);
         _configValue.Sources.Shells = new EndpointConfig
         {
             Enabled = true,
@@ -164,6 +164,39 @@ public class SourceEntityHttpClientTests
     }
 
     [Fact]
+    public async Task ReadAllAsync_WhenLimitIsConfigured_IncludesItOnEveryPageRequest()
+    {
+        // Arrange
+        _configValue.Sources.Shells.Limit = 250;
+        var handler = new DelegatingTestHandler(req =>
+        {
+            var uri = req.RequestUri?.ToString() ?? string.Empty;
+            if (!uri.Contains("cursor=", StringComparison.Ordinal))
+            {
+                Assert.Contains("limit=250", uri);
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"paging_metadata\":{\"cursor\":\"c1\"},\"result\":[{\"id\":\"e1\"}]}")
+                };
+            }
+
+            Assert.Contains("limit=250&cursor=c1", uri);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"paging_metadata\":{\"cursor\":null},\"result\":[]}")
+            };
+        });
+        var sut = CreateSut(handler);
+
+        // Act
+        var result = await sut.ReadAllAsync(EntityKind.Shell, CancellationToken.None);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
     public async Task ReadAllAsync_WhenPathContainsQueryParam_UsesAmpersandForCursor()
     {
         // Arrange
@@ -179,7 +212,7 @@ public class SourceEntityHttpClientTests
                 };
             }
 
-            Assert.Contains("?filter=active&cursor=c1", uri);
+            Assert.Contains("?filter=active&limit=250&cursor=c1", uri);
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("{\"paging_metadata\":{\"cursor\":null},\"result\":[]}")
@@ -316,5 +349,146 @@ public class SourceEntityHttpClientTests
         // Assert
         Assert.Single(result);
         Assert.Equal("e1", result[0].Identifier);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenEndpointDisabled_ThrowsSourceUnavailableException()
+    {
+        // Arrange
+        _configValue.Sources.Shells.Enabled = false;
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var sut = CreateSut(handler);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<SourceUnavailableException>(() =>
+            sut.GetByIdAsync(EntityKind.Shell, "urn:shell:1", CancellationToken.None));
+        Assert.Empty(handler.Requests);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetByIdAsync_WhenEndpointPathIsMissing_ThrowsSourceUnavailableException(string? path)
+    {
+        // Arrange
+        _configValue.Sources.Shells.Path = path!;
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var sut = CreateSut(handler);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<SourceUnavailableException>(() =>
+            sut.GetByIdAsync(EntityKind.Shell, "urn:shell:1", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenSourceReturns404_ReturnsNull()
+    {
+        // Arrange
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        var sut = CreateSut(handler);
+
+        // Act
+        var result = await sut.GetByIdAsync(EntityKind.Shell, "urn:shell:gone", CancellationToken.None);
+
+        // Assert
+        Assert.Null(result);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenSourceReturnsEntity_ReturnsParsedEntity()
+    {
+        // Arrange
+        const string json = "{\"id\":\"urn:shell:present\",\"name\":\"still-here\"}";
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json)
+        });
+        var sut = CreateSut(handler);
+
+        // Act
+        var result = await sut.GetByIdAsync(EntityKind.Shell, "urn:shell:present", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("urn:shell:present", result!.Identifier);
+        Assert.Equal(json, result.RawJson);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_UsesBase64UrlEncodedIdentifierInPath()
+    {
+        // Arrange
+        const string identifier = "urn:shell:present";
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"id\":\"urn:shell:present\"}")
+        });
+        var sut = CreateSut(handler);
+
+        // Act
+        _ = await sut.GetByIdAsync(EntityKind.Shell, identifier, CancellationToken.None);
+
+        // Assert
+        var expectedSegment = Base64Url.Encode(identifier);
+        var uri = handler.Requests[0].RequestUri?.ToString() ?? string.Empty;
+        Assert.Contains("/api/v3.0/shells/" + expectedSegment, uri);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenSourceReturnsServerError_ThrowsSourceUnavailableException()
+    {
+        // Arrange
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        var sut = CreateSut(handler);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<SourceUnavailableException>(() =>
+            sut.GetByIdAsync(EntityKind.Shell, "urn:shell:err", CancellationToken.None));
+        Assert.Contains("500", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenNetworkFailure_WrapsInSourceUnavailableException()
+    {
+        // Arrange
+        var handler = new DelegatingTestHandler(_ => throw new HttpRequestException("Connection refused"));
+        var sut = CreateSut(handler);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<SourceUnavailableException>(() =>
+            sut.GetByIdAsync(EntityKind.Shell, "urn:shell:err", CancellationToken.None));
+        Assert.Contains("Connection refused", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenOperationCanceled_RethrowsOperationCanceledException()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var handler = new DelegatingTestHandler(_ => throw new OperationCanceledException(cts.Token));
+        var sut = CreateSut(handler);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            sut.GetByIdAsync(EntityKind.Shell, "urn:shell:1", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenResponseIsNotJsonObject_ThrowsSourceUnavailableException()
+    {
+        // Arrange
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("[\"not\",\"an\",\"object\"]")
+        });
+        var sut = CreateSut(handler);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<SourceUnavailableException>(() =>
+            sut.GetByIdAsync(EntityKind.Shell, "urn:shell:1", CancellationToken.None));
+        Assert.Contains("not a JSON object", ex.Message);
     }
 }

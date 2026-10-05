@@ -17,13 +17,13 @@ public class ExportBackgroundServiceTests
 {
     private readonly IServiceProvider _serviceProvider = Substitute.For<IServiceProvider>();
     private readonly IExportRunLock _runLock = Substitute.For<IExportRunLock>();
-    private readonly IOptionsMonitor<ExportServiceConfig> _config = Substitute.For<IOptionsMonitor<ExportServiceConfig>>();
     private readonly ILogger<ExportBackgroundService> _logger = Substitute.For<ILogger<ExportBackgroundService>>();
     private readonly ExportServiceConfig _configValue = new();
+    private readonly IOptions<ExportServiceConfig> _config;
 
     public ExportBackgroundServiceTests()
     {
-        _config.CurrentValue.Returns(_configValue);
+        _config = Options.Create(_configValue);
         _configValue.Scheduler.Enabled = true;
         _configValue.Scheduler.CronExpression = "0 * * * *";
         _configValue.Scheduler.RunTimeoutMinutes = 30;

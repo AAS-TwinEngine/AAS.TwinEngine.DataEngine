@@ -11,6 +11,8 @@ using AAS.TwinEngine.ExportService.Infrastructure.State.DataAccess;
 using AAS.TwinEngine.ExportService.Infrastructure.State.Migrations;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
+using Microsoft.Extensions.Options;
+
 namespace AAS.TwinEngine.ExportService.ServiceConfiguration;
 
 public static class InfrastructureDependencyInjectionExtensions
@@ -18,12 +20,18 @@ public static class InfrastructureDependencyInjectionExtensions
     public static IServiceCollection ConfigureInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // ── Options ──
-        _ = services.AddOptions<ExportServiceConfig>()
-            .Bind(configuration.GetSection(ExportServiceConfig.Section))
-            .ValidateOnStart();
-
         var rootConfig = new ExportServiceConfig();
         configuration.GetSection(ExportServiceConfig.Section).Bind(rootConfig);
+        var validation = new ExportServiceConfigValidator().Validate(Options.DefaultName, rootConfig);
+        if (validation.Failed)
+        {
+            throw new OptionsValidationException(
+                Options.DefaultName,
+                typeof(ExportServiceConfig),
+                validation.Failures);
+        }
+
+        _ = services.AddSingleton<IOptions<ExportServiceConfig>>(Options.Create(rootConfig));
 
         // ── State store ──
         _ = services.AddSingleton<IDbConnectionFactory, PostgreSqlConnectionFactory>();

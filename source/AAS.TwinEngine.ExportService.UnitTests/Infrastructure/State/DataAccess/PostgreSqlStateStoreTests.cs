@@ -63,16 +63,19 @@ public class PostgreSqlStateStoreTests
         var createSql = string.Format(System.Globalization.CultureInfo.InvariantCulture, StateStoreQueries.CreateSchema, schema);
         Assert.Contains("CREATE SCHEMA IF NOT EXISTS custom_schema", createSql);
         Assert.Contains("CREATE TABLE IF NOT EXISTS custom_schema.exported_entities", createSql);
-        Assert.Contains("DROP COLUMN IF EXISTS content_hash", createSql);
+        Assert.Contains("content_hash     CHAR(64)      NOT NULL", createSql);
+        Assert.Contains("ADD COLUMN IF NOT EXISTS content_hash CHAR(64)", createSql);
 
         var selectSql = string.Format(System.Globalization.CultureInfo.InvariantCulture, StateStoreQueries.SelectByKind, schema);
         Assert.Contains("FROM custom_schema.exported_entities", selectSql);
         Assert.Contains("@entity_kind", selectSql);
+        Assert.Contains("content_hash", selectSql);
 
         var upsertSql = string.Format(System.Globalization.CultureInfo.InvariantCulture, StateStoreQueries.Upsert, schema);
         Assert.Contains("INSERT INTO custom_schema.exported_entities", upsertSql);
         Assert.Contains("@entity_kind", upsertSql);
         Assert.Contains("@identifier", upsertSql);
+        Assert.Contains("@content_hash", upsertSql);
         Assert.Contains("@created_at", upsertSql);
         Assert.Contains("@last_synced_at", upsertSql);
 
@@ -116,7 +119,7 @@ public class PostgreSqlStateStoreTests
         // Arrange
         _connectionFactory.CreateConnection().Returns(new NpgsqlConnection("Host=localhost;Database=test;Username=postgres;Password=postgres"));
         var sut = CreateSut();
-        var entity = new ExportedEntity(EntityKind.Shell, "id1", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        var entity = new ExportedEntity(EntityKind.Shell, "id1", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "D3A23E7D3FDC4D749DC3B1D574602B1E1D6812A763C685640376BBD608313417");
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 

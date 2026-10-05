@@ -65,8 +65,9 @@ public sealed class PostgreSqlStateStore : IStateStore
             results.Add(new ExportedEntity(
                 Enum.Parse<EntityKind>(reader.GetString(0)),
                 reader.GetString(1),
-                reader.GetFieldValue<DateTimeOffset>(2),
-                reader.GetFieldValue<DateTimeOffset>(3)));
+                reader.GetFieldValue<DateTimeOffset>(3),
+                reader.GetFieldValue<DateTimeOffset>(4),
+                reader.IsDBNull(2) ? null : reader.GetString(2)));
         }
 
         return results;
@@ -85,6 +86,7 @@ public sealed class PostgreSqlStateStore : IStateStore
         command.CommandText = sql;
         _ = command.Parameters.AddWithValue("@entity_kind", entity.Kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", entity.Identifier);
+        _ = command.Parameters.AddWithValue("@content_hash", entity.ContentHash!);
         _ = command.Parameters.AddWithValue("@created_at", entity.CreatedAt);
         _ = command.Parameters.AddWithValue("@last_synced_at", entity.LastSyncedAt);
 

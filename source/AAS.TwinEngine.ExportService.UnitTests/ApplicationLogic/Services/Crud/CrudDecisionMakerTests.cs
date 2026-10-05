@@ -47,7 +47,7 @@ public class CrudDecisionMakerTests
     }
 
     [Fact]
-    public void Decide_WhenAllSourceEntitiesExistInManagedState_ReturnsUpdateDecisions()
+    public void Decide_WhenAllSourceEntitiesMatchManagedState_ReturnsSkipDecisions()
     {
         // Arrange
         var now = DateTimeOffset.UtcNow;
@@ -56,8 +56,8 @@ public class CrudDecisionMakerTests
         var sources = new[] { source1, source2 };
         var state = new[]
         {
-            new ExportedEntity(EntityKind.Shell, "id1", now, now),
-            new ExportedEntity(EntityKind.Shell, "id2", now, now)
+            new ExportedEntity(EntityKind.Shell, "id1", now, now, source1.ContentHash),
+            new ExportedEntity(EntityKind.Shell, "id2", now, now, source2.ContentHash)
         };
 
         // Act
@@ -67,7 +67,7 @@ public class CrudDecisionMakerTests
         Assert.Equal(2, decisions.Count);
         Assert.All(decisions, d =>
         {
-            Assert.Equal(ExportOperation.Update, d.Operation);
+            Assert.Equal(ExportOperation.Skip, d.Operation);
             Assert.Equal(EntityKind.Shell, d.Kind);
             Assert.NotNull(d.SourceEntity);
         });
@@ -75,6 +75,26 @@ public class CrudDecisionMakerTests
         Assert.Same(source1, decisions[0].SourceEntity);
         Assert.Equal("id2", decisions[1].Identifier);
         Assert.Same(source2, decisions[1].SourceEntity);
+    }
+
+    [Fact]
+    public void Decide_WhenSourceContentChanges_ReturnsUpdateDecision()
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        var source = new SourceEntity("id1", "{\"id\":\"id1\",\"value\":\"new\"}");
+        var state = new[]
+        {
+            new ExportedEntity(EntityKind.Shell, "id1", now, now, "D3A23E7D3FDC4D749DC3B1D574602B1E1D6812A763C685640376BBD608313417")
+        };
+
+        // Act
+        var decisions = _sut.Decide(EntityKind.Shell, new[] { source }, state);
+
+        // Assert
+        var decision = Assert.Single(decisions);
+        Assert.Equal(ExportOperation.Update, decision.Operation);
+        Assert.Same(source, decision.SourceEntity);
     }
 
     [Fact]

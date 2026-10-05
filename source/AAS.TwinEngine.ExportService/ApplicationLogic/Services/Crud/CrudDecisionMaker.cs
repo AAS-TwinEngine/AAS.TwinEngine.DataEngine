@@ -17,9 +17,13 @@ public sealed class CrudDecisionMaker : ICrudDecisionMaker
         {
             _ = sourceIdentifiers.Add(source.Identifier);
 
-            if (!stateByIdentifier.ContainsKey(source.Identifier))
+            if (!stateByIdentifier.TryGetValue(source.Identifier, out var managed))
             {
                 decisions.Add(new CrudDecision(ExportOperation.Create, kind, source.Identifier, source));
+            }
+            else if (string.Equals(managed.ContentHash, source.ContentHash, StringComparison.Ordinal))
+            {
+                decisions.Add(new CrudDecision(ExportOperation.Skip, kind, source.Identifier, source));
             }
             else
             {

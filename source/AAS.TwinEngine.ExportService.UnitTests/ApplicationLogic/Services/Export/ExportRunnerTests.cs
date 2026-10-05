@@ -13,13 +13,13 @@ namespace AAS.TwinEngine.ExportService.UnitTests.ApplicationLogic.Services.Expor
 public class ExportRunnerTests
 {
     private readonly IPhaseExecutor _phaseExecutor = Substitute.For<IPhaseExecutor>();
-    private readonly IOptionsMonitor<ExportServiceConfig> _config = Substitute.For<IOptionsMonitor<ExportServiceConfig>>();
     private readonly ILogger<ExportRunner> _logger = Substitute.For<ILogger<ExportRunner>>();
     private readonly ExportServiceConfig _configValue = new();
+    private readonly IOptions<ExportServiceConfig> _config;
 
     public ExportRunnerTests()
     {
-        _config.CurrentValue.Returns(_configValue);
+        _config = Options.Create(_configValue);
 
         // Default: all phases succeed with 0 failures
         _phaseExecutor.ExecuteAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
@@ -28,6 +28,8 @@ public class ExportRunnerTests
                 var kind = callInfo.Arg<EntityKind>();
                 return Task.FromResult(new PhaseResult(kind, 1, 0, 0, 0, 0));
             });
+        _phaseExecutor.ExecuteDeletionsAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => Task.FromResult(PhaseResult.Empty(callInfo.Arg<EntityKind>())));
     }
 
     private ExportRunner CreateSut() => new(_phaseExecutor, _config, _logger);
@@ -82,6 +84,65 @@ public class ExportRunnerTests
                 EntityKind.ShellDescriptor
             },
             executedKinds);
+    }
+
+    [Fact]
+    public async Task RunAsync_ExecutesDeletionPassInReverseDependencyOrder()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var deletedKinds = new List<EntityKind>();
+        _phaseExecutor.ExecuteDeletionsAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var kind = callInfo.Arg<EntityKind>();
+                deletedKinds.Add(kind);
+                return Task.FromResult(PhaseResult.Empty(kind));
+            });
+
+        // Act
+        await sut.RunAsync(CancellationToken.None);
+
+        // Assert
+        Assert.Equal(
+            new[]
+            {
+                EntityKind.ShellDescriptor,
+                EntityKind.Shell,
+                EntityKind.SubmodelDescriptor,
+                EntityKind.Submodel,
+                EntityKind.ConceptDescription
+            },
+            deletedKinds);
+    }
+
+    [Fact]
+    public async Task RunAsync_CompletesForwardPassBeforeStartingDeletionPass()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var executions = new List<string>();
+        _phaseExecutor.ExecuteAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var kind = callInfo.Arg<EntityKind>();
+                executions.Add($"forward:{kind}");
+                return Task.FromResult(PhaseResult.Empty(kind));
+            });
+        _phaseExecutor.ExecuteDeletionsAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var kind = callInfo.Arg<EntityKind>();
+                executions.Add($"delete:{kind}");
+                return Task.FromResult(PhaseResult.Empty(kind));
+            });
+
+        // Act
+        await sut.RunAsync(CancellationToken.None);
+
+        // Assert
+        Assert.All(executions.Take(5), execution => Assert.StartsWith("forward:", execution));
+        Assert.All(executions.Skip(5), execution => Assert.StartsWith("delete:", execution));
     }
 
     [Fact]

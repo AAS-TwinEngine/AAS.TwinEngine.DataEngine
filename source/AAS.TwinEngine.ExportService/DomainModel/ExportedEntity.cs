@@ -8,4 +8,5 @@ public sealed record ExportedEntity(
     EntityKind Kind,
     string Identifier,
     DateTimeOffset CreatedAt,
-    DateTimeOffset LastSyncedAt);
+    DateTimeOffset LastSyncedAt,
+    string? ContentHash = null);
