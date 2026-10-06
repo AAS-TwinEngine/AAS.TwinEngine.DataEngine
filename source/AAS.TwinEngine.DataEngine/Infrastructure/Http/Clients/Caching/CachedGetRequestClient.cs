@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
@@ -91,7 +92,8 @@ public sealed class CachedGetRequestClient(
         throw response.StatusCode switch
         {
             HttpStatusCode.NotFound => new ResourceNotFoundException(),
-            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => new UnauthorizedAccessException(),
+            HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+            HttpStatusCode.Forbidden => new ForbiddenException(),
             HttpStatusCode.RequestTimeout => new RequestTimeoutException(),
             _ => new ValidationFailedException()
         };

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
@@ -91,7 +92,7 @@ public class CachedGetRequestClientTests
     [Theory]
     [InlineData(HttpStatusCode.NotFound, typeof(ResourceNotFoundException))]
     [InlineData(HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException))]
-    [InlineData(HttpStatusCode.Forbidden, typeof(UnauthorizedAccessException))]
+    [InlineData(HttpStatusCode.Forbidden, typeof(ForbiddenException))]
     [InlineData(HttpStatusCode.RequestTimeout, typeof(RequestTimeoutException))]
     [InlineData(HttpStatusCode.InternalServerError, typeof(ValidationFailedException))]
     [InlineData(HttpStatusCode.BadRequest, typeof(ValidationFailedException))]
