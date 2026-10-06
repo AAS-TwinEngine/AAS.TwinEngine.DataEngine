@@ -19,6 +19,9 @@ using AasCore.Aas3_1;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
+using ApplicationForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base.ForbiddenException;
+using InfrastructureForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.ForbiddenException;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 
 public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<TemplateManagementConfig> options, ICachedGetRequestClient cachedHttp, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor) : ITemplateProvider
@@ -321,7 +324,17 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
         }
     }
 
-    private async Task<string> SendGetRequestAsync(string url, string httpClientName, int expirationTime, CancellationToken cancellationToken) => await cachedHttp.GetStringAsync(url, httpClientName, expirationTime, cancellationToken).ConfigureAwait(false);
+    private async Task<string> SendGetRequestAsync(string url, string httpClientName, int expirationTime, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await cachedHttp.GetStringAsync(url, httpClientName, expirationTime, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InfrastructureForbiddenException ex)
+        {
+            throw new ApplicationForbiddenException("The requested resource is forbidden.", ex);
+        }
+    }
 
     private static ShellDescriptor? DeserializeShellDescriptor(JsonNode? descriptorNode)
     {

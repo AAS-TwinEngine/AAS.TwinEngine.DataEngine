@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
+using ApplicationForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base.ForbiddenException;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.SubmodelRegistryProvider.Services;
@@ -32,6 +33,18 @@ public class SubmodelDescriptorProviderTests
         options.Value.Returns(config);
 
         _sut = new SubmodelDescriptorProvider(_logger, options, _cachedHttp);
+    }
+
+    [Fact]
+    public async Task GetDataForSubmodelDescriptorByIdAsync_TranslatesInfrastructureForbiddenException()
+    {
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.SubmodelRegistry, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                   .ThrowsAsync(new ForbiddenException());
+
+        var exception = await Assert.ThrowsAsync<ApplicationForbiddenException>(() =>
+            _sut.GetDataForSubmodelDescriptorByIdAsync("ContactInformation", CancellationToken.None));
+
+        Assert.Equal("The requested resource is forbidden.", exception.Message);
     }
 
     [Fact]

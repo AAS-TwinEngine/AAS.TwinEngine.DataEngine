@@ -46,6 +46,8 @@ Before starting , run twinengine environmnet with dpp-plugin.
 4. Expand folders to find requests, select a request and click **Send**
 5. Inspect the request/response in the right panel
 
+Selecting an environment only loads that environment's variables. It does not change the collection authentication mode.
+
 ---
 
 ## Bruno environment & collection variables
@@ -74,26 +76,46 @@ The collection includes a set of environment/collection variables you can edit t
 
 ## Authentication (Keycloak) for the Secured example
 
-The collection ships with a ready-to-use OAuth 2.0 (Resource Owner Password) configuration that targets the Keycloak instance of the [AAS.TwinEngine.Secured](../../AAS.TwinEngine.Secured/README.md) example. It is **disabled by default** so the unsecured `local` example keeps working.
+The collection includes the OAuth 2.0 (Resource Owner Password) settings for the Keycloak instance of the [AAS.TwinEngine.Secured](../../AAS.TwinEngine.Secured/README.md) example. OAuth 2.0 is enabled in the collection by default. The OAuth fields are stored in `collection.bru`; if Bruno does not display them after an external file change, reload or reopen the collection.
 
-### Enable it
+### Use it
 
 1. Start the secured example (`docker compose up -d` in `examples/AAS.TwinEngine.Secured`).
 2. In Bruno select the `secured` environment.
-3. Open the collection settings (`...` next to the collection name -> **Settings**) -> **Auth** tab and switch the mode from **None** to **OAuth 2.0**.
+3. Confirm the collection auth mode is **OAuth 2.0**. If Bruno still shows **No Auth**, reload or reopen the collection so it reads the current `collection.bru` file.
 
-That is the only toggle. Every folder uses `auth: inherit` and every request uses `auth: inherit`, so Bruno fetches the token once, caches it, refreshes it automatically, and injects `Authorization: Bearer <token>` into all downstream requests.
+Selecting `secured` makes the variables below available to Bruno. Bruno resolves the OAuth mappings, fetches the token, caches it, refreshes it automatically, and injects `Authorization: Bearer <token>` into all downstream requests. Every folder and request uses `auth: inherit`.
+
+The `secured` environment must be selected before sending requests so the Keycloak variables resolve correctly.
 
 ### Auth variables (`environments/secured.bru`)
 
 | Variable name      | Purpose                 | Example value                                                               |
 | ------------------ | ----------------------- | --------------------------------------------------------------------------- |
-| `keycloakTokenUrl` | Keycloak token endpoint | `http://keycloak.localhost:9090/realms/basyx/protocol/openid-connect/token` |
+| `keycloakTokenUrl` | Keycloak token endpoint | `http://localhost:9090/realms/basyx/protocol/openid-connect/token` |
 | `authClientId`     | Public Keycloak client  | `basyx-ui`                                                                  |
 | `authUsername`     | Realm user              | `admin` (full access) or `usera` (viewer)                                   |
 | `authPassword`     | Realm user password     | `pwd`                                                                       |
 
 These are local demo credentials only. For anything non-local, move `authPassword` into Bruno's secret variables instead of committing it.
+
+### Keycloak OAuth variable mapping
+
+The collection stores the following OAuth 2.0 mappings:
+
+| Bruno OAuth 2.0 field       | Value to enter             | Resolved value in the secured environment                              |
+| --------------------------- | -------------------------- | ----------------------------------------------------------------------- |
+| Grant type                  | `Password Credentials`     | `Password Credentials`                                                  |
+| Access token URL            | `{{keycloakTokenUrl}}`     | Keycloak realm token endpoint                                           |
+| Refresh token URL           | `{{keycloakTokenUrl}}`     | Keycloak realm token endpoint                                           |
+| Username                    | `{{authUsername}}`         | `usera`                                                                 |
+| Password                    | `{{authPassword}}`         | `pwd`                                                                   |
+| Client ID                   | `{{authClientId}}`         | `basyx-ui`                                                              |
+| Client secret               | Leave empty                | Empty; the demo client is public                                       |
+| Scope                       | `openid profile`           | `openid profile`                                                        |
+| Credentials placement       | `Body`                     | `Body`                                                                  |
+| Token placement             | `Header`                   | `Header`                                                                |
+| Token header prefix         | `Bearer`                   | `Bearer`                                                                |
 
 ### Switching users
 
@@ -101,7 +123,7 @@ Change `authUsername` in the `secured` environment, then clear the cached token 
 
 ### Turning it off
 
-Set the collection auth mode back to **None**, or set a single request's auth to **None** to bypass the token for that request only.
+Set the collection auth mode back to **No Auth**, or set a single request's auth to **No Auth** to bypass the token for that request only.
 
 ---
 

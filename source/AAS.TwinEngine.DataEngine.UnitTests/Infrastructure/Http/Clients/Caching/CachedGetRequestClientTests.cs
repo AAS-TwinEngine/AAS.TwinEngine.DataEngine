@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
+using ForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.ForbiddenException;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Clients.Caching;
