@@ -21,10 +21,20 @@ public static class DataEngineTracing
 
         public const string PluginRequestGeneration = "Plugin Request Generation";
         public const string GetPluginData = "Get Plugin Data";
+        public const string PrepareBatchSchemas = "Prepare Batch Schemas";
+        public const string ProcessBatchResponses = "Process Batch Responses";
 
         public const string GetPluginMetadataShells = "Get Plugin Metadata-shells";
 
         public const string GetPluginMetadataAssets = "Get Plugin Metadata-assets";
+
+        public const string CollectSubmodelPage = "Collect Submodel Page";
+        public const string BuildSubmodelTemplates = "Build Submodel Templates";
+        public const string ExtractSemanticValues = "Extract Semantic Values";
+        public const string GetSubmodelValues = "Get Submodel Values";
+        public const string FillSubmodelTemplates = "Fill Submodel Templates";
+        public const string MapSubmodelResponse = "Map Submodel Response";
+        public const string SerializeSubmodels = "Serialize Submodels";
 
         public const string CacheFetch = "Cache Fetch";
 

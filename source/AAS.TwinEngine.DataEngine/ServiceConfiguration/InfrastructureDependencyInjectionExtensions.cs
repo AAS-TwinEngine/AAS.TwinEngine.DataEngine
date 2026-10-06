@@ -124,7 +124,7 @@ public static class InfrastructureDependencyInjectionExtensions
         _ = services.AddScoped<IPluginDataProvider, PluginDataProvider>();
         _ = services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
         _ = services.AddScoped<IPluginManifestProvider, PluginManifestProvider>();
-        _ = services.AddScoped<IMultiPluginDataHandler, MultiPluginDataHandler>();
+        _ = services.AddScoped<IPluginSemanticIdMapper, PluginSemanticIdMapper>();
         _ = services.AddScoped<ISubmodelDescriptorProvider, SubmodelDescriptorProvider>();
         _ = services.AddSingleton<IPluginManifestHealthStatus, PluginManifestHealthStatus>();
         _ = services.AddScoped<ICachedGetRequestClient, CachedGetRequestClient>();

@@ -14,4 +14,10 @@ public class Capabilities
 
     [Required]
     public bool HasAssetIdSearch { get; set; }
+
+    [Required]
+    public bool HasSubmodelBatch { get; set; }
+
+    [Required]
+    public bool HasAssetKindTypeFilter { get; set; }
 }

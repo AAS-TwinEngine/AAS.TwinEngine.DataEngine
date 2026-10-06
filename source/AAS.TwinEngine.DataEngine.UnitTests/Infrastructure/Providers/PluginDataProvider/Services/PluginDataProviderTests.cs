@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
 
@@ -17,8 +18,6 @@ using NSubstitute;
 
 using PluginDataProviderRepo = AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
-
-using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDataProvider.Services;
 
@@ -36,6 +35,7 @@ public class PluginDataProviderTests
                                                """;
 
     private const string SimpleResponse = """{ "leaf":"value" }""";
+    private static readonly string[] inputValue = new[] { "a", "b" };
 
     public PluginDataProviderTests()
     {
@@ -106,6 +106,34 @@ public class PluginDataProviderTests
     }
 
     [Fact]
+    public async Task GetDataForSubmodelsBatchAsync_PostsToBatchEndpoint()
+    {
+        HttpRequestMessage capturedRequest = null!;
+        string? capturedContent = null;
+        using var messageHandler = new FakeHttpMessageHandler(async (request, cancellationToken) =>
+        {
+            capturedRequest = request;
+            capturedContent = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]")
+            };
+        });
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
+        const string HttpClientName = "plugin-data-provider-TestPlugin";
+        _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+        using var content = JsonContent.Create(new[] { new { submodelIds = inputValue, schema = new { type = "object" } } });
+        var request = new PluginRequestSubmodelBatch(HttpClientName, content);
+
+        var result = await _sut.GetDataForSubmodelsBatchAsync(request, CancellationToken.None);
+
+        Assert.Equal("[]", result);
+        Assert.Equal(HttpMethod.Post, capturedRequest.Method);
+        Assert.Equal("https://example.com/data/batch", capturedRequest.RequestUri!.ToString());
+        Assert.Contains("\"submodelIds\":[\"a\",\"b\"]", capturedContent);
+    }
+
+    [Fact]
     public async Task GetDataForAllShellDescriptorsAsync_ShouldReturnRawContent()
     {
         HttpRequestMessage? captured = null;
@@ -129,7 +157,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None);
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None);
 
         Assert.NotNull(result);
         var json = result[0];
@@ -158,7 +186,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -175,7 +203,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "")
         };
 
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -196,7 +224,7 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<ResponseParsingException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
     }
 
     [Fact]
@@ -217,7 +245,48 @@ public class PluginDataProviderTests
             new(ApiPaths.PluginMetadata, "plugin2"),
         };
 
-        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<PluginMetaDataInvalidRequestException>(() => _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, metadata, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilter_SendsHeaders()
+    {
+        HttpRequestMessage? captured = null;
+        const string responseJson = """
+        {
+            "result": [
+                { "id": "urn:aas:001", "idShort": "Motor001" }
+            ],
+            "paging_metadata": { "cursor": null }
+        }
+        """;
+
+        using var messageHandler = new FakeHttpMessageHandler((req, _) =>
+        {
+            captured = req;
+            return Task.FromResult(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com") };
+        _httpClientFactory.CreateClient(ApiPaths.PluginMetadata).Returns(httpClient);
+
+        var metadata = new List<PluginRequestMetaData>
+        {
+            new(ApiPaths.PluginMetadata, "")
+        };
+
+        _ = await _sut.GetDataForAllShellDescriptorsAsync(25, "cursor-1", AssetKind.Instance, "YXR0cmlidXRl", metadata, CancellationToken.None);
+
+        Assert.NotNull(captured);
+        Assert.Equal("https://example.com/metadata/shells?limit=25&cursor=cursor-1", captured!.RequestUri!.ToString());
+        Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetKindHeader, out var assetKindHeader));
+        Assert.Equal("Instance", Assert.Single(assetKindHeader));
+        Assert.True(captured.Headers.TryGetValues(PluginDataProviderRepo.PluginDataProvider.AssetTypeHeader, out var assetTypeHeader));
+        Assert.Equal("YXR0cmlidXRl", Assert.Single(assetTypeHeader));
     }
 
     [Fact]

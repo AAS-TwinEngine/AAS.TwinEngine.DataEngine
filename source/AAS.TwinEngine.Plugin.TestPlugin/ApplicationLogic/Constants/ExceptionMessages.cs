@@ -3,6 +3,7 @@
 public static class ExceptionMessages
 {
     public const string InvalidRequestedLimit = "Limit must be greater than or equal to 1.";
+    public const string RequestedLimitExceedsMaximum = "The requested limit exceeds the maximum allowed value of 10,000.";
     public const string InvalidRequestPayload = "The request payload is invalid.";
     public const string RequestBodyInvalid = "The request body could not be processed. Verify the structure and try again.";
     public const string FailedParsingJsonSchema = "Failed to parse JSON schema.";

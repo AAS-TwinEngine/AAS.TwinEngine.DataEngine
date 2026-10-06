@@ -14,11 +14,11 @@ public static class InfrastructureDependencyInjectionExtensions
 {
     public static void ConfigureInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOptions<Semantics>().Bind(configuration.GetSection(Semantics.Section)).ValidateDataAnnotations().ValidateOnStart();
-        services.AddOptions<Capabilities>().Bind(configuration.GetSection(Capabilities.Section)).ValidateDataAnnotations().ValidateOnStart();
-        services.AddScoped<MockDataInitializer>();
-        services.AddSingleton<ISubmodelProvider, SubmodelProvider>();
-        services.AddSingleton<IMetaDataProvider, MetaDataProvider>();
-        services.AddScoped<IManifestProvider, ManifestProvider>();
+        _ = services.AddOptions<Semantics>().Bind(configuration.GetSection(Semantics.Section)).ValidateDataAnnotations().ValidateOnStart();
+        _ = services.AddOptions<Capabilities>().Bind(configuration.GetSection(Capabilities.Section)).ValidateDataAnnotations().ValidateOnStart();
+        _ = services.AddScoped<MockDataInitializer>();
+        _ = services.AddSingleton<ISubmodelProvider, SubmodelProvider>();
+        _ = services.AddSingleton<IMetaDataProvider, MetaDataProvider>();
+        _ = services.AddScoped<IManifestProvider, ManifestProvider>();
     }
 }

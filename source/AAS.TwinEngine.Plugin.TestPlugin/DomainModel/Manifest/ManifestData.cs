@@ -21,4 +21,10 @@ public class CapabilitiesData
 
     [JsonPropertyName("hasAssetIdSearch")]
     public bool HasAssetIdSearch { get; set; }
+
+    [JsonPropertyName("hasAssetKindTypeFilter")]
+    public bool HasAssetKindTypeFilter { get; set; }
+
+    [JsonPropertyName("hasSubmodelBatch")]
+    public bool HasSubmodelBatch { get; set; }
 }

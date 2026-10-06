@@ -14,6 +14,15 @@ public class ShellDescriptorDto
     [JsonRequired]
     public required string Id { get; set; }
 
+    [JsonPropertyName("assetKind")]
+    public string? AssetKind { get; set; }
+
+    [JsonPropertyName("assetType")]
+    public string? AssetType { get; set; }
+
+    [JsonPropertyName("defaultThumbnail")]
+    public DefaultThumbnailDto? DefaultThumbnail { get; set; }
+
     [JsonPropertyName("specificAssetIds")]
     public List<SpecificAssetIdsDto>? SpecificAssetIds { get; set; }
 }

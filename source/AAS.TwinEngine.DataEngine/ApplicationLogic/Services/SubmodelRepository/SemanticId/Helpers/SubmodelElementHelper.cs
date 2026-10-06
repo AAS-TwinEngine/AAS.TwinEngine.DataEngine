@@ -17,11 +17,22 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
                                                                 ? new HashSet<string>(pluginsConfig.Value.MultiLanguageProperty.DefaultLanguages, StringComparer.OrdinalIgnoreCase)
                                                                 : null;
 
-    public ISubmodelElement CloneElement(ISubmodelElement element)
-    {
-        var jsonElement = Jsonization.Serialize.ToJsonObject(element);
+    public ISubmodelElement CloneElement(ISubmodelElement element) => CloneSubmodelElement(element);
 
-        return Jsonization.Deserialize.ISubmodelElementFrom(jsonElement);
+    public IReadOnlyList<ISubmodelElement> CloneElements(ISubmodelElement element, int count)
+    {
+        if (count <= 0)
+        {
+            return [];
+        }
+
+        var clones = new ISubmodelElement[count];
+        for (var i = 0; i < count; i++)
+        {
+            clones[i] = CloneSubmodelElement(element);
+        }
+
+        return clones;
     }
 
     public ISubmodelElement? GetElementByIdShort(IEnumerable<ISubmodelElement>? submodelElements, string idShort)
@@ -83,6 +94,9 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
 
         return languages;
     }
+
+    private static ISubmodelElement CloneSubmodelElement(ISubmodelElement element)
+      => Jsonization.Deserialize.ISubmodelElementFrom(Jsonization.Serialize.ToJsonObject(element));
 
     private static bool TryParseIdShortWithBracketIndex(string idShort, out string idShortWithoutIndex, out int index)
     {

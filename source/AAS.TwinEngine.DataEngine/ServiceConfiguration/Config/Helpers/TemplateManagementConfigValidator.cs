@@ -42,6 +42,16 @@ public class TemplateManagementConfigValidator : IValidateOptions<TemplateManage
             }
         }
 
+        if (options.SubmodelBatchProcessing.BatchSize <= 0)
+        {
+            errors.Add($"{TemplateManagementConfig.Section}.SubmodelBatchProcessing.BatchSize must be greater than 0.");
+        }
+
+        if (options.SubmodelBatchProcessing.BatchMaxConcurrency <= 0)
+        {
+            errors.Add($"{TemplateManagementConfig.Section}.SubmodelBatchProcessing.BatchMaxConcurrency must be greater than 0.");
+        }
+
         return errors.Count > 0
             ? ValidateOptionsResult.Fail(errors)
             : ValidateOptionsResult.Success;

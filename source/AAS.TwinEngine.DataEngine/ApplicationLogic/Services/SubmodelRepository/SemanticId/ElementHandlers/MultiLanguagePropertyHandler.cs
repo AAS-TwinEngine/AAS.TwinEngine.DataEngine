@@ -65,7 +65,7 @@ public class MultiLanguagePropertyHandler(
                 mlp.Value.Add(languageValue);
                 languageValueMap[language] = languageValue;
 
-                logger.LogInformation("Added language '{Language}' to MultiLanguageProperty {MlpIdShort}", language, mlp.IdShort);
+                logger.LogDebug("Added language '{Language}' to MultiLanguageProperty {MlpIdShort}", language, mlp.IdShort);
             }
 
             var languageSemanticId = semanticId + mlpSeparator + language;
@@ -76,7 +76,7 @@ public class MultiLanguagePropertyHandler(
 
             if (leafNode != null)
             {
-                languageValue.Text = leafNode.Value;
+                languageValue.Text = (string?)leafNode.Value;
             }
         }
     }

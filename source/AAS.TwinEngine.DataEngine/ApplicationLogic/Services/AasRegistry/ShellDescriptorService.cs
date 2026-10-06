@@ -6,8 +6,11 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
+using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRegistry;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
@@ -24,16 +27,23 @@ public class ShellDescriptorService(
     ILogger<ShellDescriptorService> logger,
     IOptions<TemplateManagementConfig> templateManagementConfig,
     ISubmodelDescriptorService submodelDescriptorService,
-    IAasRepositoryService aasRepositoryService) : IShellDescriptorService
+    IAasRepositoryService aasRepositoryService,
+    IOptions<GeneralConfig> generalConfig) : IShellDescriptorService
 {
+    private const string SubmodelUrlSegment = "submodel";
+
     private readonly int _concurrentOperationsLimit = templateManagementConfig.Value.AasTemplateRegistry.ConcurrentOperationsLimit;
-    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int limit, string? cursor, CancellationToken cancellationToken)
+    private readonly Uri _customerDomainUrl = generalConfig.Value.CustomerDomainUrl;
+    private readonly Uri? _dataEngineRepositoryBaseUrl = generalConfig.Value.DataEngineRepositoryBaseUrl;
+
+    public async Task<ShellDescriptors?> GetAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, CancellationToken cancellationToken)
     {
         try
         {
             var pluginManifests = pluginManifestConflictHandler.Manifests;
+
             var metadata = await pluginDataHandler
-                .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifests, cancellationToken)
+                .GetDataForAllShellDescriptorsAsync(limit, cursor, assetKind, assetType, pluginManifests, cancellationToken)
                 .ConfigureAwait(false);
 
             var shellDescriptorMetadataList = metadata.ShellDescriptors ?? [];
@@ -177,6 +187,57 @@ public class ShellDescriptorService(
             .GetShellDescriptorTemplateAsync(templateId, cancellationToken)
             .ConfigureAwait(false);
 
-        return shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
+        var descriptor = shellDescriptorDataHandler.FillOut(shellDescriptorTemplate, shellDescriptorMetadata);
+        UpdateSubmodelDescriptors(descriptor, shellDescriptorMetadata.Id);
+        return descriptor;
+    }
+
+    private void UpdateSubmodelDescriptors(ShellDescriptor descriptor, string shellId)
+    {
+        if (descriptor.SubmodelDescriptors is null || descriptor.SubmodelDescriptors.Count == 0)
+        {
+            return;
+        }
+
+        string? productId;
+        try
+        {
+            productId = shellTemplateMappingProvider.GetProductIdFromRule(shellId);
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            logger.LogWarning(ex, "No product ID found while updating submodel descriptors for shell {ShellId}", shellId);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(productId))
+        {
+            return;
+        }
+
+        foreach (var submodelDescriptor in descriptor.SubmodelDescriptors)
+        {
+            if (string.IsNullOrWhiteSpace(submodelDescriptor.Id))
+            {
+                continue;
+            }
+
+            var updatedId = _customerDomainUrl + string.Join('/', SubmodelUrlSegment, productId, submodelDescriptor.Id);
+            submodelDescriptor.Id = updatedId;
+
+            if (_dataEngineRepositoryBaseUrl is null)
+            {
+                continue;
+            }
+
+            var encodedSubmodelId = updatedId.EncodeBase64Url(logger);
+            var updatedHref = $"{_dataEngineRepositoryBaseUrl}{ApiPaths.Submodels}/{encodedSubmodelId}";
+
+            foreach (var endpoint in submodelDescriptor.Endpoints ?? [])
+            {
+                endpoint.ProtocolInformation ??= new ProtocolInformationData();
+                endpoint.ProtocolInformation.Href = updatedHref;
+            }
+        }
     }
 }

@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using AasCore.Aas3_1;
+
 using Microsoft.AspNetCore.WebUtilities;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
@@ -21,8 +23,11 @@ public class PluginDataProvider(
     private const string ShellsEndpoint = "shells";
     private const string AssetInformationEndpoint = "assets";
     private const string DataEndpoint = "data";
+    private const string BatchEndpoint = "batch";
     public const string AssetIdsHeader = "aastwinengine-assetids";
     public const string IdShortHeader = "aastwinengine-idshort";
+    public const string AssetKindHeader = "aastwinengine-assetkind";
+    public const string AssetTypeHeader = "aastwinengine-assettype";
 
     public async Task<IList<string>> GetDataForSemanticIdsAsync(IList<PluginRequestSubmodel> pluginRequests, string submodelId, CancellationToken cancellationToken)
     {
@@ -42,18 +47,37 @@ public class PluginDataProvider(
             }
             catch (TaskCanceledException)
             {
-                logger.LogError("Request timed out. Endpoint: {Url}", url);
                 throw new RequestTimeoutException();
             }
         });
 
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.ToList();
+        return [.. results];
+    }
+
+    public async Task<string> GetDataForSubmodelsBatchAsync(PluginRequestSubmodelBatch pluginRequest, CancellationToken cancellationToken)
+    {
+        var url = BuildUrl(DataEndpoint, BatchEndpoint);
+        ValidatePluginRequest(pluginRequest, url);
+        var relativeUri = new Uri(url, UriKind.Relative);
+
+        using var httpClient = CreateClient(pluginRequest.HttpClientName);
+        try
+        {
+            using var response = await httpClient.PostAsync(relativeUri, pluginRequest.Content, cancellationToken).ConfigureAwait(false);
+            return await ProcessResponseAsync(response, url, cancellationToken).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException)
+        {
+            throw new RequestTimeoutException();
+        }
     }
 
     public async Task<IList<string>> GetDataForAllShellDescriptorsAsync(
         int limit,
         string? cursor,
+        AssetKind? assetKind,
+        string? assetType,
         IList<PluginRequestMetaData> pluginRequests,
         CancellationToken cancellationToken)
     {
@@ -67,7 +91,18 @@ public class PluginDataProvider(
         {
             var url = BuildShellsUrl(remainingLimit, cursor);
 
-            var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken);
+            var requestHeaders = new Dictionary<string, string>();
+            if (assetKind.HasValue)
+            {
+                requestHeaders[AssetKindHeader] = assetKind.Value.ToString();
+            }
+
+            if (!string.IsNullOrWhiteSpace(assetType))
+            {
+                requestHeaders[AssetTypeHeader] = assetType;
+            }
+
+            var response = await SendPluginRequestAsync(pluginRequest, url, exceptions, cancellationToken, requestHeaders);
             if (response == null)
             {
                 continue;
@@ -132,6 +167,7 @@ public class PluginDataProvider(
                 {
                     _ = request.Headers.TryAddWithoutValidation(AssetIdsHeader, assetIdsHeaderValue);
                 }
+
                 if (idShortHeaderValue is not null)
                 {
                     _ = request.Headers.TryAddWithoutValidation(IdShortHeader, idShortHeaderValue);
@@ -148,9 +184,8 @@ public class PluginDataProvider(
 
                 exceptions.Add(HandleFailureResponse(response.StatusCode));
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                logger.LogError(ex, "Request timed out. Endpoint: {Url}", url);
                 exceptions.Add(new RequestTimeoutException());
             }
         }
@@ -218,7 +253,12 @@ public class PluginDataProvider(
         return HandleResultOrThrow(result, exceptions);
     }
 
-    private async Task<HttpResponseMessage?> SendPluginRequestAsync(PluginRequestMetaData pluginRequest, string url, IList<Exception> exceptions, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage?> SendPluginRequestAsync(
+        PluginRequestMetaData pluginRequest,
+        string url,
+        IList<Exception> exceptions,
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? requestHeaders = null)
     {
         if (pluginRequest == null)
         {
@@ -231,11 +271,20 @@ public class PluginDataProvider(
 
         try
         {
-            return await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (requestHeaders != null)
+            {
+                foreach (var (headerName, headerValue) in requestHeaders)
+                {
+                    _ = request.Headers.TryAddWithoutValidation(headerName, headerValue);
+                }
+            }
+
+            return await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {
-            logger.LogError("Request timed out. Endpoint: {Url}", url);
             exceptions.Add(new RequestTimeoutException());
             return null;
         }
@@ -275,9 +324,7 @@ public class PluginDataProvider(
             queryParams["cursor"] = cursor;
         }
 
-        return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams!)
-                   : BaseUrl;
+        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams) : BaseUrl;
     }
 
     private static string BuildShellsByAssetIdsUrl(int limit, string? cursor)
@@ -295,9 +342,7 @@ public class PluginDataProvider(
             queryParams["cursor"] = cursor;
         }
 
-        return queryParams.Count > 0
-                   ? QueryHelpers.AddQueryString(BaseUrl, queryParams)
-                   : BaseUrl;
+        return queryParams.Count > 0 ? QueryHelpers.AddQueryString(BaseUrl, queryParams) : BaseUrl;
     }
 
     private static Exception HandleFailureResponse(System.Net.HttpStatusCode statusCode)

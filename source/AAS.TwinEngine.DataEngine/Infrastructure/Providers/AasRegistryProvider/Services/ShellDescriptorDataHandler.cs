@@ -1,9 +1,6 @@
-﻿using System.Text.Json;
-
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
-using AAS.TwinEngine.DataEngine.Infrastructure.Shared;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.AasRegistryProvider.Services;
 
@@ -40,6 +37,15 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
         descriptor.GlobalAssetId = metaData.GlobalAssetId;
         descriptor.IdShort = metaData.IdShort;
         descriptor.Id = metaData.Id;
+        if (metaData.ParsedAssetKind.HasValue)
+        {
+            descriptor.AssetKind = metaData.ParsedAssetKind.Value;
+        }
+
+        if (!string.IsNullOrWhiteSpace(metaData.AssetType))
+        {
+            descriptor.AssetType = metaData.AssetType;
+        }
 
         if (metaData.SpecificAssetIds is not null && metaData.SpecificAssetIds.Count > 0)
         {
@@ -47,10 +53,7 @@ public class ShellDescriptorDataHandler(ILogger<ShellDescriptorDataHandler> logg
             {
                 var descriptorAssetId = descriptor.SpecificAssetIds?.FirstOrDefault(x => x.Name == specificAssetIdData.Name);
 
-                if (descriptorAssetId is not null)
-                {
-                    descriptorAssetId.Value = specificAssetIdData.Value;
-                }
+                descriptorAssetId?.Value = specificAssetIdData.Value;
             }
         }
     }

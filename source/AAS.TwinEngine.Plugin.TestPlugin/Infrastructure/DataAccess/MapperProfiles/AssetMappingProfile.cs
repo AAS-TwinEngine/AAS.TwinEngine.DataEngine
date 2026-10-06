@@ -5,10 +5,12 @@ namespace AAS.TwinEngine.Plugin.TestPlugin.Infrastructure.DataAccess.MapperProfi
 
 public static class AssetMappingProfile
 {
-    public static AssetData ToDomainModel(this AssetInformationDataEntity entity, string globalAssetId, List<SpecificAssetIdsData>? specificAssetIds)
+    public static AssetData ToDomainModel(this AssetInformationDataEntity entity, string globalAssetId, string? assetKind, string? assetType, List<SpecificAssetIdsData>? specificAssetIds)
     {
         return new AssetData
         {
+            AssetKind = assetKind,
+            AssetType = assetType,
             GlobalAssetId = globalAssetId,
             SpecificAssetIds = specificAssetIds,
             DefaultThumbnail = entity?.DefaultThumbnail == null

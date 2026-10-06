@@ -6,6 +6,8 @@ public interface ISubmodelElementHelper
 {
     ISubmodelElement CloneElement(ISubmodelElement element);
 
+    IReadOnlyList<ISubmodelElement> CloneElements(ISubmodelElement element, int count);
+
     ISubmodelElement? GetElementByIdShort(IEnumerable<ISubmodelElement>? submodelElements, string idShort);
 
     ISubmodelElement GetElementFromListByIndex(IEnumerable<ISubmodelElement>? elements, string idShortWithoutIndex, int index);

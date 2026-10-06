@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Responses;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Services;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.Submodel;
 using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.Submodel;
@@ -140,5 +141,23 @@ public class SubmodelHandlerTests
         _pluginService.Received(1).GetValuesBySemanticIds(emptyBranch, "ContactInformation");
         _semanticTreeHandler.Received(1).GetJson(emptyBranch, JsonSchemaRequest);
     }
+
+      [Fact]
+      public async Task GetSubmodelDataBatch_ProcessesEverySubmodelWithItsId()
+      {
+        _jsonSchemaParser.ParseJsonSchema(JsonSchemaRequest).Returns(_semanticTree);
+        _pluginService.GetValuesBySemanticIds(_semanticTree, Arg.Any<string>()).Returns(_sematicTreeWithData);
+        _semanticTreeHandler.GetJson(_sematicTreeWithData, JsonSchemaRequest).Returns(_expectedResponse);
+        IReadOnlyList<GetSubmodelDataBatchRequest> requests =
+        [
+          new(["Zmlyc3Q", "c2Vjb25k"], JsonSchemaRequest)
+        ];
+
+        var results = await _sut.GetSubmodelDataBatch(requests, CancellationToken.None);
+
+        Assert.Equal(["first", "second"], results.Select(result => result.SubmodelId));
+        await _pluginService.Received(1).GetValuesBySemanticIds(_semanticTree, "first");
+        await _pluginService.Received(1).GetValuesBySemanticIds(_semanticTree, "second");
+      }
 }
 

@@ -10,6 +10,8 @@ public class AssetMappingProfileTests
     {
         var assetData = new AssetData
         {
+            AssetKind = "Instance",
+            AssetType = "product",
             GlobalAssetId = "asset-001",
             SpecificAssetIds = [new SpecificAssetIdsData { Name = "SerialNumber", Value = "SN001" }],
             DefaultThumbnail = new DefaultThumbnailData
@@ -22,6 +24,8 @@ public class AssetMappingProfileTests
         var result = assetData.ToDto();
 
         Assert.NotNull(result);
+        Assert.Equal("Instance", result.AssetKind);
+        Assert.Equal("product", result.AssetType);
         Assert.Equal("asset-001", result.GlobalAssetId);
         Assert.Single(result.SpecificAssetIds!);
         Assert.Equal("SerialNumber", result.SpecificAssetIds![0].Name);

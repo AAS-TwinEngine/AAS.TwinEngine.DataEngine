@@ -9,6 +9,8 @@ public static class AssetMappingProfile
     {
         return new AssetDto
         {
+            AssetKind = data.AssetKind,
+            AssetType = data.AssetType,
             GlobalAssetId = data.GlobalAssetId,
             SpecificAssetIds = data.SpecificAssetIds?.Select(id => new SpecificAssetIdsDto
             {

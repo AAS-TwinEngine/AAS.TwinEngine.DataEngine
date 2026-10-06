@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Handler;
 using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Requests;
+using AAS.TwinEngine.Plugin.TestPlugin.Api.Submodel.Responses;
 using AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Constants;
 
 using Json.Schema;
@@ -72,6 +73,35 @@ public class SubmodelControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = Assert.IsType<JsonObject>(okResult.Value);
         Assert.Equal(_response.ToJsonString(), json.ToJsonString());
+    }
+
+    [Fact]
+    public async Task RetrieveDataBatchAsync_ReturnsBadRequest_WhenRequestIsEmpty()
+    {
+        var result = await _sut.RetrieveDataBatchAsync([], CancellationToken.None);
+
+        var badResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.Equal(ExceptionMessages.InvalidRequestPayload, badResult.Value);
+    }
+
+    [Fact]
+    public async Task RetrieveDataBatchAsync_ReturnsResultsFromHandler()
+    {
+        var requests = new List<GetSubmodelDataBatchRequest>
+        {
+            new(["first", "second"], _dataQuery)
+        };
+        IReadOnlyList<SubmodelDataBatchResult> expected =
+        [
+            new("second", _response),
+            new("first", _response)
+        ];
+        _handler.GetSubmodelDataBatch(requests, Arg.Any<CancellationToken>()).Returns(expected);
+
+        var result = await _sut.RetrieveDataBatchAsync(requests, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Same(expected, okResult.Value);
     }
 }
 

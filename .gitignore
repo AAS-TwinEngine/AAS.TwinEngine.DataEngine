@@ -45,6 +45,6 @@ $RECYCLE.BIN/
 .sonarqube/
 
 # K6 generated outputs (keep folder with .gitkeep)
-test/performance/script/results/*.csv
-test/performance/script/results/*.json
-test/performance/script/results/*.html
+examples/AAS.TwinEngine.Observability/k6-script/results/*.csv
+examples/AAS.TwinEngine.Observability/k6-script/results/*.json
+examples/AAS.TwinEngine.Observability/k6-script/results/*.html

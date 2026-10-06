@@ -1,10 +1,17 @@
-using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
+﻿using AAS.TwinEngine.Plugin.TestPlugin.DomainModel.MetaData;
 
 namespace AAS.TwinEngine.Plugin.TestPlugin.ApplicationLogic.Services.MetaData;
 
 public interface IMetaDataProvider
 {
-    Task<ShellDescriptorsData> GetShellDescriptorsAsync(int? limit, string? cursor, AssetIdFilterHeader? filter, string? idShort, CancellationToken cancellationToken);
+    Task<ShellDescriptorsData> GetShellDescriptorsAsync(
+        int? limit,
+        string? cursor,
+        AssetIdFilterHeader? filter,
+        string? idShort,
+        string? assetKind,
+        string? assetType,
+        CancellationToken cancellationToken);
 
     Task<ShellDescriptorData> GetShellDescriptorAsync(string aasIdentifier, CancellationToken cancellationToken);
 

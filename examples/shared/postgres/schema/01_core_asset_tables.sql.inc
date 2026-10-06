@@ -1,0 +1,75 @@
+-- ============================================================
+-- Core Asset Tables
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS "Asset" (
+    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "ProductId" VARCHAR(50) UNIQUE NOT NULL,
+    "IdShort" VARCHAR(100),
+    "GlobalAssetId" TEXT,
+    "AssetKind" TEXT NOT NULL,
+    "AssetType" TEXT,
+    "AasId" TEXT,
+    "ThumbnailContentType" VARCHAR(50),
+    "ThumbnailPath" TEXT,
+    "MaintenanceFreeAsset" BOOLEAN,
+    "UriOfTheProduct" TEXT,
+    "ManufacturerProductType" TEXT,
+    "OrderCodeOfManufacturer" TEXT,
+    "ProductArticleNumberOfManufacturer" TEXT,
+    "SerialNumber" TEXT,
+    "YearOfConstruction" INT,
+    "DateOfManufacture" DATE,
+    "HardwareVersion" TEXT,
+    "FirmwareVersion" TEXT,
+    "SoftwareVersion" TEXT,
+    "CountryOfOrigin" TEXT,
+    "UniqueFacilityIdentifier" TEXT,
+    "AddressInformationStreet_en" TEXT,
+    "AddressInformationStreet_de" TEXT,
+    "AddressInformationZipcode_en" TEXT,
+    "AddressInformationZipcode_de" TEXT,
+    "AddressInformationCityTown_en" TEXT,
+    "AddressInformationCityTown_de" TEXT,
+    "AddressInformationNationalCode_en" TEXT,
+    "AddressInformationNationalCode_de" TEXT,
+    "ManufacturerName" TEXT,
+    "ManufacturerProductDesignation_en" TEXT,
+    "ManufacturerProductDesignation_de" TEXT,
+    "ManufacturerProductRoot_en" TEXT,
+    "ManufacturerProductRoot_de" TEXT,
+    "ManufacturerProductFamily_en" TEXT,
+    "ManufacturerProductFamily_de" TEXT,
+    "CompanyLogo" TEXT,
+    "ManufacturerArticleNumber" TEXT,
+    "ManufacturerOrderCode" TEXT,
+    "ProductImage" TEXT,
+    "ManufacturerLogo" TEXT,
+    "TextStatement_en" TEXT,
+    "TextStatement_de" TEXT,
+    "ValidDate" DATE,
+    "PcfCalculationMethod" TEXT,
+    "LifeCyclePhase" TEXT,
+    "PcfCO2eq" NUMERIC,
+    "ReferenceImpactUnitForCalculation" TEXT,
+    "QuantityOfMeasureForCalculation" NUMERIC,
+    "PublicationDate" TIMESTAMP,
+    "ExpirationDate" TIMESTAMP,
+    "ExplanatoryStatement" TEXT
+);
+
+CREATE TABLE IF NOT EXISTS "SpecificAssetIds" (
+    "Id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "ProductId" VARCHAR(50) NOT NULL REFERENCES "Asset"("ProductId") ON DELETE CASCADE,
+    "Name" TEXT,
+    "Value" TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_asset_productid
+ON "Asset"("ProductId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_aas_id
+ON "Asset" ("AasId");
+
+CREATE INDEX IF NOT EXISTS ix_asset_global_asset_id
+ON "Asset" ("GlobalAssetId");

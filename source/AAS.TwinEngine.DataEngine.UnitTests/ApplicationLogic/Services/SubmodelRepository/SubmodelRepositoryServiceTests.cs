@@ -41,6 +41,17 @@ public class SubmodelRepositoryServiceTests
 
     public SubmodelRepositoryServiceTests()
     {
+        _pluginManifestConflictHandler.Manifests.Returns(
+        [
+            new PluginManifest
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = [],
+                Capabilities = new Capabilities { HasSubmodelBatch = true }
+            }
+        ]);
+
         var templateManagementOptions = Options.Create(new TemplateManagementConfig
         {
             SubmodelTemplateRepository = new ServiceInstance
@@ -271,6 +282,95 @@ public class SubmodelRepositoryServiceTests
         var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
 
         Assert.Single(result.Result);
+        await _pluginDataHandler.Received(1).TryGetValuesBatchAsync(
+            Arg.Any<IReadOnlyList<PluginManifest>>(),
+            Arg.Any<IReadOnlyList<SubmodelValueRequest>>(),
+            50,
+            4,
+            Arg.Any<CancellationToken>());
+        await _pluginDataHandler.DidNotReceive().TryGetValuesAsync(
+            Arg.Any<IReadOnlyList<PluginManifest>>(),
+            Arg.Any<SemanticTreeNode>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelsAsync_PreservesOriginalOrder_WhenBatchResultsUseDifferentOrder()
+    {
+        const string ShellId = "https://example.com/shells/001";
+        const string FirstId = "https://example.com/submodels/first";
+        const string SecondId = "https://example.com/submodels/second";
+
+        ArrangeShellsResponse([new ShellDescriptorMetaData { Id = ShellId }]);
+        ArrangeSubmodelRefsForShell(ShellId, [FirstId, SecondId]);
+        ArrangeValidateSemanticIdFilterForAll(true);
+
+        _templateService
+            .GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(call => new Submodel(call.ArgAt<string>(0)));
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesBatchAsync(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<IReadOnlyList<SubmodelValueRequest>>(),
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new Dictionary<string, SemanticTreeNode>
+            {
+                [SecondId] = CreateSubmodelTreeNode("second"),
+                [FirstId] = CreateSubmodelTreeNode("first")
+            });
+        _semanticIdHandler
+            .FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>())
+            .Returns(call => call.ArgAt<ISubmodel>(0));
+
+        var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
+
+        Assert.Equal([FirstId, SecondId], result.Result.Select(submodel => submodel.Id));
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelsAsync_WhenBatchCapabilityIsMissing_UsesIndividualPluginRequests()
+    {
+        const string ShellId = "https://example.com/shells/001";
+        const string FirstId = "https://example.com/submodels/first";
+        const string SecondId = "https://example.com/submodels/second";
+        _pluginManifestConflictHandler.Manifests.Returns(
+        [
+            new PluginManifest
+            {
+                PluginName = "LegacyPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = [],
+                Capabilities = new Capabilities()
+            }
+        ]);
+        ArrangeShellsResponse([new ShellDescriptorMetaData { Id = ShellId }]);
+        ArrangeSubmodelRefsForShell(ShellId, [FirstId, SecondId]);
+        ArrangeValidateSemanticIdFilterForAll(true);
+        ArrangeSubmodelBuildForAny(TestData.CreateFilledSubmodel());
+
+        var result = await _sut.GetAllSubmodelsAsync(null, null, 100, null, CancellationToken.None);
+
+        Assert.Equal(2, result.Result.Count);
+        await _pluginDataHandler.Received(1).TryGetValuesAsync(
+            Arg.Any<IReadOnlyList<PluginManifest>>(),
+            Arg.Any<SemanticTreeNode>(),
+            FirstId,
+            Arg.Any<CancellationToken>());
+        await _pluginDataHandler.Received(1).TryGetValuesAsync(
+            Arg.Any<IReadOnlyList<PluginManifest>>(),
+            Arg.Any<SemanticTreeNode>(),
+            SecondId,
+            Arg.Any<CancellationToken>());
+        await _pluginDataHandler.DidNotReceive().TryGetValuesBatchAsync(
+            Arg.Any<IReadOnlyList<PluginManifest>>(),
+            Arg.Any<IReadOnlyList<SubmodelValueRequest>>(),
+            Arg.Any<int>(),
+            Arg.Any<int>(),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -803,6 +903,15 @@ public class SubmodelRepositoryServiceTests
         _pluginDataHandler
             .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), submodelId, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _pluginDataHandler
+            .TryGetValuesBatchAsync(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<IReadOnlyList<SubmodelValueRequest>>(),
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => call.ArgAt<IReadOnlyList<SubmodelValueRequest>>(1)
+                .ToDictionary(request => request.SubmodelId, _ => CreateSubmodelTreeNode("") as SemanticTreeNode));
         _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(filledSubmodel);
     }
 
@@ -815,6 +924,15 @@ public class SubmodelRepositoryServiceTests
         _pluginDataHandler
             .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(CreateSubmodelTreeNode("") as SemanticTreeNode));
+        _pluginDataHandler
+            .TryGetValuesBatchAsync(
+                Arg.Any<IReadOnlyList<PluginManifest>>(),
+                Arg.Any<IReadOnlyList<SubmodelValueRequest>>(),
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => call.ArgAt<IReadOnlyList<SubmodelValueRequest>>(1)
+                .ToDictionary(request => request.SubmodelId, _ => CreateSubmodelTreeNode("") as SemanticTreeNode));
         _semanticIdHandler.FillOutTemplate(Arg.Any<ISubmodel>(), Arg.Any<SemanticTreeNode>()).Returns(filledSubmodel);
     }
 

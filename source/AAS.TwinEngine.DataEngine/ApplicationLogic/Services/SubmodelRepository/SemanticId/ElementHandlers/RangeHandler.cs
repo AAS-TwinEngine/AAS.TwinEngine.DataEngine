@@ -36,11 +36,11 @@ public class RangeHandler(ISemanticIdResolver semanticIdResolver) : ISubmodelEle
 
         var leafNodes = branchNode.Children.OfType<SemanticLeafNode>().ToList();
 
-        range.Min = leafNodes.FirstOrDefault(n => n.SemanticId
+        range.Min = (string?)leafNodes.FirstOrDefault(n => n.SemanticId
                                                    .EndsWith(SemanticIdResolver.RangeMinimumPostFixSeparator, StringComparison.Ordinal))?
                                                    .Value;
 
-        range.Max = leafNodes.FirstOrDefault(n => n.SemanticId
+        range.Max = (string?)leafNodes.FirstOrDefault(n => n.SemanticId
                                                    .EndsWith(SemanticIdResolver.RangeMaximumPostFixSeparator, StringComparison.Ordinal))?
                                                    .Value;
     }

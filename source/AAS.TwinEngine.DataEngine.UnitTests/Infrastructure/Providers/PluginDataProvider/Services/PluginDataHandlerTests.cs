@@ -35,26 +35,26 @@ public class PluginDataHandlerTests
     private readonly IPluginRequestBuilder _pluginRequestBuilder;
     private readonly IPluginDataProvider _pluginDataProvider;
     private readonly IJsonSchemaValidator _jsonSchemaValidator;
-    private readonly IMultiPluginDataHandler _multiPluginDataHandler;
+    private readonly IPluginSemanticIdMapper _pluginSemanticIdMapper;
     private readonly ILogger<PluginDataHandler> _logger;
     private readonly IOptions<GeneralConfig> _options;
     private readonly PluginDataHandler _sut;
 
-    private ActivityListenerFixture CreateFixture() => new();
+    private static ActivityListenerFixture CreateFixture() => new();
 
     public PluginDataHandlerTests()
     {
         _pluginRequestBuilder = Substitute.For<IPluginRequestBuilder>();
         _pluginDataProvider = Substitute.For<IPluginDataProvider>();
         _jsonSchemaValidator = Substitute.For<IJsonSchemaValidator>();
-        _multiPluginDataHandler = Substitute.For<IMultiPluginDataHandler>();
+        _pluginSemanticIdMapper = Substitute.For<IPluginSemanticIdMapper>();
         _logger = Substitute.For<ILogger<PluginDataHandler>>();
         _options = Options.Create(new GeneralConfig
         {
             DataEngineRepositoryBaseUrl = new Uri("https://www.mm-software.com"),
         });
 
-        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, _multiPluginDataHandler, _logger, _options);
+        _sut = new PluginDataHandler(_pluginRequestBuilder, _pluginDataProvider, _jsonSchemaValidator, _pluginSemanticIdMapper, _logger, _options);
     }
 
     private readonly JsonSerializerOptions _jsonoptions = new()
@@ -109,7 +109,7 @@ public class PluginDataHandlerTests
         }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
             .Returns(new Dictionary<string, SemanticTreeNode> { { "TestPlugin", inputSemanticTreeNode } });
 
@@ -137,7 +137,7 @@ public class PluginDataHandlerTests
                 Arg.Any<CancellationToken>())
            .Returns(_ => Task.FromResult<IList<string>>([ExpectedJsonResponse]));
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(ci => ci.ArgAt<IList<SemanticTreeNode>>(1).First());
 
@@ -153,6 +153,165 @@ public class PluginDataHandlerTests
         _jsonSchemaValidator.Received().ValidateRequestSchema(Arg.Any<JsonSchema>());
         _jsonSchemaValidator.Received().ValidateResponseContent(ExpectedJsonResponse, Arg.Any<JsonSchema>());
     }
+
+    [Fact]
+    public async Task TryGetValuesBatchAsync_SplitsBatchesAndMapsOutOfOrderResponsesBySubmodelId()
+    {
+        var semanticIds = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["Contact"],
+                Capabilities = new Capabilities()
+            }
+        };
+        var requests = new List<SubmodelValueRequest>
+        {
+            new("submodel/a", semanticIds),
+            new("submodel/b", semanticIds),
+            new("submodel/c", semanticIds)
+        };
+        var capturedBatchSizes = new List<int>();
+        var capturedIds = new List<string>();
+
+        _pluginSemanticIdMapper
+            .FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0])
+            .Returns(semanticIds);
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call =>
+            {
+                var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
+                capturedBatchSizes.Add(groups.Sum(group => group.SubmodelIds.Count));
+                capturedIds.AddRange(groups.SelectMany(group => group.SubmodelIds));
+                return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
+            });
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns(
+                """[{"submodelId":"submodel/b","result":{"Contact":"b"}},{"submodelId":"submodel/a","result":{"Contact":"a"}}]""",
+                """[{"submodelId":"submodel/c","result":{"Contact":"c"}}]""");
+        _pluginSemanticIdMapper
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 2, 1, CancellationToken.None);
+
+        Assert.Equal([2, 1], capturedBatchSizes);
+        Assert.Equal(["c3VibW9kZWwvYQ", "c3VibW9kZWwvYg", "c3VibW9kZWwvYw"], capturedIds);
+        Assert.Equal("a", Assert.IsType<SemanticLeafNode>(result["submodel/a"]).Value);
+        Assert.Equal("b", Assert.IsType<SemanticLeafNode>(result["submodel/b"]).Value);
+        Assert.Equal("c", Assert.IsType<SemanticLeafNode>(result["submodel/c"]).Value);
+    }
+
+    [Fact]
+    public async Task TryGetValuesBatchAsync_OrdersBySchemaAndBatchesByTotalRequestCount()
+    {
+        var nameplate = new SemanticLeafNode("Nameplate", "", DataType.String, Cardinality.One);
+        var contact = new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One);
+        var custom = new SemanticLeafNode("Custom", "", DataType.String, Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["Nameplate", "Contact", "Custom"],
+                Capabilities = new Capabilities()
+            }
+        };
+        IReadOnlyList<SubmodelValueRequest> requests =
+        [
+            new("nameplate-1", nameplate),
+            new("contact-1", contact),
+            new("custom-1", custom),
+            new("nameplate-2", nameplate),
+            new("contact-2", contact),
+            new("custom-2", custom),
+            new("nameplate-3", nameplate),
+            new("contact-3", contact),
+            new("custom-3", custom)
+        ];
+        var capturedBatches = new List<IReadOnlyList<IReadOnlyList<string>>>();
+        var responses = new Queue<string>(
+        [
+            """[{"submodelId":"nameplate-1","result":{"Nameplate":"1"}},{"submodelId":"contact-1","result":{"Contact":"1"}},{"submodelId":"custom-1","result":{"Custom":"1"}},{"submodelId":"nameplate-2","result":{"Nameplate":"2"}},{"submodelId":"contact-2","result":{"Contact":"2"}},{"submodelId":"custom-2","result":{"Custom":"2"}},{"submodelId":"nameplate-3","result":{"Nameplate":"3"}},{"submodelId":"contact-3","result":{"Contact":"3"}},{"submodelId":"custom-3","result":{"Custom":"3"}}]"""
+        ]);
+
+        _pluginSemanticIdMapper
+            .FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0])
+            .Returns(call => call.ArgAt<SemanticTreeNode>(0));
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call =>
+            {
+                var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
+                capturedBatches.Add(groups
+                    .Select(group => (IReadOnlyList<string>)group.SubmodelIds.Select(DecodeBase64Url).ToList())
+                    .ToList());
+                return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
+            });
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns(_ => responses.Dequeue());
+        _pluginSemanticIdMapper
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).Single());
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
+
+        var batch = Assert.Single(capturedBatches);
+        Assert.Equal(3, batch.Count);
+        Assert.Contains(batch, group => group.SequenceEqual(["nameplate-1", "nameplate-2", "nameplate-3"]));
+        Assert.Contains(batch, group => group.SequenceEqual(["contact-1", "contact-2", "contact-3"]));
+        Assert.Contains(batch, group => group.SequenceEqual(["custom-1", "custom-2", "custom-3"]));
+        Assert.Equal(9, result.Count);
+    }
+
+    [Fact]
+    public async Task TryGetValuesBatchAsync_DoesNotThrow_WhenTemplateIsOptionalOnlyAndUnsupportedByPlugin()
+    {
+        var semanticIds = new SemanticBranchNode("root", Cardinality.One);
+        semanticIds.AddChild(new SemanticLeafNode("Unsupported", "", DataType.String, Cardinality.ZeroToOne));
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = [],
+                Capabilities = new Capabilities()
+            }
+        };
+        var requests = new List<SubmodelValueRequest> { new("submodel/a", semanticIds) };
+
+        _pluginSemanticIdMapper
+            .FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0])
+            .Returns(new SemanticBranchNode("root", Cardinality.One));
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call =>
+            {
+                var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
+                return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
+            });
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns("""[{"submodelId":"submodel/a","result":{}}]""");
+        _pluginSemanticIdMapper
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<SemanticTreeNode>(0));
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 2, 1, CancellationToken.None);
+
+        Assert.True(result.ContainsKey("submodel/a"));
+    }
+
+    private static string DecodeBase64Url(string encodedValue) =>
+        Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(encodedValue));
 
     [Fact]
     public async Task GetDataForAllShellDescriptorsAsync_ReturnsListWithHrefSet()
@@ -181,17 +340,17 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
             .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
             .Returns([json]);
 
-        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, manifests, CancellationToken.None);
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None);
 
         Assert.Equal(2, result.ShellDescriptors.Count);
         Assert.All(result.ShellDescriptors, dto => Assert.StartsWith("https://www.mm-software.com/shells/", dto.Href));
@@ -211,7 +370,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -220,11 +379,11 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
             .Returns(["null"]);
 
         await Assert.ThrowsAsync<ResponseParsingException>(() =>
-            _sut.GetDataForAllShellDescriptorsAsync(100, null, manifests, CancellationToken.None));
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None));
     }
 
     [Fact]
@@ -241,7 +400,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
@@ -263,11 +422,11 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
             .Returns([json]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForAllShellDescriptorsAsync(100, null, manifests, CancellationToken.None));
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None));
 
         _logger.Received(1).Log(
             LogLevel.Error,
@@ -294,7 +453,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
@@ -315,11 +474,11 @@ public class PluginDataHandlerTests
         };
 
         _pluginDataProvider
-            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), null, null, null, Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
             .Returns([json]);
 
         await Assert.ThrowsAsync<ValidationFailedException>(() =>
-            _sut.GetDataForAllShellDescriptorsAsync(100, null, manifests, CancellationToken.None));
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, null, null, manifests, CancellationToken.None));
 
         _logger.Received(1).Log(
             LogLevel.Error,
@@ -330,6 +489,186 @@ public class PluginDataHandlerTests
                 state.ToString()!.Contains("GlobalAssetId = <null>")),
             null,
             Arg.Any<Func<object, Exception?, string>>()!);
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilter_UsesOnlyCapablePlugins()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            }
+        };
+
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(new ShellDescriptorsMetaData { ShellDescriptors = [] }, _jsonoptions)]);
+
+        _ = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+
+        await _pluginDataProvider.Received(1)
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilterAndMixedPluginCapabilities_UsesOnlyFilterCapablePlugins()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginCapable",
+                PluginUrl = new Uri("http://plugin-capable"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            },
+            new()
+            {
+                PluginName = "PluginFallbackOnly",
+                PluginUrl = new Uri("http://plugin-fallback"),
+                SupportedSemanticIds = ["id-2"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = false }
+            }
+        };
+
+        _pluginSemanticIdMapper
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginCapable"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginCapable", "")]);
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(new ShellDescriptorsMetaData { ShellDescriptors = [] }, _jsonoptions)]);
+
+        _ = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+
+        _pluginRequestBuilder.Received(1).Build(Arg.Is<IList<string>>(plugins =>
+            plugins.Count == 1 &&
+            plugins[0] == "PluginCapable"));
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithAssetKindTypeFilterAndNoFilterCapablePlugins_ThrowsPluginCapabilityNotSupportedException()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = false }
+            }
+        };
+
+        _pluginSemanticIdMapper
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns([]);
+
+        await Assert.ThrowsAsync<PluginCapabilityNotSupportedException>(() =>
+            _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None));
+
+        await _pluginDataProvider.DidNotReceive()
+            .GetDataForAllShellDescriptorsAsync(Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<AssetKind?>(), Arg.Any<string?>(), Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithFilterCapablePluginAndMatchingAssetKindType_ReturnsDescriptors()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            }
+        };
+
+        _pluginSemanticIdMapper
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var response = new ShellDescriptorsMetaData
+        {
+            ShellDescriptors = [
+                new ShellDescriptorMetaData
+                {
+                    Id = "shell-1",
+                    AssetKind = "Instance",
+                    AssetType = "attribute"
+                }
+            ]
+        };
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "attribute", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(response, _jsonoptions)]);
+
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "attribute", manifests, CancellationToken.None);
+
+        Assert.Single(result.ShellDescriptors ?? []);
+        Assert.Equal("shell-1", result.ShellDescriptors![0].Id);
+    }
+
+    [Fact]
+    public async Task GetDataForAllShellDescriptorsAsync_WithFilterCapablePluginAndMismatchedAssetKind_ReturnsDescriptors()
+    {
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "PluginA",
+                PluginUrl = new Uri("http://plugin-a"),
+                SupportedSemanticIds = ["id-1"],
+                Capabilities = new Capabilities { HasShellDescriptor = true, HasAssetKindTypeFilter = true }
+            }
+        };
+
+        _pluginSemanticIdMapper
+            .GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+            .Returns(["PluginA"]);
+
+        _pluginRequestBuilder.Build(Arg.Any<IList<string>>())
+            .Returns([new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", "")]);
+
+        var response = new ShellDescriptorsMetaData
+        {
+            ShellDescriptors = [
+                new ShellDescriptorMetaData
+                {
+                    Id = "shell-1",
+                    AssetKind = "Type",
+                    AssetType = "attribute"
+                }
+            ]
+        };
+
+        _pluginDataProvider
+            .GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", Arg.Any<IList<PluginRequestMetaData>>(), Arg.Any<CancellationToken>())
+            .Returns([JsonSerializer.Serialize(response, _jsonoptions)]);
+
+        var result = await _sut.GetDataForAllShellDescriptorsAsync(100, null, AssetKind.Instance, "YXR0cmlidXRl", manifests, CancellationToken.None);
+
+        Assert.Single(result.ShellDescriptors ?? []);
+        Assert.Equal("shell-1", result.ShellDescriptors![0].Id);
     }
 
     [Fact]
@@ -348,7 +687,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -403,7 +742,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -433,7 +772,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -471,7 +810,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -506,7 +845,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         _pluginRequestBuilder.Build(Arg.Any<IList<string>>(), Arg.Any<string>())
@@ -536,7 +875,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -566,7 +905,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns(["PluginA"]);
 
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
@@ -606,7 +945,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -653,7 +992,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -685,7 +1024,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -717,7 +1056,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -761,7 +1100,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
+        _pluginSemanticIdMapper.GetAvailablePlugins(manifests, Arg.Any<Func<Capabilities, bool>>())
             .Returns([]);
 
         var filter = new ShellSearchFilter { SpecificAssetIds = [] };
@@ -783,7 +1122,7 @@ public class PluginDataHandlerTests
             }
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .GetAvailablePlugins(
                 Arg.Any<IReadOnlyList<PluginManifest>>(),
                 Arg.Any<Func<Capabilities, bool>>())
@@ -863,7 +1202,7 @@ public class PluginDataHandlerTests
             new($"{HttpClientNames.PluginDataProviderPrefix}PluginA", jsonContent)
         };
 
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
             .Returns(new Dictionary<string, SemanticTreeNode> { { "PluginA", inputNode } });
         _pluginRequestBuilder.Build(Arg.Any<IDictionary<string, JsonSchema>>()).Returns(requestList);
@@ -872,7 +1211,7 @@ public class PluginDataHandlerTests
         _pluginDataProvider
             .GetDataForSemanticIdsAsync(Arg.Any<IList<PluginRequestSubmodel>>(), SubmodelId, Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult<IList<string>>([ResponseJson]));
-        _multiPluginDataHandler
+        _pluginSemanticIdMapper
             .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
             .Returns(inputNode);
 

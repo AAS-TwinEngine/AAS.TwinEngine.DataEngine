@@ -1,6 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
+﻿using System.ComponentModel.DataAnnotations;
 
-using System.ComponentModel.DataAnnotations;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Config;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Configuration.LegacyV1.ConfigV1;
 

@@ -146,7 +146,7 @@ public class MultiLanguagePropertyHandlerTests
         Equal(2, mlp.Value!.Count);
         Equal("French", mlp.Value.First(v => v.Language == "fr").Text);
         _logger.Received(1).Log(
-            LogLevel.Information,
+            LogLevel.Debug,
             Arg.Any<EventId>(),
             Arg.Is<object>(state => state.ToString()!.Contains("Added language 'fr'")),
             null,

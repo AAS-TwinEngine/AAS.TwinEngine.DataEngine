@@ -1,6 +1,5 @@
 ﻿using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
-using AAS.TwinEngine.DataEngine.DomainModel.Discovery;
 using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
@@ -16,7 +15,14 @@ public interface IPluginDataHandler
 {
     Task<SemanticTreeNode> TryGetValuesAsync(IReadOnlyList<PluginManifest> pluginManifests, SemanticTreeNode semanticIds, string submodelId, CancellationToken cancellationToken);
 
-    Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken);
+    Task<IReadOnlyDictionary<string, SemanticTreeNode>> TryGetValuesBatchAsync(
+        IReadOnlyList<PluginManifest> pluginManifests,
+        IReadOnlyList<SubmodelValueRequest> requests,
+        int batchSize,
+        int maxConcurrency,
+        CancellationToken cancellationToken);
+
+    Task<ShellDescriptorsMetaData> GetDataForAllShellDescriptorsAsync(int limit, string? cursor, AssetKind? assetKind, string? assetType, IReadOnlyList<PluginManifest> pluginManifests, CancellationToken cancellationToken);
 
     Task<ShellDescriptorMetaData> GetDataForShellDescriptorAsync(IReadOnlyList<PluginManifest> pluginManifests, string id, CancellationToken cancellationToken);
 

@@ -25,7 +25,7 @@ internal static class LoggingConfigurationExtension
 
         _ = builder.Host.UseSerilog((context, loggerConfig) =>
         {
-            loggerConfig
+            _ = loggerConfig
                 .ReadFrom.Configuration(context.Configuration)
                 .Enrich.FromLogContext()
                 .MinimumLevel.ControlledBy(logLevelSwitch);

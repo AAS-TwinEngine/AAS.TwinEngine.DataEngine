@@ -17,24 +17,23 @@ public static class Program
 
         builder.ConfigureLogging(builder.Configuration);
 
-        builder.Services.AddHttpContextAccessor();
+        _ = builder.Services.AddHttpContextAccessor();
         builder.Services.ConfigureInfrastructure(builder.Configuration);
         builder.Services.ConfigureApplication(builder.Configuration);
         builder.Services.ConfigureResponseCompression();
-        builder.Services.AddAuthorization();
+        _ = builder.Services.AddAuthorization();
 
-        builder.Services.AddHealthChecks().AddCheck<MockDataHealthCheck>("mock_data");
+        _ = builder.Services.AddHealthChecks().AddCheck<MockDataHealthCheck>("mock_data");
 
-        builder.Services.AddControllers();
-
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddOpenApiDocument(settings =>
+        _ = builder.Services.AddControllers();
+        _ = builder.Services.AddEndpointsApiExplorer();
+        _ = builder.Services.AddOpenApiDocument(settings =>
         {
             settings.DocumentName = ApiVersion.ToString();
             settings.Title = ApiTitle;
         });
 
-        builder.Services.AddApiVersioning(options =>
+        _ = builder.Services.AddApiVersioning(options =>
         {
             options.DefaultApiVersion = new ApiVersion(ApiVersion.Major, ApiVersion.Minor);
             options.AssumeDefaultVersionWhenUnspecified = true;
@@ -45,7 +44,7 @@ public static class Program
 
         var app = builder.Build();
 
-        app.MapHealthChecks("/healthz");
+        _ = app.MapHealthChecks("/healthz");
 
         using (var scope = app.Services.CreateScope())
         {
@@ -53,13 +52,13 @@ public static class Program
             initializer.Initialize(CancellationToken.None);
         }
 
-        app.UseExceptionHandler();
-        app.UseResponseCompression();
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
-        app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
-        app.MapControllers();
+        _ = app.UseExceptionHandler();
+        _ = app.UseResponseCompression();
+        _ = app.UseHttpsRedirection();
+        _ = app.UseAuthorization();
+        _ = app.UseOpenApi(c => c.PostProcess = (d, _) => d.Servers.Clear());
+        _ = app.MapControllers();
 
-        await app.RunAsync();
+        await app.RunAsync().ConfigureAwait(false);
     }
 }

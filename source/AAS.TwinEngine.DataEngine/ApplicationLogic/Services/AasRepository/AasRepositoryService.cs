@@ -6,6 +6,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Shared.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRegistry;
 using AAS.TwinEngine.DataEngine.DomainModel.AasRepository;
+using AAS.TwinEngine.DataEngine.DomainModel.Plugin;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -70,14 +71,42 @@ public class AasRepositoryService(
 
     public async Task<IAssetAdministrationShell?> GetShellByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
     {
-        var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var shellTemplate = await templateService.GetShellTemplateAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-        var assetInformation = await GetAssetInformationByIdAsync(aasIdentifier, cancellationToken).ConfigureAwait(false);
+            var pluginManifests = pluginManifestConflictHandler.Manifests;
 
-        shellTemplate.AssetInformation = assetInformation;
-        shellTemplate.Id = aasIdentifier;
+            var metadata = await pluginDataHandler.GetDataForShellDescriptorAsync(pluginManifests, aasIdentifier, cancellationToken).ConfigureAwait(false);
 
-        return shellTemplate;
+            await FillShellFromMetadata(shellTemplate, metadata, pluginManifests, aasIdentifier, cancellationToken).ConfigureAwait(false);
+
+            return shellTemplate;
+        }
+        catch (ResourceNotFoundException ex)
+        {
+            throw new ShellNotFoundException(ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ServiceUnAuthorizedException(ex);
+        }
+        catch (ResponseParsingException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            throw new PluginNotAvailableException(ex);
+        }
+        catch (MultiPluginConflictException ex)
+        {
+            throw new InternalDataProcessingException(ex);
+        }
+        catch (PluginMetaDataInvalidRequestException ex)
+        {
+            throw new InvalidUserInputException(ex);
+        }
     }
 
     public async Task<IAssetInformation> GetAssetInformationByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
@@ -235,6 +264,8 @@ public class AasRepositoryService(
         }
 
         SetDefaultThumbnail(template, pluginData);
+        SetAssetKind(template, pluginData);
+        SetAssetType(template, pluginData);
         SetGlobalAssetId(template, pluginData);
         SetSpecificAssetIds(template, pluginData);
 
@@ -251,6 +282,22 @@ public class AasRepositoryService(
         }
 
         template.DefaultThumbnail = new Resource(thumbnail.Path, thumbnail.ContentType);
+    }
+
+    private static void SetAssetKind(IAssetInformation template, AssetData pluginData)
+    {
+        if (pluginData.ParsedAssetKind.HasValue)
+        {
+            template.AssetKind = pluginData.ParsedAssetKind.Value;
+        }
+    }
+
+    private static void SetAssetType(IAssetInformation template, AssetData pluginData)
+    {
+        if (!string.IsNullOrWhiteSpace(pluginData.AssetType))
+        {
+            template.AssetType = pluginData.AssetType;
+        }
     }
 
     private static void SetGlobalAssetId(IAssetInformation template, AssetData pluginData) => template.GlobalAssetId = pluginData.GlobalAssetId;
@@ -271,34 +318,6 @@ public class AasRepositoryService(
         }
     }
 
-    private void FillShellFromMetadata(IAssetAdministrationShell shell, ShellDescriptorMetaData metadata)
-    {
-        shell.Id = metadata.Id;
-
-        if (!string.IsNullOrWhiteSpace(metadata.IdShort))
-        {
-            shell.IdShort = metadata.IdShort;
-        }
-
-        if (shell.AssetInformation is null)
-        {
-            logger.LogError("Shell template with id {AasId} has no AssetInformation. Cannot fill out metadata.", shell.Id);
-            throw new TemplateNotValidException();
-        }
-
-        shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
-
-        foreach (var assetId in metadata.SpecificAssetIds)
-        {
-            var existingAssetId = shell.AssetInformation.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
-
-            if (existingAssetId != null)
-            {
-                existingAssetId.Value = assetId.Value;
-            }
-        }
-    }
-
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetShellMetadataAsync(
         ShellSearchFilter? filter,
         int limit,
@@ -313,7 +332,7 @@ public class AasRepositoryService(
     private async Task<(IList<ShellDescriptorMetaData>, PagingMetaData)> GetAllShellMetadataAsync(int limit, string? cursor, CancellationToken cancellationToken)
     {
         var metadata = await pluginDataHandler
-            .GetDataForAllShellDescriptorsAsync(limit, cursor, pluginManifestConflictHandler.Manifests, cancellationToken)
+            .GetDataForAllShellDescriptorsAsync(limit, cursor, null, null, pluginManifestConflictHandler.Manifests, cancellationToken)
             .ConfigureAwait(false);
 
         return (
@@ -339,6 +358,7 @@ public class AasRepositoryService(
     private async Task<List<IAssetAdministrationShell>> BuildShellsAsync(IEnumerable<ShellDescriptorMetaData> metadataItems, CancellationToken cancellationToken)
     {
         using var semaphore = new SemaphoreSlim(_concurrentOperationsLimit, _concurrentOperationsLimit);
+        var pluginManifests = pluginManifestConflictHandler.Manifests;
 
         var tasks = metadataItems.Select(async metadata =>
         {
@@ -352,7 +372,7 @@ public class AasRepositoryService(
             {
                 var shell = await templateService.GetShellTemplateAsync(metadata.Id, cancellationToken).ConfigureAwait(false);
 
-                FillShellFromMetadata(shell, metadata);
+                await FillShellFromMetadata(shell, metadata, pluginManifests, metadata.Id, cancellationToken).ConfigureAwait(false);
 
                 return shell;
             }
@@ -370,6 +390,69 @@ public class AasRepositoryService(
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         return [.. results.Where(s => s is not null).Select(s => s)];
+    }
+
+    private async Task FillShellFromMetadata(
+        IAssetAdministrationShell shell,
+        ShellDescriptorMetaData metadata,
+        IReadOnlyList<PluginManifest> pluginManifests,
+        string aasIdentifier,
+        CancellationToken cancellationToken)
+    {
+        if (metadata.DefaultThumbnail is null ||
+            string.IsNullOrWhiteSpace(metadata.DefaultThumbnail.Path) ||
+            string.IsNullOrWhiteSpace(metadata.DefaultThumbnail.ContentType))
+        {
+            var assetData = await pluginDataHandler
+                .GetDataForAssetInformationByIdAsync(pluginManifests, aasIdentifier, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (assetData is not null)
+            {
+                metadata.DefaultThumbnail = assetData.DefaultThumbnail;
+            }
+        }
+
+        shell.Id = metadata.Id;
+
+        if (!string.IsNullOrWhiteSpace(metadata.IdShort))
+        {
+            shell.IdShort = metadata.IdShort;
+        }
+
+        if (shell.AssetInformation is null)
+        {
+            logger.LogError("Shell template with id {AasId} has no AssetInformation. Cannot fill out metadata.", shell.Id);
+            throw new TemplateNotValidException();
+        }
+
+        if (metadata.ParsedAssetKind.HasValue)
+        {
+            shell.AssetInformation.AssetKind = metadata.ParsedAssetKind.Value;
+        }
+
+        if (!string.IsNullOrWhiteSpace(metadata.AssetType))
+        {
+            shell.AssetInformation.AssetType = metadata.AssetType;
+        }
+
+        shell.AssetInformation.GlobalAssetId = metadata.GlobalAssetId;
+
+        var thumbnail = metadata.DefaultThumbnail;
+        if (thumbnail is not null && !string.IsNullOrWhiteSpace(thumbnail.Path) && !string.IsNullOrWhiteSpace(thumbnail.ContentType))
+        {
+            shell.AssetInformation.DefaultThumbnail = new Resource(thumbnail.Path, thumbnail.ContentType);
+        }
+
+        foreach (var assetId in metadata.SpecificAssetIds ?? [])
+        {
+            var existingAssetId = shell.AssetInformation.SpecificAssetIds?.FirstOrDefault(x => x.Name == assetId.Name);
+
+            if (existingAssetId != null)
+            {
+                existingAssetId.Value = assetId.Value;
+            }
+        }
     }
 
     private static IList<IAssetAdministrationShell> FilterByExternalSubjectId(IList<IAssetAdministrationShell> shells, IList<SpecificAssetId>? filters)

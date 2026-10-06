@@ -75,7 +75,7 @@ public abstract class AasRepositoryControllerTests : IDisposable
         using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(TestData.CreatePluginResponseForAssetinformation())
+            Content = new StringContent(TestData.CreatePluginResponseForShellDescriptor())
         }));
 
         using var httpClient = new HttpClient(messageHandler);

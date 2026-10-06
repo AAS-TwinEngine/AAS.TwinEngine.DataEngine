@@ -1,5 +1,4 @@
-using System.Net;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
@@ -15,8 +14,6 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
-
-using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 

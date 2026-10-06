@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -15,6 +16,7 @@ namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.
 public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<JsonSchemaValidator> logger) : IJsonSchemaValidator
 {
     private readonly string _contextPrefix = pluginsConfig.Value.SubmodelElementIndexContextPrefix;
+    private readonly ConcurrentDictionary<JsonSchema, Lazy<JsonSchema>> _normalizedSchemaCache = new(ReferenceEqualityComparer.Instance);
     private const string DefinitionsPrefix = "#/definitions/";
 
     public void ValidateRequestSchema(JsonSchema schema)
@@ -67,15 +69,33 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
 
         using var parsedResponse = responseDoc;
 
-        if (!TryNormalizeSchema(requestSchema, out var normalizedSchema, out var normalizeError))
+        ValidateResponseElement(parsedResponse.RootElement, requestSchema);
+    }
+
+    private void ValidateResponseElement(JsonElement responseJson, JsonSchema requestSchema)
+    {
+        JsonSchema schema;
+        try
         {
-            LogAndThrowException($"Failed to normalize request schema: {normalizeError}");
+            schema = _normalizedSchemaCache.GetOrAdd(
+                requestSchema,
+                schema => new Lazy<JsonSchema>(
+                    () => NormalizeSchema(schema),
+                    LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+        }
+        catch (InternalDataProcessingException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogAndThrowException("Failed to normalize request schema.", ex);
+            return;
         }
 
         try
         {
-            var schema = JsonSchema.FromText(normalizedSchema.ToJsonString());
-            var result = schema.Evaluate(parsedResponse.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
+            var result = schema.Evaluate(responseJson, new EvaluationOptions { OutputFormat = OutputFormat.List });
             if (!result.IsValid)
             {
                 LogAndThrowException("Response did not validate against schema.");
@@ -85,6 +105,16 @@ public class JsonSchemaValidator(IOptions<PluginsConfig> pluginsConfig, ILogger<
         {
             LogAndThrowException("Exception occurred during response validation.", ex);
         }
+    }
+
+    private JsonSchema NormalizeSchema(JsonSchema requestSchema)
+    {
+        if (!TryNormalizeSchema(requestSchema, out var normalizedSchema, out var normalizeError))
+        {
+            LogAndThrowException($"Failed to normalize request schema: {normalizeError}");
+        }
+
+        return JsonSchema.FromText(normalizedSchema.ToJsonString());
     }
 
     private void LogAndThrowException(string logMessage, Exception? ex = null)

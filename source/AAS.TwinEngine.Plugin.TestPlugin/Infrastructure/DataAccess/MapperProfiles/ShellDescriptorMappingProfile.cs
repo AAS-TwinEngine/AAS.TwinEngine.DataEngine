@@ -12,6 +12,15 @@ public static class ShellDescriptorMappingProfile
             Id = entity.Id,
             GlobalAssetId = entity.GlobalAssetId,
             IdShort = entity.IdShort,
+            AssetKind = entity.AssetKind,
+            AssetType = entity.AssetType,
+            DefaultThumbnail = entity.AssetInformationData?.DefaultThumbnail is null
+                ? null
+                : new DefaultThumbnailData
+                {
+                    Path = entity.AssetInformationData.DefaultThumbnail.Path,
+                    ContentType = entity.AssetInformationData.DefaultThumbnail.ContentType
+                },
             SpecificAssetIds = entity.SpecificAssetIds?.Select(s => new SpecificAssetIdsData
             {
                 Name = s.Name,

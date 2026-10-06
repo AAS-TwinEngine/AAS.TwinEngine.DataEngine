@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.Api.Shared;
+﻿using System.Text.Json.Nodes;
+
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
@@ -16,7 +18,7 @@ public static class SubmodelsMapperProfile
             {
                 Cursor = submodelList.PagingMetaData?.Cursor
             },
-            Result = [.. submodelList.Result.Select(Jsonization.Serialize.ToJsonObject)]
+            Result = SerializeSubmodelsInParallel(submodelList.Result)
         };
     }
 
@@ -30,5 +32,12 @@ public static class SubmodelsMapperProfile
             },
             Result = [.. submodelElementsPage.Result.Select(Jsonization.Serialize.ToJsonObject)]
         };
+    }
+
+    private static IList<JsonObject> SerializeSubmodelsInParallel(IList<ISubmodel>? submodels)
+    {
+        var results = new JsonObject[submodels.Count];
+        _ = Parallel.For(0, submodels.Count, index => results[index] = Jsonization.Serialize.ToJsonObject(submodels[index]));
+        return results;
     }
 }

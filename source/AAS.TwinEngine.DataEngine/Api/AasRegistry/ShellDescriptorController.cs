@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Handler;
 using AAS.TwinEngine.DataEngine.Api.AasRegistry.Requests;
@@ -7,6 +6,8 @@ using AAS.TwinEngine.DataEngine.Api.AasRegistry.Responses;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRegistry.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
+
+using AasCore.Aas3_1;
 
 using Asp.Versioning;
 
@@ -30,6 +31,8 @@ public class ShellDescriptorController(
     /// </summary>
     /// <param name="limit">The maximum number of elements in the response array</param>
     /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="assetKind">The Asset's kind (Instance or Type)</param>
+    /// <param name="assetType">The Asset's type (UTF8-BASE64-URL-encoded)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <response code="200">Requested Asset Administration Shell Descriptors</response>
     /// <response code="400">Bad Request, e.g.the request parameters of the format of the request body is wrong.</response>
@@ -40,10 +43,15 @@ public class ShellDescriptorController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync([FromQuery] string? cursor, CancellationToken cancellationToken, [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
+    public async Task<ActionResult<ShellDescriptorsDto>> GetAllShellDescriptorsAsync(
+        [FromQuery] string? cursor,
+        [FromQuery] AssetKind? assetKind,
+        [FromQuery] string? assetType,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
     {
         logger.LogInformation("Get All ShellDescriptors");
-        var request = new GetShellDescriptorsRequest(limit, cursor);
+        var request = new GetShellDescriptorsRequest(limit, cursor, assetKind, assetType);
         var response = await shellDescriptorHandler.GetAllShellDescriptors(request, cancellationToken).ConfigureAwait(false);
         return Ok(response);
     }

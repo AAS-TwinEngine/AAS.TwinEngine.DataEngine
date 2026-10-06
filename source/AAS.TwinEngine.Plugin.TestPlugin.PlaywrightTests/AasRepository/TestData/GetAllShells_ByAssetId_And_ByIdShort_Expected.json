@@ -7,7 +7,7 @@
       "idShort": "MM03",
       "id": "https://mm-software.com/ids/aas/000-003",
       "assetInformation": {
-        "assetKind": "Instance",
+        "assetKind": "Type",
         "globalAssetId": "https://mm-software.com/ids/assets/000-003",
         "specificAssetIds": [
           {
@@ -49,7 +49,12 @@
               ]
             }
           }
-        ]
+        ],
+        "assetType": "Template",
+        "defaultThumbnail": {
+          "path": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product3.jpg",
+          "contentType": "image/jpeg"
+        }
       },
       "submodels": [
         {

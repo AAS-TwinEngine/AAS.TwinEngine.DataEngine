@@ -23,11 +23,10 @@ public class ShellDescriptor
 
     [JsonPropertyName("assetKind")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AssetKind? AssetKind { get; set; }
+    public AssetKind AssetKind { get; set; }
 
     [JsonPropertyName("assetType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AssetKind? AssetType { get; set; }
+    public string? AssetType { get; set; }
 
     [JsonPropertyName("endpoints")]
     public IList<EndpointData>? Endpoints { get; set; }
@@ -52,7 +51,7 @@ public class ShellDescriptor
         return new ShellDescriptor
         {
             AssetKind = AasCore.Aas3_1.AssetKind.Type,
-            AssetType = AasCore.Aas3_1.AssetKind.Type,
+            AssetType = "Type",
             GlobalAssetId = string.Empty,
             IdShort = string.Empty,
             Id = string.Empty,

@@ -88,7 +88,7 @@ public class EntityHandler(
 
         if (globalAssetNode != null)
         {
-            entity.GlobalAssetId = globalAssetNode.Value;
+            entity.GlobalAssetId = (string?)globalAssetNode.Value;
         }
 
         if (entity.SpecificAssetIds != null)
@@ -103,7 +103,7 @@ public class EntityHandler(
 
                 if (specNode != null)
                 {
-                    specificAssetId.Value = specNode.Value;
+                    specificAssetId.Value = (string?)specNode.Value;
                 }
             }
         }
