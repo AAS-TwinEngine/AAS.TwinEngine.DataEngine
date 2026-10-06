@@ -6,11 +6,13 @@ using System.Text;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
+using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Headers;
 using AAS.TwinEngine.DataEngine.Infrastructure.Logging;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -26,12 +28,13 @@ public sealed class CachedGetRequestClient(
     public async Task<string> GetStringAsync(string relativeUrl, string httpClientName, int expirationTime, CancellationToken cancellationToken)
     {
         var currentTraceContext = Activity.Current?.Context ?? default;
+        var incomingHeaders = CaptureIncomingHeaders(httpContextAccessor.HttpContext);
 
         if (!IsCacheEnabled(httpContextAccessor, cacheOptions.Value))
         {
             using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, currentTraceContext);
             logger.LogInformation("Cache bypassed because 'EnableNoCacheParameter' is true and 'noCache=true' was specified.");
-            return await FetchAsync(relativeUrl, httpClientName, cancellationToken).ConfigureAwait(false);
+            return await FetchAsync(relativeUrl, httpClientName, incomingHeaders, cancellationToken).ConfigureAwait(false);
         }
 
         using var cacheLookupActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.CacheFetch, currentTraceContext);
@@ -51,20 +54,30 @@ public sealed class CachedGetRequestClient(
             async token =>
             {
                 using var httpFetchActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.HttpFetch, httpFetchParentContext);
-                return await FetchAsync(relativeUrl, httpClientName, token).ConfigureAwait(false);
+                return await FetchAsync(relativeUrl, httpClientName, incomingHeaders, token).ConfigureAwait(false);
             },
             options: entryOptions,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<string> FetchAsync(string url, string httpClientName, CancellationToken cancellationToken)
+    private async Task<string> FetchAsync(
+        string url,
+        string httpClientName,
+        IReadOnlyDictionary<string, StringValues>? incomingHeaders,
+        CancellationToken cancellationToken)
     {
         logger.LogInformation("Sending HTTP GET request to {Url}", LogSanitizerExtension.Sanitize(url));
 
         var httpClient = clientFactory.CreateClient(httpClientName);
         var relativeUri = new Uri(url, UriKind.Relative);
+        using var request = new HttpRequestMessage(HttpMethod.Get, relativeUri);
 
-        var response = await httpClient.GetAsync(relativeUri, cancellationToken).ConfigureAwait(false);
+        if (incomingHeaders is not null)
+        {
+            request.Options.Set(RequestHeaderForwardingOptions.IncomingHeaders, incomingHeaders);
+        }
+
+        var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         if (response.IsSuccessStatusCode)
         {
@@ -78,17 +91,39 @@ public sealed class CachedGetRequestClient(
         throw response.StatusCode switch
         {
             HttpStatusCode.NotFound => new ResourceNotFoundException(),
-            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => new UnauthorizedAccessException(),
+            HttpStatusCode.Unauthorized => new UnauthorizedAccessException(),
+            HttpStatusCode.Forbidden => new ForbiddenException(),
             HttpStatusCode.RequestTimeout => new RequestTimeoutException(),
             _ => new ValidationFailedException()
         };
     }
 
+    private static IReadOnlyDictionary<string, StringValues>? CaptureIncomingHeaders(HttpContext? httpContext)
+    {
+        if (httpContext is null)
+        {
+            return null;
+        }
+
+        return httpContext.Request.Headers.ToDictionary(
+            header => header.Key,
+            header => new StringValues(header.Value.ToArray()),
+            StringComparer.OrdinalIgnoreCase);
+    }
+
     internal static string BuildCacheKey(IHttpContextAccessor httpContextAccessor, string requestParts)
     {
         var requestHash = ComputeHash(requestParts);
+        var httpContext = httpContextAccessor.HttpContext;
 
-        var user = httpContextAccessor.HttpContext?.User;
+        if (httpContext?.Request.Headers.TryGetValue("Authorization", out var authorization) == true
+            && !StringValues.IsNullOrEmpty(authorization))
+        {
+            var credentialHash = ComputeHash(authorization.ToString());
+            return $"credential:{credentialHash}:req:{requestHash}";
+        }
+
+        var user = httpContext?.User;
 
         if (user?.Identity is { IsAuthenticated: true })
         {

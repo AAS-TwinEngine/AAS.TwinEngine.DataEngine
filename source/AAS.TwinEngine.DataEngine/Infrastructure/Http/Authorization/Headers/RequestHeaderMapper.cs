@@ -136,8 +136,18 @@ public class RequestHeaderMapper(
 
     public void ApplyMappings(HttpContext? httpContext, HttpRequestMessage outgoingRequest, string clientName)
     {
+        var incomingHeaders = httpContext?.Request.Headers.ToDictionary(
+            header => header.Key,
+            header => header.Value,
+            StringComparer.OrdinalIgnoreCase);
+
+        ApplyMappings(incomingHeaders, outgoingRequest, clientName);
+    }
+
+    public void ApplyMappings(IReadOnlyDictionary<string, StringValues>? incomingHeaders, HttpRequestMessage outgoingRequest, string clientName)
+    {
         ValidateInputs(outgoingRequest, clientName);
-        if (httpContext == null)
+        if (incomingHeaders == null)
         {
             return;
         }
@@ -158,7 +168,7 @@ public class RequestHeaderMapper(
             var sourceName = rule.Source;
             var targetName = rule.Target;
 
-            if (!httpContext.Request.Headers.TryGetValue(sourceName, out var values) || StringValues.IsNullOrEmpty(values))
+            if (!incomingHeaders.TryGetValue(sourceName, out var values) || StringValues.IsNullOrEmpty(values))
             {
                 continue;
             }
