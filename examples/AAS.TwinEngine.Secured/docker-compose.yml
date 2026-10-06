@@ -120,8 +120,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "8086:8080"
     restart: always
     environment:
       - Semantics__IndexContextPrefix=_aastwinengineindex_
@@ -156,8 +154,6 @@ services:
     container_name: template-repository-registry
     pull_policy: always
     command: ["/app/aasenvironmentservice"]
-    ports:
-      - "8082:8082"
     volumes:
       - ../shared/aas:/app/preconfiguration:ro
       - ./security_env:/security_env:ro

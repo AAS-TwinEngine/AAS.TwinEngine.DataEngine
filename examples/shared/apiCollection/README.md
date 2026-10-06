@@ -79,16 +79,8 @@ The collection ships with a ready-to-use OAuth 2.0 (Resource Owner Password) con
 ### Enable it
 
 1. Start the secured example (`docker compose up -d` in `examples/AAS.TwinEngine.Secured`).
-2. Make sure `keycloak.localhost` resolves on your machine. If not, add to `C:\Windows\System32\drivers\etc\hosts`:
-
-   ```text
-   127.0.0.1 keycloak.localhost
-   ```
-
-   The host name matters: BaSyx only trusts tokens whose issuer is `http://keycloak.localhost:9090/realms/basyx`.
-
-3. In Bruno select the `secured` environment.
-4. Open the collection settings (`...` next to the collection name -> **Settings**) -> **Auth** tab and switch the mode from **None** to **OAuth 2.0**.
+2. In Bruno select the `secured` environment.
+3. Open the collection settings (`...` next to the collection name -> **Settings**) -> **Auth** tab and switch the mode from **None** to **OAuth 2.0**.
 
 That is the only toggle. Every folder uses `auth: inherit` and every request uses `auth: inherit`, so Bruno fetches the token once, caches it, refreshes it automatically, and injects `Authorization: Bearer <token>` into all downstream requests.
 
