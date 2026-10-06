@@ -82,40 +82,39 @@ The collection includes the OAuth 2.0 (Resource Owner Password) settings for the
 
 1. Start the secured example (`docker compose up -d` in `examples/AAS.TwinEngine.Secured`).
 2. In Bruno select the `secured` environment.
-3. Confirm the collection auth mode is **OAuth 2.0**. If Bruno still shows **No Auth**, reload or reopen the collection so it reads the current `collection.bru` file.
+3. Change the collection auth mode from **No Auth** to **OAuth 2.0**.
 
-Selecting `secured` makes the variables below available to Bruno. Bruno resolves the OAuth mappings, fetches the token, caches it, refreshes it automatically, and injects `Authorization: Bearer <token>` into all downstream requests. Every folder and request uses `auth: inherit`.
 
 The `secured` environment must be selected before sending requests so the Keycloak variables resolve correctly.
 
 ### Auth variables (`environments/secured.bru`)
 
-| Variable name      | Purpose                 | Example value                                                               |
-| ------------------ | ----------------------- | --------------------------------------------------------------------------- |
+| Variable name      | Purpose                 | Example value                                                      |
+| ------------------ | ----------------------- | ------------------------------------------------------------------ |
 | `keycloakTokenUrl` | Keycloak token endpoint | `http://localhost:9090/realms/basyx/protocol/openid-connect/token` |
-| `authClientId`     | Public Keycloak client  | `basyx-ui`                                                                  |
-| `authUsername`     | Realm user              | `admin` (full access) or `usera` (viewer)                                   |
-| `authPassword`     | Realm user password     | `pwd`                                                                       |
+| `authClientId`     | Public Keycloak client  | `basyx-ui`                                                         |
+| `authUsername`     | Realm user              | `admin` (full access) or `usera` (viewer)                          |
+| `authPassword`     | Realm user password     | `pwd`                                                              |
 
 These are local demo credentials only. For anything non-local, move `authPassword` into Bruno's secret variables instead of committing it.
 
-### Keycloak OAuth variable mapping
+### OAuth variable mapping
 
 The collection stores the following OAuth 2.0 mappings:
 
-| Bruno OAuth 2.0 field       | Value to enter             | Resolved value in the secured environment                              |
-| --------------------------- | -------------------------- | ----------------------------------------------------------------------- |
-| Grant type                  | `Password Credentials`     | `Password Credentials`                                                  |
-| Access token URL            | `{{keycloakTokenUrl}}`     | Keycloak realm token endpoint                                           |
-| Refresh token URL           | `{{keycloakTokenUrl}}`     | Keycloak realm token endpoint                                           |
-| Username                    | `{{authUsername}}`         | `usera`                                                                 |
-| Password                    | `{{authPassword}}`         | `pwd`                                                                   |
-| Client ID                   | `{{authClientId}}`         | `basyx-ui`                                                              |
-| Client secret               | Leave empty                | Empty; the demo client is public                                       |
-| Scope                       | `openid profile`           | `openid profile`                                                        |
-| Credentials placement       | `Body`                     | `Body`                                                                  |
-| Token placement             | `Header`                   | `Header`                                                                |
-| Token header prefix         | `Bearer`                   | `Bearer`                                                                |
+| Bruno OAuth 2.0 field | Value to enter         | Resolved value in the secured environment |
+| --------------------- | ---------------------- | ----------------------------------------- |
+| Grant type            | `Password Credentials` | `Password Credentials`                    |
+| Access token URL      | `{{keycloakTokenUrl}}` | Keycloak realm token endpoint             |
+| Refresh token URL     | `{{keycloakTokenUrl}}` | Keycloak realm token endpoint             |
+| Username              | `{{authUsername}}`     | `usera`                                   |
+| Password              | `{{authPassword}}`     | `pwd`                                     |
+| Client ID             | `{{authClientId}}`     | `basyx-ui`                                |
+| Client secret         | Leave empty            | Empty; the demo client is public          |
+| Scope                 | `openid profile`       | `openid profile`                          |
+| Credentials placement | `Body`                 | `Body`                                    |
+| Token placement       | `Header`               | `Header`                                  |
+| Token header prefix   | `Bearer`               | `Bearer`                                  |
 
 ### Switching users
 
