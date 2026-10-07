@@ -445,6 +445,30 @@ public class ShellTemplateMappingProviderTests
     }
 
     [Fact]
+    public void GetTemplateId_Allowlist_DoesNotUsePlaceholderPatternForNonAllowlistedShell()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Regex,
+                    Pattern = @"^https?://[^/]+/ids/aas/(.+)$",
+                    Index = 1
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["2000-2201"], Pattern = [""] , TemplateId = "pcf-template" },
+                new ShellTemplateMappings { Pattern = [".+"], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/3000-1000");
+
+        Assert.Equal("default-template", result);
+    }
+
+    [Fact]
     public void GetTemplateId_Allowlist_MatchesHyphenatedIdentifierSuffix()
     {
         var sut = CreateSut(
