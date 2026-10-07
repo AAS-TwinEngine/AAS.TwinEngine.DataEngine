@@ -19,6 +19,7 @@ public class SubmodelTemplateMappings
 public class ShellTemplateMappings
 {
     public string TemplateId { get; set; } = string.Empty;
+    public IList<string> Allowlist { get; init; } = [];
     public IList<string> Pattern { get; init; } = [];
 }
 
