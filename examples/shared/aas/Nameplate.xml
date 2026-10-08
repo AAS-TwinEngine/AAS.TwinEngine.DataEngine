@@ -87,7 +87,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:anyURI</valueType>
-          <value>https://www.domain-abc.com/Model-Nr-1234/Serial-Nr-5678</value>
+          <value></value>
         </property>
         <multiLanguageProperty>
           <idShort>ManufacturerName</idShort>
@@ -131,7 +131,7 @@
           <value>
             <langStringTextType>
               <language>de</language>
-              <text>"Muster AG"</text>
+              <text></text>
             </langStringTextType>
           </value>
         </multiLanguageProperty>
@@ -177,7 +177,7 @@
           <value>
             <langStringTextType>
               <language>en</language>
-              <text>"ABC-123"</text>
+              <text></text>
             </langStringTextType>
           </value>
         </multiLanguageProperty>
@@ -272,7 +272,7 @@
               <value>
                 <langStringTextType>
                   <language>de</language>
-                  <text>Musterstraße 1</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -303,7 +303,7 @@
               <value>
                 <langStringTextType>
                   <language>de</language>
-                  <text>12345</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -334,7 +334,7 @@
               <value>
                 <langStringTextType>
                   <language>de</language>
-                  <text>Musterstadt</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -365,7 +365,7 @@
               <value>
                 <langStringTextType>
                   <language>en</language>
-                  <text>DE</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -413,7 +413,7 @@
           <value>
             <langStringTextType>
               <language>en</language>
-              <text>"flow meter"</text>
+              <text></text>
             </langStringTextType>
           </value>
           <valueId>
@@ -468,7 +468,7 @@
           <value>
             <langStringTextType>
               <language>en</language>
-              <text>"Type ABC"</text>
+              <text></text>
             </langStringTextType>
           </value>
         </multiLanguageProperty>
@@ -512,7 +512,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>FM-ABC-1234</value>
+          <value></value>
         </property>
         <property>
           <idShort>OrderCodeOfManufacturer</idShort>
@@ -554,7 +554,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>FMABC1234</value>
+          <value></value>
         </property>
         <property>
           <idShort>ProductArticleNumberOfManufacturer</idShort>
@@ -596,7 +596,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>FM11-ABC22-123456</value>
+          <value></value>
         </property>
         <property>
           <idShort>SerialNumber</idShort>
@@ -638,7 +638,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>12345678</value>
+          <value></value>
         </property>
         <property>
           <idShort>YearOfConstruction</idShort>
@@ -680,7 +680,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>2022</value>
+          <value></value>
         </property>
         <property>
           <idShort>DateOfManufacture</idShort>
@@ -722,7 +722,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:date</valueType>
-          <value>2022-01-01</value>
+          <value></value>
         </property>
         <property>
           <idShort>HardwareVersion</idShort>
@@ -764,7 +764,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>1.0.0</value>
+          <value></value>
         </property>
         <property>
           <idShort>FirmwareVersion</idShort>
@@ -848,7 +848,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>1.0.0</value>
+          <value></value>
         </property>
         <property>
           <idShort>CountryOfOrigin</idShort>
@@ -896,7 +896,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>DE</value>
+          <value></value>
         </property>
         <property>
           <idShort>UniqueFacilityIdentifier</idShort>
@@ -927,7 +927,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>987654321</value>
+          <value></value>
         </property>
         <file>
           <idShort>CompanyLogo</idShort>
@@ -1102,7 +1102,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>0173-1#07-DAA603#004</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>DesignationOfCertificateOrApproval</idShort>
@@ -1150,7 +1150,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>KEMA99IECEX1105/128</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>IssueDate</idShort>
@@ -1198,7 +1198,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:date</valueType>
-                  <value>2022-01-01</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>ExpiryDate</idShort>
@@ -1246,7 +1246,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:date</valueType>
-                  <value>2022-01-01</value>
+                  <value></value>
                 </property>
                 <file>
                   <idShort>MarkingFile</idShort>
@@ -1329,7 +1329,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>0044</value>
+                  <value></value>
                 </property>
               </value>
             </submodelElementCollection>
