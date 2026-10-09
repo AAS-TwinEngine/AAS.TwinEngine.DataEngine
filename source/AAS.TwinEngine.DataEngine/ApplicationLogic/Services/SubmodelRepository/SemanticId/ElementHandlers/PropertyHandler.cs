@@ -19,7 +19,19 @@ public class PropertyHandler(ISemanticIdResolver semanticIdResolver) : ISubmodel
     {
         if (values is SemanticLeafNode leafValueNode)
         {
-            ((Property)element).Value = (string?)leafValueNode.Value;
+            ((Property)element).Value = leafValueNode.DataType == DataType.Boolean
+                ? NormalizeBooleanValue(leafValueNode.Value)
+                : (string?)leafValueNode.Value;
         }
+    }
+
+    private static string? NormalizeBooleanValue(object? value)
+    {
+        return value?.ToString()?.ToLowerInvariant() switch
+        {
+            "true" or "1" => "true",
+            "false" or "0" => "false",
+            var other => other
+        };
     }
 }

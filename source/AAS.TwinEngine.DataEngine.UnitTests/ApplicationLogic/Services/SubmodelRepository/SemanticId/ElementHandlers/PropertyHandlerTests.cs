@@ -64,6 +64,21 @@ public class PropertyHandlerTests
         Equal("NewValue", property.Value);
     }
 
+    [Theory]
+    [InlineData("True", "true")]
+    [InlineData("False", "false")]
+    [InlineData("1", "true")]
+    [InlineData("0", "false")]
+    public void FillOut_WithBooleanLeafNode_UsesAasBooleanLexicalForm(string value, string expectedValue)
+    {
+        var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.Boolean, value: "");
+        var values = new SemanticLeafNode("http://test/my-prop", value, DataType.Boolean, Cardinality.One);
+
+        _sut.FillOut(property, values, (_, _, _) => { });
+
+        Equal(expectedValue, property.Value);
+    }
+
     [Fact]
     public void FillOut_WithBranchNode_DoesNotModifyPropertyValue()
     {
