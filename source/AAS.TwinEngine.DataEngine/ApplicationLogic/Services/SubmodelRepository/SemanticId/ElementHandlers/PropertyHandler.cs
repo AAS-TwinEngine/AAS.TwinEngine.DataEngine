@@ -26,12 +26,5 @@ public class PropertyHandler(ISemanticIdResolver semanticIdResolver) : ISubmodel
     }
 
     private static string? NormalizeBooleanValue(object? value)
-    {
-        return value?.ToString()?.ToLowerInvariant() switch
-        {
-            "true" or "1" => "true",
-            "false" or "0" => "false",
-            var other => other
-        };
-    }
+        => value?.ToString()?.ToLowerInvariant();
 }

@@ -67,8 +67,8 @@ public class PropertyHandlerTests
     [Theory]
     [InlineData("True", "true")]
     [InlineData("False", "false")]
-    [InlineData("1", "true")]
-    [InlineData("0", "false")]
+    [InlineData("1", "1")]
+    [InlineData("0", "0")]
     public void FillOut_WithBooleanLeafNode_UsesAasBooleanLexicalForm(string value, string expectedValue)
     {
         var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.Boolean, value: "");
