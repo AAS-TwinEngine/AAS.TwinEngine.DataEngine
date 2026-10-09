@@ -171,14 +171,14 @@ public class SubmodelDescriptorProviderTests
     }
 
     [Fact]
-    public async Task GetDataForSubmodelDescriptorByIdAsync_DeserializesSupplementalSemanticId_WhenPresent()
+    public async Task GetDataForSubmodelDescriptorByIdAsync_DeserializesSupplementalSemanticIds_WhenPresent()
     {
         const string id = "https://mm-software.com/submodel/supplemental";
         const string jsonResponse = """
                                     {
                                         "id": "https://mm-software.com/submodel/supplemental",
                                         "idShort": "SupplementalSubmodel",
-                                        "supplementalSemanticId": [
+                                        "supplementalSemanticIds": [
                                             {
                                                 "type": "ExternalReference",
                                                 "keys": [
@@ -198,9 +198,9 @@ public class SubmodelDescriptorProviderTests
         var result = await _sut.GetDataForSubmodelDescriptorByIdAsync(id, CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.NotNull(result.SupplementalSemanticId);
-        Assert.Single(result.SupplementalSemanticId!);
-        Assert.Equal("https://admin-shell.io/supplemental/1/0", result.SupplementalSemanticId![0].Keys[0].Value);
+        Assert.NotNull(result.SupplementalSemanticIds);
+        Assert.Single(result.SupplementalSemanticIds!);
+        Assert.Equal("https://admin-shell.io/supplemental/1/0", result.SupplementalSemanticIds![0].Keys[0].Value);
     }
 
     [Fact]

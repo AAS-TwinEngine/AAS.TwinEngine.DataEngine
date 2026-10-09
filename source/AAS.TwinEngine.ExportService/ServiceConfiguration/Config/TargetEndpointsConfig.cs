@@ -6,6 +6,8 @@ namespace AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 /// </summary>
 public sealed class TargetEndpointsConfig
 {
+    public bool OmitNullProperties { get; set; }
+
     public EndpointConfig ShellDescriptors { get; set; } = new();
 
     public EndpointConfig SubmodelDescriptors { get; set; } = new();

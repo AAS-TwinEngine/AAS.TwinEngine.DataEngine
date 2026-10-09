@@ -69,7 +69,7 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
             IdShort = descriptorNode["idShort"]?.GetValue<string>(),
             Id = descriptorNode["id"]?.GetValue<string>(),
             SemanticId = AasJsonNodeDeserializer.DeserializeAasNode(descriptorNode["semanticId"], Jsonization.Deserialize.ReferenceFrom),
-            SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["supplementalSemanticId"], Jsonization.Deserialize.ReferenceFrom),
+            SupplementalSemanticIds = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["supplementalSemanticIds"], Jsonization.Deserialize.ReferenceFrom),
             Endpoints = descriptorNode["endpoints"]?.Deserialize<List<EndpointData>>()
         };
     }

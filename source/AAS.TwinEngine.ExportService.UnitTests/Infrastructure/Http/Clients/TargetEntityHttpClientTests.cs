@@ -76,6 +76,32 @@ public class TargetEntityHttpClientTests
     }
 
     [Fact]
+    public async Task CreateAsync_WhenOmitNullPropertiesIsEnabled_RemovesNullProperties()
+    {
+        _configValue.Targets.OmitNullProperties = true;
+        var handler = new DelegatingTestHandler(req => new HttpResponseMessage(HttpStatusCode.Created));
+        var sut = CreateSut(handler);
+        var entity = new SourceEntity("shell-123", "{\"id\":\"shell-123\",\"semanticId\":null}");
+
+        await sut.CreateAsync(EntityKind.Shell, entity, CancellationToken.None);
+
+        Assert.Equal("{\"id\":\"shell-123\"}", handler.RequestBodies[0]);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenOmitNullPropertiesIsDisabled_PreservesNullProperties()
+    {
+        _configValue.Targets.OmitNullProperties = false;
+        var handler = new DelegatingTestHandler(req => new HttpResponseMessage(HttpStatusCode.Created));
+        var sut = CreateSut(handler);
+        var entity = new SourceEntity("shell-123", "{\"id\":\"shell-123\",\"semanticId\":null}");
+
+        await sut.CreateAsync(EntityKind.Shell, entity, CancellationToken.None);
+
+        Assert.Equal("{\"id\":\"shell-123\",\"semanticId\":null}", handler.RequestBodies[0]);
+    }
+
+    [Fact]
     public async Task CreateAsync_WhenTargetReturnsConflict_FallsBackToUpdate()
     {
         // Arrange
