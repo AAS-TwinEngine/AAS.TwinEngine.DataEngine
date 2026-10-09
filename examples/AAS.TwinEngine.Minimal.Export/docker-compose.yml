@@ -1,0 +1,390 @@
+networks:
+  twinengine-network:
+    name: twinengine-network-export
+
+volumes:
+  postgres-data:
+
+services:
+  # ---------------------------------------------------------------------------
+  # Shared Postgres instance: hosts the DPP plugin DB, both BaSyx Go DBs, and
+  # the Export Service's own state store, each as a separate database.
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: twinengine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin  
+    volumes:
+      - ./postgres/00_create_databases.sql:/docker-entrypoint-initdb.d/00_create_databases.sql:ro
+      - ../shared/postgres/01_init_tables.sql:/docker-entrypoint-initdb.d/01_init_tables.sql:ro
+      - ../shared/postgres/02_init_data.sql:/docker-entrypoint-initdb.d/02_init_data.sql:ro
+      - ../shared/postgres/schema:/docker-entrypoint-initdb.d/schema:ro
+      - ../shared/postgres/seed:/docker-entrypoint-initdb.d/seed:ro           +
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d twinengine"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - twinengine-network
+
+  # ---------------------------------------------------------------------------     
+  # SOURCE side — identical in role to the AAS.TwinEngine.Minimal example:
+  # DataEngine aggregates the DPP plugin + the source BaSyx Go templates,
+  # exposed to the browser via nginx on :8080.
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.31.6
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ../shared/nginx/html:/usr/share/nginx/html
+      - ../shared/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+    restart: always
+    depends_on:
+      source-registry-repository:
+        condition: service_started
+    networks:
+      - twinengine-network
+
+  twinengine-dataengine:
+    ports:
+      - "8085:8080"
+    image: dataenginettt:1.0.0
+    container_name: twinengine-dataengine
+    build:
+      context: ../../source
+      dockerfile: ./AAS.TwinEngine.DataEngine/Dockerfile
+    depends_on:
+      dpp-plugin:
+        condition: service_started
+    restart: always
+    environment:
+      - General__DataEngineRepositoryBaseUrl=http://localhost:8080
+      - General__CustomerDomainUrl=https://mm-software.com
+      - Plugins__Instances__0__Name=RelationalDatabasePlugin
+      - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
+      - Plugins__Instances__0__healthEndpoint=/healthz
+      - Plugins__MultiLanguageProperty__DefaultLanguages__0=en
+      - Plugins__MultiLanguageProperty__DefaultLanguages__1=de
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__templateId=https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__0__pattern__0=TechnicalData
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__templateId=https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__1__pattern__0=Nameplate
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__templateId=https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__2__pattern__0=MaintenanceInstructions
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__templateId=https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__3__pattern__0=CarbonFootprint
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__templateId=https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0
+      - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__4__pattern__0=HandoverDocumentation
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
+      - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
+      - TemplateManagement__AasTemplateRepository__Name=AasTemplateRepository
+      - TemplateManagement__AasTemplateRepository__baseUrl=http://source-registry-repository:8082
+      - TemplateManagement__AasTemplateRepository__healthEndpoint=/health
+      - TemplateManagement__SubmodelTemplateRepository__Name=SubmodelTemplateRepository
+      - TemplateManagement__SubmodelTemplateRepository__baseUrl=http://source-registry-repository:8082
+      - TemplateManagement__SubmodelTemplateRepository__healthEndpoint=/health
+      - TemplateManagement__ConceptDescriptionTemplateRepository__Name=ConceptDescriptionTemplateRepository
+      - TemplateManagement__ConceptDescriptionTemplateRepository__baseUrl=http://source-registry-repository:8082
+      - TemplateManagement__ConceptDescriptionTemplateRepository__healthEndpoint=/health
+      - TemplateManagement__AasTemplateRegistry__Name=AasTemplateRegistry
+      - TemplateManagement__AasTemplateRegistry__baseUrl=http://source-registry-repository:8082
+      - TemplateManagement__AasTemplateRegistry__healthEndpoint=/health
+      - TemplateManagement__SubmodelTemplateRegistry__Name=SubmodelTemplateRegistry
+      - TemplateManagement__SubmodelTemplateRegistry__baseUrl=http://source-registry-repository:8082
+      - TemplateManagement__SubmodelTemplateRegistry__healthEndpoint=/health
+    networks:
+      - twinengine-network
+
+  dpp-plugin:
+    ports:
+      - "8086:8080"
+    image: ghcr.io/aas-twinengine/plugindpp:v1.2.0
+    container_name: dpp-plugin
+    build:
+      context: ../../../AAS.TwinEngine.Plugin.DPP/source
+      dockerfile: ./AAS.TwinEngine.Plugin.RelationalDatabase/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      - Semantics__IndexContextPrefix=_aastwinengineindex_
+      - Capabilities__HasShellDescriptor=true
+      - Capabilities__HasAssetInformation=true
+      - Capabilities__HasAssetIdSearch=true
+      - Capabilities__HasAssetKindTypeFilter=true
+      - Capabilities__HasSubmodelBatch=true
+      - RelationalDatabaseConfiguration__ConnectionString=Host=postgres;Port=5432;Database=twinengine;Username=postgres;Password=admin
+      - ExtractionRules__SubmodelNameExtractionRules__0__SubmodelName=NamePlate
+      - ExtractionRules__SubmodelNameExtractionRules__0__pattern__0=Nameplate
+      - ExtractionRules__SubmodelNameExtractionRules__0__pattern__1=NamePlate
+      - ExtractionRules__SubmodelNameExtractionRules__1__SubmodelName=MaintenanceInstructions
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__0=MaintenanceInstructions
+      - ExtractionRules__SubmodelNameExtractionRules__1__pattern__1=MaintenanceInstruction
+      - ExtractionRules__SubmodelNameExtractionRules__2__SubmodelName=HandoverDocumentation
+      - ExtractionRules__SubmodelNameExtractionRules__2__pattern__0=HandoverDocumentation
+      - ExtractionRules__SubmodelNameExtractionRules__2__pattern__1=HandoverDocumentations
+      - ExtractionRules__SubmodelNameExtractionRules__3__SubmodelName=TechnicalData
+      - ExtractionRules__SubmodelNameExtractionRules__3__pattern__0=TechnicalData
+      - ExtractionRules__SubmodelNameExtractionRules__4__SubmodelName=CarbonFootprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__0=CarbonFootprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__1=Footprint
+      - ExtractionRules__SubmodelNameExtractionRules__4__pattern__2=Carbon
+      - ExtractionRules__ProductIdExtractionRules__0__Pattern=/
+      - ExtractionRules__ProductIdExtractionRules__0__Index=5
+      - ExtractionRules__ProductIdExtractionRules__0__Strategy=Split
+      - ExtractionRules__ProductIdExtractionRules__0__Description=Default split by '/' segment 5
+    networks:
+      - twinengine-network
+
+  basyx_configuration_source:
+    container_name: basyx_configuration_source
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxSourceDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  # Pre-seeded with the DPP submodel/shell templates — this is what DataEngine exports FROM.
+  source-registry-repository:
+    ports:
+      - "8082:8082"
+    image: eclipsebasyx/aasenvironment-go:1.0.12
+    container_name: source-registry-repository
+    command: ["/app/aasenvironmentservice"]
+    volumes:
+      - ../shared/aas:/app/preconfiguration:ro
+    environment:
+      - SERVER_PORT=8082
+      - CORS_ALLOWEDORIGINS=*
+      - CORS_ALLOWEDHEADERS=*
+      - CORS_ALLOWEDCREDENTIALS=true
+      - CORS_ALLOWEDMETHODS=GET,OPTIONS
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxSourceDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+      - ABAC_ENABLED=false
+      - GENERAL_AASREGISTRYINTEGRATION=true
+      - GENERAL_SUBMODELREGISTRYINTEGRATION=true
+      - GENERAL_DISCOVERYINTEGRATION=true
+      - GENERAL_EXTERNALURL=http://localhost:8080
+      - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
+    restart: always
+    depends_on:
+      basyx_configuration_source:
+        condition: service_completed_successfully
+    networks:
+      - twinengine-network
+
+  aas-ui-source:
+    image: eclipsebasyx/aas-gui:v2-260801
+    container_name: aas-ui-source
+    volumes:
+      - ../shared/logo:/usr/src/app/dist/Logo
+    environment:
+      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
+      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
+      AAS_REPO_PATH: http://localhost:8080/shells
+      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
+      CD_REPO_PATH: http://localhost:8080/concept-descriptions
+      BASE_PATH: "/aas-ui"
+      LOGO_PATH: "MM_Logo.svg"
+      PRIMARY_DARK_COLOR: "#00F2E5"
+      PRIMARY_LIGHT_COLOR: "#041b2b"
+    restart: always
+    depends_on:
+      source-registry-repository:
+        condition: service_started
+    networks:
+      - twinengine-network
+
+  # ---------------------------------------------------------------------------
+  # TARGET side — a second, independent BaSyx Go environment that starts
+  # EMPTY. The Export Service is the only thing that ever writes to it, so you
+  # can watch entities appear/update/disappear here as it runs on its schedule.
+  # ---------------------------------------------------------------------------
+  basyx_configuration_target:
+    container_name: basyx_configuration_target
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTargetDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  target-registry-repository:
+    ports:
+      - "8092:8082"
+    image: eclipsebasyx/aasenvironment-go:1.0.12
+    container_name: target-registry-repository
+    command: ["/app/aasenvironmentservice"]
+    environment:
+      - SERVER_PORT=8082
+      - CORS_ALLOWEDORIGINS=*
+      - CORS_ALLOWEDHEADERS=*
+      - CORS_ALLOWEDCREDENTIALS=true
+      - CORS_ALLOWEDMETHODS=GET,POST,PUT,DELETE,OPTIONS
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTargetDB
+      - POSTGRES_MAXOPENCONNECTIONS=500
+      - POSTGRES_MAXIDLECONNECTIONS=500
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+      - ABAC_ENABLED=false
+      - GENERAL_AASREGISTRYINTEGRATION=true
+      - GENERAL_SUBMODELREGISTRYINTEGRATION=true
+      - GENERAL_DISCOVERYINTEGRATION=true
+      - GENERAL_EXTERNALURL=http://localhost:8092
+    restart: always
+    depends_on:
+      basyx_configuration_target:
+        condition: service_completed_successfully
+    networks:
+      - twinengine-network
+
+  aas-ui-target:
+    image: eclipsebasyx/aas-gui:v2-260801
+    container_name: aas-ui-target
+    ports:
+      - "8090:3000"
+    volumes:
+      - ../shared/logo:/usr/src/app/dist/Logo
+    environment:
+      AAS_REGISTRY_PATH: http://localhost:8092/shell-descriptors
+      SUBMODEL_REGISTRY_PATH: http://localhost:8092/submodel-descriptors
+      AAS_REPO_PATH: http://localhost:8092/shells
+      SUBMODEL_REPO_PATH: http://localhost:8092/submodels
+      CD_REPO_PATH: http://localhost:8092/concept-descriptions
+      BASE_PATH: "/"
+      LOGO_PATH: "MM_Logo.svg"
+      PRIMARY_DARK_COLOR: "#00F2E5"
+      PRIMARY_LIGHT_COLOR: "#2b0404"
+    restart: always
+    depends_on:
+      target-registry-repository:
+        condition: service_started
+    networks:
+      - twinengine-network
+
+  # ---------------------------------------------------------------------------
+  # The Export Service: reads from the SOURCE (via nginx + the source BaSyx Go
+  # environment) and writes to the TARGET BaSyx Go environment, on a cron schedule.
+  # ---------------------------------------------------------------------------
+  export-service:
+    ports:
+      - "8087:8080"
+    image: exportservicettt:1.0.0
+    container_name: export-service
+    build:
+      context: ../../source
+      dockerfile: ./AAS.TwinEngine.ExportService/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      twinengine-dataengine:
+        condition: service_started
+      target-registry-repository:
+        condition: service_started
+    restart: always
+    environment:
+      - ExportService__Scheduler__Enabled=true
+      - ExportService__Scheduler__CronExpression=*/5 * * * *
+      - ExportService__Scheduler__RunTimeoutMinutes=30
+      - ExportService__Resilience__MaxRetryAttempts=3
+      - ExportService__Resilience__InitialDelaySeconds=2
+      - ExportService__Resilience__BackoffMultiplier=2.0
+      - ExportService__Performance__MaxDegreeOfParallelism=10
+      - ExportService__StateStore__ConnectionString=Host=postgres;Port=5432;Database=exportstate;Username=postgres;Password=admin
+      - ExportService__StateStore__Schema=export_service
+      # Sources — read from the source stack via the nginx gateway (same aggregated API the browser uses).
+      - ExportService__Sources__ShellDescriptors__BaseUrl=http://nginx:80
+      - ExportService__Sources__ShellDescriptors__Path=/shell-descriptors
+      - ExportService__Sources__ShellDescriptors__Limit=250
+      - ExportService__Sources__ShellDescriptors__Enabled=true
+      - ExportService__Sources__SubmodelDescriptors__BaseUrl=http://nginx:80
+      - ExportService__Sources__SubmodelDescriptors__Path=/submodel-descriptors
+      - ExportService__Sources__SubmodelDescriptors__Limit=250
+      - ExportService__Sources__SubmodelDescriptors__Enabled=true
+      - ExportService__Sources__Shells__BaseUrl=http://nginx:80
+      - ExportService__Sources__Shells__Path=/shells
+      - ExportService__Sources__Shells__Limit=250
+      - ExportService__Sources__Shells__Enabled=true
+      - ExportService__Sources__Submodels__BaseUrl=http://nginx:80
+      - ExportService__Sources__Submodels__Path=/submodels
+      - ExportService__Sources__Submodels__Limit=250
+      - ExportService__Sources__Submodels__Enabled=true
+      - ExportService__Sources__ConceptDescriptions__BaseUrl=http://source-registry-repository:8082
+      - ExportService__Sources__ConceptDescriptions__Path=/concept-descriptions
+      - ExportService__Sources__ConceptDescriptions__Limit=250
+      - ExportService__Sources__ConceptDescriptions__Enabled=true
+      # Targets — write to the independent, initially-empty target environment.
+      - ExportService__Targets__ShellDescriptors__BaseUrl=http://target-registry-repository:8082
+      - ExportService__Targets__ShellDescriptors__Path=/shell-descriptors
+      - ExportService__Targets__ShellDescriptors__Enabled=true
+      - ExportService__Targets__OmitNullProperties=true
+      - ExportService__Targets__SubmodelDescriptors__BaseUrl=http://target-registry-repository:8082
+      - ExportService__Targets__SubmodelDescriptors__Path=/submodel-descriptors
+      - ExportService__Targets__SubmodelDescriptors__Enabled=true
+      - ExportService__Targets__Shells__BaseUrl=http://target-registry-repository:8082
+      - ExportService__Targets__Shells__Path=/shells
+      - ExportService__Targets__Shells__Enabled=true
+      - ExportService__Targets__Submodels__BaseUrl=http://target-registry-repository:8082
+      - ExportService__Targets__Submodels__Path=/submodels
+      - ExportService__Targets__Submodels__Enabled=true
+      - ExportService__Targets__ConceptDescriptions__BaseUrl=http://target-registry-repository:8082
+      - ExportService__Targets__ConceptDescriptions__Path=/concept-descriptions
+      - ExportService__Targets__ConceptDescriptions__Enabled=true
+    networks:
+      - twinengine-network
+
+  pgadmin:
+    image: dpage/pgadmin4:9.16
+    container_name: pgadmin
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - twinengine-network

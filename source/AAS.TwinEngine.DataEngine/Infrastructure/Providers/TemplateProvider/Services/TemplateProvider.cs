@@ -384,7 +384,7 @@ public class TemplateProvider(ILogger<TemplateProvider> logger, IOptions<Templat
                 IdShort = item["idShort"]?.GetValue<string>(),
                 Id = item["id"]?.GetValue<string>(),
                 SemanticId = AasJsonNodeDeserializer.DeserializeAasNode(item["semanticId"], Jsonization.Deserialize.ReferenceFrom),
-                SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(item["supplementalSemanticId"], Jsonization.Deserialize.ReferenceFrom),
+                SupplementalSemanticIds = AasJsonNodeDeserializer.DeserializeAasArray(item["supplementalSemanticIds"], Jsonization.Deserialize.ReferenceFrom),
                 Endpoints = item["endpoints"]?.Deserialize<List<EndpointData>>()
             };
 

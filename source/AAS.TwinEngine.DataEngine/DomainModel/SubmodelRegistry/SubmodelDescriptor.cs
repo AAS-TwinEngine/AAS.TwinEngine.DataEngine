@@ -29,8 +29,8 @@ public class SubmodelDescriptor
     [JsonPropertyName("semanticId")]
     public Reference? SemanticId { get; set; }
 
-    [JsonPropertyName("supplementalSemanticId")]
-    public IList<Reference>? SupplementalSemanticId { get; init; }
+    [JsonPropertyName("supplementalSemanticIds")]
+    public IList<Reference>? SupplementalSemanticIds { get; init; }
 
     [JsonPropertyName("endpoints")]
     public IList<EndpointData>? Endpoints { get; set; }

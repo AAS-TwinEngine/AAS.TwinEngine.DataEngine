@@ -32,7 +32,7 @@ public static class SubmodelDescriptorMapperProfile
                        DisplayName = descriptor.DisplayName,
                        Extensions = descriptor.Extensions,
                        Administration = descriptor.Administration,
-                       SupplementalSemanticId = descriptor.SupplementalSemanticId,
+                       SupplementalSemanticIds = descriptor.SupplementalSemanticIds,
                        Endpoints = descriptor.Endpoints?.Select(e => e.ToDto()).ToList()
                    };
     }
