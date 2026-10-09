@@ -40,7 +40,6 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
             var allowlist = _shellTemplateAllowlists[index];
             var isAllowlisted = productId is not null && MatchesAllowlist(allowlist, productId);
             var matchesPattern = mapping.Allowlist.Count == 0 && mapping.Pattern.Any(pattern =>
-                !string.IsNullOrWhiteSpace(pattern) &&
                 Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout));
 
             if (isAllowlisted || matchesPattern)

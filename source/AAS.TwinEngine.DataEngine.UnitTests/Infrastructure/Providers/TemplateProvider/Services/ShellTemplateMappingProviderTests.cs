@@ -445,6 +445,21 @@ public class ShellTemplateMappingProviderTests
     }
 
     [Fact]
+    public void GetTemplateId_EmptyPatternWithoutAllowlist_MatchesAnyShellIdentifier()
+    {
+        var sut = CreateSut(
+            rules: [],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Pattern = [""], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/any-shell");
+
+        Assert.Equal("default-template", result);
+    }
+
+    [Fact]
     public void GetTemplateId_Allowlist_DoesNotUsePlaceholderPatternForNonAllowlistedShell()
     {
         var sut = CreateSut(
