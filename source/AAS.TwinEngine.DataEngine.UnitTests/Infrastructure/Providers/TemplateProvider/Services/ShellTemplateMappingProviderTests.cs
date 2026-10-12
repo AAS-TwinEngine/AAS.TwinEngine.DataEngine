@@ -421,6 +421,262 @@ public class ShellTemplateMappingProviderTests
     }
 
     [Fact]
+    public void GetTemplateId_Allowlist_MatchesFullAasIdentifier()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Regex,
+                    Pattern = @"^https?://[^/]+/ids/aas/(.+)$",
+                    Index = 1
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["2000-2201"], TemplateId = "pcf-template" },
+                new ShellTemplateMappings { Pattern = [".+"], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/2000-2201");
+
+        Assert.Equal("pcf-template", result);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GetTemplateId_Allowlist_ProductIdCannotBeExtracted_LogsOneWarningAndUsesPatternFallback(bool configureRule)
+    {
+        var sut = CreateSut(
+            rules: configureRule
+                ? [new AasIdExtractionRule { Strategy = ExtractionStrategy.Regex, Pattern = "^urn:([^:]+)$", Index = 1 }]
+                : [],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["2000-2201"], Pattern = [".*"], TemplateId = "pcf-template" },
+                new ShellTemplateMappings { Allowlist = ["3000-1000"], TemplateId = "other-template" },
+                new ShellTemplateMappings { Pattern = [".*"], TemplateId = "default-template" }
+            ]);
+        const string aasIdentifier = "https://example.com/ids/aas/2000-2201";
+
+        var result = sut.GetTemplateId(aasIdentifier);
+
+        Assert.Equal("default-template", result);
+        _logger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(state => state.ToString()!.Contains("AasIdExtractionRules", StringComparison.Ordinal) && state.ToString()!.Contains(aasIdentifier, StringComparison.Ordinal)),
+            null,
+            Arg.Any<Func<object, Exception?, string>>()!);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GetTemplateId_AllowlistCanBeEvaluatedOrNotConfigured_DoesNotLogWarning(bool configureAllowlist)
+    {
+        var sut = CreateSut(
+            rules: configureAllowlist
+                ? [new AasIdExtractionRule { Strategy = ExtractionStrategy.Split, Pattern = "/", Index = 5 }]
+                : [],
+            shellMappings:
+            [
+                new ShellTemplateMappings
+                {
+                    Allowlist = configureAllowlist ? ["2000-2201"] : [],
+                    Pattern = [".*"],
+                    TemplateId = "test-template"
+                }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/2000-2201");
+
+        Assert.Equal("test-template", result);
+        _logger.DidNotReceive().Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception?>(),
+            Arg.Any<Func<object, Exception?, string>>()!);
+    }
+
+    [Fact]
+    public void GetTemplateId_EmptyPatternWithoutAllowlist_MatchesAnyShellIdentifier()
+    {
+        var sut = CreateSut(
+            rules: [],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Pattern = [""], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/any-shell");
+
+        Assert.Equal("default-template", result);
+    }
+
+    [Fact]
+    public void GetTemplateId_PatternOnlyMapping_DoesNotEvaluateExtractionRules()
+    {
+        IEnumerable<AasIdExtractionRule> extractionRules =
+        [
+            new AasIdExtractionRule { Strategy = ExtractionStrategy.Split, Pattern = "/", Index = 5 }
+        ];
+        var trackedRules = Substitute.For<IList<AasIdExtractionRule>>();
+        trackedRules.GetEnumerator().Returns(callInfo => extractionRules.GetEnumerator());
+        var sut = CreateSut(trackedRules);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/2000-2201");
+
+        Assert.Equal("default-template", result);
+        trackedRules.DidNotReceive().GetEnumerator();
+    }
+
+    [Fact]
+    public void GetTemplateMapping_RepeatedCalls_ExtractsOncePerCallWithoutCaching()
+    {
+        IEnumerable<AasIdExtractionRule> extractionRules =
+        [
+            new AasIdExtractionRule { Strategy = ExtractionStrategy.Split, Pattern = "/", Index = 5 }
+        ];
+        var trackedRules = Substitute.For<IList<AasIdExtractionRule>>();
+        trackedRules.GetEnumerator().Returns(callInfo => extractionRules.GetEnumerator());
+        var sut = CreateSut(trackedRules,
+        [
+            new ShellTemplateMappings { Allowlist = ["2000-2201"], TemplateId = "pcf-template" }
+        ]);
+
+        var firstResult = sut.GetTemplateMapping("https://example.com/ids/aas/2000-2201");
+        var secondResult = sut.GetTemplateMapping("https://example.com/ids/aas/2000-2201");
+
+        Assert.Equal(("pcf-template", "2000-2201"), firstResult);
+        Assert.Equal(firstResult, secondResult);
+        trackedRules.Received(2).GetEnumerator();
+    }
+
+    [Theory]
+    [InlineData("ABC-123", "pcf-template")]
+    [InlineData("abc-123-001", "pcf-template")]
+    [InlineData("ABC-123-001-002", "pcf-template")]
+    [InlineData("ABC-1230", "default-template")]
+    [InlineData("ABC-123/001", "default-template")]
+    [InlineData("ABC", "default-template")]
+    public void GetTemplateId_Allowlist_HyphenPrefixesPreserveCaseInsensitiveBoundaries(string productId, string expectedTemplateId)
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule { Strategy = ExtractionStrategy.Split, Pattern = ":", Index = 1 }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["unrelated", "abc-123"], TemplateId = "pcf-template" },
+                new ShellTemplateMappings { Pattern = [".*"], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId($"urn:{productId}");
+
+        Assert.Equal(expectedTemplateId, result);
+    }
+
+    [Fact]
+    public void GetTemplateId_Allowlist_DoesNotUsePlaceholderPatternForNonAllowlistedShell()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Regex,
+                    Pattern = @"^https?://[^/]+/ids/aas/(.+)$",
+                    Index = 1
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["2000-2201"], Pattern = [""] , TemplateId = "pcf-template" },
+                new ShellTemplateMappings { Pattern = [".+"], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/3000-1000");
+
+        Assert.Equal("default-template", result);
+    }
+
+    [Fact]
+    public void GetTemplateId_Allowlist_MatchesHyphenatedIdentifierSuffix()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Regex,
+                    Pattern = @"^https?://[^/]+/ids/aas/(.+)$",
+                    Index = 1
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["2000-2201"], TemplateId = "pcf-template" },
+                new ShellTemplateMappings { Pattern = [".+"], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/2000-2201-001");
+
+        Assert.Equal("pcf-template", result);
+    }
+
+    [Fact]
+    public void GetTemplateId_Allowlist_DoesNotMatchSimilarIdentifier()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Regex,
+                    Pattern = @"^https?://[^/]+/ids/aas/(.+)$",
+                    Index = 1
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["2000-2201"], TemplateId = "pcf-template" },
+                new ShellTemplateMappings { Pattern = [".+"], TemplateId = "default-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/2000-22010");
+
+        Assert.Equal("default-template", result);
+    }
+
+    [Fact]
+    public void GetTemplateId_Allowlist_SupportsPipeSeparatedEntries()
+    {
+        var sut = CreateSut(
+            rules:
+            [
+                new AasIdExtractionRule
+                {
+                    Strategy = ExtractionStrategy.Regex,
+                    Pattern = @"^https?://[^/]+/ids/aas/(.+)$",
+                    Index = 1
+                }
+            ],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Allowlist = ["2000-2201|2000-2202"], TemplateId = "pcf-template" }
+            ]);
+
+        var result = sut.GetTemplateId("https://example.com/ids/aas/2000-2202");
+
+        Assert.Equal("pcf-template", result);
+    }
+
+    [Fact]
     public void GetTemplateId_NoMatchingTemplate_ThrowsResourceNotFoundException()
     {
         var sut = CreateSut(

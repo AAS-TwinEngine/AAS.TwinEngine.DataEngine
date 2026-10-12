@@ -22,16 +22,11 @@ public class AasRepositoryTemplateService(
 
     public async Task<IAssetAdministrationShell> GetShellTemplateAsync(string aasIdentifier, CancellationToken cancellationToken)
     {
-        var shellTemplate = await GetTemplateAsync(aasIdentifier, _templateProvider.GetShellTemplateAsync, cancellationToken).ConfigureAwait(false);
+        var (shellTemplate, productId) = await GetTemplateAsync(aasIdentifier, _templateProvider.GetShellTemplateAsync, cancellationToken, resolveProductId: true).ConfigureAwait(false);
 
-        string productId;
-        try
+        if (productId is null)
         {
-            productId = _shellTemplateMappingProvider.GetProductIdFromRule(aasIdentifier);
-        }
-        catch (ResourceNotFoundException ex)
-        {
-            logger.LogError(ex, "No product ID found for AAS identifier {AasIdentifier}", aasIdentifier);
+            logger.LogError("No product ID found for AAS identifier {AasIdentifier}", aasIdentifier);
             throw new InternalDataProcessingException();
         }
 
@@ -46,15 +41,22 @@ public class AasRepositoryTemplateService(
         return shellTemplate!;
     }
 
-    public Task<IAssetInformation> GetAssetInformationTemplateAsync(string aasIdentifier, CancellationToken cancellationToken)
-        => GetTemplateAsync(aasIdentifier, _templateProvider.GetAssetInformationTemplateAsync, cancellationToken);
+    public async Task<IAssetInformation> GetAssetInformationTemplateAsync(string aasIdentifier, CancellationToken cancellationToken)
+    {
+        var (template, _) = await GetTemplateAsync(aasIdentifier, _templateProvider.GetAssetInformationTemplateAsync, cancellationToken).ConfigureAwait(false);
+        return template;
+    }
 
     public async Task<List<IReference>> GetSubmodelRefByIdAsync(string aasIdentifier, CancellationToken cancellationToken)
     {
         try
         {
-            var submodelRefList = await GetTemplateAsync(aasIdentifier, _templateProvider.GetSubmodelRefByIdAsync, cancellationToken).ConfigureAwait(false);
-            var productId = _shellTemplateMappingProvider.GetProductIdFromRule(aasIdentifier);
+            var (submodelRefList, productId) = await GetTemplateAsync(aasIdentifier, _templateProvider.GetSubmodelRefByIdAsync, cancellationToken, resolveProductId: true).ConfigureAwait(false);
+
+            if (productId is null)
+            {
+                throw new ResourceNotFoundException();
+            }
 
             foreach (var key in submodelRefList.SelectMany(submodelRef => submodelRef.Keys!))
             {
@@ -69,16 +71,20 @@ public class AasRepositoryTemplateService(
         }
     }
 
-    private async Task<T> GetTemplateAsync<T>(
+    private async Task<(T Template, string? ProductId)> GetTemplateAsync<T>(
         string aasIdentifier,
         Func<string, CancellationToken, Task<T>> templateFetchFunc,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool resolveProductId = false)
     {
         try
         {
-            var templateId = _shellTemplateMappingProvider.GetTemplateId(aasIdentifier);
+            var (templateId, productId) = resolveProductId
+                ? _shellTemplateMappingProvider.GetTemplateMapping(aasIdentifier)
+                : (_shellTemplateMappingProvider.GetTemplateId(aasIdentifier), null);
 
-            return await templateFetchFunc(templateId!, cancellationToken).ConfigureAwait(false);
+            var template = await templateFetchFunc(templateId!, cancellationToken).ConfigureAwait(false);
+            return (template, productId);
         }
         catch (ResourceNotFoundException ex)
         {

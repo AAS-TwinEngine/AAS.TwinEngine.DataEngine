@@ -15,15 +15,59 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
 {
     private readonly ILogger<ShellTemplateMappingProvider> _logger = logger ?? throw new InvalidDependencyException(nameof(logger), logger);
     private readonly IList<ShellTemplateMappings> _shellTemplateMappings = options.Value.TemplateMappingRules.ShellTemplateMappings ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.ShellTemplateMappings), logger);
+    private readonly bool _hasShellTemplateAllowlists = options.Value.TemplateMappingRules.ShellTemplateMappings.Any(mapping => mapping.Allowlist.Count > 0);
+    private readonly IList<HashSet<string>> _shellTemplateAllowlists = options.Value.TemplateMappingRules.ShellTemplateMappings
+        ?.Select(mapping => mapping.Allowlist
+            .SelectMany(entry => entry.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase))
+        .ToList() ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.ShellTemplateMappings), logger);
     private readonly IList<AasIdExtractionRule> _aasIdExtractionRules = options.Value.TemplateMappingRules.AasIdExtractionRules ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.AasIdExtractionRules), logger);
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(2);
 
     public string? GetTemplateId(string aasIdentifier)
     {
-        var templateId = _shellTemplateMappings
-            .FirstOrDefault(mapping => mapping.Pattern
-                                              .Any(pattern => Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout)))
-            ?.TemplateId;
+        ArgumentNullException.ThrowIfNull(aasIdentifier);
+
+        var productId = _hasShellTemplateAllowlists ? TryGetProductIdFromRules(aasIdentifier) : null;
+
+        return GetTemplateId(aasIdentifier, productId);
+    }
+
+    /// <inheritdoc />
+    public (string TemplateId, string? ProductId) GetTemplateMapping(string aasIdentifier)
+    {
+        ArgumentNullException.ThrowIfNull(aasIdentifier);
+
+        using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetProductId, DataEngineTracing.Attributes.ShellId, aasIdentifier);
+        var productId = TryGetProductIdFromRules(aasIdentifier);
+        var templateId = GetTemplateId(aasIdentifier, productId);
+
+        return (templateId, productId);
+    }
+
+    private string GetTemplateId(string aasIdentifier, string? productId)
+    {
+        if (productId is null && _hasShellTemplateAllowlists)
+        {
+            _logger.LogWarning("Shell template allowlists cannot be evaluated for shell: {AasIdentifier}. Check AasIdExtractionRules; no product ID could be extracted.", aasIdentifier);
+        }
+
+        string? templateId = null;
+        for (var index = 0; index < _shellTemplateMappings.Count; index++)
+        {
+            var mapping = _shellTemplateMappings[index];
+            var allowlist = _shellTemplateAllowlists[index];
+            var isAllowlisted = productId is not null && allowlist.Count > 0 && MatchesAllowlist(allowlist, productId);
+            // Allowlist and pattern matching are mutually exclusive per mapping; allowlist wins.
+            var matchesPattern = mapping.Allowlist.Count == 0 && mapping.Pattern.Any(pattern =>
+                Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout));
+
+            if (isAllowlisted || matchesPattern)
+            {
+                templateId = mapping.TemplateId;
+                break;
+            }
+        }
 
         if (string.IsNullOrWhiteSpace(templateId))
         {
@@ -34,9 +78,45 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
         return templateId;
     }
 
+    private static bool MatchesAllowlist(HashSet<string> allowlist, string identifier)
+    {
+        if (allowlist.Contains(identifier))
+        {
+            return true;
+        }
+
+        // Prefix matches require a hyphen boundary: "2000-2201" matches "2000-2201-001", not "2000-22010".
+        var lookup = allowlist.GetAlternateLookup<ReadOnlySpan<char>>();
+        for (var index = 0; index < identifier.Length; index++)
+        {
+            if (identifier[index] == '-' && lookup.Contains(identifier.AsSpan(0, index)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public string GetProductIdFromRule(string aasIdentifier)
     {
+        ArgumentNullException.ThrowIfNull(aasIdentifier);
+
         using var activity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.GetProductId, DataEngineTracing.Attributes.ShellId, aasIdentifier);
+        var productId = TryGetProductIdFromRules(aasIdentifier);
+
+        if (productId is not null)
+        {
+            _logger.LogInformation("Successfully extracted ProductId: {ProductId}", productId);
+            return productId;
+        }
+
+        _logger.LogError("ProductId could not be extracted from the provided aas Identifier.");
+        throw new ResourceNotFoundException();
+    }
+
+    private string? TryGetProductIdFromRules(string aasIdentifier)
+    {
         foreach (var rule in _aasIdExtractionRules)
         {
             var extracted = rule.Strategy switch
@@ -62,12 +142,10 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
                 continue;
             }
 
-            _logger.LogInformation("Successfully extracted ProductId: {ProductId}", extracted);
             return extracted;
         }
 
-        _logger.LogError("ProductId could not be extracted from the provided aas Identifier.");
-        throw new ResourceNotFoundException();
+        return null;
     }
 
     private string? TryExtractWithRegex(string input, AasIdExtractionRule rule)
