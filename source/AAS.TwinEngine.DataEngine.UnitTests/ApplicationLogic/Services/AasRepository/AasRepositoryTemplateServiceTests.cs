@@ -2,6 +2,7 @@
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
@@ -49,8 +50,7 @@ public class AasRepositoryTemplateServiceTests
 
         var shell = CreateShell("urn:uuid:submodel-123");
 
-        _shellTemplateMappingProvider.GetTemplateId(AasIdentifier).Returns(TemplateId);
-        _shellTemplateMappingProvider.GetProductIdFromRule(AasIdentifier).Returns(ProductId);
+        _shellTemplateMappingProvider.GetTemplateMapping(AasIdentifier).Returns((TemplateId, ProductId));
         _templateProvider.GetShellTemplateAsync(TemplateId, Arg.Any<CancellationToken>()).Returns(shell);
 
         // Act
@@ -59,6 +59,48 @@ public class AasRepositoryTemplateServiceTests
         // Assert
         var key = result.Submodels!.First().Keys.First();
         Assert.StartsWith($"{_mockCustomerDomainUrl}submodel/{ProductId}/", key.Value);
+        _shellTemplateMappingProvider.Received(1).GetTemplateMapping(AasIdentifier);
+        _shellTemplateMappingProvider.DidNotReceive().GetProductIdFromRule(Arg.Any<string>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetTemplateWithProductId_WithAllowlist_ExtractsProductIdOnce(bool submodelReferencesOnly)
+    {
+        const string aasIdentifier = "https://example.com/ids/aas/product-456";
+        IEnumerable<AasIdExtractionRule> extractionRules =
+        [
+            new AasIdExtractionRule { Strategy = ExtractionStrategy.Split, Pattern = "/", Index = 5 }
+        ];
+        var trackedRules = Substitute.For<IList<AasIdExtractionRule>>();
+        trackedRules.GetEnumerator().Returns(callInfo => extractionRules.GetEnumerator());
+        var mappingProvider = new ShellTemplateMappingProvider(
+            Substitute.For<ILogger<ShellTemplateMappingProvider>>(),
+            Options.Create(new TemplateManagementConfig
+            {
+                TemplateMappingRules = new TemplateMappingRules
+                {
+                    AasIdExtractionRules = trackedRules,
+                    ShellTemplateMappings =
+                    [
+                        new ShellTemplateMappings { Allowlist = ["product-456"], TemplateId = TemplateId }
+                    ]
+                }
+            }));
+        var service = new AasRepositoryTemplateService(_templateProvider, mappingProvider, _config, _logger);
+        var shell = CreateShell("urn:uuid:submodel-123");
+        _templateProvider.GetShellTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
+            .Returns(shell);
+        _templateProvider.GetSubmodelRefByIdAsync(TemplateId, Arg.Any<CancellationToken>())
+            .Returns(shell.Submodels!);
+
+        var result = submodelReferencesOnly
+            ? await service.GetSubmodelRefByIdAsync(aasIdentifier, CancellationToken.None)
+            : (await service.GetShellTemplateAsync(aasIdentifier, CancellationToken.None)).Submodels!;
+
+        Assert.StartsWith($"{_mockCustomerDomainUrl}submodel/product-456/", result.First().Keys.First().Value, StringComparison.Ordinal);
+        trackedRules.Received(1).GetEnumerator();
     }
 
     [Fact]
@@ -81,7 +123,7 @@ public class AasRepositoryTemplateServiceTests
     [Fact]
     public async Task GetShellTemplateAsync_ShouldThrowTemplateNotFound_WhenResourceNotFound()
     {
-        _shellTemplateMappingProvider.GetTemplateId(AasIdentifier).Returns(TemplateId);
+        _shellTemplateMappingProvider.GetTemplateMapping(AasIdentifier).Returns((TemplateId, null));
         _templateProvider.GetShellTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
             .Throws(new ResourceNotFoundException());
 
@@ -92,7 +134,7 @@ public class AasRepositoryTemplateServiceTests
     [Fact]
     public async Task GetShellTemplateAsync_ShouldThrowInternalDataProcessing_WhenResponseParsingFails()
     {
-        _shellTemplateMappingProvider.GetTemplateId(AasIdentifier).Returns(TemplateId);
+        _shellTemplateMappingProvider.GetTemplateMapping(AasIdentifier).Returns((TemplateId, null));
         _templateProvider.GetShellTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
             .Throws(new ResponseParsingException());
 
@@ -103,7 +145,7 @@ public class AasRepositoryTemplateServiceTests
     [Fact]
     public async Task GetShellTemplateAsync_ShouldThrowRepositoryNotAvailable_WhenTimeoutOccurs()
     {
-        _shellTemplateMappingProvider.GetTemplateId(AasIdentifier).Returns(TemplateId);
+        _shellTemplateMappingProvider.GetTemplateMapping(AasIdentifier).Returns((TemplateId, null));
         _templateProvider.GetShellTemplateAsync(TemplateId, Arg.Any<CancellationToken>())
             .Throws(new RequestTimeoutException());
 
@@ -116,9 +158,8 @@ public class AasRepositoryTemplateServiceTests
     {
         var shell = CreateShell("urn:uuid:submodel-123");
 
-        _shellTemplateMappingProvider.GetTemplateId(AasIdentifier).Returns(TemplateId);
+        _shellTemplateMappingProvider.GetTemplateMapping(AasIdentifier).Returns((TemplateId, null));
         _templateProvider.GetShellTemplateAsync(TemplateId, Arg.Any<CancellationToken>()).Returns(shell);
-        _shellTemplateMappingProvider.GetProductIdFromRule(AasIdentifier).Throws(new ResourceNotFoundException());
 
         await Assert.ThrowsAsync<InternalDataProcessingException>(
             () => _sut.GetShellTemplateAsync(AasIdentifier, CancellationToken.None));
@@ -127,6 +168,7 @@ public class AasRepositoryTemplateServiceTests
     [Fact]
     public async Task GetSubmodelRefByIdAsync_ShouldThrowInternalDataProcessing_WhenUnexpectedExceptionOccurs()
     {
+        _shellTemplateMappingProvider.GetTemplateMapping(AasIdentifier).Returns((TemplateId, "product-456"));
         _templateProvider.GetSubmodelRefByIdAsync(TemplateId, Arg.Any<CancellationToken>())
             .Throws(new Exception("unexpected failure"));
 
