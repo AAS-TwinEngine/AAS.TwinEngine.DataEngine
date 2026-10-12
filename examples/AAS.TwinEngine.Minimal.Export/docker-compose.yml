@@ -50,6 +50,8 @@ services:
     depends_on:
       source-registry-repository:
         condition: service_started
+      aas-ui-source:
+        condition: service_started
     networks:
       - twinengine-network
 
@@ -200,7 +202,9 @@ services:
       basyx_configuration_source:
         condition: service_completed_successfully
     networks:
-      - twinengine-network
+      twinengine-network:
+        aliases:
+          - template-repository-registry
 
   aas-ui-source:
     image: eclipsebasyx/aas-gui:v2-260801
@@ -222,7 +226,9 @@ services:
       source-registry-repository:
         condition: service_started
     networks:
-      - twinengine-network
+      twinengine-network:
+        aliases:
+          - aas-web-ui
 
   # ---------------------------------------------------------------------------
   # TARGET side — a second, independent BaSyx Go environment that starts
@@ -325,7 +331,7 @@ services:
     restart: always
     environment:
       - ExportService__Scheduler__Enabled=true
-      - ExportService__Scheduler__CronExpression=*/5 * * * *
+      - ExportService__Scheduler__CronExpression=*/3 * * * *
       - ExportService__Scheduler__RunTimeoutMinutes=30
       - ExportService__Resilience__MaxRetryAttempts=3
       - ExportService__Resilience__InitialDelaySeconds=2
