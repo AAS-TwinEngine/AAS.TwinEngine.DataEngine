@@ -22,6 +22,11 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
             .ToHashSet(StringComparer.OrdinalIgnoreCase))
         .ToList() ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.ShellTemplateMappings), logger);
     private readonly IList<AasIdExtractionRule> _aasIdExtractionRules = options.Value.TemplateMappingRules.AasIdExtractionRules ?? throw new InvalidDependencyException(nameof(options.Value.TemplateMappingRules.AasIdExtractionRules), logger);
+    private readonly IList<Regex[]> _compiledPatterns = options.Value.TemplateMappingRules.ShellTemplateMappings
+        .Select(mapping => mapping.Pattern
+            .Select(pattern => new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(2)))
+            .ToArray())
+        .ToList();
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(2);
 
     public string? GetTemplateId(string aasIdentifier)
@@ -59,8 +64,8 @@ public class ShellTemplateMappingProvider(ILogger<ShellTemplateMappingProvider> 
             var allowlist = _shellTemplateAllowlists[index];
             var isAllowlisted = productId is not null && allowlist.Count > 0 && MatchesAllowlist(allowlist, productId);
             // Allowlist and pattern matching are mutually exclusive per mapping; allowlist wins.
-            var matchesPattern = mapping.Allowlist.Count == 0 && mapping.Pattern.Any(pattern =>
-                Regex.IsMatch(aasIdentifier, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled, _regexTimeout));
+            var matchesPattern = mapping.Allowlist.Count == 0 && _compiledPatterns[index].Any(pattern =>
+                pattern.IsMatch(aasIdentifier));
 
             if (isAllowlisted || matchesPattern)
             {

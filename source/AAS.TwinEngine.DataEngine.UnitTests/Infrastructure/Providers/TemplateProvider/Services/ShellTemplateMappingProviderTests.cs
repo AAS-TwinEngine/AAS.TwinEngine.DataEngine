@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using System.Text.RegularExpressions;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Observability;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services;
@@ -744,6 +746,32 @@ public class ShellTemplateMappingProviderTests
         var result = sut.GetTemplateId("A:B:shell1:D");
 
         Assert.Equal("template-1", result);
+    }
+
+    [Fact]
+    public void Constructor_InvalidShellPattern_ThrowsRegexParseException()
+    {
+        Assert.Throws<RegexParseException>(() => CreateSut(
+            rules: [],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Pattern = ["["], TemplateId = "test-template" }
+            ]));
+    }
+
+    [Fact]
+    public void GetTemplateId_MultiplePatterns_MatchesDistinctIdentifiersCaseInsensitively()
+    {
+        var sut = CreateSut(
+            rules: [],
+            shellMappings:
+            [
+                new ShellTemplateMappings { Pattern = ["^other$"], TemplateId = "other-template" },
+                new ShellTemplateMappings { Pattern = ["^urn:first$", "^urn:second$"], TemplateId = "test-template" }
+            ]);
+
+        Assert.Equal("test-template", sut.GetTemplateId("URN:FIRST"));
+        Assert.Equal("test-template", sut.GetTemplateId("URN:SECOND"));
     }
 
     [Fact]
