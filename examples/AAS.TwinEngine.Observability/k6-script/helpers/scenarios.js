@@ -177,6 +177,7 @@ export const endpointScenarios = [
         key: 'getShells',
         name: 'GetShells',
         metricName: 'get_shells_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/shells`,
@@ -250,6 +251,7 @@ export const endpointScenarios = [
         key: 'getSubmodelElementsByAasId',
         name: 'GetSubmodelElementsByAasId',
         metricName: 'get_submodel_elements_by_aas_id_duration',
+        requestMode: 'paged',
         requiresDiscoveredIds: true,
         requiredDataProperty: 'shellIds',
         resolveUrl: ({ baseUrl, config, data }) => {
@@ -302,6 +304,7 @@ export const endpointScenarios = [
         key: 'getShellDescriptors',
         name: 'GetShellDescriptors',
         metricName: 'get_shell_descriptors_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/shell-descriptors`,
@@ -325,6 +328,7 @@ export const endpointScenarios = [
         key: 'getSubmodelDescriptorsByAasId',
         name: 'GetSubmodelDescriptorsByAasId',
         metricName: 'get_submodel_descriptors_by_aas_id_duration',
+        requestMode: 'paged',
         requiresDiscoveredIds: true,
         requiredDataProperty: 'shellIds',
         resolveUrl: ({ baseUrl, config, data }) => {
@@ -362,6 +366,7 @@ export const endpointScenarios = [
         key: 'getSubmodelDescriptors',
         name: 'GetSubmodelDescriptors',
         metricName: 'get_submodel_descriptors_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/submodel-descriptors`,
@@ -385,10 +390,23 @@ export const endpointScenarios = [
         key: 'getSubmodels',
         name: 'GetSubmodels',
         metricName: 'get_submodels_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/submodels`,
                 config.endpointLimits?.getSubmodels
+            )
+    },
+
+    {
+        key: 'getConceptDescriptions',
+        name: 'GetConceptDescriptions',
+        metricName: 'get_concept_descriptions_duration',
+        requestMode: 'paged',
+        resolveUrl: ({ baseUrl, config }) =>
+            appendLimitQuery(
+                `${baseUrl}/concept-descriptions`,
+                config.endpointLimits?.getConceptDescriptions
             )
     },
 
@@ -408,6 +426,7 @@ export const endpointScenarios = [
         key: 'getSubmodelElements',
         name: 'GetSubmodelElements',
         metricName: 'get_submodel_elements_duration',
+        requestMode: 'paged',
         requiresDiscoveredIds: true,
         requiredDataProperty: 'submodelIds',
         resolveUrl: ({ baseUrl, config, data }) => {

@@ -2,6 +2,7 @@ import { config } from './helpers/config.js';
 import { discoverIds } from './helpers/setup.js';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.4/index.js';
 import {
+    endpointScenarios,
     endpointMetricNames,
     getEnabledDiscoveryRequirements,
     getEnabledIdDependentEndpointKeys,
@@ -12,6 +13,12 @@ import {
     executePagedRequest,
     executeRequest
 } from './helpers/requests.js';
+
+const pagedEndpointKeys = new Set(
+    endpointScenarios
+        .filter(endpoint => endpoint.requestMode === 'paged')
+        .map(endpoint => endpoint.key)
+);
 
 function buildScenarioOptions() {
 
@@ -24,6 +31,9 @@ function buildScenarioOptions() {
                 return;
             }
 
+            const isPagedEndpoint =
+                pagedEndpointKeys.has(endpointKey);
+
             const scenarioMaxDuration =
                 endpointKey === 'loadAllShellDescriptors'
                     ? config.load.loadAllShellDescriptorsMaxDuration
@@ -32,8 +42,8 @@ function buildScenarioOptions() {
             scenarios[`endpoint_${endpointKey}`] = {
                 executor: 'shared-iterations',
                 exec: 'executeEndpointScenario',
-                vus: config.load.vus,
-                iterations: requestCount,
+                vus: isPagedEndpoint ? 1 : config.load.vus,
+                iterations: isPagedEndpoint ? 1 : requestCount,
                 maxDuration: scenarioMaxDuration,
                 gracefulStop: config.load.gracefulStop,
                 env: {
@@ -58,7 +68,10 @@ if (Object.keys(configuredScenarios).length === 0) {
 export const options = {
     scenarios: configuredScenarios,
     summaryTimeUnit: 'ms',
-    setupTimeout: config.load.setupTimeout
+    setupTimeout: config.load.setupTimeout,
+    thresholds: {
+        http_req_waiting: ['max<500']
+    }
 };
 
 export function setup() {
@@ -129,7 +142,8 @@ export function executeEndpointScenario(data) {
         executePagedRequest(
             scenario.name,
             scenario.url,
-            scenario.metricName
+            scenario.metricName,
+            config.endpointRequests[endpointKey]
         );
 
         return;

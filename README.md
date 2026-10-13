@@ -76,6 +76,45 @@ When a client requests AAS data (shell descriptor, submodel, or submodel element
 6. **Return AAS submodel Response** - Responds to the client with a complete, ready-to-use AAS structure
 
 
+## Shell Template Allowlist Configuration
+
+Configure shell mappings under `TemplateManagement.TemplateMappingRules`. Mappings are evaluated in order; the first match selects the template.
+
+- A nonempty `Allowlist` matches the **product ID extracted by `AasIdExtractionRules`**, not the full shell identifier. Configure a rule that extracts and, when specified, validates the product ID for your shell identifiers. Startup validation requires at least one extraction rule. If no rule yields a product ID during a lookup, the provider logs one warning and skips allowlist mappings; a later pattern-only mapping can still match.
+- Within a mapping, a nonempty `Allowlist` takes precedence: its `Pattern` entries are ignored, even when extraction fails or the product ID is not allowlisted. Put pattern fallbacks in separate, later mappings.
+- Allowlist matching is case-insensitive and accepts an exact product ID or a prefix followed by `-`. For example, `2000-2201` matches `2000-2201-001`, but not `2000-22010` or `2000-2201/001`.
+- Entries may be separate array items or pipe-separated values, such as `"2000-2201|2000-2202"`. Surrounding whitespace is trimmed and empty pipe segments are ignored. Use an empty `Allowlist` array for pattern-only matching; patterns are evaluated against the full shell identifier.
+
+Example configuration fragment:
+
+```json
+{
+  "TemplateManagement": {
+    "TemplateMappingRules": {
+      "AasIdExtractionRules": [
+        {
+          "Strategy": "Regex",
+          "Pattern": "^https?://[^/]+/ids/aas/([^/]+)$",
+          "Index": 1
+        }
+      ],
+      "ShellTemplateMappings": [
+        {
+          "TemplateId": "urn:example:template:pcf",
+          "Allowlist": ["2000-2201", "2000-2202"]
+        },
+        {
+          "TemplateId": "urn:example:template:default",
+          "Pattern": [".*"]
+        }
+      ]
+    }
+  }
+}
+```
+
+For `https://example.com/ids/aas/2000-2201-001`, this rule extracts `2000-2201-001` and selects `urn:example:template:pcf` via the hyphen-prefix match. Shell-template and submodel-reference resolution extract the product ID once and reuse it for template selection and submodel URLs, without caching shell identifiers. Template-ID-only lookups skip extraction when no mapping has an allowlist. Hyphen-prefix matching uses hash lookups of identifier prefixes rather than scanning all allowlist entries.
+
 ## **Quick Start Guide**
 
 ### Running the Setup With DPP Plugin 

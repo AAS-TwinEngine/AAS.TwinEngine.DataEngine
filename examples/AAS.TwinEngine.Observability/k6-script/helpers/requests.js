@@ -4,6 +4,11 @@ import { Trend, Counter } from 'k6/metrics';
 
 import { config } from './config.js';
 import { endpointScenarios } from './scenarios.js';
+import {
+    appendCursor,
+    extractCursor,
+    shouldFetchNextPage
+} from './pagination.js';
 
 export const requestFailures =
     new Counter('request_failures');
@@ -16,23 +21,14 @@ endpointScenarios.forEach(endpoint => {
         new Trend(endpoint.metricName, true);
 });
 
-function extractCursor(payload) {
-
-    return (
-        payload?.paging_metadata?.cursor ||
-        payload?.pagingMetadata?.cursor ||
-        payload?.cursor ||
-        null
-    );
-}
-
 function addDurationMetric(
     metricName,
-    duration
+    duration,
+    tags
 ) {
 
     durationMetrics[metricName]
-        ?.add(duration);
+        ?.add(duration, tags);
 }
 
 function createRequestParams(name) {
@@ -138,15 +134,15 @@ export function executeRequest(
 export function executePagedRequest(
     name,
     url,
-    metricName
+    metricName,
+    maxRequests
 ) {
 
     let nextUrl = url;
 
-    let totalDuration = 0;
     let pageCount = 0;
 
-    while (nextUrl) {
+    while (nextUrl && pageCount < maxRequests) {
 
         const response =
             sendRequest(
@@ -154,14 +150,16 @@ export function executePagedRequest(
                 nextUrl
             );
 
+        addDurationMetric(
+            metricName,
+            response.timings.duration
+        );
+
+        pageCount++;
+
         if (response.status !== 200) {
             return response;
         }
-
-        totalDuration +=
-            response.timings.duration;
-
-        pageCount++;
 
         const payload =
             response.json();
@@ -175,26 +173,17 @@ export function executePagedRequest(
             `| page ${pageCount}`
         );
 
-        if (!cursor) {
+        if (!shouldFetchNextPage(cursor, pageCount, maxRequests)) {
             break;
         }
 
-        const separator =
-            url.includes('?') ? '&' : '?';
-
-        nextUrl =
-            `${url}${separator}cursor=${encodeURIComponent(cursor)}`;
+        nextUrl = appendCursor(url, cursor);
     }
-
-    addDurationMetric(
-        metricName,
-        totalDuration
-    );
 
     if (config.logRequests) {
 
         console.log(
-            `[SUCCESS] ${name} | ${pageCount} pages | total ${totalDuration.toFixed(2)} ms`
+            `[SUCCESS] ${name} | ${pageCount} pages`
         );
     }
 

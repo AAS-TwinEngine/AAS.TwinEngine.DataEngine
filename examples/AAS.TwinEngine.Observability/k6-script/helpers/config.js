@@ -17,7 +17,7 @@ const defaultConfig = {
     },
 
     endpoints: {
-        getShells: { enabled: true, requests: 10, limit: 100 },
+        getShells: { enabled: true, requests: 100, limit: 250 },
         getShellById: { enabled: true, requests: 10 },
         getAssetInformation: { enabled: true, requests: 10 },
         getAssetInformationThumbnail: { enabled: false, requests: 10 },
@@ -32,7 +32,8 @@ const defaultConfig = {
         getSubmodelDescriptorByAasId: { enabled: false, requests: 10 },
         getSubmodelDescriptors: { enabled: true, requests: 10, limit: 100 },
         getSubmodelDescriptorById: { enabled: true, requests: 10 },
-        getSubmodels: { enabled: false, requests: 10, limit: 100 },
+        getSubmodels: { enabled: false, requests: 100, limit: 250 },
+        getConceptDescriptions: { enabled: false, requests: 10, limit: 250 },
         getSubmodelById: { enabled: true, requests: 10 },
         getSubmodelElements: { enabled: false, requests: 10, limit: 100 },
         getSubmodelElement: { enabled: false, requests: 10 },
@@ -266,7 +267,8 @@ export const config = {
 
         setupTimeout:
             getEnvValue('SETUP_TIMEOUT') ||
-            defaultConfig.load.setupTimeout
+            defaultConfig.load.setupTimeout,
+
     },
 
     logRequests: parseBoolean(

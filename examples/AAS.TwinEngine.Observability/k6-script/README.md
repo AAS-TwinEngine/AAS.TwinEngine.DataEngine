@@ -28,8 +28,12 @@ DISCOVER_PAGE_LIMIT=1000
 MAX_DISCOVERED_IDS=0
 
 ENDPOINT_GET_SHELLS=true
-ENDPOINT_GET_SHELLS_REQUESTS=50
-ENDPOINT_GET_SHELLS_LIMIT=100
+ENDPOINT_GET_SHELLS_REQUESTS=100
+ENDPOINT_GET_SHELLS_LIMIT=250
+
+ENDPOINT_GET_SUBMODELS=true
+ENDPOINT_GET_SUBMODELS_REQUESTS=100
+ENDPOINT_GET_SUBMODELS_LIMIT=250
 
 ENDPOINT_GET_SHELL_BY_ID=false
 ENDPOINT_GET_SHELL_BY_ID_REQUESTS=100
@@ -56,7 +60,7 @@ ENDPOINT_GET_SUBMODEL_ELEMENT_BY_AAS_ID_REQUESTS=10
 ENDPOINT_GET_FILE_ATTACHMENT_BY_AAS_ID=false
 ENDPOINT_GET_FILE_ATTACHMENT_BY_AAS_ID_REQUESTS=10
 
-ENDPOINT_GET_SHELL_DESCRIPTORS=true
+ENDPOINT_GET_SHELL_DESCRIPTORS=false
 ENDPOINT_GET_SHELL_DESCRIPTORS_REQUESTS=100
 ENDPOINT_GET_SHELL_DESCRIPTORS_LIMIT=100
 
@@ -70,16 +74,12 @@ ENDPOINT_GET_SUBMODEL_DESCRIPTORS_BY_AAS_ID_LIMIT=100
 ENDPOINT_GET_SUBMODEL_DESCRIPTOR_BY_AAS_ID=false
 ENDPOINT_GET_SUBMODEL_DESCRIPTOR_BY_AAS_ID_REQUESTS=10
 
-ENDPOINT_GET_SUBMODEL_DESCRIPTORS=true
+ENDPOINT_GET_SUBMODEL_DESCRIPTORS=false
 ENDPOINT_GET_SUBMODEL_DESCRIPTORS_REQUESTS=50
 ENDPOINT_GET_SUBMODEL_DESCRIPTORS_LIMIT=100
 
 ENDPOINT_GET_SUBMODEL_DESCRIPTOR_BY_ID=false
 ENDPOINT_GET_SUBMODEL_DESCRIPTOR_BY_ID_REQUESTS=10
-
-ENDPOINT_GET_SUBMODELS=false
-ENDPOINT_GET_SUBMODELS_REQUESTS=50
-ENDPOINT_GET_SUBMODELS_LIMIT=100
 
 ENDPOINT_GET_SUBMODEL_BY_ID=false
 ENDPOINT_GET_SUBMODEL_BY_ID_REQUESTS=100
@@ -114,6 +114,8 @@ EXPORT_JSON=true
 ├── main.js
 ├── helpers/
 │   ├── config.js
+│   ├── pagination.js
+│   ├── pagination.test.js
 │   ├── setup.js
 │   ├── scenarios.js
 │   └── requests.js
@@ -130,6 +132,7 @@ EXPORT_JSON=true
 | -------------------------------- | -------------------------------------------------------- |
 | `main.js`                        | Main K6 test entry point.                                |
 | `helpers/config.js`              | Loads and validates configuration from the `.env` file.  |
+| `helpers/pagination.js`          | Builds cursor-based page URLs and reads response cursors. |
 | `helpers/setup.js`               | Discovers Shell and Submodel IDs required for testing.   |
 | `helpers/scenarios.js`           | Defines endpoint test scenarios and custom metric names. |
 | `helpers/requests.js`            | Executes requests and collects custom metrics.           |
@@ -143,8 +146,32 @@ EXPORT_JSON=true
 Run the following command from this directory:
 
 ```powershell
-k6 run main.js
+k6 run --out csv=results/request-metrics.csv main.js
 ```
+
+## Cursor-Paged Endpoints
+
+Configure each paged endpoint with its enable flag, page limit, and maximum number of sequential page requests:
+
+```env
+ENDPOINT_GET_SHELLS=true
+ENDPOINT_GET_SHELLS_LIMIT=250
+ENDPOINT_GET_SHELLS_REQUESTS=100
+
+ENDPOINT_GET_SUBMODELS=true
+ENDPOINT_GET_SUBMODELS_LIMIT=250
+ENDPOINT_GET_SUBMODELS_REQUESTS=100
+```
+
+For a paged endpoint, `*_REQUESTS=10` makes at most 10 HTTP calls in one VU: the first uses the configured path and limit, and each following call uses the cursor returned by the previous response. Requests stop at the configured count, when no cursor is returned, or after a failed response. Non-paged endpoints continue to use `*_REQUESTS` as their iteration count. Set an endpoint flag to `false` to skip it.
+
+Capture one timing sample per HTTP call with:
+
+```powershell
+k6 run --out csv=results/request-metrics.csv main.js
+```
+
+Filter `request-metrics.csv` to `metric_name=http_req_waiting` for the per-call time to first byte, or `metric_name=http_req_duration` for full client-observed duration. Rows are tagged by endpoint. The normal `results.csv` aggregates page duration samples. `http_req_waiting` excludes body transfer but includes network latency before the first byte. Pure server processing time requires server-side instrumentation. The run enforces `<500 ms` max waiting and performs no retries.
 
 ## Generating an HTML Summary Report
 
@@ -154,7 +181,7 @@ k6 run main.js
 $env:K6_WEB_DASHBOARD="true"
 $env:K6_WEB_DASHBOARD_EXPORT="results/k6-summary-report.html"
 
-k6 run main.js
+k6 run --out csv=results/request-metrics.csv main.js
 ```
 
 ### Command Prompt (CMD)
@@ -163,7 +190,7 @@ k6 run main.js
 set K6_WEB_DASHBOARD=true
 set K6_WEB_DASHBOARD_EXPORT=results/k6-summary-report.html
 
-k6 run main.js
+k6 run --out csv=results/request-metrics.csv main.js
 ```
 
 ## Test Outputs
@@ -171,6 +198,7 @@ k6 run main.js
 All generated reports are stored in the `results` directory:
 
 - **CSV Report:** `results/results.csv`
+- **Per-request metrics:** `results/request-metrics.csv`
 - **JSON Summary:** `results/summary.json`
 - **HTML Dashboard Report:** `results/k6-summary-report.html` (generated only when dashboard export is enabled)
 
