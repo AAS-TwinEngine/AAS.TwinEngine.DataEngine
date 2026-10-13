@@ -231,9 +231,9 @@ services:
           - aas-web-ui
 
   # ---------------------------------------------------------------------------
-  # TARGET side — a second, independent BaSyx Go environment that starts
-  # EMPTY. The Export Service is the only thing that ever writes to it, so you
-  # can watch entities appear/update/disappear here as it runs on its schedule.
+  # TARGET side — a second, independent BaSyx Go environment. It is pre-seeded
+  # with one target-only shell/submodel pair to demonstrate that the exporter
+  # leaves entities outside its ownership ledger untouched.
   # ---------------------------------------------------------------------------
   basyx_configuration_target:
     container_name: basyx_configuration_target
@@ -259,6 +259,8 @@ services:
     image: eclipsebasyx/aasenvironment-go:1.0.12
     container_name: target-registry-repository
     command: ["/app/aasenvironmentservice"]
+    volumes:
+      - ./target-preconfiguration:/app/preconfiguration:ro
     environment:
       - SERVER_PORT=8082
       - CORS_ALLOWEDORIGINS=*
@@ -278,6 +280,7 @@ services:
       - GENERAL_SUBMODELREGISTRYINTEGRATION=true
       - GENERAL_DISCOVERYINTEGRATION=true
       - GENERAL_EXTERNALURL=http://localhost:8092
+      - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
     restart: always
     depends_on:
       basyx_configuration_target:
@@ -360,7 +363,8 @@ services:
       - ExportService__Sources__ConceptDescriptions__Path=/concept-descriptions
       - ExportService__Sources__ConceptDescriptions__Limit=250
       - ExportService__Sources__ConceptDescriptions__Enabled=true
-      # Targets — write to the independent, initially-empty target environment.
+      # Targets — write to the independent target environment, which also contains
+      # a target-only shell/submodel pair not owned by the exporter.
       - ExportService__Targets__ShellDescriptors__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__ShellDescriptors__Path=/shell-descriptors
       - ExportService__Targets__ShellDescriptors__Enabled=true

@@ -14,7 +14,7 @@ SOURCE                                            TARGET
 │ nginx :8080 (aas-ui-source)   │                 │ aas-ui-target :8090          │
 │  └─ twinengine-dataengine     │   export-service │  └─ target-registry-         │
 │      └─ dpp-plugin            │ ───────────────▶│      repository :8092        │
-│      └─ source-registry-      │   (cron, */5min) │      (starts EMPTY)          │
+│      └─ source-registry-      │   (cron, */3min) │      (pre-seeded pair)       │
 │          repository :8082     │                 └──────────────────────────────┘
 └───────────────────────────────┘
 ```
@@ -68,13 +68,15 @@ published container image yet — it is always built from local source.
 
 1. Open the **source** UI: `http://localhost:8080/aas-ui/` — populated immediately, same data as the
    Minimal example.
-2. Open the **target** UI: `http://localhost:8090/` — **empty** at first.
-3. Wait for the Export Service's scheduled run (every 5 minutes by default — see
+2. Open the **target** UI: `http://localhost:8090/` — it already contains the
+   `PreExistingTargetAsset` shell with its `PreExistingTargetDetails` and `PreExistingTargetNameplate`
+   submodels. The `OwnershipMarker` value in the details submodel identifies it as target-owned.
+3. Wait for the Export Service's scheduled run (every 3 minutes by default — see
    [Changing the schedule](#changing-the-schedule) to speed this up for a demo).
-4. Refresh the target UI — shells, submodels, and their registry descriptors now appear, created by
-   the Export Service.
+4. Refresh the target UI — source shells, submodels, and their registry descriptors appear alongside
+   the target-owned pair. Confirm the marker value and target-owned shell remain present.
 5. Edit or delete data at the source (e.g. via PGAdmin, see the Minimal README) and wait for the next
-   run — the change is reflected in the target on the following tick.
+   run — the change is reflected in the target, while the target-owned pair remains untouched.
 
 You can also watch it happen in the logs:
 
@@ -96,7 +98,7 @@ Export run finished at ... with status Completed.
 
 ### Changing the Schedule
 
-The default schedule is every 5 minutes (`*/5 * * * *`). To make the demo more responsive, edit the
+The default schedule is every 3 minutes (`*/3 * * * *`). To make the demo more responsive, edit the
 `ExportService__Scheduler__CronExpression` environment variable for the `export-service` service in
 `docker-compose.yml`, e.g. `*/1 * * * *` for every minute, then:
 
@@ -115,7 +117,7 @@ docker compose up -d export-service
 | **basyx_configuration_source**  | -     | One-shot schema setup for the source BaSyx Go environment            |
 | **aas-ui-source**                | 8080  | Source AAS UI (served through nginx at `/aas-ui/`)                   |
 | **export-service**               | 8087  | Reads from source, writes to target, on a cron schedule (`/healthz`) |
-| **target-registry-repository**  | 8092  | Target: independent BaSyx Go environment, **starts empty**           |
+| **target-registry-repository**  | 8092  | Target: independent BaSyx Go environment, pre-seeded with a target-only shell/submodel pair |
 | **basyx_configuration_target**  | -     | One-shot schema setup for the target BaSyx Go environment             |
 | **aas-ui-target**                | 8090  | Target AAS UI, points directly at the target registry/repository     |
 | **postgres**                     | -     | Single Postgres instance hosting `twinengine`, `basyxSourceDB`, `basyxTargetDB`, and `exportstate` as separate databases |
@@ -131,10 +133,11 @@ federation works (a registry only stores *where* to find data, not the data itse
 `aas-ui-target` can still successfully open shells/submodels it lists, even though they were primarily
 exported for their registry entries.
 
-## Resetting the Target
+## Resetting the Demo
 
-To start the export over from a clean target (e.g. after changing the schedule or testing from
-scratch):
+To reset the target and Export Service state (e.g. after changing the schedule or testing from
+scratch), remove the volumes. The pre-existing target shell and submodel are then seeded again from
+`target-preconfiguration/`:
 
 ```bash
 docker compose down -v
@@ -145,7 +148,7 @@ This also resets the Export Service's state store, so the next run treats everyt
 
 ## Troubleshooting
 
-**Target stays empty:** Check `docker compose logs export-service` for `Failed to Create` / `failed
+**Expected entities are missing:** Check `docker compose logs export-service` for `Failed to Create` / `failed
 with status` errors. Common causes are documented in the main
 [EXPORTER_FLOW.md](../../source/EXPORTER_FLOW.md).
 
