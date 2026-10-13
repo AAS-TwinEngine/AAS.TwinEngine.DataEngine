@@ -42,6 +42,31 @@ public sealed class ExportRunner : IExportRunner
 
         var phases = new Dictionary<EntityKind, PhaseResult>(PhaseOrder.Length);
         var enabledPhases = new List<EntityKind>(PhaseOrder.Length);
+
+        var status = await ExecuteForwardPassAsync(phases, enabledPhases, cancellationToken).ConfigureAwait(false);
+
+        if (status != RunStatus.Aborted)
+        {
+            status = await ExecuteDeletionPassAsync(phases, enabledPhases, status, cancellationToken).ConfigureAwait(false);
+        }
+
+        var finishedAt = DateTimeOffset.UtcNow;
+        _logger.LogInformation(
+            "Export run finished at {FinishedAt:O} with status {Status}. Duration: {DurationSeconds:F1}s.",
+            finishedAt, status, (finishedAt - startedAt).TotalSeconds);
+
+        return new ExportRunResult(
+            startedAt,
+            finishedAt,
+            status,
+            enabledPhases.Where(phases.ContainsKey).Select(kind => phases[kind]).ToList());
+    }
+
+    private async Task<RunStatus> ExecuteForwardPassAsync(
+        Dictionary<EntityKind, PhaseResult> phases,
+        List<EntityKind> enabledPhases,
+        CancellationToken cancellationToken)
+    {
         var status = RunStatus.Success;
 
         foreach (var kind in PhaseOrder)
@@ -59,11 +84,7 @@ public sealed class ExportRunner : IExportRunner
             {
                 var result = await _phaseExecutor.ExecuteAsync(kind, cancellationToken).ConfigureAwait(false);
                 phases.Add(kind, result);
-
-                if (result.HasFailures && status == RunStatus.Success)
-                {
-                    status = RunStatus.PartialFailure;
-                }
+                status = EscalateOnFailures(status, result);
             }
             catch (SourceUnavailableException ex)
             {
@@ -71,8 +92,7 @@ public sealed class ExportRunner : IExportRunner
                     ex,
                     "Phase {EntityKind} aborted: source unavailable. Cancelling remaining phases to preserve referential integrity.",
                     kind);
-                status = RunStatus.Aborted;
-                break;
+                return RunStatus.Aborted;
             }
             catch (OperationCanceledException ex)
             {
@@ -82,61 +102,54 @@ public sealed class ExportRunner : IExportRunner
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Unexpected failure in phase {EntityKind}. Cancelling remaining phases.", kind);
-                status = RunStatus.Aborted;
-                break;
+                return RunStatus.Aborted;
             }
         }
 
-        if (status != RunStatus.Aborted)
-        {
-            foreach (var kind in enabledPhases.AsEnumerable().Reverse())
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    var deletionResult = await _phaseExecutor.ExecuteDeletionsAsync(kind, cancellationToken).ConfigureAwait(false);
-                    phases[kind] = Merge(phases[kind], deletionResult);
-
-                    if (deletionResult.HasFailures && status == RunStatus.Success)
-                    {
-                        status = RunStatus.PartialFailure;
-                    }
-                }
-                catch (SourceUnavailableException ex)
-                {
-                    _logger.LogCritical(
-                        ex,
-                        "Deletion phase {EntityKind} aborted: source unavailable. Cancelling remaining deletions.",
-                        kind);
-                    status = RunStatus.Aborted;
-                    break;
-                }
-                catch (OperationCanceledException ex)
-                {
-                    throw new OperationCanceledException(
-                        $"Export run was cancelled during deletion phase {kind}.", ex, ex.CancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogCritical(ex, "Unexpected failure in deletion phase {EntityKind}. Cancelling remaining deletions.", kind);
-                    status = RunStatus.Aborted;
-                    break;
-                }
-            }
-        }
-
-        var finishedAt = DateTimeOffset.UtcNow;
-        _logger.LogInformation(
-            "Export run finished at {FinishedAt:O} with status {Status}. Duration: {DurationSeconds:F1}s.",
-            finishedAt, status, (finishedAt - startedAt).TotalSeconds);
-
-        return new ExportRunResult(
-            startedAt,
-            finishedAt,
-            status,
-            enabledPhases.Where(phases.ContainsKey).Select(kind => phases[kind]).ToList());
+        return status;
     }
+
+    private async Task<RunStatus> ExecuteDeletionPassAsync(
+        Dictionary<EntityKind, PhaseResult> phases,
+        List<EntityKind> enabledPhases,
+        RunStatus status,
+        CancellationToken cancellationToken)
+    {
+        foreach (var kind in enabledPhases.AsEnumerable().Reverse())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var deletionResult = await _phaseExecutor.ExecuteDeletionsAsync(kind, cancellationToken).ConfigureAwait(false);
+                phases[kind] = Merge(phases[kind], deletionResult);
+                status = EscalateOnFailures(status, deletionResult);
+            }
+            catch (SourceUnavailableException ex)
+            {
+                _logger.LogCritical(
+                    ex,
+                    "Deletion phase {EntityKind} aborted: source unavailable. Cancelling remaining deletions.",
+                    kind);
+                return RunStatus.Aborted;
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new OperationCanceledException(
+                    $"Export run was cancelled during deletion phase {kind}.", ex, ex.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Unexpected failure in deletion phase {EntityKind}. Cancelling remaining deletions.", kind);
+                return RunStatus.Aborted;
+            }
+        }
+
+        return status;
+    }
+
+    private static RunStatus EscalateOnFailures(RunStatus status, PhaseResult result) =>
+        result.HasFailures && status == RunStatus.Success ? RunStatus.PartialFailure : status;
 
     private static PhaseResult Merge(PhaseResult forward, PhaseResult deletions) => new(
         forward.Kind,

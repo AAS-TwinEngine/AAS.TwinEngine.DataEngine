@@ -217,15 +217,11 @@ public sealed class PhaseExecutor : IPhaseExecutor
             return false;
         }
 
-        _logger.LogInformation(
-            "Deletion verification for {EntityKind} {Identifier}: source confirmed the entity is deleted. Deleting from target.",
-            decision.Kind, decision.Identifier);
-
         await _targetWriter.DeleteAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
         await _stateStore.DeleteAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Deletion complete for {EntityKind} {Identifier}: removed from target and ownership state.",
+            "Deletion complete for {EntityKind} {Identifier}: source confirmed the entity is deleted; removed from target and ownership state.",
             decision.Kind, decision.Identifier);
 
         return true;
