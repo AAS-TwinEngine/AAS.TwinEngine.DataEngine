@@ -5,6 +5,7 @@ import {
     endpointMetricNames,
     getEnabledDiscoveryRequirements,
     getEnabledIdDependentEndpointKeys,
+    isSequentialPagedEndpoint,
     resolveScenarioByKey
 } from './helpers/scenarios.js';
 
@@ -29,11 +30,14 @@ function buildScenarioOptions() {
                     ? config.load.loadAllShellDescriptorsMaxDuration
                     : config.load.maxDuration;
 
+            const sequentialPagedEndpoint =
+                isSequentialPagedEndpoint(endpointKey);
+
             scenarios[`endpoint_${endpointKey}`] = {
                 executor: 'shared-iterations',
                 exec: 'executeEndpointScenario',
-                vus: config.load.vus,
-                iterations: requestCount,
+                vus: sequentialPagedEndpoint ? 1 : config.load.vus,
+                iterations: sequentialPagedEndpoint ? 1 : requestCount,
                 maxDuration: scenarioMaxDuration,
                 gracefulStop: config.load.gracefulStop,
                 env: {
@@ -126,6 +130,17 @@ export function executeEndpointScenario(data) {
     }
 
     if (scenario.requestMode === 'paged') {
+        executePagedRequest(
+            scenario.name,
+            scenario.url,
+            scenario.metricName,
+            config.endpointRequests[endpointKey]
+        );
+
+        return;
+    }
+
+    if (scenario.requestMode === 'pagedFull') {
         executePagedRequest(
             scenario.name,
             scenario.url,

@@ -177,6 +177,7 @@ export const endpointScenarios = [
         key: 'getShells',
         name: 'GetShells',
         metricName: 'get_shells_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/shells`,
@@ -302,6 +303,7 @@ export const endpointScenarios = [
         key: 'getShellDescriptors',
         name: 'GetShellDescriptors',
         metricName: 'get_shell_descriptors_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/shell-descriptors`,
@@ -362,6 +364,7 @@ export const endpointScenarios = [
         key: 'getSubmodelDescriptors',
         name: 'GetSubmodelDescriptors',
         metricName: 'get_submodel_descriptors_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/submodel-descriptors`,
@@ -385,6 +388,7 @@ export const endpointScenarios = [
         key: 'getSubmodels',
         name: 'GetSubmodels',
         metricName: 'get_submodels_duration',
+        requestMode: 'paged',
         resolveUrl: ({ baseUrl, config }) =>
             appendLimitQuery(
                 `${baseUrl}/submodels`,
@@ -457,7 +461,7 @@ export const endpointScenarios = [
         key: 'loadAllShellDescriptors',
         name: 'LoadAllShellDescriptors',
         metricName: 'load_all_data_duration',
-        requestMode: 'paged',
+        requestMode: 'pagedFull',
         resolveUrl: ({ baseUrl, config }) =>
             `${baseUrl}/shell-descriptors?limit=${config.loadAllShellDescriptors.limit}`
     }
@@ -477,6 +481,11 @@ export const endpointMetricNames =
     endpointScenarios.map(
         endpoint => endpoint.metricName
     );
+
+export function isSequentialPagedEndpoint(endpointKey) {
+
+    return endpointScenarioMap[endpointKey]?.requestMode === 'paged';
+}
 
 export function getEnabledIdDependentEndpointKeys(config) {
 

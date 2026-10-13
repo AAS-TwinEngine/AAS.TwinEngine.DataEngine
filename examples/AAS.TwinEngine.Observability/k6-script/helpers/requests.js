@@ -28,19 +28,26 @@ function extractCursor(payload) {
 
 function addDurationMetric(
     metricName,
-    duration
+    duration,
+    tags = {}
 ) {
 
     durationMetrics[metricName]
-        ?.add(duration);
+        ?.add(duration, tags);
 }
 
-function createRequestParams(name) {
+function createRequestParams(name, pageIndex) {
+
+    const tags = {
+        endpoint: name
+    };
+
+    if (pageIndex !== undefined) {
+        tags.page_index = String(pageIndex);
+    }
 
     return {
-        tags: {
-            endpoint: name
-        }
+        tags
     };
 }
 
@@ -97,12 +104,13 @@ function validateResponse(
 
 function sendRequest(
     name,
-    url
+    url,
+    pageIndex
 ) {
 
     const response = http.get(
         url,
-        createRequestParams(name)
+        createRequestParams(name, pageIndex)
     );
 
     validateResponse(
@@ -138,7 +146,8 @@ export function executeRequest(
 export function executePagedRequest(
     name,
     url,
-    metricName
+    metricName,
+    maxPages = Number.POSITIVE_INFINITY
 ) {
 
     let nextUrl = url;
@@ -146,22 +155,31 @@ export function executePagedRequest(
     let totalDuration = 0;
     let pageCount = 0;
 
-    while (nextUrl) {
+    while (nextUrl && pageCount < maxPages) {
 
         const response =
             sendRequest(
                 name,
-                nextUrl
+                nextUrl,
+                pageCount + 1
             );
 
-        if (response.status !== 200) {
-            return response;
-        }
+        const pageIndex = pageCount + 1;
+
+        addDurationMetric(
+            metricName,
+            response.timings.duration,
+            { page_index: String(pageIndex) }
+        );
 
         totalDuration +=
             response.timings.duration;
 
         pageCount++;
+
+        if (response.status !== 200) {
+            return response;
+        }
 
         const payload =
             response.json();
@@ -185,11 +203,6 @@ export function executePagedRequest(
         nextUrl =
             `${url}${separator}cursor=${encodeURIComponent(cursor)}`;
     }
-
-    addDurationMetric(
-        metricName,
-        totalDuration
-    );
 
     if (config.logRequests) {
 
