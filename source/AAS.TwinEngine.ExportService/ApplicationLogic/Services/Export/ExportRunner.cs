@@ -1,4 +1,4 @@
-using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
+﻿using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
@@ -8,30 +8,23 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 
-public sealed class ExportRunner : IExportRunner
+public sealed class ExportRunner(
+    IPhaseExecutor phaseExecutor,
+    IOptions<ExportServiceConfig> config,
+    ILogger<ExportRunner> logger) : IExportRunner
 {
     private static readonly EntityKind[] PhaseOrder =
-    {
+    [
         EntityKind.ConceptDescription,
         EntityKind.Submodel,
         EntityKind.SubmodelDescriptor,
         EntityKind.Shell,
         EntityKind.ShellDescriptor
-    };
+    ];
 
-    private readonly IPhaseExecutor _phaseExecutor;
-    private readonly IOptions<ExportServiceConfig> _config;
-    private readonly ILogger<ExportRunner> _logger;
-
-    public ExportRunner(
-        IPhaseExecutor phaseExecutor,
-        IOptions<ExportServiceConfig> config,
-        ILogger<ExportRunner> logger)
-    {
-        _phaseExecutor = phaseExecutor;
-        _config = config;
-        _logger = logger;
-    }
+    private readonly IPhaseExecutor _phaseExecutor = phaseExecutor;
+    private readonly IOptions<ExportServiceConfig> _config = config;
+    private readonly ILogger<ExportRunner> _logger = logger;
 
     public async Task<ExportRunResult> RunAsync(CancellationToken cancellationToken)
     {
@@ -148,8 +141,7 @@ public sealed class ExportRunner : IExportRunner
         return status;
     }
 
-    private static RunStatus EscalateOnFailures(RunStatus status, PhaseResult result) =>
-        result.HasFailures && status == RunStatus.Success ? RunStatus.PartialFailure : status;
+    private static RunStatus EscalateOnFailures(RunStatus status, PhaseResult result) => result.HasFailures && status == RunStatus.Success ? RunStatus.PartialFailure : status;
 
     private static PhaseResult Merge(PhaseResult forward, PhaseResult deletions) => new(
         forward.Kind,

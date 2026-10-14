@@ -1,4 +1,4 @@
-using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
+﻿using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
@@ -10,41 +10,26 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 
-public sealed class PhaseExecutor : IPhaseExecutor
+public sealed class PhaseExecutor(
+    ISourceEntityReader sourceReader,
+    ITargetEntityWriter targetWriter,
+    IStateStore stateStore,
+    ICrudDecisionMaker decisionMaker,
+    IOptions<ExportServiceConfig> config,
+    ILogger<PhaseExecutor> logger) : IPhaseExecutor
 {
-    private readonly ISourceEntityReader _sourceReader;
-    private readonly ITargetEntityWriter _targetWriter;
-    private readonly IStateStore _stateStore;
-    private readonly ICrudDecisionMaker _decisionMaker;
-    private readonly int _maxDegreeOfParallelism;
-    private readonly ILogger<PhaseExecutor> _logger;
+    private readonly ISourceEntityReader _sourceReader = sourceReader;
+    private readonly ITargetEntityWriter _targetWriter = targetWriter;
+    private readonly IStateStore _stateStore = stateStore;
+    private readonly ICrudDecisionMaker _decisionMaker = decisionMaker;
+    private readonly int _maxDegreeOfParallelism = Math.Max(1, config.Value.Performance.MaxDegreeOfParallelism);
+    private readonly ILogger<PhaseExecutor> _logger = logger;
 
-    public PhaseExecutor(
-        ISourceEntityReader sourceReader,
-        ITargetEntityWriter targetWriter,
-        IStateStore stateStore,
-        ICrudDecisionMaker decisionMaker,
-        IOptions<ExportServiceConfig> config,
-        ILogger<PhaseExecutor> logger)
-    {
-        _sourceReader = sourceReader;
-        _targetWriter = targetWriter;
-        _stateStore = stateStore;
-        _decisionMaker = decisionMaker;
-        _maxDegreeOfParallelism = Math.Max(1, config.Value.Performance.MaxDegreeOfParallelism);
-        _logger = logger;
-    }
+    public Task<PhaseResult> ExecuteAsync(EntityKind kind, CancellationToken cancellationToken) => ExecuteAsync(kind, decision => decision.Operation != ExportOperation.Delete, cancellationToken);
 
-    public Task<PhaseResult> ExecuteAsync(EntityKind kind, CancellationToken cancellationToken) =>
-        ExecuteAsync(kind, decision => decision.Operation != ExportOperation.Delete, cancellationToken);
+    public Task<PhaseResult> ExecuteDeletionsAsync(EntityKind kind, CancellationToken cancellationToken) => ExecuteAsync(kind, decision => decision.Operation == ExportOperation.Delete, cancellationToken);
 
-    public Task<PhaseResult> ExecuteDeletionsAsync(EntityKind kind, CancellationToken cancellationToken) =>
-        ExecuteAsync(kind, decision => decision.Operation == ExportOperation.Delete, cancellationToken);
-
-    private async Task<PhaseResult> ExecuteAsync(
-        EntityKind kind,
-        Func<CrudDecision, bool> shouldApply,
-        CancellationToken cancellationToken)
+    private async Task<PhaseResult> ExecuteAsync(EntityKind kind, Func<CrudDecision, bool> shouldApply, CancellationToken cancellationToken)
     {
         using var phaseSpan = ExportServiceTracing.StartSpan(
             ExportServiceTracing.Spans.ExportPhase,
@@ -201,9 +186,7 @@ public sealed class PhaseExecutor : IPhaseExecutor
         _ = verifySpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, decision.Kind.ToString());
         _ = verifySpan?.SetTag(ExportServiceTracing.Attributes.EntityIdentifier, decision.Identifier);
 
-        _logger.LogInformation(
-            "Verifying deletion candidate {EntityKind} {Identifier} via source GET-by-id.",
-            decision.Kind, decision.Identifier);
+        _logger.LogInformation("Verifying deletion candidate {EntityKind} {Identifier} via source GET-by-id.", decision.Kind, decision.Identifier);
 
         var stillPresent = await _sourceReader.GetByIdAsync(decision.Kind, decision.Identifier, cancellationToken).ConfigureAwait(false);
 

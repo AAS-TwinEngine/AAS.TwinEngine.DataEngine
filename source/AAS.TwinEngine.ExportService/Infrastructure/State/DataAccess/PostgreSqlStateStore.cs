@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -13,21 +13,14 @@ using Npgsql;
 
 namespace AAS.TwinEngine.ExportService.Infrastructure.State.DataAccess;
 
-public sealed class PostgreSqlStateStore : IStateStore
+public sealed class PostgreSqlStateStore(
+    IDbConnectionFactory connectionFactory,
+    IOptions<ExportServiceConfig> options,
+    ILogger<PostgreSqlStateStore> logger) : IStateStore
 {
-    private readonly IDbConnectionFactory _connectionFactory;
-    private readonly string _schema;
-    private readonly ILogger<PostgreSqlStateStore> _logger;
-
-    public PostgreSqlStateStore(
-        IDbConnectionFactory connectionFactory,
-        IOptions<ExportServiceConfig> options,
-        ILogger<PostgreSqlStateStore> logger)
-    {
-        _connectionFactory = connectionFactory;
-        _schema = QuoteSchema(options.Value.StateStore.Schema);
-        _logger = logger;
-    }
+    private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
+    private readonly string _schema = QuoteSchema(options.Value.StateStore.Schema);
+    private readonly ILogger<PostgreSqlStateStore> _logger = logger;
 
     [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
         Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
@@ -39,7 +32,7 @@ public sealed class PostgreSqlStateStore : IStateStore
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         await using var command = connection.CreateCommand();
-        command.CommandText = sql;
+        _ = command.CommandText = sql;
         _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("State store schema '{Schema}' ensured.", _schema);
@@ -55,7 +48,7 @@ public sealed class PostgreSqlStateStore : IStateStore
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         await using var command = connection.CreateCommand();
-        command.CommandText = sql;
+        _ = command.CommandText = sql;
         _ = command.Parameters.AddWithValue("@entity_kind", kind.ToString());
 
         var results = new List<ExportedEntity>();
@@ -103,7 +96,7 @@ public sealed class PostgreSqlStateStore : IStateStore
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         await using var command = connection.CreateCommand();
-        command.CommandText = sql;
+        _ = command.CommandText = sql;
         _ = command.Parameters.AddWithValue("@entity_kind", kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", identifier);
 

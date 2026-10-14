@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -14,22 +14,15 @@ namespace AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
 /// Single token provider that supports all configured auth kinds. Endpoint-name → auth
 /// config is set up at DI time; tokens are cached in-memory per endpoint.
 /// </summary>
-public sealed class ConfiguredTokenProvider : ITokenProvider
+public sealed class ConfiguredTokenProvider(
+    IReadOnlyDictionary<string, AuthConfig> authByEndpoint,
+    IHttpClientFactory httpClientFactory,
+    ILogger<ConfiguredTokenProvider> logger) : ITokenProvider
 {
-    private readonly IReadOnlyDictionary<string, AuthConfig> _authByEndpoint;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ConfiguredTokenProvider> _logger;
+    private readonly IReadOnlyDictionary<string, AuthConfig> _authByEndpoint = authByEndpoint;
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly ILogger<ConfiguredTokenProvider> _logger = logger;
     private readonly ConcurrentDictionary<string, CachedToken> _cache = new(StringComparer.Ordinal);
-
-    public ConfiguredTokenProvider(
-        IReadOnlyDictionary<string, AuthConfig> authByEndpoint,
-        IHttpClientFactory httpClientFactory,
-        ILogger<ConfiguredTokenProvider> logger)
-    {
-        _authByEndpoint = authByEndpoint;
-        _httpClientFactory = httpClientFactory;
-        _logger = logger;
-    }
 
     public async Task<string?> GetTokenAsync(string endpointName, CancellationToken cancellationToken)
     {

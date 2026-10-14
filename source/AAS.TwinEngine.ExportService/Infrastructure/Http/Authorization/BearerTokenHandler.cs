@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 
 namespace AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
 
@@ -6,16 +6,10 @@ namespace AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
 /// DelegatingHandler that attaches a bearer token acquired from <see cref="ITokenProvider"/>
 /// to every request of a named HttpClient. Skips attaching when the endpoint requires no auth.
 /// </summary>
-public sealed class BearerTokenHandler : DelegatingHandler
+public sealed class BearerTokenHandler(ITokenProvider tokenProvider, string endpointName) : DelegatingHandler
 {
-    private readonly ITokenProvider _tokenProvider;
-    private readonly string _endpointName;
-
-    public BearerTokenHandler(ITokenProvider tokenProvider, string endpointName)
-    {
-        _tokenProvider = tokenProvider;
-        _endpointName = endpointName;
-    }
+    private readonly ITokenProvider _tokenProvider = tokenProvider;
+    private readonly string _endpointName = endpointName;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

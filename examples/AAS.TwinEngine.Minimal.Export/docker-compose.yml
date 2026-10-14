@@ -58,7 +58,7 @@ services:
   twinengine-dataengine:
     ports:
       - "8085:8080"
-    image: dataenginettt:1.0.0
+    image: ghcr.io/aas-twinengine/dataengine:v1.2.0
     container_name: twinengine-dataengine
     build:
       context: ../../source
@@ -109,8 +109,6 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    ports:
-      - "8086:8080"
     image: ghcr.io/aas-twinengine/plugindpp:v1.2.0
     container_name: dpp-plugin
     build:
@@ -319,7 +317,7 @@ services:
   export-service:
     ports:
       - "8087:8080"
-    image: exportservicettt:1.0.0
+    image: exportservice:1.0.0
     container_name: export-service
     build:
       context: ../../source

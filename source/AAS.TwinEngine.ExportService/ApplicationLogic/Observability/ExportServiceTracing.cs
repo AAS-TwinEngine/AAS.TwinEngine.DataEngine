@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 
@@ -44,6 +44,5 @@ public static class ExportServiceTracing
         return activity;
     }
 
-    public static void RecordError(this Activity? activity, Exception ex)
-        => activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+    public static void RecordError(this Activity? activity, Exception ex) => activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
 }

@@ -1,4 +1,4 @@
-using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
+﻿using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 using Cronos;
@@ -14,24 +14,16 @@ namespace AAS.TwinEngine.ExportService.Infrastructure.Scheduling;
 /// Skips ticks with a warning if a previous run is still in progress. Cancels a run if it
 /// exceeds the configured timeout.
 /// </summary>
-public sealed class ExportBackgroundService : BackgroundService
+public sealed class ExportBackgroundService(
+    IServiceProvider serviceProvider,
+    IExportRunLock runLock,
+    IOptions<ExportServiceConfig> config,
+    ILogger<ExportBackgroundService> logger) : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IExportRunLock _runLock;
-    private readonly IOptions<ExportServiceConfig> _config;
-    private readonly ILogger<ExportBackgroundService> _logger;
-
-    public ExportBackgroundService(
-        IServiceProvider serviceProvider,
-        IExportRunLock runLock,
-        IOptions<ExportServiceConfig> config,
-        ILogger<ExportBackgroundService> logger)
-    {
-        _serviceProvider = serviceProvider;
-        _runLock = runLock;
-        _config = config;
-        _logger = logger;
-    }
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IExportRunLock _runLock = runLock;
+    private readonly IOptions<ExportServiceConfig> _config = config;
+    private readonly ILogger<ExportBackgroundService> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -50,10 +42,7 @@ public sealed class ExportBackgroundService : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(
-                ex,
-                "Invalid cron expression '{Cron}'. Export scheduler cannot start.",
-                scheduler.CronExpression);
+            _logger.LogCritical(ex, "Invalid cron expression '{Cron}'. Export scheduler cannot start.", scheduler.CronExpression);
             return;
         }
 
@@ -92,8 +81,7 @@ public sealed class ExportBackgroundService : BackgroundService
         using var acquired = _runLock.TryAcquire();
         if (acquired is null)
         {
-            _logger.LogError(
-                "Skipping scheduled export tick: a previous run is still in progress.");
+            _logger.LogError("Skipping scheduled export tick: a previous run is still in progress.");
             return;
         }
 
@@ -110,14 +98,7 @@ public sealed class ExportBackgroundService : BackgroundService
         }
         catch (OperationCanceledException ex) when (timeoutCts.IsCancellationRequested && !stoppingToken.IsCancellationRequested)
         {
-            _logger.LogCritical(
-                ex,
-                "Export run exceeded configured timeout of {TimeoutMinutes} minutes and was cancelled.",
-                _config.Value.Scheduler.RunTimeoutMinutes);
-        }
-        catch (OperationCanceledException)
-        {
-            // Host is stopping — nothing else to log.
+            _logger.LogCritical(ex, "Export run exceeded configured timeout of {TimeoutMinutes} minutes and was cancelled.", _config.Value.Scheduler.RunTimeoutMinutes);
         }
         catch (Exception ex)
         {

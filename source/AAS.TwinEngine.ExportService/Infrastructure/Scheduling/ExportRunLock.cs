@@ -1,4 +1,4 @@
-namespace AAS.TwinEngine.ExportService.Infrastructure.Scheduling;
+﻿namespace AAS.TwinEngine.ExportService.Infrastructure.Scheduling;
 
 public sealed class ExportRunLock : IExportRunLock
 {
@@ -16,12 +16,10 @@ public sealed class ExportRunLock : IExportRunLock
 
     private void Release() => Interlocked.Exchange(ref _busy, 0);
 
-    private sealed class Releaser : IDisposable
+    private sealed class Releaser(ExportRunLock owner) : IDisposable
     {
-        private readonly ExportRunLock _owner;
+        private readonly ExportRunLock _owner = owner;
         private int _disposed;
-
-        public Releaser(ExportRunLock owner) => _owner = owner;
 
         public void Dispose()
         {
