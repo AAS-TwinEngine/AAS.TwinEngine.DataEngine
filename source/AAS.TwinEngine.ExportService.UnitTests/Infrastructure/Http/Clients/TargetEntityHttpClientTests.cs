@@ -102,33 +102,19 @@ public class TargetEntityHttpClientTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenTargetReturnsConflict_FallsBackToUpdate()
+    public async Task CreateAsync_WhenTargetReturnsConflict_DoesNotOverwriteTargetEntity()
     {
         // Arrange
-        var handler = new DelegatingTestHandler(req =>
-        {
-            if (req.Method == HttpMethod.Post)
-            {
-                return new HttpResponseMessage(HttpStatusCode.Conflict);
-            }
-            if (req.Method == HttpMethod.Put)
-            {
-                return new HttpResponseMessage(HttpStatusCode.NoContent);
-            }
-            return new HttpResponseMessage(HttpStatusCode.BadRequest);
-        });
-
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.Conflict));
         var sut = CreateSut(handler);
         var entity = new SourceEntity("shell-123", "{\"id\":\"shell-123\"}");
 
-        // Act
-        await sut.CreateAsync(EntityKind.Shell, entity, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(2, handler.Requests.Count);
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+            sut.CreateAsync(EntityKind.Shell, entity, CancellationToken.None));
+        Assert.Contains("409", exception.Message);
+        Assert.Single(handler.Requests);
         Assert.Equal(HttpMethod.Post, handler.Requests[0].Method);
-        Assert.Equal(HttpMethod.Put, handler.Requests[1].Method);
-        Assert.Contains(Base64Url.Encode("shell-123"), handler.Requests[1].RequestUri?.AbsolutePath);
     }
 
     [Fact]

@@ -43,6 +43,8 @@ public sealed class ExportRunner(
             status = await ExecuteDeletionPassAsync(phases, enabledPhases, status, cancellationToken).ConfigureAwait(false);
         }
 
+        status = ResolveFinalStatus(status, phases.Values);
+
         var finishedAt = DateTimeOffset.UtcNow;
         _logger.LogInformation(
             "Export run finished at {FinishedAt:O} with status {Status}. Duration: {DurationSeconds:F1}s.",
@@ -141,7 +143,26 @@ public sealed class ExportRunner(
         return status;
     }
 
-    private static RunStatus EscalateOnFailures(RunStatus status, PhaseResult result) => result.HasFailures && status == RunStatus.Success ? RunStatus.PartialFailure : status;
+    private static RunStatus EscalateOnFailures(RunStatus status, PhaseResult result) =>
+        result.HasFailures && status == RunStatus.Success ? RunStatus.PartialFailure : status;
+
+    private static RunStatus ResolveFinalStatus(RunStatus status, IEnumerable<PhaseResult> phases)
+    {
+        if (status == RunStatus.Aborted)
+        {
+            return status;
+        }
+
+        var results = phases.ToList();
+        var failed = results.Sum(phase => phase.Failed);
+        if (failed == 0)
+        {
+            return RunStatus.Success;
+        }
+
+        var succeeded = results.Sum(phase => phase.Created + phase.Updated + phase.Deleted);
+        return succeeded == 0 ? RunStatus.FullFailure : RunStatus.PartialFailure;
+    }
 
     private static PhaseResult Merge(PhaseResult forward, PhaseResult deletions) => new(
         forward.Kind,

@@ -93,8 +93,22 @@ Phase Submodel finished. Created=X Updated=0 Deleted=0 Skipped=0 Failed=0
 Phase SubmodelDescriptor finished. Created=X Updated=0 Deleted=0 Skipped=0 Failed=0
 Phase Shell finished. Created=X Updated=0 Deleted=0 Skipped=0 Failed=0
 Phase ShellDescriptor finished. Created=X Updated=0 Deleted=0 Skipped=0 Failed=0
-Export run finished at ... with status Completed.
+Export run finished at ... with status Success.
 ```
+
+### Export Ownership and Run Outcomes
+
+The Export Service updates or deletes only entities recorded as exporter-managed in its PostgreSQL
+state store. If a create request receives `409 Conflict` for an entity that is not in that ownership
+ledger, the export is reported as failed for that entity; the service does not fall back to `PUT` or
+overwrite the target-owned entity.
+
+Run statuses distinguish:
+
+- `Success` — no entity operations failed.
+- `PartialFailure` — at least one entity operation succeeded and at least one failed.
+- `FullFailure` — entity operations failed and none succeeded.
+- `Aborted` — a source or unexpected phase failure stopped the run to protect data integrity.
 
 ### Changing the Schedule
 
@@ -105,6 +119,12 @@ The default schedule is every 3 minutes (`*/3 * * * *`). To make the demo more r
 ```bash
 docker compose up -d export-service
 ```
+
+HTTP retry and timeout settings are configured under `ExportService:Resilience`. The demo sets a
+30-second per-request timeout and retries transient failures using
+`InitialDelaySeconds * BackoffMultiplier^(retry attempt - 1)`, with jitter to reduce synchronized
+retries. For example, the default 2-second initial delay and multiplier of 2 produce base retry
+delays of 2, 4, and 8 seconds before jitter.
 
 ## Architecture & Services
 

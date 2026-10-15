@@ -5,6 +5,7 @@ using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Polly.Timeout;
 
 namespace AAS.TwinEngine.ExportService.UnitTests.Infrastructure.Http.Policies;
 
@@ -25,6 +26,39 @@ public class ResilienceHandlerExtensionsTests
 
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         }
+    }
+
+    private sealed class SlowHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+
+    [Theory]
+    [InlineData(0, 2, 3, 2)]
+    [InlineData(1, 2, 3, 6)]
+    [InlineData(2, 2, 3, 18)]
+    public void CalculateRetryDelay_UsesConfiguredBackoffMultiplier(
+        int attemptNumber,
+        int initialDelaySeconds,
+        double backoffMultiplier,
+        int expectedDelaySeconds)
+    {
+        // Arrange
+        var config = new ResilienceConfig
+        {
+            InitialDelaySeconds = initialDelaySeconds,
+            BackoffMultiplier = backoffMultiplier
+        };
+
+        // Act
+        var delay = ResilienceHandlerExtensions.CalculateRetryDelay(attemptNumber, config);
+
+        // Assert
+        Assert.Equal(TimeSpan.FromSeconds(expectedDelaySeconds), delay);
     }
 
     [Fact]
@@ -55,5 +89,28 @@ public class ResilienceHandlerExtensionsTests
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(3, flakyHandler.Attempts);
+    }
+
+    [Fact]
+    public async Task AddStandardResilience_CancelsRequestAfterConfiguredTimeout()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ResilienceConfig
+        {
+            MaxRetryAttempts = 1,
+            InitialDelaySeconds = 0,
+            TimeoutInSeconds = 1
+        };
+        _ = services.AddHttpClient("timeout-client")
+            .ConfigurePrimaryHttpMessageHandler(() => new SlowHandler())
+            .AddStandardResilience(config);
+
+        using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("timeout-client");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TimeoutRejectedException>(() =>
+            client.GetAsync(new Uri("http://localhost/test"), CancellationToken.None));
     }
 }

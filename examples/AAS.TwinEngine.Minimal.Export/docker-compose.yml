@@ -337,6 +337,7 @@ services:
       - ExportService__Resilience__MaxRetryAttempts=3
       - ExportService__Resilience__InitialDelaySeconds=2
       - ExportService__Resilience__BackoffMultiplier=2.0
+      - ExportService__Resilience__TimeoutInSeconds=30
       - ExportService__Performance__MaxDegreeOfParallelism=10
       - ExportService__StateStore__ConnectionString=Host=postgres;Port=5432;Database=exportstate;Username=postgres;Password=admin
       - ExportService__StateStore__Schema=export_service

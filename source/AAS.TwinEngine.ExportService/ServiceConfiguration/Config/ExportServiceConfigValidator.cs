@@ -19,6 +19,8 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
             failures.Add("Performance.MaxDegreeOfParallelism must be greater than zero.");
         }
 
+        ValidateResilience(options.Resilience, failures);
+
         if (string.IsNullOrWhiteSpace(options.StateStore.ConnectionString))
         {
             failures.Add("StateStore.ConnectionString must be configured.");
@@ -30,6 +32,29 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
         return failures.Count == 0
             ? ValidateOptionsResult.Success
             : ValidateOptionsResult.Fail(failures);
+    }
+
+    private static void ValidateResilience(ResilienceConfig resilience, List<string> failures)
+    {
+        if (resilience.MaxRetryAttempts < 1)
+        {
+            failures.Add("Resilience.MaxRetryAttempts must be greater than zero.");
+        }
+
+        if (resilience.InitialDelaySeconds < 0)
+        {
+            failures.Add("Resilience.InitialDelaySeconds must not be negative.");
+        }
+
+        if (!double.IsFinite(resilience.BackoffMultiplier) || resilience.BackoffMultiplier < 1.0)
+        {
+            failures.Add("Resilience.BackoffMultiplier must be a finite number greater than or equal to 1.");
+        }
+
+        if (resilience.TimeoutInSeconds <= 0)
+        {
+            failures.Add("Resilience.TimeoutInSeconds must be greater than zero.");
+        }
     }
 
     private static void ValidateScheduler(SchedulerConfig scheduler, List<string> failures)

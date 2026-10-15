@@ -164,6 +164,48 @@ public class ExportRunnerTests
     }
 
     [Fact]
+    public async Task RunAsync_WhenAllEntityOperationsFail_ReturnsFullFailure()
+    {
+        // Arrange
+        _phaseExecutor.ExecuteAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var kind = callInfo.Arg<EntityKind>();
+                return Task.FromResult(new PhaseResult(kind, 0, 0, 0, 0, 1));
+            });
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.RunAsync(CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RunStatus.FullFailure, result.Status);
+        Assert.Equal(5, result.Phases.Sum(phase => phase.Failed));
+        Assert.Equal(0, result.Phases.Sum(phase => phase.Created + phase.Updated + phase.Deleted));
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenOnlyDeletionOperationsFail_ReturnsPartialFailure()
+    {
+        // Arrange
+        _phaseExecutor.ExecuteDeletionsAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var kind = callInfo.Arg<EntityKind>();
+                return Task.FromResult(new PhaseResult(kind, 0, 0, 0, 0, 1));
+            });
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.RunAsync(CancellationToken.None);
+
+        // Assert
+        Assert.Equal(RunStatus.PartialFailure, result.Status);
+        Assert.Equal(5, result.Phases.Sum(phase => phase.Created));
+        Assert.Equal(5, result.Phases.Sum(phase => phase.Failed));
+    }
+
+    [Fact]
     public async Task RunAsync_WhenSourceUnavailableExceptionThrown_AbortsRemainingPhases()
     {
         // Arrange

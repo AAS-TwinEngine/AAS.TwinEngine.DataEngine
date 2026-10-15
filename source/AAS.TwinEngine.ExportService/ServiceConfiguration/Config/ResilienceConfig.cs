@@ -10,4 +10,6 @@ public sealed class ResilienceConfig
     public int InitialDelaySeconds { get; set; } = 2;
 
     public double BackoffMultiplier { get; set; } = 2.0;
+
+    public int TimeoutInSeconds { get; set; } = 30;
 }

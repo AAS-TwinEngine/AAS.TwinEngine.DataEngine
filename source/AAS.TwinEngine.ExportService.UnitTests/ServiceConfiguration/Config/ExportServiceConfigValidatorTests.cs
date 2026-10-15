@@ -92,6 +92,38 @@ public class ExportServiceConfigValidatorTests
     }
 
     [Fact]
+    public void Validate_WhenHttpTimeoutIsNotPositive_ReturnsFailure()
+    {
+        // Arrange
+        var config = CreateValidConfig();
+        config.Resilience.TimeoutInSeconds = 0;
+
+        // Act
+        var result = _sut.Validate(null, config);
+
+        // Assert
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("Resilience.TimeoutInSeconds", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(double.PositiveInfinity)]
+    public void Validate_WhenBackoffMultiplierIsInvalid_ReturnsFailure(double multiplier)
+    {
+        // Arrange
+        var config = CreateValidConfig();
+        config.Resilience.BackoffMultiplier = multiplier;
+
+        // Act
+        var result = _sut.Validate(null, config);
+
+        // Assert
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("Resilience.BackoffMultiplier", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Validate_WhenEnabledSourceLimitIsNotPositive_ReturnsFailure()
     {
         // Arrange

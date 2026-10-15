@@ -44,10 +44,8 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
         if (response.StatusCode == HttpStatusCode.Conflict)
         {
             _logger.LogWarning(
-                "POST for {EntityKind} {Identifier} returned 409 Conflict. Falling back to PUT.",
+                "POST for {EntityKind} {Identifier} returned 409 Conflict. Refusing to overwrite a target entity not recorded as exporter-managed.",
                 kind, entity.Identifier);
-            await UpdateAsync(kind, entity, cancellationToken).ConfigureAwait(false);
-            return;
         }
 
         await EnsureSuccessAsync(response, kind, entity.Identifier, HttpMethod.Post, cancellationToken).ConfigureAwait(false);
