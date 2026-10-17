@@ -114,6 +114,20 @@ public class PostgreSqlStateStoreTests
     }
 
     [Fact]
+    public async Task GetAsync_WhenCancelled_PropagatesCancellation()
+    {
+        // Arrange
+        _connectionFactory.CreateConnection().Returns(new NpgsqlConnection("Host=localhost;Database=test;Username=postgres"));
+        var sut = CreateSut();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sut.GetAsync(EntityKind.Shell, "id1", cts.Token));
+        _connectionFactory.Received(1).CreateConnection();
+    }
+
+    [Fact]
     public async Task UpsertAsync_WhenCancelled_PropagatesCancellation()
     {
         // Arrange

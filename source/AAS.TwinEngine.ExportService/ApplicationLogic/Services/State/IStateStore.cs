@@ -12,6 +12,12 @@ public interface IStateStore
 
     Task<IReadOnlyList<ExportedEntity>> LoadAsync(EntityKind kind, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Returns the ownership record for a single entity, or <c>null</c> when this service does
+    /// not manage it.
+    /// </summary>
+    Task<ExportedEntity?> GetAsync(EntityKind kind, string identifier, CancellationToken cancellationToken);
+
     Task UpsertAsync(ExportedEntity entity, CancellationToken cancellationToken);
 
     Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken);

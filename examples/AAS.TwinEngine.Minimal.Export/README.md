@@ -103,6 +103,26 @@ state store. If a create request receives `409 Conflict` for an entity that is n
 ledger, the export is reported as failed for that entity; the service does not fall back to `PUT` or
 overwrite the target-owned entity.
 
+This target runs BaSyx with registry integration enabled, so it creates the shell and submodel
+descriptors itself while handling the exporter's shell and submodel writes. The exporter's own
+descriptor create then returns `409` for a descriptor that belongs to an entity it owns. Because an
+AAS descriptor carries the same identifier as the shell or submodel it describes, the exporter
+reconciles that descriptor with the source and records ownership of it. The adoption applies only to
+`ShellDescriptor` and `SubmodelDescriptor`, and only when the described `Shell` or `Submodel` is
+already in the ownership ledger. Shells, submodels, concept descriptions, and descriptors of
+unmanaged entities are still never modified on conflict.
+
+In the logs a reconciled descriptor appears as an `Updated` operation:
+
+```
+Create for ShellDescriptor https://mm-software.com/ids/aas/000-001 conflicted with a descriptor
+the target generated for a shell or submodel this exporter owns. Reconciling it with the source
+and recording ownership.
+Phase ShellDescriptor finished. Created=0 Updated=3 Deleted=0 Skipped=0 Failed=0
+```
+
+The next unchanged run reports `Skipped` for the same descriptors.
+
 Run statuses distinguish:
 
 - `Success` — no entity operations failed.

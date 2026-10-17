@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 
+using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
@@ -43,9 +44,12 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
 
         if (response.StatusCode == HttpStatusCode.Conflict)
         {
-            _logger.LogWarning(
-                "POST for {EntityKind} {Identifier} returned 409 Conflict. Refusing to overwrite a target entity not recorded as exporter-managed.",
-                kind, entity.Identifier);
+            var conflictBody = await ReadErrorBodyAsync(response, cancellationToken).ConfigureAwait(false);
+
+            // The caller decides what a conflict means: it owns the ownership record this client
+            // deliberately knows nothing about.
+            throw new TargetEntityConflictException(
+                $"Target POST for {kind} {entity.Identifier} failed with status 409. Response: {conflictBody}");
         }
 
         await EnsureSuccessAsync(response, kind, entity.Identifier, HttpMethod.Post, cancellationToken).ConfigureAwait(false);

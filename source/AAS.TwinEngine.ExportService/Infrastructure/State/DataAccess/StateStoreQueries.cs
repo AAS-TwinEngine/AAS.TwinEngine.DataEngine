@@ -31,6 +31,12 @@ FROM {0}.exported_entities
 WHERE entity_kind = @entity_kind;
 ";
 
+    public const string SelectByKindAndIdentifier = @"
+SELECT entity_kind, identifier, content_hash, created_at, last_synced_at
+FROM {0}.exported_entities
+WHERE entity_kind = @entity_kind AND identifier = @identifier;
+";
+
     public const string Upsert = @"
 INSERT INTO {0}.exported_entities (entity_kind, identifier, content_hash, created_at, last_synced_at)
 VALUES (@entity_kind, @identifier, @content_hash, @created_at, @last_synced_at)

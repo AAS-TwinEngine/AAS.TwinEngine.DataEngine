@@ -1,5 +1,6 @@
 using System.Net;
 
+using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.Infrastructure.Http.Clients;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
@@ -102,17 +103,23 @@ public class TargetEntityHttpClientTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenTargetReturnsConflict_DoesNotOverwriteTargetEntity()
+    public async Task CreateAsync_WhenTargetReturnsConflict_ThrowsConflictAndDoesNotOverwriteTargetEntity()
     {
         // Arrange
-        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.Conflict));
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.Conflict)
+        {
+            Content = new StringContent("AssetAdministrationShell with given id already exists")
+        });
         var sut = CreateSut(handler);
         var entity = new SourceEntity("shell-123", "{\"id\":\"shell-123\"}");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+        var exception = await Assert.ThrowsAsync<TargetEntityConflictException>(() =>
             sut.CreateAsync(EntityKind.Shell, entity, CancellationToken.None));
         Assert.Contains("409", exception.Message);
+        Assert.Contains("already exists", exception.Message);
+
+        // The client never decides to overwrite: a single POST and no follow-up PUT.
         Assert.Single(handler.Requests);
         Assert.Equal(HttpMethod.Post, handler.Requests[0].Method);
     }
