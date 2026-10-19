@@ -40,7 +40,7 @@ public class PropertyHandlerTests
     [Fact]
     public void Extract_ReturnsLeafNodeWithSemanticIdAndType()
     {
-        var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.String, value: "test");
+        var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.String, value: "");
         _resolver.ResolveElementSemanticId(property, "MyProp").Returns("http://test/my-prop");
         _resolver.GetValueType(property).Returns(DataType.String);
         _resolver.GetCardinality(property).Returns(Cardinality.One);
@@ -51,6 +51,34 @@ public class PropertyHandlerTests
         Equal("http://test/my-prop", leaf.SemanticId);
         Equal(DataType.String, leaf.DataType);
         Equal(Cardinality.One, leaf.Cardinality);
+    }
+
+    [Theory]
+    [InlineData("Pump")]
+    [InlineData("0")]
+    [InlineData("false")]
+    public void Extract_TemplateValueResolved_ReturnsNull(string value)
+    {
+        var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.String, value: value);
+
+        Null(_sut.Extract(property, _ => null));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("null")]
+    [InlineData("NULL")]
+    [InlineData("Null")]
+    public void Extract_TemplateValueUnresolved_ReturnsLeafNode(string? value)
+    {
+        var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.String, value: value);
+        _resolver.ResolveElementSemanticId(property, "MyProp").Returns("http://test/my-prop");
+
+        var result = _sut.Extract(property, _ => null);
+
+        _ = IsType<SemanticLeafNode>(result);
     }
 
     [Fact]

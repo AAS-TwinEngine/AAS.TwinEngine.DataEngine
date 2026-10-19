@@ -19,10 +19,17 @@ public class RangeHandler(ISemanticIdResolver semanticIdResolver) : ISubmodelEle
         var valueType = semanticIdResolver.GetValueType(range);
         var node = new SemanticBranchNode(semanticId, semanticIdResolver.GetCardinality(range));
 
-        node.AddChild(new SemanticLeafNode(semanticId + SemanticIdResolver.RangeMinimumPostFixSeparator, string.Empty, valueType, Cardinality.ZeroToOne));
-        node.AddChild(new SemanticLeafNode(semanticId + SemanticIdResolver.RangeMaximumPostFixSeparator, string.Empty, valueType, Cardinality.ZeroToOne));
+        if (!TemplateValueChecker.IsResolved(range.Min))
+        {
+            node.AddChild(new SemanticLeafNode(semanticId + SemanticIdResolver.RangeMinimumPostFixSeparator, string.Empty, valueType, Cardinality.ZeroToOne));
+        }
 
-        return node;
+        if (!TemplateValueChecker.IsResolved(range.Max))
+        {
+            node.AddChild(new SemanticLeafNode(semanticId + SemanticIdResolver.RangeMaximumPostFixSeparator, string.Empty, valueType, Cardinality.ZeroToOne));
+        }
+
+        return node.Children.Count == 0 ? null : node;
     }
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)
@@ -36,12 +43,16 @@ public class RangeHandler(ISemanticIdResolver semanticIdResolver) : ISubmodelEle
 
         var leafNodes = branchNode.Children.OfType<SemanticLeafNode>().ToList();
 
-        range.Min = (string?)leafNodes.FirstOrDefault(n => n.SemanticId
-                                                   .EndsWith(SemanticIdResolver.RangeMinimumPostFixSeparator, StringComparison.Ordinal))?
-                                                   .Value;
+        var minLeaf = leafNodes.FirstOrDefault(n => n.SemanticId.EndsWith(SemanticIdResolver.RangeMinimumPostFixSeparator, StringComparison.Ordinal));
+        if (minLeaf != null)
+        {
+            range.Min = (string?)minLeaf.Value;
+        }
 
-        range.Max = (string?)leafNodes.FirstOrDefault(n => n.SemanticId
-                                                   .EndsWith(SemanticIdResolver.RangeMaximumPostFixSeparator, StringComparison.Ordinal))?
-                                                   .Value;
+        var maxLeaf = leafNodes.FirstOrDefault(n => n.SemanticId.EndsWith(SemanticIdResolver.RangeMaximumPostFixSeparator, StringComparison.Ordinal));
+        if (maxLeaf != null)
+        {
+            range.Max = (string?)maxLeaf.Value;
+        }
     }
 }

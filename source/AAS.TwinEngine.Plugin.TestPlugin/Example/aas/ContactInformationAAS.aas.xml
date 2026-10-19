@@ -112,7 +112,7 @@
               <value>
                 <langStringTextType>
                   <language>en</language>
-                  <text>ABC Company</text>
+                  <text>M&amp;M software</text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -138,7 +138,7 @@
               <value>
                 <langStringTextType>
                   <language>de</language>
-                  <text>Vertrieb</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -190,7 +190,7 @@
                   <value>
                     <langStringTextType>
                       <language>en</language>
-                      <text>+491234567890</text>
+                      <text></text>
                     </langStringTextType>
                   </value>
                 </multiLanguageProperty>
@@ -220,7 +220,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>0173-1#07-AAS754#001</value>
+                  <value></value>
                 </property>
                 <multiLanguageProperty>
                   <idShort>AvailableTime</idShort>
@@ -259,7 +259,7 @@
                   <value>
                     <langStringTextType>
                       <language>de</language>
-                      <text>Montag – Freitag 08:00 bis 16:00</text>
+                      <text></text>
                     </langStringTextType>
                   </value>
                 </multiLanguageProperty>
@@ -305,7 +305,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>email@muster-ag.de</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>TypeOfEmailAddress</idShort>
@@ -413,7 +413,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>Chat</value>
+                  <value></value>
                 </property>
                 <multiLanguageProperty>
                   <idShort>AvailableTime</idShort>
@@ -452,7 +452,7 @@
                   <value>
                     <langStringTextType>
                       <language>de</language>
-                      <text>Montag – Freitag 08:00 bis 16:00</text>
+                      <text></text>
                     </langStringTextType>
                   </value>
                 </multiLanguageProperty>
@@ -480,7 +480,7 @@
               <value>
                 <langStringTextType>
                   <language>de</language>
-                  <text>Musterstraße 1</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -512,7 +512,7 @@
               <value>
                 <langStringTextType>
                   <language>de</language>
-                  <text>12345</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -538,7 +538,7 @@
               <value>
                 <langStringTextType>
                   <language>de</language>
-                  <text>Muster-Bundesland</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>
@@ -564,7 +564,7 @@
               <value>
                 <langStringTextType>
                   <language>en</language>
-                  <text>test</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>

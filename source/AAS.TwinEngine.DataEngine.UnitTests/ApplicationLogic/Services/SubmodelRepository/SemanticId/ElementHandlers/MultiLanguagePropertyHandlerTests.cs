@@ -66,6 +66,71 @@ public class MultiLanguagePropertyHandlerTests
     }
 
     [Fact]
+    public void Extract_OneLanguageResolvedInTemplate_ReturnsBranchWithOnlyUnresolvedLanguage()
+    {
+        var mlp = new MultiLanguageProperty(
+            idShort: "ProductName",
+            value: [new LangStringTextType("en", "Pump"), new LangStringTextType("de", "null")]
+        );
+        SetupMlp(mlp);
+
+        var result = _sut.Extract(mlp, _ => null);
+
+        var branch = IsType<SemanticBranchNode>(result);
+        var leaf = Single(branch.Children);
+        Equal("http://test/product-name_de", leaf.SemanticId);
+    }
+
+    [Fact]
+    public void Extract_LanguageMissingInTemplate_IsRequested()
+    {
+        var mlp = new MultiLanguageProperty(idShort: "ProductName", value: [new LangStringTextType("en", "Pump")]);
+        SetupMlp(mlp);
+
+        var result = _sut.Extract(mlp, _ => null);
+
+        var branch = IsType<SemanticBranchNode>(result);
+        Equal("http://test/product-name_de", Single(branch.Children).SemanticId);
+    }
+
+    [Fact]
+    public void Extract_AllLanguagesResolvedInTemplate_ReturnsNull()
+    {
+        var mlp = new MultiLanguageProperty(
+            idShort: "ProductName",
+            value: [new LangStringTextType("en", "Pump"), new LangStringTextType("de", "Pumpe")]
+        );
+        SetupMlp(mlp);
+
+        Null(_sut.Extract(mlp, _ => null));
+    }
+
+    [Fact]
+    public void FillOut_LanguageLeafMissing_KeepsTemplateText()
+    {
+        var mlp = new MultiLanguageProperty(
+            idShort: "ProductName",
+            value: [new LangStringTextType("en", "Pump"), new LangStringTextType("de", "")]
+        );
+        SetupMlp(mlp);
+        var values = new SemanticBranchNode("http://test/product-name", Cardinality.One);
+        values.AddChild(new SemanticLeafNode("http://test/product-name_de", "Pumpe", DataType.String, Cardinality.ZeroToOne));
+
+        _sut.FillOut(mlp, values, (_, _, _) => { });
+
+        Equal("Pump", mlp.Value!.Single(text => text.Language == "en").Text);
+        Equal("Pumpe", mlp.Value!.Single(text => text.Language == "de").Text);
+    }
+
+    private void SetupMlp(MultiLanguageProperty mlp)
+    {
+        _resolver.ExtractSemanticId(mlp).Returns("http://test/product-name");
+        _resolver.GetCardinality(mlp).Returns(Cardinality.One);
+        _resolver.MlpPostFixSeparator.Returns("_");
+        _elementHelper.ResolveLanguages(mlp).Returns(["en", "de"]);
+    }
+
+    [Fact]
     public void Extract_WithNoLanguages_ReturnsEmptyBranchAndLogsInfo()
     {
         var mlp = new MultiLanguageProperty(idShort: "EmptyMlp", value: null);

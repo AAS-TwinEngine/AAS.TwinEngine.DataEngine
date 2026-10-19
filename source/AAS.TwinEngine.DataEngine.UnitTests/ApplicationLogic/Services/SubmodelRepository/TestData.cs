@@ -396,6 +396,42 @@ internal static class TestData
                                       );
     }
 
+    public static SubmodelElementList CreateMakingsList(IReadOnlyList<SubmodelElementCollection> markings)
+        => new(
+            typeValueListElement: AasSubmodelElements.SubmodelElementCollection,
+            idShort: "Makings",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.SubmodelElementList, "http://test/makings")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            value: [.. markings]);
+
+    public static SubmodelElementCollection CreateMarking(string idShort, string name, string color, string code)
+        => new(
+            idShort: idShort,
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.SubmodelElementCollection, "http://test/marking")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "ZeroToMany")],
+            value:
+            [
+                CreateMarkingProperty("Name", "http://test/marking/name", name),
+                CreateMarkingProperty("Color", "http://test/marking/color", color),
+                CreateMarkingProperty("Code", "http://test/marking/code", code)
+            ]);
+
+    public static SemanticBranchNode CreateMarkingValues(string color, string code)
+    {
+        var marking = new SemanticBranchNode("http://test/marking", Cardinality.ZeroToMany);
+        marking.AddChild(new SemanticLeafNode("http://test/marking/color", color, DataType.String, Cardinality.One));
+        marking.AddChild(new SemanticLeafNode("http://test/marking/code", code, DataType.String, Cardinality.One));
+        return marking;
+    }
+
+    private static Property CreateMarkingProperty(string idShort, string semanticId, string value)
+        => new(
+            idShort: idShort,
+            valueType: DataTypeDefXsd.String,
+            value: value,
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.Property, semanticId)]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")]);
+
     private static SubmodelElementCollection CreateModelDataCollection(string suffix)
     {
         return new SubmodelElementCollection(
@@ -660,6 +696,59 @@ internal static class TestData
                                        ],
                                        value: null
                                       );
+    }
+
+    // Clears File/Blob/Range/reference/entity values so every element still has to be requested from the plugin.
+    public static Submodel WithoutTemplateValues(Submodel submodel)
+    {
+        ClearValues(submodel.SubmodelElements!);
+        return submodel;
+    }
+
+    private static void ClearValues(IEnumerable<ISubmodelElement> elements)
+    {
+        foreach (var element in elements)
+        {
+            switch (element)
+            {
+                case File file:
+                    file.Value = "";
+                    break;
+                case Blob blob:
+                    blob.Value = [];
+                    break;
+                case Range range:
+                    range.Min = "";
+                    range.Max = "";
+                    break;
+                case ReferenceElement referenceElement:
+                    ClearKeys(referenceElement.Value);
+                    break;
+                case RelationshipElement relationshipElement:
+                    ClearKeys(relationshipElement.First);
+                    ClearKeys(relationshipElement.Second);
+                    break;
+                case SubmodelElementCollection collection:
+                    ClearValues(collection.Value ?? []);
+                    break;
+                case SubmodelElementList list:
+                    ClearValues(list.Value ?? []);
+                    break;
+                case Entity entity:
+                    entity.GlobalAssetId = "";
+                    entity.SpecificAssetIds?.ForEach(specificAssetId => specificAssetId.Value = "");
+                    ClearValues(entity.Statements ?? []);
+                    break;
+            }
+        }
+    }
+
+    private static void ClearKeys(IReference? reference)
+    {
+        if (reference is { Type: ReferenceTypes.ModelReference })
+        {
+            reference.Keys.ForEach(key => key.Value = "");
+        }
     }
 
     public static Submodel CreateSubmodel()

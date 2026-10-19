@@ -53,6 +53,23 @@ public class BlobHandlerTests
     }
 
     [Fact]
+    public void Extract_TemplateValueResolved_ReturnsNull()
+    {
+        var blob = new Blob(contentType: "image/png", idShort: "MyBlob", value: [1, 2, 3]);
+
+        Null(_sut.Extract(blob, _ => null));
+    }
+
+    [Fact]
+    public void Extract_TemplateValueEmpty_ReturnsLeafNode()
+    {
+        var blob = new Blob(contentType: "image/png", idShort: "MyBlob", value: []);
+        _resolver.ResolveElementSemanticId(blob, "MyBlob").Returns("http://test/blob");
+
+        _ = IsType<SemanticLeafNode>(_sut.Extract(blob, _ => null));
+    }
+
+    [Fact]
     public void FillOut_WithLeafNode_SetsBase64Value()
     {
         var blob = new Blob(contentType: "image/png", idShort: "MyBlob", value: [9]);

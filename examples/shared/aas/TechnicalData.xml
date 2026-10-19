@@ -575,7 +575,7 @@
                       <value>
                         <langStringTextType>
                           <language>en</language>
-                          <text>Notes or explanations about the image provided</text>
+                          <text></text>
                         </langStringTextType>
                       </value>
                     </multiLanguageProperty>
@@ -1101,7 +1101,7 @@
                   <value>
                     <langStringTextType>
                       <language>en</language>
-                      <text>Name of product class in the used classification system</text>
+                      <text></text>
                     </langStringTextType>
                   </value>
                 </multiLanguageProperty>
@@ -1478,7 +1478,7 @@
               <value>
                 <langStringTextType>
                   <language>en</language>
-                  <text>Statement by the manufacturer in text form, e.g. scope of validity of the statements, scopes of application, conditions of operation.</text>
+                  <text></text>
                 </langStringTextType>
               </value>
             </multiLanguageProperty>

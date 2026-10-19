@@ -59,6 +59,18 @@ public class RelationshipElementHandlerTests
     }
 
     [Fact]
+    public void Extract_AllModelReferenceKeysResolved_ReturnsNull()
+    {
+        var firstRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "sub")]);
+        var secondRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "sub2")]);
+        var rel = new RelationshipElement(first: firstRef, second: secondRef, idShort: "Test");
+        _resolver.ExtractSemanticId(rel).Returns("http://test/rel");
+        _resolver.GetCardinality(rel).Returns(Cardinality.One);
+
+        Null(_sut.Extract(rel, _ => null));
+    }
+
+    [Fact]
     public void Extract_FirstModelReference_ExtractsFirstAndDelegatesToReferenceHelper()
     {
         var firstRef = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "sub")]);

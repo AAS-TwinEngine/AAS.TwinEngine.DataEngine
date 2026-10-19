@@ -699,6 +699,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:double</valueType>
+          <min>0.5</min>
         </range>
         <property>
           <category>CONSTANT</category>
@@ -907,7 +908,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>0173-1#07-DAA603#004</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>DesignationOfCertificateOrApproval</idShort>
@@ -955,7 +956,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>KEMA99IECEX1105/128</value>
+                  <value></value>
                 </property>
                 <multiLanguageProperty>
                   <category>PARAMETER</category>
@@ -1111,7 +1112,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:date</valueType>
-                  <value>2022-01-01</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>ExpiryDate</idShort>
@@ -1159,7 +1160,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:date</valueType>
-                  <value>2022-01-01</value>
+                  <value>2032-01-01</value>
                 </property>
                 <file>
                   <idShort>MarkingFile</idShort>
@@ -1243,7 +1244,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>0044</value>
+                  <value></value>
                 </property>
               </value>
             </submodelElementCollection>
@@ -1465,10 +1466,6 @@
                   <language>de</language>
                   <text>Name der Produktklasse im verwendeten Klassifizierungssystem</text>
                 </langStringTextType>
-                <langStringTextType>
-                  <language></language>
-                  <text></text>
-                </langStringTextType>
               </value>
             </multiLanguageProperty>
             <property>
@@ -1559,7 +1556,7 @@
                 <keys>
                   <key>
                     <type>Submodel</type>
-                    <value>https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0</value>
+                    <value></value>
                   </key>
                   <key>
                     <type>SubmodelElementList</type>

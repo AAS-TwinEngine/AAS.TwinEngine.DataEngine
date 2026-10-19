@@ -310,6 +310,104 @@ public class PluginDataHandlerTests
         Assert.True(result.ContainsKey("submodel/a"));
     }
 
+    [Fact]
+    public async Task TryGetValuesAsync_WhenEverythingIsResolvedFromTemplate_DoesNotCallPlugin()
+    {
+        var semanticIds = new SemanticBranchNode("root", Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["root"],
+                Capabilities = new Capabilities()
+            }
+        };
+        _pluginSemanticIdMapper
+            .SplitByPluginManifests(Arg.Any<SemanticTreeNode>(), Arg.Any<IReadOnlyList<PluginManifest>>())
+            .Returns(new Dictionary<string, SemanticTreeNode> { { "TestPlugin", new SemanticBranchNode("root", Cardinality.One) } });
+        _pluginSemanticIdMapper
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<SemanticTreeNode>(0));
+
+        var result = await _sut.TryGetValuesAsync(manifests, semanticIds, "submodelId", CancellationToken.None);
+
+        Assert.Same(semanticIds, result);
+        _pluginRequestBuilder.DidNotReceiveWithAnyArgs().Build(Arg.Any<IDictionary<string, JsonSchema>>());
+        await _pluginDataProvider.DidNotReceiveWithAnyArgs().GetDataForSemanticIdsAsync(default!, default!, default);
+    }
+
+    [Fact]
+    public async Task TryGetValuesBatchAsync_SkipsSubmodelsFullyResolvedFromTemplate_AndStillReturnsThem()
+    {
+        var unresolved = new SemanticBranchNode("root", Cardinality.One);
+        unresolved.AddChild(new SemanticLeafNode("Contact", "", DataType.String, Cardinality.One));
+        var resolved = new SemanticBranchNode("root", Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["root", "Contact"],
+                Capabilities = new Capabilities()
+            }
+        };
+        var requests = new List<SubmodelValueRequest> { new("submodel/a", unresolved), new("submodel/b", resolved) };
+        var capturedIds = new List<string>();
+
+        _pluginSemanticIdMapper
+            .FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0])
+            .Returns(call => call.ArgAt<SemanticTreeNode>(0));
+        _pluginRequestBuilder
+            .Build("TestPlugin", Arg.Any<IReadOnlyList<SubmodelDataBatchRequestGroup>>())
+            .Returns(call =>
+            {
+                var groups = call.ArgAt<IReadOnlyList<SubmodelDataBatchRequestGroup>>(1);
+                capturedIds.AddRange(groups.SelectMany(group => group.SubmodelIds).Select(DecodeBase64Url));
+                return new PluginRequestSubmodelBatch("plugin-data-provider-TestPlugin", JsonContent.Create(groups));
+            });
+        _pluginDataProvider
+            .GetDataForSubmodelsBatchAsync(Arg.Any<PluginRequestSubmodelBatch>(), Arg.Any<CancellationToken>())
+            .Returns("""[{"submodelId":"submodel/a","result":{"Contact":"a"}}]""");
+        _pluginSemanticIdMapper
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<IList<SemanticTreeNode>>(1).SingleOrDefault() ?? call.ArgAt<SemanticTreeNode>(0));
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
+
+        Assert.Equal(["submodel/a"], capturedIds);
+        Assert.Equal(2, result.Count);
+        Assert.Same(resolved, result["submodel/b"]);
+    }
+
+    [Fact]
+    public async Task TryGetValuesBatchAsync_WhenEverySubmodelIsResolved_DoesNotCallPlugin()
+    {
+        var resolved = new SemanticBranchNode("root", Cardinality.One);
+        var manifests = new List<PluginManifest>
+        {
+            new()
+            {
+                PluginName = "TestPlugin",
+                PluginUrl = new Uri("http://localhost"),
+                SupportedSemanticIds = ["root"],
+                Capabilities = new Capabilities()
+            }
+        };
+        var requests = new List<SubmodelValueRequest> { new("submodel/a", resolved) };
+        _pluginSemanticIdMapper.FilterForPlugin(Arg.Any<SemanticTreeNode>(), manifests[0]).Returns((SemanticTreeNode)null!);
+        _pluginSemanticIdMapper
+            .Merge(Arg.Any<SemanticTreeNode>(), Arg.Any<IList<SemanticTreeNode>>())
+            .Returns(call => call.ArgAt<SemanticTreeNode>(0));
+
+        var result = await _sut.TryGetValuesBatchAsync(manifests, requests, 10, 1, CancellationToken.None);
+
+        Assert.Same(resolved, result["submodel/a"]);
+        await _pluginDataProvider.DidNotReceiveWithAnyArgs().GetDataForSubmodelsBatchAsync(default!, default);
+    }
+
     private static string DecodeBase64Url(string encodedValue) =>
         Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(encodedValue));
 

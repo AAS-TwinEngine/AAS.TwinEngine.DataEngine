@@ -20,15 +20,17 @@ public class EntityHandler(
 
         if (entity.EntityType == EntityType.SelfManagedEntity)
         {
-            var globalAssetIdNode = new SemanticLeafNode(semanticId + SemanticIdResolver.EntityGlobalAssetIdPostFix, string.Empty, DataType.String, Cardinality.One);
-            node.AddChild(globalAssetIdNode);
+            if (!TemplateValueChecker.IsResolved(entity.GlobalAssetId))
+            {
+                node.AddChild(new SemanticLeafNode(semanticId + SemanticIdResolver.EntityGlobalAssetIdPostFix, string.Empty, DataType.String, Cardinality.One));
+            }
 
             if (entity.SpecificAssetIds != null)
             {
                 foreach (var specificAssetId in entity.SpecificAssetIds)
                 {
                     IHasSemantics specificAsset = specificAssetId;
-                    if (specificAsset.SemanticId == null)
+                    if (specificAsset.SemanticId == null || TemplateValueChecker.IsResolved(specificAssetId.Value))
                     {
                         continue;
                     }
@@ -51,7 +53,7 @@ public class EntityHandler(
             logger.LogWarning("No elements defined in Entity {EntityIdShort}", entity.IdShort);
         }
 
-        return node;
+        return node.Children.Count == 0 && TemplateValueChecker.HasResolvedValue(entity) ? null : node;
     }
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)

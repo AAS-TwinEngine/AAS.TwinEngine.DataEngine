@@ -279,7 +279,7 @@ internal static class TestData
                                                           "value": "One"
                                                         }
                                                       ],
-                                                     "value": "https://example.com/logo.png",
+                                                     "value": "https://localhost/Thumbnail",
                                                      "contentType": "image/png",
                                                      "modelType": "File"
                                                    }
