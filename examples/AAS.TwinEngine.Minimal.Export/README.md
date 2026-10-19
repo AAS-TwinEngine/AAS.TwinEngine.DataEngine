@@ -151,7 +151,18 @@ Apply with:
 docker compose up -d export-service
 ```
 
-The cron runs in **UTC** inside the container, which may differ from your local clock. The scheduler
+Console log prefixes use local India time (`Asia/Kolkata`, `+05:30`) by default.
+Set `EXPORT_TIME_ZONE` in `.env` to another IANA timezone, such as `Europe/Berlin`,
+to change the export container's local time. Native execution uses the host timezone.
+To apply the updated image and timezone without restarting dependencies:
+
+```bash
+docker compose up -d --build --no-deps export-service
+```
+
+This restarts the exporter and can interrupt an active synchronization run.
+Only log presentation changes: persisted and telemetry timestamps remain UTC.
+The cron still runs in **UTC**, regardless of the log timezone. The scheduler
 logs the expression it parsed on startup:
 
 ```bash

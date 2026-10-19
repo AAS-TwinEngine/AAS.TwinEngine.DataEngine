@@ -354,6 +354,7 @@ services:
       retries: 3
       start_period: 20s
     environment:
+      - TZ=${EXPORT_TIME_ZONE:-Asia/Kolkata}
       # Telemetry: traces, logs and metrics go to the LGTM stack (Grafana on :3000).
       - ExportService__Observability__OtlpEndpoint=http://otel-lgtm:4317
       - ExportService__Observability__ServiceName=ExportService

@@ -1977,6 +1977,14 @@ configures:
 The service configures telemetry clients, not a production telemetry backend.
 It does not create dashboards, alert rules, storage retention, or high availability.
 
+Console log prefixes use the process-local timezone and include the UTC offset,
+for example `2026-10-19 17:00:00.000 +05:30`. Native execution uses the host timezone.
+The export image includes timezone data; set its `TZ` environment variable to an
+IANA timezone. The Minimal.Export demo defaults to `Asia/Kolkata`, configurable
+through `EXPORT_TIME_ZONE`. Rebuild the image and recreate the export container
+after applying these changes. Cron evaluation, stored synchronization timestamps,
+and telemetry timestamps remain UTC; this changes console presentation only.
+
 ### 21.2 Expected trace shape
 
 [ExportServiceTracing](./ApplicationLogic/Observability/ExportServiceTracing.cs) declares:

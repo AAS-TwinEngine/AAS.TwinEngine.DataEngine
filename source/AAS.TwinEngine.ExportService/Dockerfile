@@ -26,6 +26,7 @@ COPY --from=build /App/sbom/bom.xml /sbom_application.cyclonedx.xml
 
 # Create final image containing application
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:57bd717ac18ff6c8a39cc0ee4a76c1f15adc46df50434c73eff0c3f1df4c88f0
+RUN apk add --no-cache tzdata
 USER app
 WORKDIR /App
 COPY --from=build /App/out .
