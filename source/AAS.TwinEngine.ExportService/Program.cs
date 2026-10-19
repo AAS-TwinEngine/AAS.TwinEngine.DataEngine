@@ -1,6 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 using AAS.TwinEngine.ExportService.ServiceConfiguration;
+
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 using Serilog;
 
@@ -23,7 +26,28 @@ public static class Program
 
         var app = builder.Build();
 
-        _ = app.MapHealthChecks("/healthz");
+        _ = app.MapHealthChecks("/healthz", new HealthCheckOptions
+        {
+            ResponseWriter = async (context, report) =>
+            {
+                context.Response.ContentType = "application/json";
+                var response = new
+                {
+                    status = report.Status.ToString(),
+                    checks = report.Entries.ToDictionary(
+                        entry => entry.Key,
+                        entry => new
+                        {
+                            status = entry.Value.Status.ToString(),
+                            description = entry.Value.Description
+                        })
+                };
+                await JsonSerializer.SerializeAsync(
+                    context.Response.Body,
+                    response,
+                    cancellationToken: context.RequestAborted).ConfigureAwait(false);
+            }
+        });
 
         try
         {

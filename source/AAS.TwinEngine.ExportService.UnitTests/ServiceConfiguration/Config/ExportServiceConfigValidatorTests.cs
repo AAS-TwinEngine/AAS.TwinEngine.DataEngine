@@ -43,6 +43,25 @@ public class ExportServiceConfigValidatorTests
         Assert.Contains(result.Failures, failure => failure.Contains($"{endpoint}.{property}", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("https://dependency.test/health")]
+    [InlineData("//dependency.test/health")]
+    [InlineData("health")]
+    [InlineData("/health\\ready")]
+    public void Validate_WhenHealthEndpointIsNotAValidRelativePath_ReturnsFailure(string healthEndpoint)
+    {
+        // Arrange
+        var config = CreateValidConfig();
+        config.Sources.Shells.HealthEndpoint = healthEndpoint;
+
+        // Act
+        var result = _sut.Validate(null, config);
+
+        // Assert
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("Sources.Shells.HealthEndpoint", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void Validate_WhenDisabledEndpointIsMissingBaseUrlAndPath_ReturnsSuccess()
     {
@@ -57,6 +76,35 @@ public class ExportServiceConfigValidatorTests
 
         // Assert
         Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public void Validate_WhenSourceDisabled_DoesNotRequireMatchingTargetConfiguration()
+    {
+        var config = CreateValidConfig();
+        config.Sources.Submodels = new EndpointConfig { Enabled = false };
+        config.Targets.Submodels = new EndpointConfig();
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public void Validate_WhenSourceEnabled_RequiresTargetEvenWhenLegacyTargetFlagIsFalse()
+    {
+        var config = CreateValidConfig();
+        config.Targets.Submodels = new EndpointConfig
+        {
+            Enabled = false,
+            BaseUrl = "https://target.test",
+            Path = string.Empty
+        };
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("Targets.Submodels.Path", StringComparison.Ordinal));
     }
 
     [Theory]

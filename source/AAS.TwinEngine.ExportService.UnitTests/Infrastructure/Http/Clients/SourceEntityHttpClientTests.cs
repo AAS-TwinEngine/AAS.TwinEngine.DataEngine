@@ -228,7 +228,7 @@ public class SourceEntityHttpClientTests
     }
 
     [Fact]
-    public async Task ReadAllAsync_WhenRepeatedCursorEncountered_BreaksLoopToPreventHang()
+    public async Task ReadAllAsync_WhenRepeatedCursorEncountered_ThrowsSourceUnavailableException()
     {
         // Arrange
         var handler = new DelegatingTestHandler(req => new HttpResponseMessage(HttpStatusCode.OK)
@@ -237,12 +237,26 @@ public class SourceEntityHttpClientTests
         });
         var sut = CreateSut(handler);
 
-        // Act
-        var result = await sut.ReadAllAsync(EntityKind.Shell, CancellationToken.None);
+        await Assert.ThrowsAsync<SourceUnavailableException>(() =>
+            sut.ReadAllAsync(EntityKind.Shell, CancellationToken.None));
 
-        // Assert - Stops after second request where cursor repeats
         Assert.Equal(2, handler.Requests.Count);
-        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task ReadPagesAsync_WhenConsumerStops_DoesNotFetchNextPage()
+    {
+        var handler = new DelegatingTestHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"paging_metadata\":{\"cursor\":\"next\"},\"result\":[{\"id\":\"e1\"}]}")
+        });
+        var sut = CreateSut(handler);
+
+        await using var pages = sut.ReadPagesAsync(EntityKind.Shell, CancellationToken.None).GetAsyncEnumerator();
+        Assert.Empty(handler.Requests);
+        Assert.True(await pages.MoveNextAsync());
+        Assert.Equal("e1", Assert.Single(pages.Current).Identifier);
+        Assert.Single(handler.Requests);
     }
 
     [Fact]

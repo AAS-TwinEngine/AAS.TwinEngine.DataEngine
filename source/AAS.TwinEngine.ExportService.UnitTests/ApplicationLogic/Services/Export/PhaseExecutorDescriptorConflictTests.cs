@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
@@ -27,6 +29,20 @@ public class PhaseExecutorDescriptorConflictTests
     private readonly ICrudDecisionMaker _decisionMaker = Substitute.For<ICrudDecisionMaker>();
     private readonly ILogger<PhaseExecutor> _logger = Substitute.For<ILogger<PhaseExecutor>>();
     private readonly ExportServiceConfig _config = new();
+
+    public PhaseExecutorDescriptorConflictTests()
+    {
+        _sourceReader.ReadPagesAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(call => ReadConfiguredPageAsync(call.Arg<EntityKind>(), call.Arg<CancellationToken>()));
+    }
+
+    private async IAsyncEnumerable<IReadOnlyList<SourceEntity>> ReadConfiguredPageAsync(
+        EntityKind kind,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        yield return await _sourceReader.ReadAllAsync(kind, cancellationToken);
+    }
 
     private PhaseExecutor CreateSut() =>
         new(_sourceReader, _targetWriter, _stateStore, _decisionMaker, Options.Create(_config), _logger);

@@ -1,7 +1,7 @@
 # Export Service: In-Depth Code and Execution Guide
 
 > **Audience:** developers, technical leads, QA engineers, and operators.
-> **Reviewed against:** the working-tree implementation on 2026-10-15.
+> **Reviewed against:** the working-tree implementation on 2026-10-19.
 > **Scope:** the complete Export Service, including dependency health checks.
 > **Reading rule:** code excerpts are selected implementation excerpts unless explicitly
 > labelled as pseudocode or illustrative data. Examples with reduced AAS objects explain
@@ -137,7 +137,7 @@ the service-configuration namespace.
 | Database | [PostgreSqlStateStore](./Infrastructure/State/DataAccess/PostgreSqlStateStore.cs) | When does ownership state change? |
 | SQL | [StateStoreQueries](./Infrastructure/State/DataAccess/StateStoreQueries.cs) | What is stored and how is it updated? |
 | HTTP resilience | [ResilienceHandlerExtensions](./Infrastructure/Http/Policies/ResilienceHandlerExtensions.cs) | Which timeout and retry policy wraps requests? |
-| Health registration/routes | [HealthCheckExtensions](./ServiceConfiguration/HealthCheckExtensions.cs) | What does readiness include? |
+| Health registration/routes | [ExportServiceHealthCheckExtensions](./ServiceConfiguration/ExportServiceHealthCheckExtensions.cs) | What does readiness include? |
 | HTTP dependency probe | [EndpointHealthCheck](./Infrastructure/Monitoring/EndpointHealthCheck.cs) | How is a dependency checked? |
 | Database probe | [StateStoreHealthCheck](./Infrastructure/Monitoring/StateStoreHealthCheck.cs) | What does database readiness prove? |
 
@@ -365,16 +365,18 @@ The intent is dependency-first creation/update and dependent-first deletion.
 The exporter does not dynamically inspect every reference and topologically sort objects.
 Order within the same entity kind is not deterministic.
 
-### 6.2 Enablement requires both directions
+### 6.2 Source enablement controls both directions
 
 A phase is active only when:
 
 ```text
-Sources.<Kind>.Enabled && Targets.<Kind>.Enabled
+Sources.<Kind>.Enabled
 ```
 
-Source enabled plus target disabled means no reads/writes for that phase through the
-runner, not "read but do not write."
+Set `Enabled` only under `Sources`. A true source flag enables reads and writes to
+the matching target; false skips both forward and deletion work for that kind.
+Legacy `Targets.<Kind>.Enabled` settings are ignored. Both endpoints must be valid
+when the source is enabled; neither is required when the source is disabled.
 
 There is no automatic activation of a dependency kind. If only shells are enabled,
 the exporter does not automatically export their submodels.
@@ -418,26 +420,28 @@ Thus ordering is not the same as a guarantee that every dependency was successfu
 
 ```csharp
 public Task<PhaseResult> ExecuteAsync(EntityKind kind, CancellationToken cancellationToken)
-    => ExecuteAsync(kind, decision => decision.Operation != ExportOperation.Delete,
-        cancellationToken);
+  => ExecuteAsync(kind, false, cancellationToken);
 
 public Task<PhaseResult> ExecuteDeletionsAsync(EntityKind kind, CancellationToken cancellationToken)
-    => ExecuteAsync(kind, decision => decision.Operation == ExportOperation.Delete,
-        cancellationToken);
+  => ExecuteAsync(kind, true, cancellationToken);
 ```
 
-Both calls execute the same preparation:
+Both calls use page-bounded processing:
 
 1. Start an export-phase activity and log the kind.
-2. Fetch **all** current source entities.
-3. Load the managed ledger rows for the kind.
-4. Calculate all CRUD decisions.
-5. Filter to forward or delete operations.
-6. Apply applicable decisions with bounded parallelism.
+2. Load and index the managed ledger rows for the kind once.
+3. Enumerate source pages through `ISourceEntityReader.ReadPagesAsync`.
+4. In the forward pass, calculate decisions using only the current page and its matching ledger rows.
+5. Complete the page's forward decisions with bounded parallelism before requesting another page.
+6. In the deletion pass, retain only source identifiers; after the entire scan succeeds,
+   calculate missing managed identifiers and verify each candidate by GET-by-ID before deletion.
 7. Return counters and log the phase summary.
 
 **Important:** the deletion pass does not reuse the forward pass's source snapshot.
 For each enabled kind there are normally two full listing reads per run.
+If a later source page fails, earlier forward-page writes and their ledger updates remain;
+the runner aborts remaining phases and does not start the deletion pass. A failed deletion
+listing never authorizes deletions for that kind.
 
 ### 7.2 Why the second listing matters
 
@@ -447,7 +451,7 @@ It also means:
 - Source load is higher than one collection read per run.
 - A source can change between passes.
 - A new entity appearing only in the deletion pass is not created in that pass;
-  its Create decision is filtered out and waits for a future forward pass.
+  it waits for a future forward pass.
 - An entity updated during the forward pass can become a deletion candidate in the
   same run if it disappears before the deletion listing.
 
@@ -598,25 +602,42 @@ The target remains responsible for accepting/rejecting the forwarded payload.
 |---|---|
 | Cursor absent, null, empty, or non-string | End pagination |
 | Empty `result` plus a new nonempty cursor | Continue |
-| Same cursor encountered again | Log warning and stop, returning accumulated entities |
+| Same cursor encountered again | Throw source-unavailable failure; listing is incomplete |
 | 10,000-page cap reached with continuation | Throw source-unavailable failure |
 | HTTP non-success | Fail whole collection read |
 | Invalid JSON / invalid result shape | Fail whole collection read |
 
-The repeated-cursor guard is not equivalent to a verified complete listing.
-Entities from the repeated-cursor response are appended before the loop breaks.
-Duplicates may therefore already be present.
+Repeated cursors fail closed rather than returning a partial listing that could
+incorrectly make managed entities look absent.
 
 ### 8.6 Memory and duplicate behavior
 
-All pages are accumulated into a list before decisions are made.
-The implementation does not stream each page directly to target writes.
-Memory grows with entity count and payload size.
+The production reader parses each HTTP response directly from a stream with
+`ResponseHeadersRead`, avoiding a full-response JSON string. Page parsing completes
+and disposes its response/document before yielding detached `SourceEntity` payloads.
+The forward phase finishes each page before fetching the next; completed-page payloads
+are eligible for collection. Deletion scans retain identifiers rather than full JSON.
+
+Payload retention is proportional to page size, with a small transition overlap,
+rather than total entity count. Ownership metadata and deletion identifiers still grow
+with entity count. At a configured `Limit` of 250, a paginated 20,000-entity source is
+processed in 80 pages, not retained as 20,000 payloads. This is not a measured 80-fold
+reduction in total process memory. Sources ignoring `limit` or returning an unpaged
+array can still produce a large single page.
+
+`ReadAllAsync` remains a compatibility API and deliberately materializes all pages.
+The interface's default page adapter also materializes a snapshot for legacy reader
+implementations; the production HTTP reader overrides it with lazy pagination.
 
 The parser does not deduplicate identifiers. Duplicate source identifiers can
 produce multiple decisions for the same entity and conflicting concurrent writes.
-The phase comment about independent identifiers assumes source uniqueness;
-the parser does not enforce it.
+Concurrent duplicate writes are limited to a page; different pages are applied sequentially.
+The source should provide unique identifiers.
+
+The existing phase tests cover 5,000 and 20,000 synthetic entities, backpressure,
+collection of completed-page payloads, mixed CRUD decisions, and source-failure deletion
+safety. These are correctness/lifetime checks, not live-system throughput benchmarks.
+See [bounded export processing ADR](../../docs/adr/0001-bounded-export-processing.md).
 
 ### 8.7 GET-by-ID for deletion verification
 
@@ -1340,27 +1361,26 @@ that phase may not be represented in the final result.
 
 ## 17. Liveness and readiness: detailed code walkthrough
 
-### 17.1 Why two probe types?
+### 17.1 The existing health route
 
 A source outage should make dependencies unavailable without implying that restarting
 the Export Service will fix them.
 
 | Route | Dependency checks | Purpose |
 |---|---|---|
-| `/healthz/live` | None | HTTP host is responding |
-| `/healthz/ready` | Database plus active source/target probes | Dependency readiness |
-| `/healthz` | Same as readiness | Existing route preserved as readiness |
+| `/healthz` | State store plus active source/target probes | Dependency readiness |
 
-Liveness does not prove the scheduler is enabled, a cron run occurred, or the last run succeeded.
-Readiness does not prove that all writes will succeed.
+The existing route is retained; no additional health endpoints are exposed. A healthy
+response does not prove the scheduler is enabled, a cron run occurred, or the last run
+succeeded. Readiness also does not prove that all writes will succeed.
 
 ### 17.2 Registration: only active phase endpoints
 
-[HealthCheckExtensions](./ServiceConfiguration/HealthCheckExtensions.cs) always registers
+[ExportServiceHealthCheckExtensions](./ServiceConfiguration/ExportServiceHealthCheckExtensions.cs) always registers
 the state-store check. For each entity kind:
 
 ```csharp
-if (!source.Enabled || !target.Enabled)
+if (!source.Enabled)
 {
     continue;
 }
@@ -1509,17 +1529,9 @@ Unhealthy result. The check registration also has a five-second timeout.
 These are cancellation-based limits, not an ability to forcibly stop arbitrary
 non-cooperative provider code.
 
-### 17.7 Route mapping and JSON
+### 17.7 Route response and JSON
 
-Liveness uses:
-
-```csharp
-new HealthCheckOptions { Predicate = _ => false }
-```
-
-No dependency checks are selected, so a responsive running host reports Healthy.
-
-Readiness selects checks tagged `ready` and writes:
+`/healthz` includes every registered readiness check and returns:
 
 ```json
 {
@@ -1590,7 +1602,7 @@ under the normal host configuration setup.
 | `Resilience.TimeoutInSeconds` | 30 | 30 |
 | `Performance.MaxDegreeOfParallelism` | 8 | 10 |
 | `EndpointConfig.Limit` | 250 | 250 for sources |
-| `EndpointConfig.Enabled` | true | All sources true; only target submodels true |
+| `Sources.<Kind>.Enabled` | true | All sources true; controls the matching target too |
 | `EndpointConfig.HealthEndpoint` | `/healthz` | BaSyx endpoints override `/health` |
 | `Targets.OmitNullProperties` | false | true |
 | `StateStore.Schema` | `export_service` | `export_service` |
@@ -1700,8 +1712,9 @@ Valid health paths include `/health` and `/healthz`.
 Blank, absolute URL, `//host/path`, and backslash-containing health paths are rejected.
 Health paths must begin with a single `/`.
 
-Validation is per endpoint's own `Enabled`, not per active source/target pair.
-An enabled source with a disabled target still needs valid source configuration.
+Validation uses the source's `Enabled` for both endpoints in each pair.
+An enabled source requires valid source and target configuration, regardless of any
+legacy target flag. A disabled source does not require either endpoint's settings.
 Scheduler disablement does not bypass validation.
 
 Validation does not perform remote reachability checks, full auth validation,
@@ -1882,8 +1895,7 @@ Source health -> 503
 Target health -> 200
 ```
 
-`/healthz/live` returns 200.
-`/healthz/ready` returns 503 and identifies the source check as Unhealthy.
+`/healthz` returns 503 and identifies the source check as Unhealthy.
 The next scheduled export still attempts execution and uses ordinary read/retry rules.
 
 ### 19.11 Example K: registry-integrated target generates the descriptor
@@ -1921,9 +1933,9 @@ other work ended as FullFailure.
 | Source collection 404 | Full read failure; abort | Not treated as empty collection |
 | Source item 404 | Confirms candidate absence | Can authorize target delete |
 | Source item 401/500/invalid JSON | Per-candidate failure | Preserve ledger and target |
-| Source listing malformed midway | Entire read fails | No decisions applied from that read |
-| Repeated pagination cursor | Warn and return accumulated list | Completeness not guaranteed |
-| Duplicate IDs across pages | Multiple decisions possible | Same-ID writes may race |
+| Source listing malformed midway | Scan fails and run aborts | Earlier forward pages may have completed; no deletions from an incomplete scan |
+| Repeated pagination cursor | Abort source read | Partial listing cannot authorize deletions |
+| Duplicate IDs across pages | Multiple decisions possible | Pages are sequential; source should supply unique IDs |
 | Pagination cap exceeded | Abort source read | Review cursor/volume behavior |
 | Target POST 400 | Entity failure with bounded error body | Inspect schema/payload |
 | Target POST 409 on a descriptor whose shell/submodel is owned | Reconciled with PUT, counted Updated | Expected on registry-integrated targets |
@@ -2042,7 +2054,7 @@ The console template does not explicitly print trace and span ID fields.
 |---|---|
 | Service never starts | Configuration validation, connection string, schema initializer |
 | No scheduled runs | Scheduler.Enabled, UTC cron, startup time, waiting for next boundary |
-| Phase missing | Both source and target Enabled values |
+| Phase missing | Corresponding source Enabled value |
 | Repeated creates with 409 | Ownership ledger, previous partial create, target collision, registry-integrated target generating descriptors |
 | Unexpected updates | Raw JSON ordering/whitespace/volatile fields and stored hash |
 | Source deletion does not remove target | Ledger ownership, GET-by-ID result, source consistency |
@@ -2081,8 +2093,6 @@ running container's behavior.
 With the demo's host port 8087:
 
 ```powershell
-curl.exe -i http://localhost:8087/healthz/live
-curl.exe -i http://localhost:8087/healthz/ready
 curl.exe -i http://localhost:8087/healthz
 ```
 
@@ -2102,7 +2112,7 @@ Focused slices:
 
 ```powershell
 dotnet test source\AAS.TwinEngine.ExportService.UnitTests\AAS.TwinEngine.ExportService.UnitTests.csproj --filter "FullyQualifiedName~CrudDecisionMakerTests|FullyQualifiedName~PhaseExecutorTests|FullyQualifiedName~ExportRunnerTests"
-dotnet test source\AAS.TwinEngine.ExportService.UnitTests\AAS.TwinEngine.ExportService.UnitTests.csproj --filter FullyQualifiedName~ExportHealthCheckTests
+dotnet test source\AAS.TwinEngine.ExportService.UnitTests\AAS.TwinEngine.ExportService.UnitTests.csproj --filter FullyQualifiedName~EndpointHealthCheckTests
 ```
 
 This guide is a behavior reference, not a promise that every current working-tree
@@ -2141,7 +2151,7 @@ ownership information and can turn later operations into conflicting Creates.
 | In-process lock | [ExportRunLockTests](../AAS.TwinEngine.ExportService.UnitTests/Infrastructure/Scheduling/ExportRunLockTests.cs) |
 | Schema and SQL boundaries | [PostgreSqlStateStoreTests](../AAS.TwinEngine.ExportService.UnitTests/Infrastructure/State/DataAccess/PostgreSqlStateStoreTests.cs) |
 | Config validation | [ExportServiceConfigValidatorTests](../AAS.TwinEngine.ExportService.UnitTests/ServiceConfiguration/Config/ExportServiceConfigValidatorTests.cs) |
-| Probes and actual HTTP health routes | [ExportHealthCheckTests](../AAS.TwinEngine.ExportService.UnitTests/Infrastructure/Monitoring/ExportHealthCheckTests.cs) |
+| Probes and actual HTTP health routes | [EndpointHealthCheckTests](../AAS.TwinEngine.ExportService.UnitTests/Infrastructure/Monitoring/EndpointHealthCheckTests.cs) |
 
 Tests are evidence only for the specific assertions and dependencies they exercise.
 Mocked HTTP/database tests do not prove compatibility with every live target or

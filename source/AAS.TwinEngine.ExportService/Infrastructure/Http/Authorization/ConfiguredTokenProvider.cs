@@ -111,10 +111,6 @@ public sealed class ConfiguredTokenProvider(
             var expiresAt = DateTimeOffset.UtcNow.AddSeconds(expiresIn);
             return new CachedToken(payload.AccessToken, expiresAt);
         }
-        catch (AuthenticationFailedException)
-        {
-            throw;
-        }
         catch (Exception ex)
         {
             // Record the raw exception on the trace span (not on the logger / thrown exception)

@@ -36,6 +36,9 @@ Same as the Minimal example — 5 Digital Product Passport for Industry 4.0 temp
   - `8085` — DataEngine (debug access)
   - `8086` — DPP Plugin (debug access)
   - `8087` — Export Service (health check only, no public API)
+  - `3000` — Grafana (observability stack)
+  - `9090` — Prometheus (observability stack)
+  - `9999` — PostgreSQL (for the bulk data loader)
   - `8090` — Target AAS UI
   - `8092` — Target BaSyx Go registry/repository
 
@@ -132,12 +135,27 @@ Run statuses distinguish:
 
 ### Changing the Schedule
 
-The default schedule is every 3 minutes (`*/3 * * * *`). To make the demo more responsive, edit the
-`ExportService__Scheduler__CronExpression` environment variable for the `export-service` service in
-`docker-compose.yml`, e.g. `*/1 * * * *` for every minute, then:
+The default schedule is every 3 minutes (`*/3 * * * *`). Scheduling and throughput are read from a
+gitignored `.env` file in this folder, so you can change them without editing `docker-compose.yml`:
+
+```env
+EXPORT_CRON=*/1 * * * *
+EXPORT_RUN_TIMEOUT_MINUTES=30
+EXPORT_PARALLELISM=10
+EXPORT_HTTP_TIMEOUT_SECONDS=30
+```
+
+Apply with:
 
 ```bash
 docker compose up -d export-service
+```
+
+The cron runs in **UTC** inside the container, which may differ from your local clock. The scheduler
+logs the expression it parsed on startup:
+
+```bash
+docker compose logs export-service | grep "scheduler started"
 ```
 
 HTTP retry and timeout settings are configured under `ExportService:Resilience`. The demo sets a
@@ -145,6 +163,80 @@ HTTP retry and timeout settings are configured under `ExportService:Resilience`.
 `InitialDelaySeconds * BackoffMultiplier^(retry attempt - 1)`, with jitter to reduce synchronized
 retries. For example, the default 2-second initial delay and multiplier of 2 produce base retry
 delays of 2, 4, and 8 seconds before jitter.
+
+## Observability
+
+The stack includes an all-in-one Grafana LGTM container (`otel-lgtm`). DataEngine, the DPP plugin
+and the Export Service all push OTLP to it, so a single export is readable end to end.
+
+- **Grafana:** <http://localhost:3000> (anonymous access, no login)
+- **Prometheus:** <http://localhost:9090>
+
+In Grafana use **Explore → Tempo** and search by service name `ExportService`. A run produces a
+`Export Run` span with nested `Export Phase`, `Fetch Source Entities`, `Decide CRUD Operations` and
+`Write Entity To Target` spans, continuing into `TwinEngine` and `Plugin.RelationalDatabase` spans
+for the same request. Logs in **Explore → Loki** carry a matching `trace_id`, so you can pivot from
+a log line to its trace.
+
+This is a development setup: no authentication, no persistence, and no retention tuning.
+
+> **Large runs exceed Tempo's default trace size.** The root `Export Run` span covers the whole run,
+> so a run that writes tens of thousands of entities produces a single trace far larger than
+> Tempo's default 5 MB `max_bytes_per_trace`, and it is dropped rather than shown. Traces stay
+> useful for small and medium runs; for bulk runs rely on the phase summary logs and metrics, or
+> raise the Tempo limit.
+
+## Running With a Large Dataset
+
+The source data lives in the DPP plugin's PostgreSQL schema and can be regenerated in bulk with the
+loader in [`../AAS.TwinEngine.Observability/databaseBulkDataLoader`](../AAS.TwinEngine.Observability/databaseBulkDataLoader/README.md).
+This stack exposes PostgreSQL on host port `9999` for exactly that purpose.
+
+Create `.env` in the loader folder:
+
+```env
+PG_CONN_STRING=postgresql://postgres:admin@host.docker.internal:9999/twinengine
+ASSET_COUNT=5000
+BATCH_SIZE=250
+```
+
+Then run it:
+
+```bash
+cd ../AAS.TwinEngine.Observability/databaseBulkDataLoader
+docker compose up --abort-on-container-exit
+```
+
+> **The loader truncates the DPP tables before loading.** The three demo products are replaced. On
+> the next run the exporter deletes them from the target (after confirming they are gone at the
+> source) and exports the new set. The target-only `PreExistingTargetAsset` is not in the ownership
+> ledger and is left untouched.
+
+Each asset produces one shell and five submodels, and every shell and submodel also has a registry
+descriptor, so `ASSET_COUNT=5000` makes a first full export write roughly 60,000 entities. Raise the
+limits before starting, otherwise the run is cut short or ticks overlap:
+
+```env
+EXPORT_CRON=0 * * * *
+EXPORT_RUN_TIMEOUT_MINUTES=180
+EXPORT_PARALLELISM=20
+EXPORT_HTTP_TIMEOUT_SECONDS=60
+```
+
+A reference first run of 5000 assets on a developer machine completed in about 7.5 minutes:
+
+```
+Phase ConceptDescription finished. Created=0     Updated=0     Skipped=237 Failed=0
+Phase Submodel finished.           Created=24985 Updated=15    Skipped=0   Failed=0
+Phase SubmodelDescriptor finished. Created=0     Updated=24985 Skipped=15  Failed=0
+Phase Shell finished.              Created=4997  Updated=3     Skipped=0   Failed=0
+Phase ShellDescriptor finished.    Created=0     Updated=5000  Skipped=0   Failed=0
+Export run finished ... with status Success. Duration: 445.4s.
+```
+
+Descriptors appear as `Updated` because the BaSyx target generates them itself; see
+[Export Ownership and Run Outcomes](#export-ownership-and-run-outcomes). A second unchanged run
+reports `Skipped` for everything and finishes in seconds.
 
 ## Architecture & Services
 

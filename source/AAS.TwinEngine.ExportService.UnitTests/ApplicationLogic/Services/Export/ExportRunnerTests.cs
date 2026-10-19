@@ -284,7 +284,7 @@ public class ExportRunnerTests
     [InlineData(EntityKind.Shell, true, false)]
     [InlineData(EntityKind.ShellDescriptor, false, true)]
     [InlineData(EntityKind.ShellDescriptor, true, false)]
-    public async Task RunAsync_WhenPhaseDisabledInSourceOrTarget_SkipsThatPhase(
+    public async Task RunAsync_WhenSourceEnablementChanges_ControlsBothPassesRegardlessOfTargetFlag(
         EntityKind kindToDisable, bool sourceEnabled, bool targetEnabled)
     {
         // Arrange
@@ -296,9 +296,10 @@ public class ExportRunnerTests
 
         // Assert
         Assert.Equal(RunStatus.Success, result.Status);
-        Assert.Equal(4, result.Phases.Count);
-        Assert.DoesNotContain(result.Phases, p => p.Kind == kindToDisable);
-        await _phaseExecutor.DidNotReceive().ExecuteAsync(kindToDisable, Arg.Any<CancellationToken>());
+        Assert.Equal(sourceEnabled ? 5 : 4, result.Phases.Count);
+        Assert.Equal(sourceEnabled, result.Phases.Any(phase => phase.Kind == kindToDisable));
+        await _phaseExecutor.Received(sourceEnabled ? 1 : 0).ExecuteAsync(kindToDisable, Arg.Any<CancellationToken>());
+        await _phaseExecutor.Received(sourceEnabled ? 1 : 0).ExecuteDeletionsAsync(kindToDisable, Arg.Any<CancellationToken>());
     }
 
     private void SetPhaseEnabled(EntityKind kind, bool sourceEnabled, bool targetEnabled)

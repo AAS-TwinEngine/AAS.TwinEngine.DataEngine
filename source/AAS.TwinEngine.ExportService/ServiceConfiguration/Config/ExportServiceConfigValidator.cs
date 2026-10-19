@@ -27,7 +27,7 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
         }
 
         ValidateEndpoints("Sources", options.Sources, failures, validateLimit: true);
-        ValidateEndpoints("Targets", options.Targets, failures);
+        ValidateEndpoints("Targets", options.Targets, options.Sources, failures);
 
         return failures.Count == 0
             ? ValidateOptionsResult.Success
@@ -93,18 +93,18 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
         ValidateEndpoint($"{groupName}.ConceptDescriptions", endpoints.ConceptDescriptions, failures, validateLimit);
     }
 
-    private static void ValidateEndpoints(string groupName, TargetEndpointsConfig endpoints, List<string> failures)
+    private static void ValidateEndpoints(string groupName, TargetEndpointsConfig endpoints, SourceEndpointsConfig sources, List<string> failures)
     {
-        ValidateEndpoint($"{groupName}.ShellDescriptors", endpoints.ShellDescriptors, failures, validateLimit: false);
-        ValidateEndpoint($"{groupName}.SubmodelDescriptors", endpoints.SubmodelDescriptors, failures, validateLimit: false);
-        ValidateEndpoint($"{groupName}.Shells", endpoints.Shells, failures, validateLimit: false);
-        ValidateEndpoint($"{groupName}.Submodels", endpoints.Submodels, failures, validateLimit: false);
-        ValidateEndpoint($"{groupName}.ConceptDescriptions", endpoints.ConceptDescriptions, failures, validateLimit: false);
+        ValidateEndpoint($"{groupName}.ShellDescriptors", endpoints.ShellDescriptors, failures, validateLimit: false, enabled: sources.ShellDescriptors.Enabled);
+        ValidateEndpoint($"{groupName}.SubmodelDescriptors", endpoints.SubmodelDescriptors, failures, validateLimit: false, enabled: sources.SubmodelDescriptors.Enabled);
+        ValidateEndpoint($"{groupName}.Shells", endpoints.Shells, failures, validateLimit: false, enabled: sources.Shells.Enabled);
+        ValidateEndpoint($"{groupName}.Submodels", endpoints.Submodels, failures, validateLimit: false, enabled: sources.Submodels.Enabled);
+        ValidateEndpoint($"{groupName}.ConceptDescriptions", endpoints.ConceptDescriptions, failures, validateLimit: false, enabled: sources.ConceptDescriptions.Enabled);
     }
 
-    private static void ValidateEndpoint(string name, EndpointConfig endpoint, List<string> failures, bool validateLimit)
+    private static void ValidateEndpoint(string name, EndpointConfig endpoint, List<string> failures, bool validateLimit, bool? enabled = null)
     {
-        if (!endpoint.Enabled)
+        if (!(enabled ?? endpoint.Enabled))
         {
             return;
         }
@@ -121,6 +121,15 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
         if (string.IsNullOrWhiteSpace(endpoint.Path))
         {
             failures.Add($"{name}.Path must be configured when the endpoint is enabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endpoint.HealthEndpoint) ||
+            endpoint.HealthEndpoint[0] != '/' ||
+            endpoint.HealthEndpoint.StartsWith("//", StringComparison.Ordinal) ||
+            endpoint.HealthEndpoint.Contains('\\') ||
+            Uri.TryCreate(endpoint.HealthEndpoint, UriKind.Absolute, out _))
+        {
+            failures.Add($"{name}.HealthEndpoint must be a relative path starting with a single '/'.");
         }
 
         if (validateLimit && endpoint.Limit <= 0)

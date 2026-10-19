@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
@@ -37,11 +38,24 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
 
     public async Task<IReadOnlyList<SourceEntity>> ReadAllAsync(EntityKind kind, CancellationToken cancellationToken)
     {
+        var entities = new List<SourceEntity>();
+        await foreach (var page in ReadPagesAsync(kind, cancellationToken).ConfigureAwait(false))
+        {
+            entities.AddRange(page);
+        }
+
+        return entities;
+    }
+
+    public async IAsyncEnumerable<IReadOnlyList<SourceEntity>> ReadPagesAsync(
+        EntityKind kind,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
         var endpoint = EndpointResolver.SourceEndpoint(kind, _config.Value.Sources);
         if (!endpoint.Enabled)
         {
             _logger.LogInformation("Source endpoint for {EntityKind} is disabled. Returning empty list.", kind);
-            return Array.Empty<SourceEntity>();
+            yield break;
         }
 
         if (string.IsNullOrWhiteSpace(endpoint.Path))
@@ -49,60 +63,58 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
             throw new SourceUnavailableException($"Source endpoint path for {kind} is not configured.");
         }
 
-        var client = _httpClientFactory.CreateClient(EndpointResolver.SourceClientName(kind));
+        using var client = _httpClientFactory.CreateClient(EndpointResolver.SourceClientName(kind));
+        string? cursor = null;
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+
+        for (var page = 0; page < MaxPagesPerRead; page++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var (entities, nextCursor) = await ReadPageAsync(client, kind, endpoint, cursor, cancellationToken).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(nextCursor) && !seenCursors.Add(nextCursor))
+            {
+                throw new SourceUnavailableException($"Source for {kind} returned a repeated pagination cursor.");
+            }
+
+            yield return entities;
+
+            if (string.IsNullOrEmpty(nextCursor))
+            {
+                yield break;
+            }
+
+            cursor = nextCursor;
+        }
+
+        throw new SourceUnavailableException(
+            $"Source read for {kind} exceeded the {MaxPagesPerRead}-page safety cap.");
+    }
+
+    private static async Task<(IReadOnlyList<SourceEntity> Entities, string? NextCursor)> ReadPageAsync(
+        HttpClient client,
+        EntityKind kind,
+        EndpointConfig endpoint,
+        string? cursor,
+        CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(client.Timeout);
 
         try
         {
-            var entities = new List<SourceEntity>();
-            string? cursor = null;
-            var page = 0;
-            var seenCursors = new HashSet<string>(StringComparer.Ordinal);
-
-            do
-            {
-                var requestUri = BuildPageUri(endpoint.Path, endpoint.Limit, cursor);
-
-                using var response = await client.GetAsync(requestUri, cancellationToken).ConfigureAwait(false);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new SourceUnavailableException(
-                        $"Source read for {kind} failed with status {(int)response.StatusCode}.");
-                }
-
-                var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                var (pageEntities, nextCursor) = ParsePage(json);
-                entities.AddRange(pageEntities);
-
-                if (!string.IsNullOrEmpty(nextCursor) && !seenCursors.Add(nextCursor))
-                {
-                    _logger.LogWarning(
-                        "Source for {EntityKind} returned a repeated pagination cursor. Stopping to avoid a loop.",
-                        kind);
-                    break;
-                }
-
-                cursor = nextCursor;
-                page++;
-            }
-            while (!string.IsNullOrEmpty(cursor) && page < MaxPagesPerRead);
-
-            if (page >= MaxPagesPerRead && !string.IsNullOrEmpty(cursor))
+            var requestUri = new Uri(BuildPageUri(endpoint.Path, endpoint.Limit, cursor), UriKind.RelativeOrAbsolute);
+            using var response = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
             {
                 throw new SourceUnavailableException(
-                    $"Source read for {kind} exceeded the {MaxPagesPerRead}-page safety cap.");
+                    $"Source read for {kind} failed with status {(int)response.StatusCode}.");
             }
 
-            return entities;
+            await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: timeout.Token).ConfigureAwait(false);
+            return ParsePage(document.RootElement);
         }
-        catch (SourceUnavailableException)
-        {
-            throw;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
+
         catch (Exception ex)
         {
             throw new SourceUnavailableException(
@@ -125,12 +137,14 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
             throw new SourceUnavailableException($"Source endpoint path for {kind} is not configured.");
         }
 
-        var client = _httpClientFactory.CreateClient(EndpointResolver.SourceClientName(kind));
-        var requestUri = BuildItemUri(endpoint.Path, identifier);
+        using var client = _httpClientFactory.CreateClient(EndpointResolver.SourceClientName(kind));
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(client.Timeout);
+        var requestUri = new Uri(BuildItemUri(endpoint.Path, identifier), UriKind.RelativeOrAbsolute);
 
         try
         {
-            using var response = await client.GetAsync(requestUri, cancellationToken).ConfigureAwait(false);
+            using var response = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -144,16 +158,9 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
                     $"Source GET-by-id for {kind} '{identifier}' failed with status {(int)response.StatusCode}.");
             }
 
-            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return ParseSingle(json, identifier);
-        }
-        catch (SourceUnavailableException)
-        {
-            throw;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
+            await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: timeout.Token).ConfigureAwait(false);
+            return ParseSingle(document.RootElement, identifier);
         }
         catch (Exception ex)
         {
@@ -168,11 +175,8 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
         return basePath.TrimEnd('/') + "/" + encodedId;
     }
 
-    private static SourceEntity ParseSingle(string json, string fallbackIdentifier)
+    private static SourceEntity ParseSingle(JsonElement root, string fallbackIdentifier)
     {
-        using var document = JsonDocument.Parse(json);
-        var root = document.RootElement;
-
         if (root.ValueKind != JsonValueKind.Object)
         {
             throw new SourceUnavailableException("Source GET-by-id response was not a JSON object.");
@@ -195,11 +199,8 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
         return $"{requestUri}&cursor={encoded}";
     }
 
-    private static (IReadOnlyList<SourceEntity> Entities, string? NextCursor) ParsePage(string json)
+    private static (IReadOnlyList<SourceEntity> Entities, string? NextCursor) ParsePage(JsonElement root)
     {
-        using var document = JsonDocument.Parse(json);
-        var root = document.RootElement;
-
         var array = root.ValueKind switch
         {
             JsonValueKind.Array => root,
@@ -207,13 +208,13 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
             _ => default
         };
 
-if (array.ValueKind != JsonValueKind.Array)
+    if (array.ValueKind != JsonValueKind.Array)
         {
             throw new SourceUnavailableException(
                 "Source response was not a JSON array or paged wrapper.");
         }
 
-        var entities = new List<SourceEntity>();
+        var entities = new List<SourceEntity>(array.GetArrayLength());
         foreach (var element in array.EnumerateArray())
         {
             var identifier = ExtractIdentifier(element);

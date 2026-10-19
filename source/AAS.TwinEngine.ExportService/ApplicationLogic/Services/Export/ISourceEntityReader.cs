@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using AAS.TwinEngine.ExportService.DomainModel;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
@@ -13,6 +15,13 @@ public interface ISourceEntityReader
     /// unreachable, throws <see cref="Exceptions.SourceUnavailableException"/>.
     /// </summary>
     Task<IReadOnlyList<SourceEntity>> ReadAllAsync(EntityKind kind, CancellationToken cancellationToken);
+
+    async IAsyncEnumerable<IReadOnlyList<SourceEntity>> ReadPagesAsync(
+        EntityKind kind,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        yield return await ReadAllAsync(kind, cancellationToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Fetches a single entity of <paramref name="kind"/> by identifier. Used to verify whether a

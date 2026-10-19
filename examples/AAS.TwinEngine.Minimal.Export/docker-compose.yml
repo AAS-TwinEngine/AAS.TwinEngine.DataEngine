@@ -17,6 +17,9 @@ services:
       POSTGRES_DB: twinengine
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin  
+    ports:
+      # Exposed so the bulk data loader can populate the DPP schema from the host.
+      - "9999:5432"
     volumes:
       - ./postgres/00_create_databases.sql:/docker-entrypoint-initdb.d/00_create_databases.sql:ro
       - ../shared/postgres/01_init_tables.sql:/docker-entrypoint-initdb.d/01_init_tables.sql:ro
@@ -67,9 +70,17 @@ services:
       dpp-plugin:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     environment:
       - General__DataEngineRepositoryBaseUrl=http://localhost:8080
       - General__CustomerDomainUrl=https://mm-software.com
+      - General__OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
+      - General__OpenTelemetry__ServiceName=TwinEngine
       - Plugins__Instances__0__Name=RelationalDatabasePlugin
       - Plugins__Instances__0__baseUrl=http://dpp-plugin:8080
       - Plugins__Instances__0__healthEndpoint=/healthz
@@ -119,6 +130,8 @@ services:
         condition: service_healthy
     restart: always
     environment:
+      - OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
+      - OpenTelemetry__ServiceName=Plugin.RelationalDatabase
       - Semantics__IndexContextPrefix=_aastwinengineindex_
       - Capabilities__HasShellDescriptor=true
       - Capabilities__HasAssetInformation=true
@@ -326,19 +339,34 @@ services:
       postgres:
         condition: service_healthy
       twinengine-dataengine:
+        condition: service_healthy
+      nginx:
         condition: service_started
       target-registry-repository:
         condition: service_started
+      otel-lgtm:
+        condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     environment:
+      # Telemetry: traces, logs and metrics go to the LGTM stack (Grafana on :3000).
+      - ExportService__Observability__OtlpEndpoint=http://otel-lgtm:4317
+      - ExportService__Observability__ServiceName=ExportService
+      # Scheduling and throughput. Override these in .env for large datasets, e.g.
+      # EXPORT_CRON="0 * * * *", EXPORT_RUN_TIMEOUT_MINUTES=180, EXPORT_PARALLELISM=20.
       - ExportService__Scheduler__Enabled=true
       - ExportService__Scheduler__CronExpression=*/3 * * * *
-      - ExportService__Scheduler__RunTimeoutMinutes=30
+      - ExportService__Scheduler__RunTimeoutMinutes=${EXPORT_RUN_TIMEOUT_MINUTES:-30}
       - ExportService__Resilience__MaxRetryAttempts=3
       - ExportService__Resilience__InitialDelaySeconds=2
       - ExportService__Resilience__BackoffMultiplier=2.0
-      - ExportService__Resilience__TimeoutInSeconds=30
-      - ExportService__Performance__MaxDegreeOfParallelism=10
+      - ExportService__Resilience__TimeoutInSeconds=${EXPORT_HTTP_TIMEOUT_SECONDS:-30}
+      - ExportService__Performance__MaxDegreeOfParallelism=${EXPORT_PARALLELISM:-10}
       - ExportService__StateStore__ConnectionString=Host=postgres;Port=5432;Database=exportstate;Username=postgres;Password=admin
       - ExportService__StateStore__Schema=export_service
       # Sources — read from the source stack via the nginx gateway (same aggregated API the browser uses).
@@ -366,20 +394,33 @@ services:
       # a target-only shell/submodel pair not owned by the exporter.
       - ExportService__Targets__ShellDescriptors__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__ShellDescriptors__Path=/shell-descriptors
-      - ExportService__Targets__ShellDescriptors__Enabled=true
       - ExportService__Targets__OmitNullProperties=true
       - ExportService__Targets__SubmodelDescriptors__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__SubmodelDescriptors__Path=/submodel-descriptors
-      - ExportService__Targets__SubmodelDescriptors__Enabled=true
       - ExportService__Targets__Shells__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__Shells__Path=/shells
-      - ExportService__Targets__Shells__Enabled=true
       - ExportService__Targets__Submodels__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__Submodels__Path=/submodels
-      - ExportService__Targets__Submodels__Enabled=true
       - ExportService__Targets__ConceptDescriptions__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__ConceptDescriptions__Path=/concept-descriptions
-      - ExportService__Targets__ConceptDescriptions__Enabled=true
+    networks:
+      - twinengine-network
+
+  # ---------------------------------------------------------------------------
+  # Observability — all-in-one Grafana LGTM stack (Loki, Grafana, Tempo,
+  # Prometheus) with datasources pre-provisioned. DataEngine, the DPP plugin and
+  # the Export Service all push OTLP to it, so a single export run can be read
+  # end to end as one trace. Dev-scoped only: no auth, no persistence, no HA.
+  #   Grafana:    http://localhost:3000  (anonymous admin)
+  #   Prometheus: http://localhost:9090
+  # ---------------------------------------------------------------------------
+  otel-lgtm:
+    image: grafana/otel-lgtm:0.29.0
+    container_name: lgtm
+    ports:
+      - "3000:3000"
+      - "9090:9090"
+    restart: always
     networks:
       - twinengine-network
 

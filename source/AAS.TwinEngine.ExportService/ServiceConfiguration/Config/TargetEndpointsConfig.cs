@@ -1,8 +1,8 @@
 namespace AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 /// <summary>
-/// Endpoints the exporter writes to (target systems). Same shape as sources so both sides
-/// stay symmetric and easy to reason about in configuration.
+/// Endpoints the exporter writes to (target systems). Each target is enabled by
+/// the corresponding source endpoint's Enabled setting.
 /// </summary>
 public sealed class TargetEndpointsConfig
 {

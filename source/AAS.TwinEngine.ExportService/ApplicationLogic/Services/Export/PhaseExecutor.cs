@@ -25,11 +25,11 @@ public sealed class PhaseExecutor(
     private readonly int _maxDegreeOfParallelism = Math.Max(1, config.Value.Performance.MaxDegreeOfParallelism);
     private readonly ILogger<PhaseExecutor> _logger = logger;
 
-    public Task<PhaseResult> ExecuteAsync(EntityKind kind, CancellationToken cancellationToken) => ExecuteAsync(kind, decision => decision.Operation != ExportOperation.Delete, cancellationToken);
+    public Task<PhaseResult> ExecuteAsync(EntityKind kind, CancellationToken cancellationToken) => ExecuteAsync(kind, false, cancellationToken);
 
-    public Task<PhaseResult> ExecuteDeletionsAsync(EntityKind kind, CancellationToken cancellationToken) => ExecuteAsync(kind, decision => decision.Operation == ExportOperation.Delete, cancellationToken);
+    public Task<PhaseResult> ExecuteDeletionsAsync(EntityKind kind, CancellationToken cancellationToken) => ExecuteAsync(kind, true, cancellationToken);
 
-    private async Task<PhaseResult> ExecuteAsync(EntityKind kind, Func<CrudDecision, bool> shouldApply, CancellationToken cancellationToken)
+    private async Task<PhaseResult> ExecuteAsync(EntityKind kind, bool deletionsOnly, CancellationToken cancellationToken)
     {
         using var phaseSpan = ExportServiceTracing.StartSpan(
             ExportServiceTracing.Spans.ExportPhase,
@@ -38,23 +38,9 @@ public sealed class PhaseExecutor(
 
         _logger.LogInformation("Starting export phase for {EntityKind}", kind);
 
-        IReadOnlyList<SourceEntity> sourceEntities;
-        IReadOnlyList<ExportedEntity> managedState;
-
-        using (var fetchSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.FetchSourceEntities))
-        {
-            _ = fetchSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
-            sourceEntities = await _sourceReader.ReadAllAsync(kind, cancellationToken).ConfigureAwait(false);
-        }
-
-        managedState = await _stateStore.LoadAsync(kind, cancellationToken).ConfigureAwait(false);
-
-        IReadOnlyList<CrudDecision> decisions;
-        using (var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations))
-        {
-            _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
-            decisions = _decisionMaker.Decide(kind, sourceEntities, managedState);
-        }
+        var managedState = await _stateStore.LoadAsync(kind, cancellationToken).ConfigureAwait(false);
+        var stateByIdentifier = managedState.ToDictionary(entity => entity.Identifier, StringComparer.Ordinal);
+        var sourceIdentifiers = deletionsOnly ? new HashSet<string>(StringComparer.Ordinal) : null;
 
         var created = 0;
         var updated = 0;
@@ -62,51 +48,97 @@ public sealed class PhaseExecutor(
         var skipped = 0;
         var failed = 0;
 
-        var applicable = decisions.Where(shouldApply).ToList();
-
         var parallelOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = _maxDegreeOfParallelism,
             CancellationToken = cancellationToken
         };
 
-        // Entities are independent (distinct identifiers), so applying them concurrently is safe.
-        // Per-entity failures are isolated; cancellation propagates out of Parallel.ForEachAsync.
-        await Parallel.ForEachAsync(applicable, parallelOptions, async (decision, token) =>
+        await using var pages = _sourceReader.ReadPagesAsync(kind, cancellationToken).GetAsyncEnumerator(cancellationToken);
+        while (true)
         {
-            if (decision.Operation == ExportOperation.Skip)
+            bool hasPage;
+            using (var fetchSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.FetchSourceEntities))
             {
-                _ = Interlocked.Increment(ref skipped);
-                return;
+                _ = fetchSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
+                hasPage = await pages.MoveNextAsync().ConfigureAwait(false);
             }
 
-            try
+            if (!hasPage)
             {
-                var outcome = await ApplyAsync(decision, token).ConfigureAwait(false);
+                break;
+            }
 
-                switch (outcome)
+            if (deletionsOnly)
+            {
+                foreach (var source in pages.Current)
                 {
-                    case AppliedOutcome.Created: _ = Interlocked.Increment(ref created); break;
-                    case AppliedOutcome.Updated: _ = Interlocked.Increment(ref updated); break;
-                    case AppliedOutcome.Deleted: _ = Interlocked.Increment(ref deleted); break;
-                    case AppliedOutcome.Skipped: _ = Interlocked.Increment(ref skipped); break;
+                    _ = sourceIdentifiers!.Add(source.Identifier);
+                }
+
+                continue;
+            }
+
+            var pageState = new List<ExportedEntity>(pages.Current.Count);
+            foreach (var source in pages.Current)
+            {
+                if (stateByIdentifier.TryGetValue(source.Identifier, out var managed))
+                {
+                    pageState.Add(managed);
                 }
             }
-            catch (OperationCanceledException)
+
+            IReadOnlyList<CrudDecision> decisions;
+            using (var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations))
             {
-                throw;
+                _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
+                decisions = _decisionMaker.Decide(kind, pages.Current,
+                    pageState.DistinctBy(entity => entity.Identifier).ToArray());
             }
-            catch (Exception ex)
+
+            await ApplyDecisionsAsync(decisions.Where(decision => decision.Operation != ExportOperation.Delete)).ConfigureAwait(false);
+        }
+
+        if (deletionsOnly)
+        {
+            var missingState = managedState.Where(entity => !sourceIdentifiers!.Contains(entity.Identifier)).ToArray();
+            using var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations);
+            _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
+            var decisions = _decisionMaker.Decide(kind, Array.Empty<SourceEntity>(), missingState);
+            await ApplyDecisionsAsync(decisions.Where(decision => decision.Operation == ExportOperation.Delete)).ConfigureAwait(false);
+        }
+
+        Task ApplyDecisionsAsync(IEnumerable<CrudDecision> decisions) =>
+            Parallel.ForEachAsync(decisions, parallelOptions, async (decision, token) =>
             {
-                _ = Interlocked.Increment(ref failed);
-                _logger.LogError(
-                    ex,
-                    "Failed to {Operation} {EntityKind} {Identifier}. Continuing with remaining entities.",
-                    decision.Operation,
-                    kind,
-                    decision.Identifier);
-            }
-        }).ConfigureAwait(false);
+                if (decision.Operation == ExportOperation.Skip)
+                {
+                    _ = Interlocked.Increment(ref skipped);
+                    return;
+                }
+
+                try
+                {
+                    var outcome = await ApplyAsync(decision, token).ConfigureAwait(false);
+                    switch (outcome)
+                    {
+                        case AppliedOutcome.Created: _ = Interlocked.Increment(ref created); break;
+                        case AppliedOutcome.Updated: _ = Interlocked.Increment(ref updated); break;
+                        case AppliedOutcome.Deleted: _ = Interlocked.Increment(ref deleted); break;
+                        case AppliedOutcome.Skipped: _ = Interlocked.Increment(ref skipped); break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _ = Interlocked.Increment(ref failed);
+                    _logger.LogError(
+                        ex,
+                        "Failed to {Operation} {EntityKind} {Identifier}. Continuing with remaining entities.",
+                        decision.Operation,
+                        kind,
+                        decision.Identifier);
+                }
+            });
 
         var result = new PhaseResult(kind, created, updated, deleted, skipped, failed);
         _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Created, created);

@@ -3,7 +3,6 @@ using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
@@ -175,15 +174,14 @@ public sealed class ExportRunner(
     private bool IsPhaseEnabled(EntityKind kind)
     {
         var sources = _config.Value.Sources;
-        var targets = _config.Value.Targets;
 
         return kind switch
         {
-            EntityKind.ConceptDescription => sources.ConceptDescriptions.Enabled && targets.ConceptDescriptions.Enabled,
-            EntityKind.Submodel => sources.Submodels.Enabled && targets.Submodels.Enabled,
-            EntityKind.SubmodelDescriptor => sources.SubmodelDescriptors.Enabled && targets.SubmodelDescriptors.Enabled,
-            EntityKind.Shell => sources.Shells.Enabled && targets.Shells.Enabled,
-            EntityKind.ShellDescriptor => sources.ShellDescriptors.Enabled && targets.ShellDescriptors.Enabled,
+            EntityKind.ConceptDescription => sources.ConceptDescriptions.Enabled,
+            EntityKind.Submodel => sources.Submodels.Enabled,
+            EntityKind.SubmodelDescriptor => sources.SubmodelDescriptors.Enabled,
+            EntityKind.Shell => sources.Shells.Enabled,
+            EntityKind.ShellDescriptor => sources.ShellDescriptors.Enabled,
             _ => false
         };
     }

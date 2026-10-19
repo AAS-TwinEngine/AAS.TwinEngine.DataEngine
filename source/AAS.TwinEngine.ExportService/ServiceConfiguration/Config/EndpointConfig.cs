@@ -17,12 +17,17 @@ public sealed class EndpointConfig
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
+    /// Relative health-check path for the endpoint.
+    /// </summary>
+    public string HealthEndpoint { get; set; } = "/healthz";
+
+    /// <summary>
     /// Maximum number of entities requested per source page.
     /// </summary>
     public int Limit { get; set; } = 250;
 
     /// <summary>
-    /// When <c>false</c>, this entity type is skipped by the exporter.
+    /// Source-only switch controlling export of this entity type. Ignored on target endpoints.
     /// </summary>
     public bool Enabled { get; set; } = true;
 

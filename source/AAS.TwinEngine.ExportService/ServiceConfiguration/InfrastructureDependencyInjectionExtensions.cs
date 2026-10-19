@@ -6,6 +6,7 @@ using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.ExportService.Infrastructure.Http.Clients;
 using AAS.TwinEngine.ExportService.Infrastructure.Http.Policies;
+using AAS.TwinEngine.ExportService.Infrastructure.Monitoring;
 using AAS.TwinEngine.ExportService.Infrastructure.Scheduling;
 using AAS.TwinEngine.ExportService.Infrastructure.State.DataAccess;
 using AAS.TwinEngine.ExportService.Infrastructure.State.Migrations;
@@ -64,6 +65,8 @@ public static class InfrastructureDependencyInjectionExtensions
         RegisterTargetHttpClient(services, HttpClientNames.TargetSubmodelDescriptors, rootConfig.Targets.SubmodelDescriptors, rootConfig.Resilience);
         RegisterTargetHttpClient(services, HttpClientNames.TargetShells, rootConfig.Targets.Shells, rootConfig.Resilience);
         RegisterTargetHttpClient(services, HttpClientNames.TargetShellDescriptors, rootConfig.Targets.ShellDescriptors, rootConfig.Resilience);
+
+        _ = services.AddExportServiceHealthChecks(rootConfig);
 
         // ── Source & target façade services (Clean Architecture ports live in ApplicationLogic) ──
         _ = services.AddScoped<ISourceEntityReader, SourceEntityHttpClient>();

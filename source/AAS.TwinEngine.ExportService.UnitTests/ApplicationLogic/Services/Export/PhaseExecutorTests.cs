@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
@@ -21,6 +23,20 @@ public class PhaseExecutorTests
     private readonly ICrudDecisionMaker _decisionMaker = Substitute.For<ICrudDecisionMaker>();
     private readonly ILogger<PhaseExecutor> _logger = Substitute.For<ILogger<PhaseExecutor>>();
     private readonly ExportServiceConfig _config = new();
+
+    public PhaseExecutorTests()
+    {
+        _sourceReader.ReadPagesAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>())
+            .Returns(call => ReadConfiguredPageAsync(call.Arg<EntityKind>(), call.Arg<CancellationToken>()));
+    }
+
+    private async IAsyncEnumerable<IReadOnlyList<SourceEntity>> ReadConfiguredPageAsync(
+        EntityKind kind,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        yield return await _sourceReader.ReadAllAsync(kind, cancellationToken);
+    }
 
     private PhaseExecutor CreateSut() =>
         new(_sourceReader, _targetWriter, _stateStore, _decisionMaker, Options.Create(_config), _logger);
@@ -50,7 +66,9 @@ public class PhaseExecutorTests
             new(ExportOperation.Delete, kind, "id_delete", null),
             new(ExportOperation.Skip, kind, "id_skip", null)
         };
-        _decisionMaker.Decide(kind, sources, state).Returns(decisions);
+        _decisionMaker.Decide(kind, sources,
+                Arg.Is<IReadOnlyList<ExportedEntity>>(entities => entities.Count == 1 && entities[0] == stateExisting))
+            .Returns(decisions);
 
         // Act
         var result = await sut.ExecuteAsync(kind, CancellationToken.None);
@@ -475,6 +493,162 @@ public class PhaseExecutorTests
         // Assert
         Assert.Equal(10, result.Created);
         Assert.Equal(1, maxObserved);
+    }
+
+    [Theory]
+    [InlineData(5000)]
+    [InlineData(20000)]
+    public async Task ExecuteAsync_WithLargePagedSource_CompletesEachPageBeforeFetchingNext(int entityCount)
+    {
+        var writer = new CountingTargetWriter();
+        _sourceReader.ReadPagesAsync(EntityKind.Shell, Arg.Any<CancellationToken>())
+            .Returns(call => GeneratePagesAsync(entityCount, writer, call.Arg<CancellationToken>()));
+        _stateStore.LoadAsync(EntityKind.Shell, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<ExportedEntity>());
+        var sut = new PhaseExecutor(_sourceReader, writer, _stateStore, new CrudDecisionMaker(), Options.Create(_config), _logger);
+
+        var result = await sut.ExecuteAsync(EntityKind.Shell, CancellationToken.None);
+
+        Assert.Equal(entityCount, result.Created);
+        Assert.Equal(entityCount, writer.Created);
+        Assert.Equal(0, result.Failed);
+        await _sourceReader.DidNotReceive().ReadAllAsync(Arg.Any<EntityKind>(), Arg.Any<CancellationToken>());
+        await _stateStore.Received(entityCount).UpsertAsync(Arg.Any<ExportedEntity>(), Arg.Any<CancellationToken>());
+    }
+
+    private static async IAsyncEnumerable<IReadOnlyList<SourceEntity>> GeneratePagesAsync(
+        int entityCount,
+        CountingTargetWriter writer,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        WeakReference? firstPayload = null;
+        for (var offset = 0; offset < entityCount; offset += 250)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Assert.Equal(offset, writer.Created);
+            if (offset == 750)
+            {
+                _ = GC.GetTotalMemory(forceFullCollection: true);
+                Assert.False(firstPayload!.IsAlive, "Completed pages must not retain their source payloads.");
+            }
+
+            var page = Enumerable.Range(offset, Math.Min(250, entityCount - offset))
+                .Select(index => new SourceEntity($"id{index}", $"{{\"id\":\"id{index}\",\"value\":\"{new string('x', 4096)}\"}}"))
+                .ToArray();
+            firstPayload ??= new WeakReference(page[0]);
+            yield return page;
+            await Task.Yield();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteAsync_WhenLaterPageFails_PreservesOwnershipAndNeverDeletes(bool deletionsOnly)
+    {
+        var source = new SourceEntity("present", "{\"id\":\"present\"}");
+        var missing = new ExportedEntity(EntityKind.Shell, "missing", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "old");
+        _sourceReader.ReadPagesAsync(EntityKind.Shell, Arg.Any<CancellationToken>())
+            .Returns(FailingPagesAsync(source));
+        _stateStore.LoadAsync(EntityKind.Shell, Arg.Any<CancellationToken>()).Returns(new[] { missing });
+        var sut = new PhaseExecutor(_sourceReader, _targetWriter, _stateStore, new CrudDecisionMaker(), Options.Create(_config), _logger);
+
+        await Assert.ThrowsAsync<SourceUnavailableException>(() => deletionsOnly
+            ? sut.ExecuteDeletionsAsync(EntityKind.Shell, CancellationToken.None)
+            : sut.ExecuteAsync(EntityKind.Shell, CancellationToken.None));
+
+        await _targetWriter.Received(deletionsOnly ? 0 : 1).CreateAsync(EntityKind.Shell, source, Arg.Any<CancellationToken>());
+        await _stateStore.Received(deletionsOnly ? 0 : 1).UpsertAsync(
+            Arg.Is<ExportedEntity>(entity => entity.Identifier == "present"), Arg.Any<CancellationToken>());
+        await _sourceReader.DidNotReceive().GetByIdAsync(Arg.Any<EntityKind>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _targetWriter.DidNotReceive().DeleteAsync(Arg.Any<EntityKind>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _stateStore.DidNotReceive().DeleteAsync(Arg.Any<EntityKind>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    private static async IAsyncEnumerable<IReadOnlyList<SourceEntity>> FailingPagesAsync(SourceEntity source)
+    {
+        yield return new[] { source };
+        await Task.Yield();
+        throw new SourceUnavailableException("Second source page failed.");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithPagedMixedOperations_PreservesDecisionsAndPayloads()
+    {
+        var create = new SourceEntity("new", "{\"id\":\"new\",\"value\":null}");
+        var update = new SourceEntity("changed", "{\"id\":\"changed\",\"value\":42}");
+        var skip = new SourceEntity("unchanged", "{\"id\":\"unchanged\"}");
+        var managed = new[]
+        {
+            new ExportedEntity(EntityKind.Shell, update.Identifier, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "old"),
+            new ExportedEntity(EntityKind.Shell, skip.Identifier, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, skip.ContentHash)
+        };
+        _sourceReader.ReadPagesAsync(EntityKind.Shell, Arg.Any<CancellationToken>()).Returns(MixedPagesAsync());
+        _stateStore.LoadAsync(EntityKind.Shell, Arg.Any<CancellationToken>()).Returns(managed);
+        var sut = new PhaseExecutor(_sourceReader, _targetWriter, _stateStore, new CrudDecisionMaker(), Options.Create(_config), _logger);
+
+        var result = await sut.ExecuteAsync(EntityKind.Shell, CancellationToken.None);
+
+        Assert.Equal(1, result.Created);
+        Assert.Equal(1, result.Updated);
+        Assert.Equal(1, result.Skipped);
+        Assert.Equal(0, result.Failed);
+        await _targetWriter.Received(1).CreateAsync(EntityKind.Shell, create, Arg.Any<CancellationToken>());
+        await _targetWriter.Received(1).UpdateAsync(EntityKind.Shell, update, Arg.Any<CancellationToken>());
+        await _stateStore.Received(1).UpsertAsync(Arg.Is<ExportedEntity>(entity =>
+            entity.Identifier == update.Identifier && entity.ContentHash == update.ContentHash), Arg.Any<CancellationToken>());
+
+        async IAsyncEnumerable<IReadOnlyList<SourceEntity>> MixedPagesAsync()
+        {
+            yield return new[] { create, skip };
+            await Task.Yield();
+            yield return new[] { update };
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteDeletionsAsync_WithCompletePagedSource_VerifiesOnlyMissingManagedEntities()
+    {
+        string[] identifiers = ["present1", "present2", "missing"];
+        var managed = identifiers
+            .Select(identifier => new ExportedEntity(EntityKind.Shell, identifier, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "old"))
+            .ToArray();
+        _sourceReader.ReadPagesAsync(EntityKind.Shell, Arg.Any<CancellationToken>()).Returns(PagesAsync());
+        _stateStore.LoadAsync(EntityKind.Shell, Arg.Any<CancellationToken>()).Returns(managed);
+        _sourceReader.GetByIdAsync(EntityKind.Shell, "missing", Arg.Any<CancellationToken>()).Returns((SourceEntity?)null);
+        var sut = new PhaseExecutor(_sourceReader, _targetWriter, _stateStore, new CrudDecisionMaker(), Options.Create(_config), _logger);
+
+        var result = await sut.ExecuteDeletionsAsync(EntityKind.Shell, CancellationToken.None);
+
+        Assert.Equal(1, result.Deleted);
+        Assert.Equal(0, result.Failed);
+        await _sourceReader.Received(1).GetByIdAsync(EntityKind.Shell, Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _targetWriter.Received(1).DeleteAsync(EntityKind.Shell, "missing", Arg.Any<CancellationToken>());
+        await _stateStore.Received(1).DeleteAsync(EntityKind.Shell, "missing", Arg.Any<CancellationToken>());
+
+        static async IAsyncEnumerable<IReadOnlyList<SourceEntity>> PagesAsync()
+        {
+            yield return new[] { new SourceEntity("present1", "{\"id\":\"present1\"}") };
+            await Task.Yield();
+            yield return new[] { new SourceEntity("present2", "{\"id\":\"present2\"}") };
+        }
+    }
+
+    private sealed class CountingTargetWriter : ITargetEntityWriter
+    {
+        private int _created;
+        public int Created => Volatile.Read(ref _created);
+
+        public Task CreateAsync(EntityKind kind, SourceEntity entity, CancellationToken cancellationToken)
+        {
+            Assert.StartsWith($"{{\"id\":\"{entity.Identifier}\",", entity.RawJson);
+            _ = Interlocked.Increment(ref _created);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(EntityKind kind, SourceEntity entity, CancellationToken cancellationToken) => throw new InvalidOperationException("Unexpected update.");
+
+        public Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken) => throw new InvalidOperationException("Unexpected delete.");
     }
 
     private static void InterlockedMax(ref int target, int candidate)
