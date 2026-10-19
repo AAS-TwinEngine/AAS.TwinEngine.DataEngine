@@ -25,7 +25,7 @@ services:
       - ../shared/postgres/01_init_tables.sql:/docker-entrypoint-initdb.d/01_init_tables.sql:ro
       - ../shared/postgres/02_init_data.sql:/docker-entrypoint-initdb.d/02_init_data.sql:ro
       - ../shared/postgres/schema:/docker-entrypoint-initdb.d/schema:ro
-      - ../shared/postgres/seed:/docker-entrypoint-initdb.d/seed:ro           +
+      - ../shared/postgres/seed:/docker-entrypoint-initdb.d/seed:ro           
       - postgres-data:/var/lib/postgresql/data
     restart: always
     healthcheck:
