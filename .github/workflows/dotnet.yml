@@ -23,6 +23,7 @@ env:
   SOLUTION_PATH: source/AAS.TwinEngine.DataEngine.sln
   TEST_PROJECT: source/AAS.TwinEngine.DataEngine.UnitTests/AAS.TwinEngine.DataEngine.UnitTests.csproj
   MODULE_TEST_PROJECT: source/AAS.TwinEngine.DataEngine.ModuleTests/AAS.TwinEngine.DataEngine.ModuleTests.csproj
+  EXPORT_TEST_PROJECT: source/AAS.TwinEngine.ExportService.UnitTests/AAS.TwinEngine.ExportService.UnitTests.csproj
 
 jobs:
 
@@ -56,12 +57,15 @@ jobs:
       - name: Run Module Tests
         run: dotnet test ${{ env.MODULE_TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=module_test_results.trx" --collect:"XPlat Code Coverage" --settings source/coverlet.runsettings
 
+      - name: Run Export Service Unit Tests
+        run: dotnet test ${{ env.EXPORT_TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=export_service_test_results.trx" --collect:"XPlat Code Coverage" --settings source/coverlet.runsettings
+
       - name: Publish Test Results
         uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         id: test-results
         if: github.event.pull_request.head.repo.fork == false
         with:
-          name: Test Results (Unit & Module)
+          name: Test Results (DataEngine Unit & Module, Export Service Unit)
           path: "**/*_test_results.trx"
           reporter: dotnet-trx
 
@@ -125,6 +129,25 @@ jobs:
           echo "### Module Tests Coverage" >> results.md
           cat code-coverage-results.md >> results.md
 
+      - name: Code Coverage Report - Export Service Unit Tests
+        if: github.event.pull_request.head.repo.fork == false
+        uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
+        with:
+          filename: "source/AAS.TwinEngine.ExportService.UnitTests/TestResults/*/coverage.cobertura.xml"
+          badge: false
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: "80 80"
+
+      - name: Combine Reports (Export Service Unit Test Coverage Results)
+        if: github.event.pull_request.head.repo.fork == false
+        run: |
+          echo "### Export Service Unit Tests Coverage" >> results.md
+          cat code-coverage-results.md >> results.md
 
       - name: Add PR Comment
         if: github.event.pull_request.head.repo.fork == false

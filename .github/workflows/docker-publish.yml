@@ -33,15 +33,26 @@ permissions:
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/dataengine
-  DOCKERFILE_PATH: source/AAS.TwinEngine.DataEngine/Dockerfile
   BUILD_CONTEXT: source
 
 
 jobs:
   build:
-
+    name: Build ${{ matrix.image }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: dataengine
+            dockerfile: source/AAS.TwinEngine.DataEngine/Dockerfile
+            sbom_artifact: sbom
+          - image: exportservice
+            dockerfile: source/AAS.TwinEngine.ExportService/Dockerfile
+            sbom_artifact: sbom-exportservice
+    env:
+      IMAGE_NAME: ${{ github.repository_owner }}/${{ matrix.image }}
+      DOCKERFILE_PATH: ${{ matrix.dockerfile }}
     permissions:
       contents: read
       packages: write
@@ -120,8 +131,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
       # Extract the pure application SBOM from the artifact stage, we want to handle it separately from the container SBOM
       # This automaticaly re-uses the previously generated stage from cache, so we get the exact sbom from previous build step
@@ -173,5 +184,5 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: sbom
+          name: ${{ matrix.sbom_artifact }}
           path: '${{ github.workspace }}/sbom-output/'
