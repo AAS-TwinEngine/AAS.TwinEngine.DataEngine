@@ -126,8 +126,7 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
         if (string.IsNullOrWhiteSpace(endpoint.HealthEndpoint) ||
             endpoint.HealthEndpoint[0] != '/' ||
             endpoint.HealthEndpoint.StartsWith("//", StringComparison.Ordinal) ||
-            endpoint.HealthEndpoint.Contains('\\') ||
-            Uri.TryCreate(endpoint.HealthEndpoint, UriKind.Absolute, out _))
+            endpoint.HealthEndpoint.Contains('\\'))
         {
             failures.Add($"{name}.HealthEndpoint must be a relative path starting with a single '/'.");
         }

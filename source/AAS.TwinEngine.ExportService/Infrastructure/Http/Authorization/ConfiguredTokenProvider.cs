@@ -58,7 +58,7 @@ public sealed class ConfiguredTokenProvider(
             string.IsNullOrWhiteSpace(auth.ClientSecret))
         {
             throw new AuthenticationFailedException(
-                $"Endpoint '{endpointName}' has OAuthClientCredentials auth but token endpoint, client id or client secret is missing.");
+                $"Endpoint '{endpointName}' has OAuth2ClientCredentials auth but token endpoint, client id or client secret is missing.");
         }
 
         using var span = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.AcquireToken, "export.endpoint", endpointName);
@@ -82,6 +82,7 @@ public sealed class ConfiguredTokenProvider(
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
         var client = _httpClientFactory.CreateClient(HttpClientNames.OAuthToken);
+        int? failureStatusCode = null;
 
         try
         {
@@ -89,6 +90,7 @@ public sealed class ConfiguredTokenProvider(
 
             if (!response.IsSuccessStatusCode)
             {
+                failureStatusCode = (int)response.StatusCode;
                 _logger.LogError(
                     "Token acquisition for endpoint '{Endpoint}' failed with status {Status}.",
                     endpointName, (int)response.StatusCode);
@@ -118,7 +120,9 @@ public sealed class ConfiguredTokenProvider(
             // through inner-exception chains that upstream logs would serialize.
             span.RecordError(ex);
             throw new AuthenticationFailedException(
-                $"Token acquisition for endpoint '{endpointName}' failed.");
+                failureStatusCode is { } statusCode
+                    ? $"Token acquisition for endpoint '{endpointName}' failed with status {statusCode}."
+                    : $"Token acquisition for endpoint '{endpointName}' failed.");
         }
     }
 

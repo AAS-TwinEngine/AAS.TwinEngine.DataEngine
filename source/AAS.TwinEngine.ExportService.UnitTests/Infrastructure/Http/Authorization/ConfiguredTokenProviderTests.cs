@@ -126,7 +126,7 @@ public class ConfiguredTokenProviderTests
         {
             ["oauth-endpoint"] = new AuthConfig
             {
-                Kind = AuthKind.OAuthClientCredentials,
+                Kind = AuthKind.OAuth2ClientCredentials,
                 TokenEndpoint = tokenEndpoint,
                 ClientId = clientId,
                 ClientSecret = clientSecret
@@ -163,7 +163,7 @@ public class ConfiguredTokenProviderTests
         {
             ["oauth-endpoint"] = new AuthConfig
             {
-                Kind = AuthKind.OAuthClientCredentials,
+                Kind = AuthKind.OAuth2ClientCredentials,
                 TokenEndpoint = "https://auth.example.com/token",
                 ClientId = "my-client-id",
                 ClientSecret = "my-client-secret",
@@ -197,7 +197,7 @@ public class ConfiguredTokenProviderTests
         var testHandler = new DelegatingTestHandler(req =>
             new HttpResponseMessage(HttpStatusCode.Unauthorized)
             {
-                Content = new StringContent("{\"error\":\"invalid_client\"}", Encoding.UTF8, "application/json")
+                Content = new StringContent("{\"error\":\"invalid_client\",\"error_description\":\"sensitive-oauth-detail\"}", Encoding.UTF8, "application/json")
             });
 
         var client = new HttpClient(testHandler);
@@ -207,7 +207,7 @@ public class ConfiguredTokenProviderTests
         {
             ["oauth-endpoint"] = new AuthConfig
             {
-                Kind = AuthKind.OAuthClientCredentials,
+                Kind = AuthKind.OAuth2ClientCredentials,
                 TokenEndpoint = "https://auth.example.com/token",
                 ClientId = "client",
                 ClientSecret = "secret"
@@ -219,6 +219,8 @@ public class ConfiguredTokenProviderTests
         var ex = await Assert.ThrowsAsync<AuthenticationFailedException>(() =>
             sut.GetTokenAsync("oauth-endpoint", CancellationToken.None));
         Assert.Contains("401", ex.Message);
+        Assert.DoesNotContain("sensitive-oauth-detail", ex.ToString(), StringComparison.Ordinal);
+        Assert.Null(ex.InnerException);
     }
 
     [Fact]
@@ -238,7 +240,7 @@ public class ConfiguredTokenProviderTests
         {
             ["oauth-endpoint"] = new AuthConfig
             {
-                Kind = AuthKind.OAuthClientCredentials,
+                Kind = AuthKind.OAuth2ClientCredentials,
                 TokenEndpoint = "https://auth.example.com/token",
                 ClientId = "client",
                 ClientSecret = "secret"
@@ -265,7 +267,7 @@ public class ConfiguredTokenProviderTests
         {
             ["oauth-endpoint"] = new AuthConfig
             {
-                Kind = AuthKind.OAuthClientCredentials,
+                Kind = AuthKind.OAuth2ClientCredentials,
                 TokenEndpoint = "https://auth.example.com/token",
                 ClientId = "client",
                 ClientSecret = "super-secret-password"
@@ -299,7 +301,7 @@ public class ConfiguredTokenProviderTests
         {
             ["oauth-endpoint"] = new AuthConfig
             {
-                Kind = AuthKind.OAuthClientCredentials,
+                Kind = AuthKind.OAuth2ClientCredentials,
                 TokenEndpoint = "https://auth.example.com/token",
                 ClientId = "client",
                 ClientSecret = "secret"

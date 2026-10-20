@@ -4,7 +4,7 @@ public enum AuthKind
 {
     None = 0,
     StaticBearer = 1,
-    OAuthClientCredentials = 2
+    OAuth2ClientCredentials = 2
 }
 
 /// <summary>
@@ -21,7 +21,7 @@ public sealed class AuthConfig
     public string? BearerToken { get; set; }
 
     /// <summary>
-    /// OAuth 2.0 token endpoint. Used when <see cref="Kind"/> is <see cref="AuthKind.OAuthClientCredentials"/>.
+    /// OAuth 2.0 token endpoint. Used when <see cref="Kind"/> is <see cref="AuthKind.OAuth2ClientCredentials"/>.
     /// </summary>
     public string? TokenEndpoint { get; set; }
 

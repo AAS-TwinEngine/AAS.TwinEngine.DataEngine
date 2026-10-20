@@ -128,6 +128,10 @@ public sealed class PhaseExecutor(
                         case AppliedOutcome.Skipped: _ = Interlocked.Increment(ref skipped); break;
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _ = Interlocked.Increment(ref failed);

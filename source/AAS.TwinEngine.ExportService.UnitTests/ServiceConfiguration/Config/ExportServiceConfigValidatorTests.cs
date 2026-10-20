@@ -44,8 +44,27 @@ public class ExportServiceConfigValidatorTests
     }
 
     [Theory]
+    [InlineData("/health")]
+    [InlineData("/healthz")]
+    [InlineData("/status/ready")]
+    [InlineData("/")]
+    public void Validate_WhenHealthEndpointStartsWithSingleSlash_ReturnsSuccess(string healthEndpoint)
+    {
+        var config = CreateValidConfig();
+        config.Sources.Shells.HealthEndpoint = healthEndpoint;
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("file:///tmp/health")]
     [InlineData("https://dependency.test/health")]
     [InlineData("//dependency.test/health")]
+    [InlineData("///health")]
     [InlineData("health")]
     [InlineData("/health\\ready")]
     public void Validate_WhenHealthEndpointIsNotAValidRelativePath_ReturnsFailure(string healthEndpoint)

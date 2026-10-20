@@ -99,6 +99,13 @@ Phase ShellDescriptor finished. Created=X Updated=0 Deleted=0 Skipped=0 Failed=0
 Export run finished at ... with status Success.
 ```
 
+### Health Checks
+
+The exporter exposes aggregate readiness at `http://localhost:8087/healthz`.
+DataEngine source probes use `/healthz` through nginx. The source concept-description
+repository and all target registry/repository probes use BaSyx's `/health` route.
+Readiness includes PostgreSQL and both endpoints of every enabled source phase.
+
 ### Export Ownership and Run Outcomes
 
 The Export Service updates or deletes only entities recorded as exporter-managed in its PostgreSQL

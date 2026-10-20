@@ -1136,7 +1136,7 @@ Limits of the rule:
 |---|---|
 | `None` | No bearer token added |
 | `StaticBearer` | Use configured pre-issued token |
-| `OAuthClientCredentials` | Obtain token from configured OAuth endpoint |
+| `OAuth2ClientCredentials` | Obtain token from configured OAuth endpoint |
 
 Missing auth configuration also means no token.
 Secrets belong in environment variables or a deployment secret store, not committed
@@ -1688,7 +1688,7 @@ ExportService__StateStore__Schema=export_service
 Supply `ExportService__StateStore__ConnectionString` securely for the environment.
 For static bearer authentication, supply `Auth__Kind=StaticBearer` and its
 `Auth__BearerToken` through secure configuration.
-For OAuth use `Auth__Kind=OAuthClientCredentials`, `TokenEndpoint`, `ClientId`,
+For OAuth use `Auth__Kind=OAuth2ClientCredentials`, `TokenEndpoint`, `ClientId`,
 `ClientSecret`, and optional `Scope`.
 
 Do not copy actual tokens or passwords into documentation.
