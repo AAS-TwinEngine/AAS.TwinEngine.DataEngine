@@ -393,27 +393,27 @@ services:
       - ExportService__Sources__Submodels__Enabled=true
       - ExportService__Sources__ConceptDescriptions__BaseUrl=http://source-registry-repository:8082
       - ExportService__Sources__ConceptDescriptions__Path=/concept-descriptions
-      - ExportService__Sources__ConceptDescriptions__HealthEndpoint=/actuator/health
+      - ExportService__Sources__ConceptDescriptions__HealthEndpoint=/health
       - ExportService__Sources__ConceptDescriptions__Limit=250
       - ExportService__Sources__ConceptDescriptions__Enabled=true
       # Targets — write to the independent target environment, which also contains
       # a target-only shell/submodel pair not owned by the exporter.
       - ExportService__Targets__ShellDescriptors__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__ShellDescriptors__Path=/shell-descriptors
-      - ExportService__Targets__ShellDescriptors__HealthEndpoint=//actuator/health
+      - ExportService__Targets__ShellDescriptors__HealthEndpoint=/health
       - ExportService__Targets__OmitNullProperties=true
       - ExportService__Targets__SubmodelDescriptors__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__SubmodelDescriptors__Path=/submodel-descriptors
-      - ExportService__Targets__SubmodelDescriptors__HealthEndpoint=//actuator/health
+      - ExportService__Targets__SubmodelDescriptors__HealthEndpoint=/health
       - ExportService__Targets__Shells__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__Shells__Path=/shells
-      - ExportService__Targets__Shells__HealthEndpoint=//actuator/health
+      - ExportService__Targets__Shells__HealthEndpoint=/health
       - ExportService__Targets__Submodels__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__Submodels__Path=/submodels
-      - ExportService__Targets__Submodels__HealthEndpoint=//actuator/health
+      - ExportService__Targets__Submodels__HealthEndpoint=/health
       - ExportService__Targets__ConceptDescriptions__BaseUrl=http://target-registry-repository:8082
       - ExportService__Targets__ConceptDescriptions__Path=/concept-descriptions
-      - ExportService__Targets__ConceptDescriptions__HealthEndpoint=/actuator/health
+      - ExportService__Targets__ConceptDescriptions__HealthEndpoint=/health
     networks:
       - twinengine-network
 
