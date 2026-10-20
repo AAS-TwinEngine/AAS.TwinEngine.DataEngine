@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 
@@ -7,7 +6,6 @@ using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
 using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Npgsql;

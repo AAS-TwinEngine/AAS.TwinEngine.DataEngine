@@ -2,11 +2,9 @@ using System.Net.Http.Headers;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
-using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.ExportService.Infrastructure.Http.Clients;
 using AAS.TwinEngine.ExportService.Infrastructure.Http.Policies;
-using AAS.TwinEngine.ExportService.Infrastructure.Monitoring;
 using AAS.TwinEngine.ExportService.Infrastructure.Scheduling;
 using AAS.TwinEngine.ExportService.Infrastructure.State.DataAccess;
 using AAS.TwinEngine.ExportService.Infrastructure.State.Migrations;

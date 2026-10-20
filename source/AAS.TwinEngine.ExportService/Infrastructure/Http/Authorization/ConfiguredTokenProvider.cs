@@ -1,12 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
-
-using Microsoft.Extensions.Logging;
 
 namespace AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
 
