@@ -1,8 +1,5 @@
 ﻿using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
 
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
 namespace AAS.TwinEngine.ExportService.Infrastructure.State.Migrations;
 
 /// <summary>

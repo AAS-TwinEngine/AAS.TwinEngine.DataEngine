@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -61,8 +61,11 @@ public sealed class ExportMemoryProfileTests(ITestOutputHelper output)
         Assert.False(measurement.PayloadReference.IsAlive, "Source payload remains rooted after releasing its list.");
         output.WriteLine("HELD_PAGE " + JsonSerializer.Serialize(new
         {
-            payloadKiB, measurement.PayloadUtf16Bytes, measurement.ListReferenceBytes,
-            measurement.HeapBefore, measurement.HeapWhileHeld,
+            payloadKiB,
+            measurement.PayloadUtf16Bytes,
+            measurement.ListReferenceBytes,
+            measurement.HeapBefore,
+            measurement.HeapWhileHeld,
             retainedWhileHeldBytes = measurement.HeapWhileHeld - measurement.HeapBefore,
             listReleased = !measurement.ListReference.IsAlive,
             payloadReleased = !measurement.PayloadReference.IsAlive
@@ -173,12 +176,20 @@ public sealed class ExportMemoryProfileTests(ITestOutputHelper output)
 
             output.WriteLine("PROFILE " + JsonSerializer.Serialize(new
             {
-                entityCount, payloadKiB, mode, iteration,
+                entityCount,
+                payloadKiB,
+                mode,
+                iteration,
                 elapsedMs = stopwatch.Elapsed.TotalMilliseconds,
                 entitiesPerSecond = entityCount / stopwatch.Elapsed.TotalSeconds,
-                cpuMilliseconds, allocatedBytes = allocated, heapBefore, heapAfter,
-                sampledPeakHeap = sampler.PeakHeap, sampledPeakWorkingSet = sampler.PeakWorkingSet,
-                gen2Collections, errors = result.Failed
+                cpuMilliseconds,
+                allocatedBytes = allocated,
+                heapBefore,
+                heapAfter,
+                sampledPeakHeap = sampler.PeakHeap,
+                sampledPeakWorkingSet = sampler.PeakWorkingSet,
+                gen2Collections,
+                errors = result.Failed
             }));
         }
 
@@ -258,18 +269,18 @@ public sealed class ExportMemoryProfileTests(ITestOutputHelper output)
         }
 
         public Task EnsureSchemaAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-        public Task<IReadOnlyList<ExportedEntity>> LoadAsync(EntityKind kind, CancellationToken cancellationToken) =>
-            Task.FromResult<IReadOnlyList<ExportedEntity>>(_entities.Values.ToArray());
-        public Task<ExportedEntity?> GetAsync(EntityKind kind, string identifier, CancellationToken cancellationToken) =>
-            Task.FromResult(_entities.GetValueOrDefault(identifier));
+
+        public Task<IReadOnlyList<ExportedEntity>> LoadAsync(EntityKind kind, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ExportedEntity>>(_entities.Values.ToArray());
+
+        public Task<ExportedEntity?> GetAsync(EntityKind kind, string identifier, CancellationToken cancellationToken) => Task.FromResult(_entities.GetValueOrDefault(identifier));
+
         public Task UpsertAsync(ExportedEntity entity, CancellationToken cancellationToken)
         {
             _entities[entity.Identifier] = entity;
             return Task.CompletedTask;
         }
 
-        public Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken) =>
-            throw new InvalidOperationException("This profile must not delete entities.");
+        public Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken) => throw new InvalidOperationException("This profile must not delete entities.");
     }
 
     private sealed class StreamedSubmodelFixture : HttpMessageHandler, IHttpClientFactory

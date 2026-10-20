@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -16,23 +16,16 @@ namespace AAS.TwinEngine.ExportService.Infrastructure.Http.Clients;
 /// Applies POST/PUT/DELETE against the configured target endpoint for each entity kind.
 /// The URL is <c>{Path}/{Base64URL(identifier)}</c> per the IDTA specification.
 /// </summary>
-public sealed class TargetEntityHttpClient : ITargetEntityWriter
+public sealed class TargetEntityHttpClient(
+    IHttpClientFactory httpClientFactory,
+    IOptions<ExportServiceConfig> config,
+    ILogger<TargetEntityHttpClient> logger) : ITargetEntityWriter
 {
     private const int MaxErrorBodyLength = 2000;
 
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IOptions<ExportServiceConfig> _config;
-    private readonly ILogger<TargetEntityHttpClient> _logger;
-
-    public TargetEntityHttpClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<ExportServiceConfig> config,
-        ILogger<TargetEntityHttpClient> logger)
-    {
-        _httpClientFactory = httpClientFactory;
-        _config = config;
-        _logger = logger;
-    }
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly IOptions<ExportServiceConfig> _config = config;
+    private readonly ILogger<TargetEntityHttpClient> _logger = logger;
 
     public async Task CreateAsync(EntityKind kind, SourceEntity entity, CancellationToken cancellationToken)
     {
@@ -120,8 +113,7 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
 
         var body = await ReadErrorBodyAsync(response, cancellationToken).ConfigureAwait(false);
 
-        throw new HttpRequestException(
-            $"Target {method} for {kind} {identifier} failed with status {(int)response.StatusCode}. Response: {body}");
+        throw new HttpRequestException($"Target {method} for {kind} {identifier} failed with status {(int)response.StatusCode}. Response: {body}");
     }
 
     private static async Task<string> ReadErrorBodyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -134,9 +126,7 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
                 return "<empty>";
             }
 
-            return body.Length > MaxErrorBodyLength
-                ? body[..MaxErrorBodyLength] + "...<truncated>"
-                : body;
+            return body.Length > MaxErrorBodyLength ? body[..MaxErrorBodyLength] + "...<truncated>" : body;
         }
         catch (Exception ex) when (ex is IOException or HttpRequestException or ObjectDisposedException)
         {

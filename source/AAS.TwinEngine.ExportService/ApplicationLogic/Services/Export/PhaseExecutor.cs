@@ -50,14 +50,11 @@ public sealed class PhaseExecutor(
             CancellationToken = cancellationToken
         };
 
-        await ProcessSourcePagesAsync(
-            kind, managedState, sourceIdentifiers, parallelOptions, counters, cancellationToken)
-            .ConfigureAwait(false);
+        await ProcessSourcePagesAsync(kind, managedState, sourceIdentifiers, parallelOptions, counters, cancellationToken).ConfigureAwait(false);
 
         if (sourceIdentifiers is not null)
         {
-            await ApplyMissingEntitiesAsync(kind, managedState, sourceIdentifiers, parallelOptions, counters)
-                .ConfigureAwait(false);
+            await ApplyMissingEntitiesAsync(kind, managedState, sourceIdentifiers, parallelOptions, counters).ConfigureAwait(false);
         }
 
         return LogPhaseResult(kind, counters, phaseSpan);

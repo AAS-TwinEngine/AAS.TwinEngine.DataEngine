@@ -11,9 +11,7 @@ public class PaginatorTests
     public PaginatorTests()
     {
         _idSelector = i => i.Id;
-        _items = Enumerable.Range(1, 20)
-            .Select(i => new TestItem { Id = $"id{i}", Value = $"value{i}" })
-            .ToList();
+        _items = [.. Enumerable.Range(1, 20).Select(i => new TestItem { Id = $"id{i}", Value = $"value{i}" })];
     }
 
     [Fact]

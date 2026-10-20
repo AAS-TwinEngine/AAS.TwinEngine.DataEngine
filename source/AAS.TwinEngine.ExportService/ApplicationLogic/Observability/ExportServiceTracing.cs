@@ -50,6 +50,6 @@ public static class ExportServiceTracing
     public static void RecordError(this Activity? activity, Exception ex)
     {
         ArgumentNullException.ThrowIfNull(ex);
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+        _ = (activity?.SetStatus(ActivityStatusCode.Error, ex.Message));
     }
 }

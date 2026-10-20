@@ -85,10 +85,7 @@ public sealed class ExportRunner(
             }
             catch (SourceUnavailableException ex)
             {
-                _logger.LogCritical(
-                    ex,
-                    "Phase {EntityKind} aborted: source unavailable. Cancelling remaining phases to preserve referential integrity.",
-                    kind);
+                _logger.LogCritical(ex, "Phase {EntityKind} aborted: source unavailable. Cancelling remaining phases to preserve referential integrity.", kind);
                 return RunStatus.Aborted;
             }
             catch (OperationCanceledException ex)
@@ -125,10 +122,7 @@ public sealed class ExportRunner(
             }
             catch (SourceUnavailableException ex)
             {
-                _logger.LogCritical(
-                    ex,
-                    "Deletion phase {EntityKind} aborted: source unavailable. Cancelling remaining deletions.",
-                    kind);
+                _logger.LogCritical(ex, "Deletion phase {EntityKind} aborted: source unavailable. Cancelling remaining deletions.", kind);
                 return RunStatus.Aborted;
             }
             catch (OperationCanceledException ex)
@@ -146,8 +140,7 @@ public sealed class ExportRunner(
         return status;
     }
 
-    private static RunStatus EscalateOnFailures(RunStatus status, PhaseResult result) =>
-        result.HasFailures && status == RunStatus.Success ? RunStatus.PartialFailure : status;
+    private static RunStatus EscalateOnFailures(RunStatus status, PhaseResult result) => result.HasFailures && status == RunStatus.Success ? RunStatus.PartialFailure : status;
 
     private static RunStatus ResolveFinalStatus(RunStatus status, IEnumerable<PhaseResult> phases)
     {

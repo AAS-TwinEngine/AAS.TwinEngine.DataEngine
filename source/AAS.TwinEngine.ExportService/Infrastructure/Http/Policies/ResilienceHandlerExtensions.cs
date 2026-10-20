@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
@@ -24,10 +24,7 @@ public static class ResilienceHandlerExtensions
                 {
                     var loggerFactory = context.ServiceProvider.GetRequiredService<ILoggerFactory>();
                     var logger = loggerFactory.CreateLogger("ExportService.HttpResilience");
-                    logger.LogWarning(
-                        args.Outcome.Exception,
-                        "HTTP retry attempt {AttemptNumber} after {DelaySeconds:F1}s.",
-                        args.AttemptNumber, args.RetryDelay.TotalSeconds);
+                    logger.LogWarning(args.Outcome.Exception, "HTTP retry attempt {AttemptNumber} after {DelaySeconds:F1}s.", args.AttemptNumber, args.RetryDelay.TotalSeconds);
                     return default;
                 }
             });

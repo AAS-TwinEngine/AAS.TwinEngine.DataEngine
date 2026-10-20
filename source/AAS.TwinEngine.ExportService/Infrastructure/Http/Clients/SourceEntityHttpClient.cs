@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -17,24 +17,17 @@ namespace AAS.TwinEngine.ExportService.Infrastructure.Http.Clients;
 /// plain JSON arrays and paged responses shaped as <c>{ "paging_metadata": { "cursor": ... }, "result": [...] }</c>,
 /// following cursors until the source reports no continuation.
 /// </summary>
-public sealed class SourceEntityHttpClient : ISourceEntityReader
+public sealed class SourceEntityHttpClient(
+    IHttpClientFactory httpClientFactory,
+    IOptions<ExportServiceConfig> config,
+    ILogger<SourceEntityHttpClient> logger) : ISourceEntityReader
 {
     // Hard cap to prevent runaway loops if a broken source keeps returning the same cursor.
     private const int MaxPagesPerRead = 10_000;
 
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IOptions<ExportServiceConfig> _config;
-    private readonly ILogger<SourceEntityHttpClient> _logger;
-
-    public SourceEntityHttpClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<ExportServiceConfig> config,
-        ILogger<SourceEntityHttpClient> logger)
-    {
-        _httpClientFactory = httpClientFactory;
-        _config = config;
-        _logger = logger;
-    }
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly IOptions<ExportServiceConfig> _config = config;
+    private readonly ILogger<SourceEntityHttpClient> _logger = logger;
 
     public async Task<IReadOnlyList<SourceEntity>> ReadAllAsync(EntityKind kind, CancellationToken cancellationToken)
     {
@@ -215,10 +208,9 @@ public sealed class SourceEntityHttpClient : ISourceEntityReader
             _ => default
         };
 
-    if (array.ValueKind != JsonValueKind.Array)
+        if (array.ValueKind != JsonValueKind.Array)
         {
-            throw new SourceUnavailableException(
-                "Source response was not a JSON array or paged wrapper.");
+            throw new SourceUnavailableException("Source response was not a JSON array or paged wrapper.");
         }
 
         var entities = new List<SourceEntity>(array.GetArrayLength());
