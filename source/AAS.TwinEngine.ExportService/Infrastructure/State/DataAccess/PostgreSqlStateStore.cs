@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
@@ -29,8 +28,6 @@ public sealed class PostgreSqlStateStore(
     private readonly string _schema = QuoteSchema(options.Value.StateStore.Schema);
     private readonly ILogger<PostgreSqlStateStore> _logger = logger;
 
-    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
-        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task EnsureSchemaAsync(CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, CreateSchemaFormat, _schema);
@@ -44,8 +41,6 @@ public sealed class PostgreSqlStateStore(
         _logger.LogInformation("State store schema '{Schema}' ensured.", _schema);
     }
 
-    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
-        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task<IReadOnlyList<ExportedEntity>> LoadAsync(EntityKind kind, CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, SelectByKindFormat, _schema);
@@ -66,8 +61,6 @@ public sealed class PostgreSqlStateStore(
         return results;
     }
 
-    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
-        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task<ExportedEntity?> GetAsync(EntityKind kind, string identifier, CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, SelectByKindAndIdentifierFormat, _schema);
@@ -88,8 +81,6 @@ public sealed class PostgreSqlStateStore(
         return await ReadEntityAsync(reader, cancellationToken).ConfigureAwait(false);
     }
 
-    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
-        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task UpsertAsync(ExportedEntity entity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -109,8 +100,6 @@ public sealed class PostgreSqlStateStore(
         _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
-        Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken)
     {
         var sql = string.Format(CultureInfo.InvariantCulture, DeleteFormat, _schema);
@@ -139,8 +128,6 @@ public sealed class PostgreSqlStateStore(
             contentHash);
     }
 
-    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
-        Justification = "SQL templates are constants; the only interpolated identifier is validated by QuoteSchema, and all data values use parameters.")]
     private static NpgsqlCommand CreateCommand(NpgsqlConnection connection, string sql)
     {
         var command = connection.CreateCommand();

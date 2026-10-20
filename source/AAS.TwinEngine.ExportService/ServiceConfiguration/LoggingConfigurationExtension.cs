@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.Infrastructure.Logging;
@@ -14,8 +13,6 @@ using Serilog;
 
 namespace AAS.TwinEngine.ExportService.ServiceConfiguration;
 
-[ExcludeFromCodeCoverage]
-[SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling", Justification = "This composition root wires the service's logging, tracing, metrics, and exporters in one place.")]
 internal static class LoggingConfigurationExtension
 {
     private const string PeerServiceTag = "peer.service";

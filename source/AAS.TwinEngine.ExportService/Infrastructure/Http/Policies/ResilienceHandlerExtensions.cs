@@ -43,7 +43,6 @@ public static class ResilienceHandlerExtensions
         return TimeSpan.FromSeconds(delaySeconds);
     }
 
-    [SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Retry jitter is not security-sensitive; Random.Shared provides the intended low-cost variation.")]
     private static TimeSpan AddJitter(TimeSpan delay)
     {
         var jitterFactor = 0.8 + (Random.Shared.NextDouble() * 0.4);

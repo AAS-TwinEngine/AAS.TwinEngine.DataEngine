@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
@@ -165,8 +164,6 @@ public sealed class PhaseExecutor(
             (decision, token) => ApplyDecisionAsync(kind, decision, counters, token));
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
-        Justification = "Entity failures are counted and logged while the phase continues; cancellation is rethrown.")]
     private async ValueTask ApplyDecisionAsync(
         EntityKind kind,
         CrudDecision decision,
