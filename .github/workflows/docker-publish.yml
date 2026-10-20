@@ -37,7 +37,7 @@ env:
 
 
 jobs:
-  build:
+  build-images:
     name: Build ${{ matrix.image }}
     runs-on: ubuntu-latest
     strategy:
@@ -186,3 +186,18 @@ jobs:
         with:
           name: ${{ matrix.sbom_artifact }}
           path: '${{ github.workspace }}/sbom-output/'
+
+  build:
+    name: build
+    if: ${{ always() }}
+    needs: build-images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all image builds to pass
+        env:
+          IMAGE_BUILDS_RESULT: ${{ needs.build-images.result }}
+        run: |
+          if [[ "$IMAGE_BUILDS_RESULT" != "success" ]]; then
+            echo "::error::One or more Docker image builds did not succeed."
+            exit 1
+          fi
