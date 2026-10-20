@@ -14,6 +14,9 @@ public static class ExportServiceHealthCheckExtensions
         this IServiceCollection services,
         ExportServiceConfig config)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(config);
+
         var healthChecks = services.AddHealthChecks()
             .AddCheck<StateStoreHealthCheck>(
                 "state-store",

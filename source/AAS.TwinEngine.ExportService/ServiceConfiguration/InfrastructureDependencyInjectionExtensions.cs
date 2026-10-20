@@ -20,6 +20,9 @@ public static class InfrastructureDependencyInjectionExtensions
 {
     public static IServiceCollection ConfigureInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
         // ── Options ──
         var rootConfig = new ExportServiceConfig();
         configuration.GetSection(ExportServiceConfig.Section).Bind(rootConfig);

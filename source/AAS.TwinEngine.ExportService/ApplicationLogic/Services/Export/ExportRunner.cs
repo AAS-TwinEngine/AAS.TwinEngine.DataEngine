@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.DomainModel;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
@@ -56,6 +58,7 @@ public sealed class ExportRunner(
             enabledPhases.Where(phases.ContainsKey).Select(kind => phases[kind]).ToList());
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Unexpected phase failures abort remaining phases and are logged; cancellation and source failures are handled separately.")]
     private async Task<RunStatus> ExecuteForwardPassAsync(
         Dictionary<EntityKind, PhaseResult> phases,
         List<EntityKind> enabledPhases,
@@ -103,6 +106,7 @@ public sealed class ExportRunner(
         return status;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Unexpected deletion failures abort remaining deletions and are logged; cancellation and source failures are handled separately.")]
     private async Task<RunStatus> ExecuteDeletionPassAsync(
         Dictionary<EntityKind, PhaseResult> phases,
         List<EntityKind> enabledPhases,

@@ -16,15 +16,10 @@ public class ConfiguredTokenProviderTests
     private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly ILogger<ConfiguredTokenProvider> _logger = Substitute.For<ILogger<ConfiguredTokenProvider>>();
 
-    private sealed class DelegatingTestHandler : HttpMessageHandler
+    private sealed class DelegatingTestHandler(Func<HttpRequestMessage, HttpResponseMessage> handler) : HttpMessageHandler
     {
-        private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
-
         public HttpRequestMessage? LastRequest { get; private set; }
         public string? LastRequestBody { get; private set; }
-
-        public DelegatingTestHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
-            => _handler = handler;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -33,7 +28,7 @@ public class ConfiguredTokenProviderTests
             {
                 LastRequestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             }
-            return _handler(request);
+            return handler(request);
         }
     }
 

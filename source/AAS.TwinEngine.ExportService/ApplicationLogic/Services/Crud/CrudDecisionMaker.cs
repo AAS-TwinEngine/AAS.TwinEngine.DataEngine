@@ -9,6 +9,9 @@ public sealed class CrudDecisionMaker : ICrudDecisionMaker
         IReadOnlyList<SourceEntity> sourceEntities,
         IReadOnlyList<ExportedEntity> managedState)
     {
+        ArgumentNullException.ThrowIfNull(sourceEntities);
+        ArgumentNullException.ThrowIfNull(managedState);
+
         var stateByIdentifier = managedState.ToDictionary(e => e.Identifier, StringComparer.Ordinal);
         var sourceIdentifiers = new HashSet<string>(StringComparer.Ordinal);
         var decisions = new List<CrudDecision>(sourceEntities.Count + managedState.Count);

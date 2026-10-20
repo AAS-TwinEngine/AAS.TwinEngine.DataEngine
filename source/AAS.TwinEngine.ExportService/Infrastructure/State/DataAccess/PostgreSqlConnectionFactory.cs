@@ -14,6 +14,7 @@ public sealed class PostgreSqlConnectionFactory : IDbConnectionFactory
 
     public PostgreSqlConnectionFactory(IOptions<ExportServiceConfig> options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         _config = options.Value.StateStore;
 
         if (string.IsNullOrWhiteSpace(_config.ConnectionString))

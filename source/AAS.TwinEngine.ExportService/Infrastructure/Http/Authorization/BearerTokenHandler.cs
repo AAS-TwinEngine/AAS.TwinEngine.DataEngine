@@ -13,6 +13,8 @@ public sealed class BearerTokenHandler(ITokenProvider tokenProvider, string endp
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var token = await _tokenProvider.GetTokenAsync(_endpointName, cancellationToken).ConfigureAwait(false);
 
         if (!string.IsNullOrEmpty(token))

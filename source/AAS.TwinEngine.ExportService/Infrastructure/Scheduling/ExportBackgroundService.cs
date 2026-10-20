@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 using Cronos;
@@ -25,6 +27,7 @@ public sealed class ExportBackgroundService(
     private readonly IOptions<ExportServiceConfig> _config = config;
     private readonly ILogger<ExportBackgroundService> _logger = logger;
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Invalid scheduler configuration is logged and prevents the background loop from starting.")]
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var scheduler = _config.Value.Scheduler;
@@ -76,6 +79,7 @@ public sealed class ExportBackgroundService(
         }
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "A failed run is logged while the hosted scheduler remains available for the next tick.")]
     private async Task TickAsync(CancellationToken stoppingToken)
     {
         using var acquired = _runLock.TryAcquire();

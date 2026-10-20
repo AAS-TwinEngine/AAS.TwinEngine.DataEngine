@@ -143,6 +143,15 @@ public class PostgreSqlStateStoreTests
     }
 
     [Fact]
+    public async Task UpsertAsync_WhenEntityIsNull_ThrowsArgumentNullException()
+    {
+        var sut = CreateSut();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UpsertAsync(null!, CancellationToken.None));
+        _connectionFactory.DidNotReceive().CreateConnection();
+    }
+
+    [Fact]
     public async Task DeleteAsync_WhenCancelled_PropagatesCancellation()
     {
         // Arrange

@@ -36,11 +36,13 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
 
     public async Task CreateAsync(EntityKind kind, SourceEntity entity, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(entity);
+
         var endpoint = EndpointResolver.TargetEndpoint(kind, _config.Value.Targets);
         var client = _httpClientFactory.CreateClient(EndpointResolver.TargetClientName(kind));
 
         using var content = JsonContent(entity.RawJson, _config.Value.Targets.OmitNullProperties);
-        using var response = await client.PostAsync(endpoint.Path, content, cancellationToken).ConfigureAwait(false);
+        using var response = await client.PostAsync(CreateRequestUri(endpoint.Path), content, cancellationToken).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.Conflict)
         {
@@ -57,12 +59,14 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
 
     public async Task UpdateAsync(EntityKind kind, SourceEntity entity, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(entity);
+
         var endpoint = EndpointResolver.TargetEndpoint(kind, _config.Value.Targets);
         var client = _httpClientFactory.CreateClient(EndpointResolver.TargetClientName(kind));
 
         var path = BuildItemPath(endpoint.Path, entity.Identifier);
         using var content = JsonContent(entity.RawJson, _config.Value.Targets.OmitNullProperties);
-        using var response = await client.PutAsync(path, content, cancellationToken).ConfigureAwait(false);
+        using var response = await client.PutAsync(CreateRequestUri(path), content, cancellationToken).ConfigureAwait(false);
 
         await EnsureSuccessAsync(response, kind, entity.Identifier, HttpMethod.Put, cancellationToken).ConfigureAwait(false);
     }
@@ -73,7 +77,7 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
         var client = _httpClientFactory.CreateClient(EndpointResolver.TargetClientName(kind));
 
         var path = BuildItemPath(endpoint.Path, identifier);
-        using var response = await client.DeleteAsync(path, cancellationToken).ConfigureAwait(false);
+        using var response = await client.DeleteAsync(CreateRequestUri(path), cancellationToken).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -99,6 +103,8 @@ public sealed class TargetEntityHttpClient : ITargetEntityWriter
         var encodedId = Base64Url.Encode(identifier);
         return collectionPath.TrimEnd('/') + "/" + encodedId;
     }
+
+    private static Uri CreateRequestUri(string path) => new(path, UriKind.RelativeOrAbsolute);
 
     private static async Task EnsureSuccessAsync(
         HttpResponseMessage response,

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 
@@ -12,6 +13,7 @@ public static class ExportServiceTracing
 
     public static readonly ActivitySource Source = new(SourceName);
 
+    [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Public nested constants keep span names grouped under their tracing owner.")]
     public static class Spans
     {
         public const string ExportRun = "Export Run";
@@ -23,6 +25,7 @@ public static class ExportServiceTracing
         public const string AcquireToken = "Acquire Token";
     }
 
+    [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Public nested constants keep attribute names grouped under their tracing owner.")]
     public static class Attributes
     {
         public const string EntityKind = "export.entity_kind";
@@ -44,5 +47,9 @@ public static class ExportServiceTracing
         return activity;
     }
 
-    public static void RecordError(this Activity? activity, Exception ex) => activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+    public static void RecordError(this Activity? activity, Exception ex)
+    {
+        ArgumentNullException.ThrowIfNull(ex);
+        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+    }
 }

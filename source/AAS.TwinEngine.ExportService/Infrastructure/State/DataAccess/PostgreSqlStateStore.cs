@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
 using AAS.TwinEngine.ExportService.DomainModel;
@@ -20,6 +21,12 @@ public sealed class PostgreSqlStateStore(
 {
     private const string EntityKindParameter = "@entity_kind";
 
+    private static readonly CompositeFormat CreateSchemaFormat = CompositeFormat.Parse(StateStoreQueries.CreateSchema);
+    private static readonly CompositeFormat SelectByKindFormat = CompositeFormat.Parse(StateStoreQueries.SelectByKind);
+    private static readonly CompositeFormat SelectByKindAndIdentifierFormat = CompositeFormat.Parse(StateStoreQueries.SelectByKindAndIdentifier);
+    private static readonly CompositeFormat UpsertFormat = CompositeFormat.Parse(StateStoreQueries.Upsert);
+    private static readonly CompositeFormat DeleteFormat = CompositeFormat.Parse(StateStoreQueries.Delete);
+
     private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
     private readonly string _schema = QuoteSchema(options.Value.StateStore.Schema);
     private readonly ILogger<PostgreSqlStateStore> _logger = logger;
@@ -28,13 +35,12 @@ public sealed class PostgreSqlStateStore(
         Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task EnsureSchemaAsync(CancellationToken cancellationToken)
     {
-        var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.CreateSchema, _schema);
+        var sql = string.Format(CultureInfo.InvariantCulture, CreateSchemaFormat, _schema);
 
         await using var connection = (NpgsqlConnection)_connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        await using var command = connection.CreateCommand();
-        _ = command.CommandText = sql;
+        await using var command = CreateCommand(connection, sql);
         _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("State store schema '{Schema}' ensured.", _schema);
@@ -44,25 +50,19 @@ public sealed class PostgreSqlStateStore(
         Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task<IReadOnlyList<ExportedEntity>> LoadAsync(EntityKind kind, CancellationToken cancellationToken)
     {
-        var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.SelectByKind, _schema);
+        var sql = string.Format(CultureInfo.InvariantCulture, SelectByKindFormat, _schema);
 
         await using var connection = (NpgsqlConnection)_connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        await using var command = connection.CreateCommand();
-        _ = command.CommandText = sql;
+        await using var command = CreateCommand(connection, sql);
         _ = command.Parameters.AddWithValue(EntityKindParameter, kind.ToString());
 
         var results = new List<ExportedEntity>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            results.Add(new ExportedEntity(
-                Enum.Parse<EntityKind>(reader.GetString(0)),
-                reader.GetString(1),
-                reader.GetFieldValue<DateTimeOffset>(3),
-                reader.GetFieldValue<DateTimeOffset>(4),
-                reader.IsDBNull(2) ? null : reader.GetString(2)));
+            results.Add(await ReadEntityAsync(reader, cancellationToken).ConfigureAwait(false));
         }
 
         return results;
@@ -72,13 +72,12 @@ public sealed class PostgreSqlStateStore(
         Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task<ExportedEntity?> GetAsync(EntityKind kind, string identifier, CancellationToken cancellationToken)
     {
-        var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.SelectByKindAndIdentifier, _schema);
+        var sql = string.Format(CultureInfo.InvariantCulture, SelectByKindAndIdentifierFormat, _schema);
 
         await using var connection = (NpgsqlConnection)_connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        await using var command = connection.CreateCommand();
-        _ = command.CommandText = sql;
+        await using var command = CreateCommand(connection, sql);
         _ = command.Parameters.AddWithValue(EntityKindParameter, kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", identifier);
 
@@ -88,25 +87,21 @@ public sealed class PostgreSqlStateStore(
             return null;
         }
 
-        return new ExportedEntity(
-            Enum.Parse<EntityKind>(reader.GetString(0)),
-            reader.GetString(1),
-            reader.GetFieldValue<DateTimeOffset>(3),
-            reader.GetFieldValue<DateTimeOffset>(4),
-            reader.IsDBNull(2) ? null : reader.GetString(2));
+        return await ReadEntityAsync(reader, cancellationToken).ConfigureAwait(false);
     }
 
     [SuppressMessage("Major Code Smell", "S2077:Formatting SQL queries is security-sensitive",
         Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task UpsertAsync(ExportedEntity entity, CancellationToken cancellationToken)
     {
-        var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.Upsert, _schema);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var sql = string.Format(CultureInfo.InvariantCulture, UpsertFormat, _schema);
 
         await using var connection = (NpgsqlConnection)_connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        await using var command = connection.CreateCommand();
-        command.CommandText = sql;
+        await using var command = CreateCommand(connection, sql);
         _ = command.Parameters.AddWithValue(EntityKindParameter, entity.Kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", entity.Identifier);
         _ = command.Parameters.AddWithValue("@content_hash", entity.ContentHash!);
@@ -120,17 +115,39 @@ public sealed class PostgreSqlStateStore(
         Justification = "Schema is whitelist-validated in QuoteSchema; PostgreSQL does not allow identifiers as query parameters.")]
     public async Task DeleteAsync(EntityKind kind, string identifier, CancellationToken cancellationToken)
     {
-        var sql = string.Format(CultureInfo.InvariantCulture, StateStoreQueries.Delete, _schema);
+        var sql = string.Format(CultureInfo.InvariantCulture, DeleteFormat, _schema);
 
         await using var connection = (NpgsqlConnection)_connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        await using var command = connection.CreateCommand();
-        _ = command.CommandText = sql;
+        await using var command = CreateCommand(connection, sql);
         _ = command.Parameters.AddWithValue(EntityKindParameter, kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", identifier);
 
         _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<ExportedEntity> ReadEntityAsync(NpgsqlDataReader reader, CancellationToken cancellationToken)
+    {
+        var contentHash = await reader.IsDBNullAsync(2, cancellationToken).ConfigureAwait(false)
+            ? null
+            : reader.GetString(2);
+
+        return new ExportedEntity(
+            Enum.Parse<EntityKind>(reader.GetString(0)),
+            reader.GetString(1),
+            await reader.GetFieldValueAsync<DateTimeOffset>(3, cancellationToken).ConfigureAwait(false),
+            await reader.GetFieldValueAsync<DateTimeOffset>(4, cancellationToken).ConfigureAwait(false),
+            contentHash);
+    }
+
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
+        Justification = "SQL templates are constants; the only interpolated identifier is validated by QuoteSchema, and all data values use parameters.")]
+    private static NpgsqlCommand CreateCommand(NpgsqlConnection connection, string sql)
+    {
+        var command = connection.CreateCommand();
+        command.CommandText = sql;
+        return command;
     }
 
     private static string QuoteSchema(string schema)

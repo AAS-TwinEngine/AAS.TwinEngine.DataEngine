@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 /// <summary>
@@ -9,6 +11,7 @@ public sealed class EndpointConfig
     /// <summary>
     /// Base URL of the target system (e.g. <c>http://data-engine:8080</c>).
     /// </summary>
+    [SuppressMessage("Design", "CA1056:Uri properties should not be strings", Justification = "String configuration preserves the JSON/environment binding contract; validation parses it before use.")]
     public string BaseUrl { get; set; } = string.Empty;
 
     /// <summary>

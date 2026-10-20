@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace AAS.TwinEngine.ExportService.Infrastructure.Logging;
 
 /// <summary>
@@ -61,7 +63,7 @@ public static class LogSanitizerExtension
                 default:
                     if (char.IsControl(c))
                     {
-                        _ = sb.Append($"\\x{(int)c:X2}");
+                        _ = sb.Append(CultureInfo.InvariantCulture, $"\\x{(int)c:X2}");
                     }
                     else
                     {

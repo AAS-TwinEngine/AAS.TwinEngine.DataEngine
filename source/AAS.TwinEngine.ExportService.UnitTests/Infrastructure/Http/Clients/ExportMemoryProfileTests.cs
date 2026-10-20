@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -20,7 +21,7 @@ using Xunit.Abstractions;
 namespace AAS.TwinEngine.ExportService.UnitTests.Infrastructure.Http.Clients;
 
 [CollectionDefinition("ExportMemoryProfile", DisableParallelization = true)]
-public sealed class ExportMemoryProfileCollection;
+public sealed class ExportMemoryProfileGroup;
 
 public sealed class MemoryProfileTheoryAttribute : TheoryAttribute
 {
@@ -111,6 +112,7 @@ public sealed class ExportMemoryProfileTests(ITestOutputHelper output)
     [InlineData(5000, 4, "unchanged")]
     [InlineData(20000, 4, "unchanged")]
     [InlineData(250, 64, "update")]
+    [SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling", Justification = "This opt-in integration-style profile intentionally measures the complete export pipeline.")]
     public async Task ExecuteAsync_With250SubmodelPages_ProfilesMemoryAndRepeatedRunRetention(
         int entityCount, int payloadKiB, string mode)
     {
