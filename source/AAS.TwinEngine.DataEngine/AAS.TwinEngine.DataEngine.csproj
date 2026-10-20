@@ -25,25 +25,25 @@
     <PackageReference Include="AasCore.Aas3_1" Version="[1.0.0]" />
     <PackageReference Include="Asp.Versioning.Mvc" Version="[10.2.1]" />
     <PackageReference Include="Cronos" Version="[0.13.0]" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.10.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.12]" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.11.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.13]" />
     <PackageReference Include="NSwag.AspNetCore" Version="[14.7.1]" />
-    <PackageReference Include="OpenTelemetry" Version="[1.19.1]" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="[1.19.1]" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="[1.19.1]" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="[1.19.0]" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="[1.19.0]" />
+    <PackageReference Include="OpenTelemetry" Version="[1.20.0]" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="[1.20.0]" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="[1.20.0]" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="[1.20.0]" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="[1.20.0]" />
     <PackageReference Include="Serilog" Version="[4.4.0]" />
     <PackageReference Include="Serilog.AspNetCore" Version="[10.0.0]" />
     <PackageReference Include="Serilog.Sinks.Console" Version="[6.1.1]" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="[10.2.3]" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="[10.0.12]" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="[10.10.0]" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="[10.3.0]" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="[10.0.13]" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="[10.11.0]" />
     <PackageReference Include="Polly.Core" Version="[8.8.0]" />
-    <PackageReference Include="JsonSchema.Net" Version="[7.3.4]" />
+    <PackageReference Include="JsonSchema.Net" Version="[9.4.1]" />
 
     <!-- Dependency track - Vulnerabilities -->
-    <PackageReference Include="System.Text.Json" Version="[10.0.12]" />
+    <PackageReference Include="System.Text.Json" Version="[10.0.13]" />
   </ItemGroup>
 
 </Project>
