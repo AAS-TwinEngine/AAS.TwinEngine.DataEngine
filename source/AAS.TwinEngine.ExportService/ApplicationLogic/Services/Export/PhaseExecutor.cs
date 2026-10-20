@@ -1,4 +1,7 @@
-﻿using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+
+using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Observability;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.State;
@@ -39,121 +42,179 @@ public sealed class PhaseExecutor(
         _logger.LogInformation("Starting export phase for {EntityKind}", kind);
 
         var managedState = await _stateStore.LoadAsync(kind, cancellationToken).ConfigureAwait(false);
-        var stateByIdentifier = managedState.ToDictionary(entity => entity.Identifier, StringComparer.Ordinal);
+        var counters = new PhaseCounters();
         var sourceIdentifiers = deletionsOnly ? new HashSet<string>(StringComparer.Ordinal) : null;
-
-        var created = 0;
-        var updated = 0;
-        var deleted = 0;
-        var skipped = 0;
-        var failed = 0;
-
         var parallelOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = _maxDegreeOfParallelism,
             CancellationToken = cancellationToken
         };
 
-        await using var pages = _sourceReader.ReadPagesAsync(kind, cancellationToken).GetAsyncEnumerator(cancellationToken);
-        while (true)
+        await ProcessSourcePagesAsync(
+            kind, managedState, sourceIdentifiers, parallelOptions, counters, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (sourceIdentifiers is not null)
         {
-            bool hasPage;
-            using (var fetchSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.FetchSourceEntities))
-            {
-                _ = fetchSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
-                hasPage = await pages.MoveNextAsync().ConfigureAwait(false);
-            }
+            await ApplyMissingEntitiesAsync(kind, managedState, sourceIdentifiers, parallelOptions, counters)
+                .ConfigureAwait(false);
+        }
 
-            if (!hasPage)
-            {
-                break;
-            }
+        return LogPhaseResult(kind, counters, phaseSpan);
+    }
 
-            if (deletionsOnly)
-            {
-                foreach (var source in pages.Current)
-                {
-                    _ = sourceIdentifiers!.Add(source.Identifier);
-                }
+    private async Task ProcessSourcePagesAsync(
+        EntityKind kind,
+        IReadOnlyList<ExportedEntity> managedState,
+        HashSet<string>? sourceIdentifiers,
+        ParallelOptions parallelOptions,
+        PhaseCounters counters,
+        CancellationToken cancellationToken)
+    {
+        var stateByIdentifier = managedState.ToDictionary(entity => entity.Identifier, StringComparer.Ordinal);
+        await using var pages = _sourceReader.ReadPagesAsync(kind, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
+        while (await MoveToNextPageAsync(kind, pages).ConfigureAwait(false))
+        {
+            if (sourceIdentifiers is not null)
+            {
+                AddSourceIdentifiers(pages.Current, sourceIdentifiers);
                 continue;
             }
 
-            var pageState = new List<ExportedEntity>(pages.Current.Count);
-            foreach (var source in pages.Current)
-            {
-                if (stateByIdentifier.TryGetValue(source.Identifier, out var managed))
-                {
-                    pageState.Add(managed);
-                }
-            }
-
-            IReadOnlyList<CrudDecision> decisions;
-            using (var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations))
-            {
-                _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
-                decisions = _decisionMaker.Decide(kind, pages.Current,
-                    pageState.DistinctBy(entity => entity.Identifier).ToArray());
-            }
-
-            await ApplyDecisionsAsync(decisions.Where(decision => decision.Operation != ExportOperation.Delete)).ConfigureAwait(false);
+            await ProcessForwardPageAsync(kind, pages.Current, stateByIdentifier, parallelOptions, counters)
+                .ConfigureAwait(false);
         }
+    }
 
-        if (deletionsOnly)
+    private static async Task<bool> MoveToNextPageAsync(EntityKind kind, IAsyncEnumerator<IReadOnlyList<SourceEntity>> pages)
+    {
+        using var fetchSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.FetchSourceEntities);
+        _ = fetchSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
+        return await pages.MoveNextAsync().ConfigureAwait(false);
+    }
+
+    private static void AddSourceIdentifiers(IReadOnlyList<SourceEntity> page, HashSet<string> sourceIdentifiers)
+    {
+        foreach (var source in page)
         {
-            var missingState = managedState.Where(entity => !sourceIdentifiers!.Contains(entity.Identifier)).ToArray();
-            using var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations);
-            _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
-            var decisions = _decisionMaker.Decide(kind, Array.Empty<SourceEntity>(), missingState);
-            await ApplyDecisionsAsync(decisions.Where(decision => decision.Operation == ExportOperation.Delete)).ConfigureAwait(false);
+            _ = sourceIdentifiers.Add(source.Identifier);
+        }
+    }
+
+    private async Task ProcessForwardPageAsync(
+        EntityKind kind,
+        IReadOnlyList<SourceEntity> page,
+        IReadOnlyDictionary<string, ExportedEntity> stateByIdentifier,
+        ParallelOptions parallelOptions,
+        PhaseCounters counters)
+    {
+        var pageState = new List<ExportedEntity>(page.Count);
+        foreach (var source in page)
+        {
+            if (stateByIdentifier.TryGetValue(source.Identifier, out var managed))
+            {
+                pageState.Add(managed);
+            }
         }
 
-        Task ApplyDecisionsAsync(IEnumerable<CrudDecision> decisions) =>
-            Parallel.ForEachAsync(decisions, parallelOptions, async (decision, token) =>
-            {
-                if (decision.Operation == ExportOperation.Skip)
-                {
-                    _ = Interlocked.Increment(ref skipped);
-                    return;
-                }
+        IReadOnlyList<CrudDecision> decisions;
+        using (var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations))
+        {
+            _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
+            decisions = _decisionMaker.Decide(
+                kind,
+                page,
+                pageState.DistinctBy(entity => entity.Identifier).ToArray());
+        }
 
-                try
-                {
-                    var outcome = await ApplyAsync(decision, token).ConfigureAwait(false);
-                    switch (outcome)
-                    {
-                        case AppliedOutcome.Created: _ = Interlocked.Increment(ref created); break;
-                        case AppliedOutcome.Updated: _ = Interlocked.Increment(ref updated); break;
-                        case AppliedOutcome.Deleted: _ = Interlocked.Increment(ref deleted); break;
-                        case AppliedOutcome.Skipped: _ = Interlocked.Increment(ref skipped); break;
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _ = Interlocked.Increment(ref failed);
-                    _logger.LogError(
-                        ex,
-                        "Failed to {Operation} {EntityKind} {Identifier}. Continuing with remaining entities.",
-                        decision.Operation,
-                        kind,
-                        decision.Identifier);
-                }
-            });
+        await ApplyDecisionsAsync(
+            kind,
+            decisions.Where(decision => decision.Operation != ExportOperation.Delete),
+            parallelOptions,
+            counters).ConfigureAwait(false);
+    }
 
-        var result = new PhaseResult(kind, created, updated, deleted, skipped, failed);
-        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Created, created);
-        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Updated, updated);
-        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Deleted, deleted);
-        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Skipped, skipped);
-        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Failed, failed);
+    private async Task ApplyMissingEntitiesAsync(
+        EntityKind kind,
+        IReadOnlyList<ExportedEntity> managedState,
+        HashSet<string> sourceIdentifiers,
+        ParallelOptions parallelOptions,
+        PhaseCounters counters)
+    {
+        var missingState = managedState.Where(entity => !sourceIdentifiers.Contains(entity.Identifier)).ToArray();
+        IReadOnlyList<CrudDecision> decisions;
+        using (var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations))
+        {
+            _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
+            decisions = _decisionMaker.Decide(kind, Array.Empty<SourceEntity>(), missingState);
+        }
+
+        await ApplyDecisionsAsync(
+            kind,
+            decisions.Where(decision => decision.Operation == ExportOperation.Delete),
+            parallelOptions,
+            counters).ConfigureAwait(false);
+    }
+
+    private Task ApplyDecisionsAsync(
+        EntityKind kind,
+        IEnumerable<CrudDecision> decisions,
+        ParallelOptions parallelOptions,
+        PhaseCounters counters)
+    {
+        return Parallel.ForEachAsync(
+            decisions,
+            parallelOptions,
+            (decision, token) => ApplyDecisionAsync(kind, decision, counters, token));
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
+        Justification = "Entity failures are counted and logged while the phase continues; cancellation is rethrown.")]
+    private async ValueTask ApplyDecisionAsync(
+        EntityKind kind,
+        CrudDecision decision,
+        PhaseCounters counters,
+        CancellationToken cancellationToken)
+    {
+        if (decision.Operation == ExportOperation.Skip)
+        {
+            counters.Record(AppliedOutcome.Skipped);
+            return;
+        }
+
+        try
+        {
+            counters.Record(await ApplyAsync(decision, cancellationToken).ConfigureAwait(false));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            counters.RecordFailure();
+            _logger.LogError(
+                ex,
+                "Failed to {Operation} {EntityKind} {Identifier}. Continuing with remaining entities.",
+                decision.Operation,
+                kind,
+                decision.Identifier);
+        }
+    }
+
+    private PhaseResult LogPhaseResult(EntityKind kind, PhaseCounters counters, Activity? phaseSpan)
+    {
+        var result = new PhaseResult(kind, counters.Created, counters.Updated, counters.Deleted, counters.Skipped, counters.Failed);
+        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Created, counters.Created);
+        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Updated, counters.Updated);
+        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Deleted, counters.Deleted);
+        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Skipped, counters.Skipped);
+        _ = phaseSpan?.SetTag(ExportServiceTracing.Attributes.Failed, counters.Failed);
 
         _logger.LogInformation(
             "Phase {EntityKind} finished. Created={Created} Updated={Updated} Deleted={Deleted} Skipped={Skipped} Failed={Failed}",
-            kind, created, updated, deleted, skipped, failed);
+            kind, counters.Created, counters.Updated, counters.Deleted, counters.Skipped, counters.Failed);
 
         return result;
     }
@@ -245,8 +306,9 @@ public sealed class PhaseExecutor(
         return describedEntity is not null;
     }
 
-    private Task RecordOwnershipAsync(CrudDecision decision, CancellationToken cancellationToken) =>
-        _stateStore.UpsertAsync(
+    private Task RecordOwnershipAsync(CrudDecision decision, CancellationToken cancellationToken)
+    {
+        return _stateStore.UpsertAsync(
             new ExportedEntity(
                 decision.Kind,
                 decision.SourceEntity!.Identifier,
@@ -254,6 +316,7 @@ public sealed class PhaseExecutor(
                 DateTimeOffset.UtcNow,
                 decision.SourceEntity.ContentHash),
             cancellationToken);
+    }
 
     /// <summary>
     /// Verifies a deletion candidate against the source by GET-by-id before touching the target.
@@ -302,5 +365,45 @@ public sealed class PhaseExecutor(
         Updated,
         Deleted,
         Skipped
+    }
+
+    private sealed class PhaseCounters
+    {
+        private int _created;
+        private int _updated;
+        private int _deleted;
+        private int _skipped;
+        private int _failed;
+
+        public int Created => Volatile.Read(ref _created);
+
+        public int Updated => Volatile.Read(ref _updated);
+
+        public int Deleted => Volatile.Read(ref _deleted);
+
+        public int Skipped => Volatile.Read(ref _skipped);
+
+        public int Failed => Volatile.Read(ref _failed);
+
+        public void Record(AppliedOutcome outcome)
+        {
+            switch (outcome)
+            {
+                case AppliedOutcome.Created:
+                    _ = Interlocked.Increment(ref _created);
+                    break;
+                case AppliedOutcome.Updated:
+                    _ = Interlocked.Increment(ref _updated);
+                    break;
+                case AppliedOutcome.Deleted:
+                    _ = Interlocked.Increment(ref _deleted);
+                    break;
+                case AppliedOutcome.Skipped:
+                    _ = Interlocked.Increment(ref _skipped);
+                    break;
+            }
+        }
+
+        public void RecordFailure() => _ = Interlocked.Increment(ref _failed);
     }
 }

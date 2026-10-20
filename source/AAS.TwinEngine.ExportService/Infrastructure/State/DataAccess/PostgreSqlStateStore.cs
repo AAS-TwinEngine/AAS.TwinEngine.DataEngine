@@ -18,6 +18,8 @@ public sealed class PostgreSqlStateStore(
     IOptions<ExportServiceConfig> options,
     ILogger<PostgreSqlStateStore> logger) : IStateStore
 {
+    private const string EntityKindParameter = "@entity_kind";
+
     private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
     private readonly string _schema = QuoteSchema(options.Value.StateStore.Schema);
     private readonly ILogger<PostgreSqlStateStore> _logger = logger;
@@ -49,7 +51,7 @@ public sealed class PostgreSqlStateStore(
 
         await using var command = connection.CreateCommand();
         _ = command.CommandText = sql;
-        _ = command.Parameters.AddWithValue("@entity_kind", kind.ToString());
+        _ = command.Parameters.AddWithValue(EntityKindParameter, kind.ToString());
 
         var results = new List<ExportedEntity>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -77,7 +79,7 @@ public sealed class PostgreSqlStateStore(
 
         await using var command = connection.CreateCommand();
         _ = command.CommandText = sql;
-        _ = command.Parameters.AddWithValue("@entity_kind", kind.ToString());
+        _ = command.Parameters.AddWithValue(EntityKindParameter, kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", identifier);
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -105,7 +107,7 @@ public sealed class PostgreSqlStateStore(
 
         await using var command = connection.CreateCommand();
         command.CommandText = sql;
-        _ = command.Parameters.AddWithValue("@entity_kind", entity.Kind.ToString());
+        _ = command.Parameters.AddWithValue(EntityKindParameter, entity.Kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", entity.Identifier);
         _ = command.Parameters.AddWithValue("@content_hash", entity.ContentHash!);
         _ = command.Parameters.AddWithValue("@created_at", entity.CreatedAt);
@@ -125,7 +127,7 @@ public sealed class PostgreSqlStateStore(
 
         await using var command = connection.CreateCommand();
         _ = command.CommandText = sql;
-        _ = command.Parameters.AddWithValue("@entity_kind", kind.ToString());
+        _ = command.Parameters.AddWithValue(EntityKindParameter, kind.ToString());
         _ = command.Parameters.AddWithValue("@identifier", identifier);
 
         _ = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
