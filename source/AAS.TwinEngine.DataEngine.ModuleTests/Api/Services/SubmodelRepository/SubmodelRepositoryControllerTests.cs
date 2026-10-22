@@ -14,6 +14,8 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.ModuleTests.Common;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
+using AasCore.Aas3_1;
+
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -104,6 +106,83 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task GetSubmodelAsync_WhenTemplateValueIsComplete_DoesNotCallPluginAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string TemplateValue = "Template contact";
+        var submodel = CreateSubmodelWithElements(TestData.CreateContactName());
+        ((Property)submodel.SubmodelElements![0]).Value = TemplateValue;
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(submodel);
+
+        var response = await _client.GetAsync(new Uri($"/submodels/{SubmodelId}", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.Equal(TemplateValue, json?["submodelElements"]?[0]?["value"]?.GetValue<string>());
+        _ = _httpClientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelAsync_WithTemplateAndPluginValues_RequestsOnlyMissingSemanticIdsAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string TemplateEmail = "template@example.com";
+        string? pluginRequestBody = null;
+        using var messageHandler = new FakeHttpMessageHandler(async (request, cancellationToken) =>
+        {
+            pluginRequestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(TestData.CreatePluginResponseForSubmodelElement())
+            };
+        });
+
+        using var httpClient = new HttpClient(messageHandler)
+        {
+            BaseAddress = new Uri("https://testendpoint.com")
+        };
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+
+        var email = TestData.CreateEmail();
+        email.Value = TemplateEmail;
+        var submodel = CreateSubmodelWithElements(TestData.CreateContactName(), email);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(submodel);
+
+        var response = await _client.GetAsync(new Uri($"/submodels/{SubmodelId}", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(pluginRequestBody);
+        Assert.Contains("http://example.com/idta/digital-nameplate/contact-name", pluginRequestBody, StringComparison.Ordinal);
+        Assert.DoesNotContain("http://example.com/idta/digital-nameplate/email", pluginRequestBody, StringComparison.Ordinal);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        var elements = json["submodelElements"]!.AsArray();
+        var contactName = elements.Single(element => element?["idShort"]?.GetValue<string>() == "ContactName");
+        var emailAddress = elements.Single(element => element?["idShort"]?.GetValue<string>() == "Email");
+        Assert.Equal("John Doe", contactName?["value"]?.GetValue<string>());
+        Assert.Equal(TemplateEmail, emailAddress?["value"]?.GetValue<string>());
+        _ = _httpClientFactory.Received(1).CreateClient(HttpClientName);
+    }
+
+    [Fact]
+    public async Task GetSubmodelAsync_WithRepeatedListMissingMandatoryValue_Returns500WithoutPluginCallAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        var submodel = CreateSubmodelWithInvalidRepeatedMarkings();
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(submodel);
+
+        var response = await _client.GetAsync(new Uri($"/submodels/{SubmodelId}", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        _ = _httpClientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
     public async Task GetSubmodelAsync_WithNotFound_Returns404Async()
     {
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
@@ -170,6 +249,55 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var submodelElementResponse = json.ToString();
         var expectedSubmodelElement = TestData.CreateSubmodelElementWithValues();
         Assert.Equal(submodelElementResponse, expectedSubmodelElement);
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementAsync_ReturnsIndexedProperty_WhenPluginExpandsCollectionListAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string IdShortPath = "Markings[1].ContactName";
+
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePluginResponseWithMultipleMarkings())
+        }));
+
+        using var httpClient = new HttpClient(messageHandler)
+        {
+            BaseAddress = new Uri("https://testendpoint.com")
+        };
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithPluginExpandedMarkings());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, IdShortPath));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.Equal("ContactName", json["idShort"]?.GetValue<string>());
+        Assert.Equal("Second marking", json["value"]?.GetValue<string>());
+        _ = _httpClientFactory.Received(1).CreateClient(HttpClientName);
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementAsync_ReturnsIndexedProperty_WhenTemplateDefinesMultipleCollectionValuesAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string IdShortPath = "Markings[1].ContactName";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, IdShortPath));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.Equal("ContactName", json["idShort"]?.GetValue<string>());
+        Assert.Equal("Second template marking", json["value"]?.GetValue<string>());
+        _ = _httpClientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
     }
 
     [Fact]
@@ -369,6 +497,50 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         var response = await _client.GetAsync($"/submodels/{invalidBase64}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static Submodel CreateSubmodelWithElements(params ISubmodelElement[] elements)
+    {
+        var submodel = TestData.CreateSubmodel();
+        submodel.SubmodelElements = [.. elements];
+        return submodel;
+    }
+
+    private static Submodel CreateSubmodelWithInvalidRepeatedMarkings()
+    {
+        static SubmodelElementCollection CreateMarking(string idShort, string name, string color, string code)
+        {
+            static Property CreateProperty(string idShort, string semanticId, string value) => new(
+                idShort: idShort,
+                valueType: DataTypeDefXsd.String,
+                value: value,
+                semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.Property, semanticId)]),
+                qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")]);
+
+            return new SubmodelElementCollection(
+                idShort: idShort,
+                semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.SubmodelElementCollection, "http://test/marking")]),
+                qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "ZeroToMany")],
+                value:
+                [
+                    CreateProperty("Name", "http://test/marking/name", name),
+                    CreateProperty("Color", "http://test/marking/color", color),
+                    CreateProperty("Code", "http://test/marking/code", code)
+                ]);
+        }
+
+        var makings = new SubmodelElementList(
+            typeValueListElement: AasSubmodelElements.SubmodelElementCollection,
+            idShort: "Makings",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.SubmodelElementList, "http://test/makings")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            value:
+            [
+                CreateMarking("Marking0", "Stamp 1", "Blue", "A"),
+                CreateMarking("Marking1", "Stamp 2", "", "B")
+            ]);
+
+        return CreateSubmodelWithElements(makings);
     }
 
     [Theory]

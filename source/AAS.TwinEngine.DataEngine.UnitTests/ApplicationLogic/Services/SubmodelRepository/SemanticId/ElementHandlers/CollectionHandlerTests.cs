@@ -61,6 +61,34 @@ public class CollectionHandlerTests
     }
 
     [Fact]
+    public void Extract_AllChildrenResolvedInTemplate_ReturnsNull()
+    {
+        var collection = new SubmodelElementCollection(
+            idShort: "ContactInformation",
+            value: [new Property(idShort: "Company", valueType: DataTypeDefXsd.String, value: "M&M")]);
+        _resolver.ResolveElementSemanticId(collection, "ContactInformation").Returns("http://test/contact");
+        _resolver.GetCardinality(collection).Returns(Cardinality.ZeroToMany);
+
+        Null(_sut.Extract(collection, _ => null));
+    }
+
+    [Fact]
+    public void Extract_SomeChildrenResolvedInTemplate_ReturnsBranchWithUnresolvedChildrenOnly()
+    {
+        var name = new Property(idShort: "Name", valueType: DataTypeDefXsd.String);
+        var company = new Property(idShort: "Company", valueType: DataTypeDefXsd.String, value: "M&M");
+        var collection = new SubmodelElementCollection(idShort: "ContactInformation", value: [name, company]);
+        _resolver.ResolveElementSemanticId(collection, "ContactInformation").Returns("http://test/contact");
+        _resolver.GetCardinality(collection).Returns(Cardinality.ZeroToMany);
+        var nameNode = new SemanticLeafNode("http://test/name", "", DataType.String, Cardinality.One);
+
+        var result = _sut.Extract(collection, child => ReferenceEquals(child, name) ? nameNode : null);
+
+        var branch = IsType<SemanticBranchNode>(result);
+        Same(nameNode, Single(branch.Children));
+    }
+
+    [Fact]
     public void Extract_WithNullValue_ReturnsBranchNodeAndLogsWarning()
     {
         var collection = new SubmodelElementCollection(idShort: "EmptyCollection", value: null);

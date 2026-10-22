@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -11,15 +12,21 @@ public class PropertyHandler(ISemanticIdResolver semanticIdResolver) : ISubmodel
 
     public SemanticTreeNode? Extract(ISubmodelElement element, Func<ISubmodelElement, SemanticTreeNode?> extractChild)
     {
+        if (TemplateValueChecker.IsResolved(((Property)element).Value))
+        {
+            return null;
+        }
+
         var semanticId = semanticIdResolver.ResolveElementSemanticId(element, element.IdShort!);
         return new SemanticLeafNode(semanticId, string.Empty, semanticIdResolver.GetValueType(element), semanticIdResolver.GetCardinality(element));
     }
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)
     {
-        if (values is SemanticLeafNode leafValueNode)
+        var property = (Property)element;
+        if (values is SemanticLeafNode leafValueNode && !TemplateValueChecker.IsResolved(property.Value))
         {
-            ((Property)element).Value = (string?)leafValueNode.Value;
+            property.Value = (string?)leafValueNode.Value;
         }
     }
 }

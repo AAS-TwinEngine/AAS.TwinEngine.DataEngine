@@ -726,6 +726,8 @@
                               <value>Operation@en</value>
                             </qualifier>
                           </qualifiers>
+                          <value>
+                          </value>
                         </multiLanguageProperty>
                         <property>
                           <category>PARAMETER</category>

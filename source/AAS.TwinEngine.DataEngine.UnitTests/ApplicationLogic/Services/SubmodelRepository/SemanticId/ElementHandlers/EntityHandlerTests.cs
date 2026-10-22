@@ -45,7 +45,7 @@ public class EntityHandlerTests
     [Fact]
     public void Extract_SelfManagedEntity_ReturnsBranchWithGlobalAssetIdAndSpecificAssetIds()
     {
-        var specificAssetId = new SpecificAssetId(name: "Manufacturer", value: "Corp")
+        var specificAssetId = new SpecificAssetId(name: "Manufacturer", value: "")
         {
             SemanticId = new Reference(ReferenceTypes.ModelReference,
                 [new Key(KeyTypes.ConceptDescription, "https://example.com/cd/manufacturer")])
@@ -74,6 +74,48 @@ public class EntityHandlerTests
         Equal("http://test/entity" + SemanticIdResolver.EntityGlobalAssetIdPostFix, globalAssetLeaf.SemanticId);
         var specificLeaf = IsType<SemanticLeafNode>(branch.Children[1]);
         Equal("https://example.com/cd/manufacturer", specificLeaf.SemanticId);
+    }
+
+    [Fact]
+    public void Extract_SelfManagedEntityWithAllValuesResolved_ReturnsNull()
+    {
+        var specificAssetId = new SpecificAssetId(name: "Manufacturer", value: "Corp")
+        {
+            SemanticId = new Reference(ReferenceTypes.ModelReference,
+                [new Key(KeyTypes.ConceptDescription, "https://example.com/cd/manufacturer")])
+        };
+        var entity = new Entity(
+            idShort: "MyEntity",
+            entityType: EntityType.SelfManagedEntity,
+            globalAssetId: "urn:asset:1",
+            specificAssetIds: [specificAssetId]);
+        _resolver.ResolveElementSemanticId(entity, "MyEntity").Returns("http://test/entity");
+        _resolver.GetCardinality(entity).Returns(Cardinality.One);
+
+        Null(_sut.Extract(entity, _ => null));
+    }
+
+    [Fact]
+    public void Extract_SelfManagedEntityWithResolvedGlobalAssetId_OmitsGlobalAssetIdLeaf()
+    {
+        var specificAssetId = new SpecificAssetId(name: "Manufacturer", value: "")
+        {
+            SemanticId = new Reference(ReferenceTypes.ModelReference,
+                [new Key(KeyTypes.ConceptDescription, "https://example.com/cd/manufacturer")])
+        };
+        var entity = new Entity(
+            idShort: "MyEntity",
+            entityType: EntityType.SelfManagedEntity,
+            globalAssetId: "urn:asset:1",
+            specificAssetIds: [specificAssetId]);
+        _resolver.ResolveElementSemanticId(entity, "MyEntity").Returns("http://test/entity");
+        _resolver.GetCardinality(entity).Returns(Cardinality.One);
+        _resolver.GetSemanticId(specificAssetId).Returns("https://example.com/cd/manufacturer");
+
+        var result = _sut.Extract(entity, _ => null);
+
+        var branch = IsType<SemanticBranchNode>(result);
+        Equal("https://example.com/cd/manufacturer", Single(branch.Children).SemanticId);
     }
 
     [Fact]

@@ -48,9 +48,19 @@ public class PluginDataHandler(
 
         foreach (var (key, value) in dicSemanticTreeNode)
         {
+            if (IsEmptyRequestTree(value))
+            {
+                continue;
+            }
+
             var jsonSchema = JsonSchemaGenerator.ConvertToJsonSchema(value);
             jsonSchemas.Add(key, jsonSchema);
             jsonSchemaValidator.ValidateRequestSchema(jsonSchema);
+        }
+
+        if (jsonSchemas.Count == 0)
+        {
+            return pluginSemanticIdMapper.Merge(semanticIds, []);
         }
 
         var pluginRequests = pluginRequestBuilder.Build(jsonSchemas);
@@ -91,9 +101,9 @@ public class PluginDataHandler(
         List<PreparedBatchRequest> preparedRequests;
         using (DataEngineTracing.StartSpan(DataEngineTracing.Spans.PrepareBatchSchemas))
         {
-            var prepared = new PreparedBatchRequest[requests.Count];
+            var prepared = new PreparedBatchRequest?[requests.Count];
             _ = Parallel.For(0, requests.Count, index => prepared[index] = PrepareBatchRequest(requests[index], pluginManifest));
-            preparedRequests = [.. prepared];
+            preparedRequests = [.. prepared.OfType<PreparedBatchRequest>()];
         }
 
         var batches = preparedRequests.OrderBy(request => request.SchemaKey, StringComparer.Ordinal).Chunk(batchSize).ToList();
@@ -123,6 +133,12 @@ public class PluginDataHandler(
         var preparedById = preparedRequests.ToDictionary(item => item.Request.SubmodelId, StringComparer.Ordinal);
         var valuesById = new ConcurrentDictionary<string, SemanticTreeNode>(StringComparer.Ordinal);
 
+        // Submodels fully resolved from their template are not sent to the plugin.
+        foreach (var request in requests.Where(request => !preparedById.ContainsKey(request.SubmodelId)))
+        {
+            valuesById[request.SubmodelId] = pluginSemanticIdMapper.Merge(request.SemanticIds, []);
+        }
+
         using var processActivity = DataEngineTracing.StartSpan(DataEngineTracing.Spans.ProcessBatchResponses);
         await Parallel.ForEachAsync(responseItems, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
             (response, _) =>
@@ -138,14 +154,21 @@ public class PluginDataHandler(
         return valuesById;
     }
 
-    private PreparedBatchRequest PrepareBatchRequest(SubmodelValueRequest request, PluginManifest pluginManifest)
+    private PreparedBatchRequest? PrepareBatchRequest(SubmodelValueRequest request, PluginManifest pluginManifest)
     {
         var filteredTree = pluginSemanticIdMapper.FilterForPlugin(request.SemanticIds, pluginManifest);
+        if (IsEmptyRequestTree(filteredTree))
+        {
+            return null;
+        }
+
         var semanticTreeKey = BuildSemanticTreeKey(filteredTree);
         var preparedSchema = _schemaCache.GetOrAdd(semanticTreeKey, _ => new Lazy<PreparedSchema>(() => CreatePreparedSchema(filteredTree), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
 
         return new PreparedBatchRequest(request, pluginManifest.PluginName, preparedSchema.Schema, preparedSchema.SchemaKey);
     }
+
+    private static bool IsEmptyRequestTree(SemanticTreeNode? tree) => tree is null or SemanticBranchNode { Children.Count: 0 };
 
     private static PreparedSchema CreatePreparedSchema(SemanticTreeNode semanticTree)
     {

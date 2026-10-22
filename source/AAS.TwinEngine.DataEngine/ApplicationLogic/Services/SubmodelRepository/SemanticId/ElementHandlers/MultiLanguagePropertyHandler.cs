@@ -27,13 +27,17 @@ public class MultiLanguagePropertyHandler(
         }
 
         var mlpSeparator = semanticIdResolver.MlpPostFixSeparator;
-        foreach (var langSemanticId in languages.Select(language => string.Concat(semanticId, mlpSeparator, language)))
+        var languagesToRequest = languages.Where(language => !HasResolvedText(mlp, language)).ToList();
+        foreach (var langSemanticId in languagesToRequest.Select(language => string.Concat(semanticId, mlpSeparator, language)))
         {
             node.AddChild(new SemanticLeafNode(langSemanticId, string.Empty, DataType.String, Cardinality.ZeroToOne));
         }
 
-        return node;
+        return languages.Count > 0 && languagesToRequest.Count == 0 ? null : node;
     }
+
+    private static bool HasResolvedText(MultiLanguageProperty mlp, string language)
+        => mlp.Value?.Any(text => text.Language.Equals(language, StringComparison.OrdinalIgnoreCase) && TemplateValueChecker.IsResolved(text.Text)) ?? false;
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)
     {
@@ -74,7 +78,7 @@ public class MultiLanguagePropertyHandler(
                                     .OfType<SemanticLeafNode>()
                                     .FirstOrDefault(child => child.SemanticId.Equals(languageSemanticId, StringComparison.Ordinal));
 
-            if (leafNode != null)
+            if (leafNode != null && !TemplateValueChecker.IsResolved(languageValue.Text))
             {
                 languageValue.Text = (string?)leafNode.Value;
             }

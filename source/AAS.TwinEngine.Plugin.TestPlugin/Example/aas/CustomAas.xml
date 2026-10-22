@@ -552,7 +552,7 @@
                 <keys>
                   <key>
                     <type>Submodel</type>
-                    <value>https://mm-software.com/submodel/000-001/CustomSubmodel</value>
+                    <value></value>
                   </key>
                   <key>
                     <type>SubmodelElementList</type>
@@ -573,7 +573,7 @@
                 <keys>
                   <key>
                     <type>Submodel</type>
-                    <value>https://mm-software.com/submodel/000-001/ContactInformation</value>
+                    <value></value>
                   </key>
                   <key>
                     <type>SubmodelElementCollection</type>
@@ -621,7 +621,7 @@
             <keys>
               <key>
                 <type>Submodel</type>
-                <value>https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0</value>
+                <value></value>
               </key>
             </keys>
           </value>
@@ -699,6 +699,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:double</valueType>
+          <min>0.5</min>
         </range>
         <property>
           <category>CONSTANT</category>
@@ -907,7 +908,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>0173-1#07-DAA603#004</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>DesignationOfCertificateOrApproval</idShort>
@@ -955,7 +956,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>KEMA99IECEX1105/128</value>
+                  <value></value>
                 </property>
                 <multiLanguageProperty>
                   <category>PARAMETER</category>
@@ -1111,7 +1112,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:date</valueType>
-                  <value>2022-01-01</value>
+                  <value></value>
                 </property>
                 <property>
                   <idShort>ExpiryDate</idShort>
@@ -1159,7 +1160,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:date</valueType>
-                  <value>2022-01-01</value>
+                  <value>2032-01-01</value>
                 </property>
                 <file>
                   <idShort>MarkingFile</idShort>
@@ -1243,7 +1244,7 @@
                     </qualifier>
                   </qualifiers>
                   <valueType>xs:string</valueType>
-                  <value>0044</value>
+                  <value></value>
                 </property>
               </value>
             </submodelElementCollection>
@@ -1342,6 +1343,7 @@
                 </qualifier>
               </qualifiers>
               <valueType>xs:date</valueType>
+              <max>2030-12-31</max>
             </range>
             <property>
               <idShort>RatedVoltage</idShort>
@@ -1465,10 +1467,6 @@
                   <language>de</language>
                   <text>Name der Produktklasse im verwendeten Klassifizierungssystem</text>
                 </langStringTextType>
-                <langStringTextType>
-                  <language></language>
-                  <text></text>
-                </langStringTextType>
               </value>
             </multiLanguageProperty>
             <property>
@@ -1559,7 +1557,7 @@
                 <keys>
                   <key>
                     <type>Submodel</type>
-                    <value>https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0</value>
+                    <value></value>
                   </key>
                   <key>
                     <type>SubmodelElementList</type>
@@ -1574,6 +1572,788 @@
             </referenceElement>
           </value>
         </submodelElementCollection>
+        <submodelElementCollection>
+          <idShort>TemplateValueProperties</idShort>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://mm-software.com/template-values/properties</value>
+              </key>
+            </keys>
+          </semanticId>
+          <qualifiers>
+            <qualifier>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>One</value>
+            </qualifier>
+          </qualifiers>
+          <value>
+            <property>
+              <idShort>NullPlaceholder</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/null</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+              <value> NuLl </value>
+            </property>
+            <range>
+              <idShort>ResolvedRange</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/range</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:double</valueType>
+              <min>0</min>
+              <max>100</max>
+            </range>
+            <file>
+              <idShort>ResolvedFile</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/file</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <value>https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg</value>
+              <contentType>image/jpeg</contentType>
+            </file>
+            <blob>
+              <idShort>UnresolvedBlob</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/blob</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <contentType>text/plain</contentType>
+            </blob>
+            <entity>
+              <idShort>ResolvedEntity</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/resolved-entity</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <entityType>SelfManagedEntity</entityType>
+              <globalAssetId>https://mm-software.com/ids/assets/000-001</globalAssetId>
+              <specificAssetIds>
+                <specificAssetId>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/manufacturer-id</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <name>Manufacturer</name>
+                  <value>M&amp;M Software</value>
+                </specificAssetId>
+              </specificAssetIds>
+            </entity>
+            <entity>
+              <idShort>MixedEntity</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/mixed-entity</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <statements>
+                <property>
+                  <idShort>Statement</idShort>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/entity-statement</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <qualifiers>
+                    <qualifier>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>One</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                </property>
+              </statements>
+              <entityType>SelfManagedEntity</entityType>
+              <globalAssetId>https://mm-software.com/ids/assets/template-component</globalAssetId>
+              <specificAssetIds>
+                <specificAssetId>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/manufacturer-id</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <name>Manufacturer</name>
+                  <value>M&amp;M Software</value>
+                </specificAssetId>
+                <specificAssetId>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/serial-id</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <name>SerialNumber</name>
+                  <value></value>
+                </specificAssetId>
+                <specificAssetId>
+                  <name>UnmappedIdentifier</name>
+                  <value>Kept from template</value>
+                </specificAssetId>
+              </specificAssetIds>
+            </entity>
+            <entity>
+              <idShort>CoManagedEntity</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/co-managed-entity</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <statements>
+                <property>
+                  <idShort>Statement</idShort>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/static-statement</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <qualifiers>
+                    <qualifier>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>One</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                  <value>Template-owned statement</value>
+                </property>
+              </statements>
+              <entityType>CoManagedEntity</entityType>
+            </entity>
+            <referenceElement>
+              <idShort>ExternalReference</idShort>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/external-reference</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <value>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://www.mm-software.com/</value>
+                  </key>
+                </keys>
+              </value>
+            </referenceElement>
+          </value>
+        </submodelElementCollection>
+        <submodelElementList>
+          <idShort>Single-TemplateLanguage</idShort>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://mm-software.com/template-values/static-one</value>
+              </key>
+            </keys>
+          </semanticId>
+          <qualifiers>
+            <qualifier>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>One</value>
+            </qualifier>
+          </qualifiers>
+          <semanticIdListElement>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://mm-software.com/template-values/static-one/item</value>
+              </key>
+            </keys>
+          </semanticIdListElement>
+          <typeValueListElement>Property</typeValueListElement>
+          <valueTypeListElement>xs:string</valueTypeListElement>
+          <value>
+            <property>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-one/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+              <value>en</value>
+            </property>
+          </value>
+        </submodelElementList>
+        <submodelElementList>
+          <idShort>TemplateLanguages</idShort>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://mm-software.com/template-values/static-five</value>
+              </key>
+            </keys>
+          </semanticId>
+          <qualifiers>
+            <qualifier>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>One</value>
+            </qualifier>
+          </qualifiers>
+          <semanticIdListElement>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://mm-software.com/template-values/static-five/item</value>
+              </key>
+            </keys>
+          </semanticIdListElement>
+          <typeValueListElement>Property</typeValueListElement>
+          <valueTypeListElement>xs:string</valueTypeListElement>
+          <value>
+            <property>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-five/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+              <value>en</value>
+            </property>
+            <property>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-five/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+              <value>de</value>
+            </property>
+            <property>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-five/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+              <value>fr</value>
+            </property>
+            <property>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-five/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+              <value>es</value>
+            </property>
+            <property>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-five/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <valueType>xs:string</valueType>
+              <value>it</value>
+            </property>
+          </value>
+        </submodelElementList>
+        <submodelElementList>
+          <idShort>SingleTemplateMarking</idShort>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://mm-software.com/template-values/static-marking-one</value>
+              </key>
+            </keys>
+          </semanticId>
+          <qualifiers>
+            <qualifier>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>One</value>
+            </qualifier>
+          </qualifiers>
+          <typeValueListElement>SubmodelElementCollection</typeValueListElement>
+          <value>
+            <submodelElementCollection>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-marking-one/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <value>
+                <property>
+                  <idShort>MarkingName</idShort>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/static-marking/name</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <qualifiers>
+                    <qualifier>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>One</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                  <value>CE</value>
+                </property>
+                <property>
+                  <idShort>DesignationOfCertificateOrApproval</idShort>
+                  <description>
+                    <langStringTextType>
+                      <language>en</language>
+                      <text>Note: Approval identifier, reference to the certificate number, to be entered without spaces </text>
+                    </langStringTextType>
+                  </description>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>0112/2///61987#ABH783#003</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>0173-1#02-ABI975#002</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
+                  <qualifiers>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <kind>TemplateQualifier</kind>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>ZeroToOne</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                  <value>TEMPLATE-001</value>
+                </property>
+              </value>
+            </submodelElementCollection>
+          </value>
+        </submodelElementList>
+        <submodelElementList>
+          <idShort>MultipleTemplateMarkings</idShort>
+          <semanticId>
+            <type>ExternalReference</type>
+            <keys>
+              <key>
+                <type>GlobalReference</type>
+                <value>https://mm-software.com/template-values/static-marking-many</value>
+              </key>
+            </keys>
+          </semanticId>
+          <qualifiers>
+            <qualifier>
+              <type>SMT/Cardinality</type>
+              <valueType>xs:string</valueType>
+              <value>One</value>
+            </qualifier>
+          </qualifiers>
+          <typeValueListElement>SubmodelElementCollection</typeValueListElement>
+          <value>
+            <submodelElementCollection>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-marking-many/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <value>
+                <property>
+                  <idShort>MarkingName</idShort>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/static-marking/name</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <qualifiers>
+                    <qualifier>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>One</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                  <value>CE</value>
+                </property>
+                <property>
+                  <idShort>DesignationOfCertificateOrApproval</idShort>
+                  <description>
+                    <langStringTextType>
+                      <language>en</language>
+                      <text>Note: Approval identifier, reference to the certificate number, to be entered without spaces </text>
+                    </langStringTextType>
+                  </description>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>0112/2///61987#ABH783#003</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>0173-1#02-ABI975#002</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
+                  <qualifiers>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <kind>TemplateQualifier</kind>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>ZeroToOne</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                  <value>TEMPLATE-001:1</value>
+                </property>
+              </value>
+            </submodelElementCollection>
+            <submodelElementCollection>
+              <semanticId>
+                <type>ExternalReference</type>
+                <keys>
+                  <key>
+                    <type>GlobalReference</type>
+                    <value>https://mm-software.com/template-values/static-marking-many/item</value>
+                  </key>
+                </keys>
+              </semanticId>
+              <qualifiers>
+                <qualifier>
+                  <type>SMT/Cardinality</type>
+                  <valueType>xs:string</valueType>
+                  <value>One</value>
+                </qualifier>
+              </qualifiers>
+              <value>
+                <property>
+                  <idShort>MarkingName</idShort>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>https://mm-software.com/template-values/static-marking/name</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <qualifiers>
+                    <qualifier>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>One</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                  <value>UKCA</value>
+                </property>
+                <property>
+                  <idShort>DesignationOfCertificateOrApproval</idShort>
+                  <description>
+                    <langStringTextType>
+                      <language>en</language>
+                      <text>Note: Approval identifier, reference to the certificate number, to be entered without spaces </text>
+                    </langStringTextType>
+                  </description>
+                  <semanticId>
+                    <type>ExternalReference</type>
+                    <keys>
+                      <key>
+                        <type>GlobalReference</type>
+                        <value>0112/2///61987#ABH783#003</value>
+                      </key>
+                    </keys>
+                  </semanticId>
+                  <supplementalSemanticIds>
+                    <reference>
+                      <type>ExternalReference</type>
+                      <keys>
+                        <key>
+                          <type>GlobalReference</type>
+                          <value>0173-1#02-ABI975#002</value>
+                        </key>
+                      </keys>
+                    </reference>
+                  </supplementalSemanticIds>
+                  <qualifiers>
+                    <qualifier>
+                      <semanticId>
+                        <type>ExternalReference</type>
+                        <keys>
+                          <key>
+                            <type>GlobalReference</type>
+                            <value>https://admin-shell.io/SubmodelTemplates/Cardinality/1/0</value>
+                          </key>
+                        </keys>
+                      </semanticId>
+                      <kind>TemplateQualifier</kind>
+                      <type>SMT/Cardinality</type>
+                      <valueType>xs:string</valueType>
+                      <value>ZeroToOne</value>
+                    </qualifier>
+                  </qualifiers>
+                  <valueType>xs:string</valueType>
+                  <value></value>
+                </property>
+              </value>
+            </submodelElementCollection>
+          </value>
+        </submodelElementList>
       </submodelElements>
     </submodel>
   </submodels>
