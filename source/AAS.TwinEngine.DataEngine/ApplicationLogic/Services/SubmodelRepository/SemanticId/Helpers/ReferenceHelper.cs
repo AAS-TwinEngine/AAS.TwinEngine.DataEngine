@@ -85,6 +85,11 @@ public class ReferenceHelper(
         var keyList = group.ToList();
         for (var i = 0; i < keyList.Count; i++)
         {
+            if (TemplateValueChecker.IsResolved(keyList[i].Value))
+            {
+                continue;
+            }
+
             var indexedSemanticId = semanticIdResolver.BuildReferenceKeySemanticId(semanticId, group.Key, i, keyList.Count);
 
             var leafNode = branchNode.Children

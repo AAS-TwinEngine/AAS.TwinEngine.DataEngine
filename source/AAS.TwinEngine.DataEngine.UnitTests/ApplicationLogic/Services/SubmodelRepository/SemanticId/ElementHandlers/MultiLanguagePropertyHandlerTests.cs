@@ -106,7 +106,25 @@ public class MultiLanguagePropertyHandlerTests
     }
 
     [Fact]
-    public void FillOut_LanguageLeafMissing_KeepsTemplateText()
+    public void Extract_ResolvedGermanValueInTemplate_DoesNotRequestGermanValue()
+    {
+        var mlp = new MultiLanguageProperty(
+            idShort: "ManufacturerName",
+            value: [new LangStringTextType("de", "M&M Software")]
+        );
+        _resolver.ExtractSemanticId(mlp).Returns("http://test/manufacturer-name");
+        _resolver.GetCardinality(mlp).Returns(Cardinality.One);
+        _resolver.MlpPostFixSeparator.Returns("_");
+        _elementHelper.ResolveLanguages(mlp).Returns(["en", "de"]);
+
+        var result = _sut.Extract(mlp, _ => null);
+
+        var branch = IsType<SemanticBranchNode>(result);
+        Equal(["http://test/manufacturer-name_en"], branch.Children.Select(child => child.SemanticId));
+    }
+
+    [Fact]
+    public void FillOut_ConflictingLanguageLeaf_KeepsTemplateTextAndFillsUnresolvedLanguage()
     {
         var mlp = new MultiLanguageProperty(
             idShort: "ProductName",
@@ -114,6 +132,7 @@ public class MultiLanguagePropertyHandlerTests
         );
         SetupMlp(mlp);
         var values = new SemanticBranchNode("http://test/product-name", Cardinality.One);
+        values.AddChild(new SemanticLeafNode("http://test/product-name_en", "Conflicting plugin text", DataType.String, Cardinality.ZeroToOne));
         values.AddChild(new SemanticLeafNode("http://test/product-name_de", "Pumpe", DataType.String, Cardinality.ZeroToOne));
 
         _sut.FillOut(mlp, values, (_, _, _) => { });

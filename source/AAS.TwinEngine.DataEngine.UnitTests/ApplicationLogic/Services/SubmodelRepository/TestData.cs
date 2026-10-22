@@ -77,12 +77,10 @@ internal static class TestData
 
     public static Blob CreateBlob()
     {
-        var data = System.Text.Encoding.UTF8.GetBytes("SGVsbG8sIHdvcmxkIQ==");
-
         return new Blob(
             contentType: "image/png",
             idShort: "Blob",
-            value: data,
+            value: [], // left intentionally empty for FillOut tests
             semanticId: new Reference(
                 ReferenceTypes.ExternalReference,
                 [

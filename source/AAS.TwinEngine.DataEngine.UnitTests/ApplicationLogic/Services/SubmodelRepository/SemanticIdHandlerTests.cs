@@ -638,7 +638,7 @@ public class SemanticIdHandlerTests
     [Fact]
     public void FillOutTemplate_Submodel_ReturnsSubmodelWithValues()
     {
-        var submodel = TestData.CreateSubmodel();
+        var submodel = TestData.WithoutTemplateValues(TestData.CreateSubmodel());
         var values = TestData.SubmodelTreeNode;
 
         var submodelWithNewValues = (Submodel)_sut.FillOutTemplate(submodel, values);
@@ -785,7 +785,7 @@ public class SemanticIdHandlerTests
     public void FillOutTemplate_WhereModelReference_AndEachLeafNodeValueIsPresent_InReferenceElement()
     {
         var value = TestData.CreateReferenceElementWithModelReference();
-        var submodel = CreateSubmodelWithSubmodelElement(value);
+        var submodel = TestData.WithoutTemplateValues(CreateSubmodelWithSubmodelElement(value));
         var semanticTree = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.One);
         semanticTree.AddChild(TestData.CreateReferenceElementTreeNodeWhereEachValueOfLeafIsPresent());
 
@@ -821,8 +821,9 @@ public class SemanticIdHandlerTests
         IsType<ReferenceElement>(result!.SubmodelElements![0]);
         var referenceElement = result.SubmodelElements[0] as ReferenceElement;
         Equal(TestData.CreateFilledReferenceElementWithModelReferenceWithTemplateValueForProperty()!.Value!.Keys!.Count!, referenceElement!.Value!.Keys!.Count);
-        var expectedKeys = TestData.CreateFilledReferenceElementWithModelReference()!.Value!.Keys!;
-        for (var i = 0; i < expectedKeys.Count - 1; i++)
+        var expectedKeys = TestData.CreateReferenceElementWithModelReference().Value!.Keys;
+        expectedKeys[0].Value = "http://example.com/idta/digital-nameplate";
+        for (var i = 0; i < expectedKeys.Count; i++)
         {
             var expectedKey = expectedKeys[i];
             var actualKey = referenceElement.Value.Keys[i];
@@ -852,7 +853,7 @@ public class SemanticIdHandlerTests
     public void FillOutTemplate_RelationShipElementHaveOneModelReference_ProvidesAllLeafNodeValue()
     {
         var value = TestData.CreateRelationshipElementWithOneExternalReferenceAndOneModelReference();
-        var submodel = CreateSubmodelWithSubmodelElement(value);
+        var submodel = TestData.WithoutTemplateValues(CreateSubmodelWithSubmodelElement(value));
         var semanticTree = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.One);
         semanticTree.AddChild(TestData.CreateRelationShipElementHaveOneModelReferenceWhereEachValueOfLeafIsPresent());
 
@@ -1149,6 +1150,94 @@ public class SemanticIdHandlerTests
         var filled = (MultiLanguageProperty)Single(result.SubmodelElements!);
         Equal("Pump", filled.Value!.Single(text => text.Language == "en").Text);
         Equal("Pumpe", filled.Value!.Single(text => text.Language == "de").Text);
+    }
+
+    [Theory]
+    [InlineData("Range")]
+    [InlineData("Language")]
+    [InlineData("File")]
+    [InlineData("Entity")]
+    [InlineData("Reference")]
+    public void FillOutTemplate_SharedSemanticId_PreservesResolvedSibling(string elementType)
+    {
+        const string SemanticId = "http://test/shared";
+        static Reference SemanticReference() => new(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, SemanticId)]);
+        ISubmodelElement CreateElement(string idShort, string value) => elementType switch
+        {
+            "Range" => new AasCore.Aas3_1.Range(DataTypeDefXsd.String, idShort: idShort, semanticId: SemanticReference(), min: value, max: value),
+            "Language" => new MultiLanguageProperty(idShort: idShort, semanticId: SemanticReference(), value: [new LangStringTextType("en", value)]),
+            "File" => new File(contentType: "text/plain", idShort: idShort, semanticId: SemanticReference(), value: value),
+            "Entity" => new Entity(entityType: EntityType.SelfManagedEntity, idShort: idShort, semanticId: SemanticReference(), globalAssetId: value,
+                specificAssetIds: [new SpecificAssetId("Manufacturer", value, semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://test/manufacturer")]))]),
+            "Reference" => new ReferenceElement(idShort: idShort, semanticId: SemanticReference(), value: new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, value)])),
+            _ => throw new ArgumentOutOfRangeException(nameof(elementType))
+        };
+        var resolved = CreateElement("Resolved", "template");
+        var unresolved = CreateElement("Unresolved", "");
+        var expected = Jsonization.Serialize.ToJsonObject(resolved).ToJsonString();
+        var submodel = CreateSubmodelWithSubmodelElement(resolved);
+        submodel.SubmodelElements!.Add(unresolved);
+        var response = new SemanticBranchNode(GetSemanticId(submodel), Cardinality.One);
+        if (elementType == "File")
+        {
+            response.AddChild(new SemanticLeafNode(SemanticId, "plugin", DataType.String, Cardinality.One));
+        }
+        else
+        {
+            var branch = new SemanticBranchNode(SemanticId, Cardinality.One);
+            var suffixes = elementType switch
+            {
+                "Range" => new[] { "_min", "_max" },
+                "Language" => new[] { "_en" },
+                "Entity" => new[] { SemanticIdResolver.EntityGlobalAssetIdPostFix },
+                _ => new[] { "_Submodel" }
+            };
+            foreach (var suffix in suffixes)
+            {
+                branch.AddChild(new SemanticLeafNode(SemanticId + suffix, "plugin", DataType.String, Cardinality.One));
+            }
+            if (elementType == "Entity")
+            {
+                branch.AddChild(new SemanticLeafNode("http://test/manufacturer", "plugin", DataType.String, Cardinality.One));
+            }
+            response.AddChild(branch);
+        }
+
+        _sut.FillOutTemplate(submodel, response);
+
+        Equal(expected, Jsonization.Serialize.ToJsonObject(resolved).ToJsonString());
+        var actualValue = unresolved switch
+        {
+            AasCore.Aas3_1.Range range => range.Min,
+            MultiLanguageProperty language => language.Value![0].Text,
+            File file => file.Value,
+            Entity entity => entity.GlobalAssetId,
+            ReferenceElement reference => reference.Value!.Keys[0].Value,
+            _ => null
+        };
+        Equal("plugin", actualValue);
+        if (unresolved is Entity filledEntity)
+        {
+            Equal("plugin", filledEntity.SpecificAssetIds![0].Value);
+        }
+    }
+
+    [Fact]
+    public void FillOutTemplate_PartiallyResolvedRange_PreservesConflictingTemplateMinimum()
+    {
+        var range = new AasCore.Aas3_1.Range(DataTypeDefXsd.String, idShort: "Range", min: "template", max: "",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://test/range")]));
+        var submodel = CreateSubmodelWithSubmodelElement(range);
+        var response = new SemanticBranchNode(GetSemanticId(submodel), Cardinality.One);
+        var branch = new SemanticBranchNode("http://test/range", Cardinality.One);
+        branch.AddChild(new SemanticLeafNode("http://test/range_min", "conflict", DataType.String, Cardinality.One));
+        branch.AddChild(new SemanticLeafNode("http://test/range_max", "plugin", DataType.String, Cardinality.One));
+        response.AddChild(branch);
+
+        _sut.FillOutTemplate(submodel, response);
+
+        Equal("template", range.Min);
+        Equal("plugin", range.Max);
     }
 
     private static SubmodelElementCollection CreateContact(string idShort, string? name, string? department, string company)

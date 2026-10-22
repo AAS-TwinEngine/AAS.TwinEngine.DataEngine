@@ -133,6 +133,10 @@
               <language>de</language>
               <text>M&amp;M Software</text>
             </langStringTextType>
+            <langStringTextType>
+              <language>en</language>
+              <text>M&amp;M Software</text>
+            </langStringTextType>
           </value>
         </multiLanguageProperty>
         <multiLanguageProperty>

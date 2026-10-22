@@ -184,13 +184,13 @@ public class ReferenceHelperTests
     {
         var reference = new Reference(
             ReferenceTypes.ModelReference,
-            [new Key(KeyTypes.Submodel, "original")]
+            [new Key(KeyTypes.Submodel, "")]
         );
         var branchNode = new SemanticBranchNode("http://test/ref", Cardinality.One);
 
         _sut.PopulateReferenceKeys(reference, branchNode, "http://test/ref");
 
-        Equal("original", reference.Keys[0].Value);
+        Equal("", reference.Keys[0].Value);
         _logger.Received(1).Log(
             LogLevel.Warning,
             Arg.Any<EventId>(),

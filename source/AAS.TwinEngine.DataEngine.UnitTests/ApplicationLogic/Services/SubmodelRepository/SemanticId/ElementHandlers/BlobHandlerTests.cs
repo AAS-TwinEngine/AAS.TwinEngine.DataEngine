@@ -70,7 +70,7 @@ public class BlobHandlerTests
     }
 
     [Fact]
-    public void FillOut_WithLeafNode_SetsBase64Value()
+    public void FillOut_WithPopulatedTemplateValue_PreservesBytes()
     {
         var blob = new Blob(contentType: "image/png", idShort: "MyBlob", value: [9]);
         var base64 = Convert.ToBase64String(new byte[] { 1, 2, 3 });
@@ -79,11 +79,11 @@ public class BlobHandlerTests
         _sut.FillOut(blob, values, (_, _, _) => { });
 
         NotNull(blob.Value);
-        Equal([1, 2, 3], blob.Value);
+        Equal([9], blob.Value);
     }
 
     [Fact]
-    public void FillOut_WithLeafNodeAndNoTemplateValue_LeavesValueUnset()
+    public void FillOut_WithLeafNodeAndNoTemplateValue_SetsBase64Value()
     {
         var blob = new Blob(contentType: "image/png", idShort: "MyBlob");
         var base64 = Convert.ToBase64String(new byte[] { 1, 2, 3 });
@@ -91,7 +91,8 @@ public class BlobHandlerTests
 
         _sut.FillOut(blob, values, (_, _, _) => { });
 
-        Null(blob.Value);
+        NotNull(blob.Value);
+        Equal([1, 2, 3], blob.Value);
     }
 
     [Fact]

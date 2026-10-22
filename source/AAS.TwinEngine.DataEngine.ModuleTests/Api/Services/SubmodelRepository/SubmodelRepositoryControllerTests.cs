@@ -318,7 +318,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         // Arrange
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
         const string IdShortPath = "Thumbnail";
-        const string FileUrl = "https://localhost/Thumbnail";
+        const string FileUrl = "https://example.com/logo.png";
         var fileBytes = Encoding.UTF8.GetBytes("fake-image-bytes");
 
         using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
@@ -346,7 +346,7 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         Assert.Equal("image/png", response.Content.Headers.ContentType?.MediaType);
         var body = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal(fileBytes, body);
-        Assert.Contains("Thumbnail", response.Content.Headers.ContentDisposition?.ToString(), StringComparison.Ordinal);
+        Assert.Contains("logo.png", response.Content.Headers.ContentDisposition?.ToString(), StringComparison.Ordinal);
         await _fileContentProvider.Received(1).GetFileContentAsync(FileUrl, Arg.Any<CancellationToken>());
     }
 

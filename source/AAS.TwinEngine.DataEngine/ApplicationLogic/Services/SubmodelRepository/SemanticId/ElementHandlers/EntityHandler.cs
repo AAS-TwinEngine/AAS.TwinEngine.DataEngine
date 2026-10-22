@@ -20,40 +20,52 @@ public class EntityHandler(
 
         if (entity.EntityType == EntityType.SelfManagedEntity)
         {
-            if (!TemplateValueChecker.IsResolved(entity.GlobalAssetId))
-            {
-                node.AddChild(new SemanticLeafNode(semanticId + SemanticIdResolver.EntityGlobalAssetIdPostFix, string.Empty, DataType.String, Cardinality.One));
-            }
-
-            if (entity.SpecificAssetIds != null)
-            {
-                foreach (var specificAssetId in entity.SpecificAssetIds)
-                {
-                    IHasSemantics specificAsset = specificAssetId;
-                    if (specificAsset.SemanticId == null || TemplateValueChecker.IsResolved(specificAssetId.Value))
-                    {
-                        continue;
-                    }
-
-                    var specificAssetIdNode = new SemanticLeafNode(semanticIdResolver.GetSemanticId(specificAssetId), string.Empty, DataType.String, Cardinality.One);
-                    node.AddChild(specificAssetIdNode);
-                }
-            }
+            AddSelfManagedEntityValues(entity, semanticId, node);
         }
 
+        AddStatementValues(entity, node, extractChild);
+
+        return node.Children.Count == 0 && TemplateValueChecker.HasResolvedValue(entity) ? null : node;
+    }
+
+    private void AddSelfManagedEntityValues(Entity entity, string semanticId, SemanticBranchNode node)
+    {
+        if (!TemplateValueChecker.IsResolved(entity.GlobalAssetId))
+        {
+            node.AddChild(new SemanticLeafNode(semanticId + SemanticIdResolver.EntityGlobalAssetIdPostFix, string.Empty, DataType.String, Cardinality.One));
+        }
+
+        if (entity.SpecificAssetIds == null)
+        {
+            return;
+        }
+
+        foreach (var specificAssetId in entity.SpecificAssetIds)
+        {
+            IHasSemantics specificAsset = specificAssetId;
+            if (specificAsset.SemanticId == null || TemplateValueChecker.IsResolved(specificAssetId.Value))
+            {
+                continue;
+            }
+
+            var specificAssetIdNode = new SemanticLeafNode(semanticIdResolver.GetSemanticId(specificAssetId), string.Empty, DataType.String, Cardinality.One);
+            node.AddChild(specificAssetIdNode);
+        }
+    }
+
+    private void AddStatementValues(Entity entity, SemanticBranchNode node, Func<ISubmodelElement, SemanticTreeNode?> extractChild)
+    {
         if (entity.Statements?.Count > 0)
         {
             foreach (var child in entity.Statements.Select(extractChild).OfType<SemanticTreeNode>())
             {
                 node.AddChild(child);
             }
-        }
-        else
-        {
-            logger.LogWarning("No elements defined in Entity {EntityIdShort}", entity.IdShort);
+
+            return;
         }
 
-        return node.Children.Count == 0 && TemplateValueChecker.HasResolvedValue(entity) ? null : node;
+        logger.LogWarning("No elements defined in Entity {EntityIdShort}", entity.IdShort);
     }
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)
@@ -88,7 +100,7 @@ public class EntityHandler(
                                        .OfType<SemanticLeafNode>()
                                        .FirstOrDefault(c => c.SemanticId == globalAssetSemanticId);
 
-        if (globalAssetNode != null)
+        if (globalAssetNode != null && !TemplateValueChecker.IsResolved(entity.GlobalAssetId))
         {
             entity.GlobalAssetId = (string?)globalAssetNode.Value;
         }
@@ -97,6 +109,11 @@ public class EntityHandler(
         {
             foreach (var specificAssetId in entity.SpecificAssetIds)
             {
+                if (TemplateValueChecker.IsResolved(specificAssetId.Value))
+                {
+                    continue;
+                }
+
                 var specSemanticId = semanticIdResolver.GetSemanticId(specificAssetId);
 
                 var specNode = valueNode.Children

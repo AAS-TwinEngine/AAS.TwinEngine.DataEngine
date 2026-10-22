@@ -25,7 +25,7 @@ public class FileHandler(ISemanticIdResolver semanticIdResolver) : ISubmodelElem
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)
     {
-        if (values is SemanticLeafNode leafValueNode)
+        if (values is SemanticLeafNode leafValueNode && !TemplateValueChecker.IsResolved(((File)element).Value))
         {
             ((File)element).Value = (string?)leafValueNode.Value;
         }

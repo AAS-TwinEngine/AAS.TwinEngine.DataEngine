@@ -78,7 +78,7 @@ public class MultiLanguagePropertyHandler(
                                     .OfType<SemanticLeafNode>()
                                     .FirstOrDefault(child => child.SemanticId.Equals(languageSemanticId, StringComparison.Ordinal));
 
-            if (leafNode != null)
+            if (leafNode != null && !TemplateValueChecker.IsResolved(languageValue.Text))
             {
                 languageValue.Text = (string?)leafNode.Value;
             }
