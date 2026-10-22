@@ -38,7 +38,7 @@ internal static class TestData
         return new File(
           contentType: "image/png",
           idShort: "Thumbnail",
-          value: "https://localhost/Thumbnail",
+          value: "",
           semanticId: new Reference(
             ReferenceTypes.ExternalReference,
             [

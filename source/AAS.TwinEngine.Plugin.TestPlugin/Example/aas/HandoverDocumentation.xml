@@ -727,10 +727,6 @@
                             </qualifier>
                           </qualifiers>
                           <value>
-                            <langStringTextType>
-                              <language>fr</language>
-                              <text>TestFR</text>
-                            </langStringTextType>
                           </value>
                         </multiLanguageProperty>
                         <property>

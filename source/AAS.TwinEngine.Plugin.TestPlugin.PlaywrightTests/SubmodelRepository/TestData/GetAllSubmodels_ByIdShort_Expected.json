@@ -4961,12 +4961,6 @@
                               "value": "Operation@en"
                             }
                           ],
-                          "value": [
-                            {
-                              "language": "fr",
-                              "text": "TestFR"
-                            }
-                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -7208,12 +7202,6 @@
                               "value": "Operation@en"
                             }
                           ],
-                          "value": [
-                            {
-                              "language": "fr",
-                              "text": "TestFR"
-                            }
-                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -7474,12 +7462,6 @@
                               "value": "Operation@en"
                             }
                           ],
-                          "value": [
-                            {
-                              "language": "fr",
-                              "text": "TestFR"
-                            }
-                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -7738,12 +7720,6 @@
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
-                            }
-                          ],
-                          "value": [
-                            {
-                              "language": "fr",
-                              "text": "TestFR"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"

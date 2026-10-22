@@ -1,7 +1,5 @@
 {
-  "paging_metadata": {
-    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMi9IYW5kb3ZlckRvY3VtZW50YXRpb258aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vaWRzL2Fhcy8wMDAtMDAy"
-  },
+  "paging_metadata": { "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMi9IYW5kb3ZlckRvY3VtZW50YXRpb258aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vaWRzL2Fhcy8wMDAtMDAy" },
   "result": [
     {
       "idShort": "ContactInformations",
@@ -1918,12 +1916,6 @@
                               "value": "Operation@en"
                             }
                           ],
-                          "value": [
-                            {
-                              "language": "fr",
-                              "text": "TestFR"
-                            }
-                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -3639,12 +3631,6 @@
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
-                            }
-                          ],
-                          "value": [
-                            {
-                              "language": "fr",
-                              "text": "TestFR"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"
