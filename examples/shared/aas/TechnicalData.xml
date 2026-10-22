@@ -170,6 +170,7 @@
                 </qualifier>
               </qualifiers>
               <valueType>xs:string</valueType>
+              <value>M&amp;M Software</value>
             </property>
             <file>
               <idShort>CompanyLogo</idShort>

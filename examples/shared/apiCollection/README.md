@@ -140,6 +140,8 @@ Set the collection auth mode back to **No Auth**, or set a single request's auth
   - `CarbonFootprint`
   - `TechnicalData`
 
+The [Nameplate](../aas/Nameplate.xml) and [TechnicalData](../aas/TechnicalData.xml) templates set every `ManufacturerName` value to `M&M Software`. Nameplate uses its existing German (`de`) language entry. DataEngine uses these template values without requesting manufacturer names from the plugin; the other included templates have no `ManufacturerName` element.
+
 - Default shell template used by all 5 shells:
 
 ```json

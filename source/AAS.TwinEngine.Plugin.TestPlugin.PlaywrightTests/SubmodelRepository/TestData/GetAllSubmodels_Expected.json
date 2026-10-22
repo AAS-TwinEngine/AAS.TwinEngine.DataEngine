@@ -1,7 +1,5 @@
 {
-  "paging_metadata": {
-    "cursor": null
-  },
+  "paging_metadata": { "cursor": null },
   "result": [
     {
       "idShort": "CustomSubmodel",
@@ -89,7 +87,7 @@
             }
           ],
           "valueType": "xs:double",
-          "min": "24",
+          "min": "0.5",
           "max": "962",
           "modelType": "Range"
         },
@@ -1118,7 +1116,7 @@
                     }
                   ],
                   "valueType": "xs:date",
-                  "value": "2022-01-01",
+                  "value": "2032-01-01",
                   "modelType": "Property"
                 },
                 {
@@ -1205,6 +1203,213 @@
                   ],
                   "valueType": "xs:string",
                   "value": "0044",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "MultipleTemplateMarkings",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-many"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-many/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "CE",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "TEMPLATE-001:1",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-many/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "UKCA",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "",
                   "modelType": "Property"
                 }
               ],
@@ -1309,7 +1514,7 @@
               ],
               "valueType": "xs:date",
               "min": "2010-02-02",
-              "max": "2030-02-06",
+              "max": "2030-12-31",
               "modelType": "Range"
             },
             {
@@ -1435,10 +1640,6 @@
                 {
                   "language": "de",
                   "text": "Name der Produktklasse im verwendeten Klassifizierungssystem"
-                },
-                {
-                  "language": "",
-                  "text": ""
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -1537,7 +1738,7 @@
                   },
                   {
                     "type": "SubmodelElementList",
-                    "value": "Documents"
+                    "value": "TechnicalPropertyAreas"
                   },
                   {
                     "type": "SubmodelElementCollection",
@@ -1549,6 +1750,175 @@
             }
           ],
           "modelType": "SubmodelElementCollection"
+        },
+        {
+          "idShort": "Single-TemplateLanguage",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-one"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "semanticIdListElement": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-one/item"
+              }
+            ]
+          },
+          "typeValueListElement": "Property",
+          "valueTypeListElement": "xs:string",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-one/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "en",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "SingleTemplateMarking",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-one"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-one/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "CE",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "TEMPLATE-001",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            }
+          ],
+          "modelType": "SubmodelElementList"
         },
         {
           "idShort": "Target_model",
@@ -1587,6 +1957,443 @@
             ]
           },
           "modelType": "ReferenceElement"
+        },
+        {
+          "idShort": "TemplateLanguages",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "semanticIdListElement": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "typeValueListElement": "Property",
+          "valueTypeListElement": "xs:string",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "en",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "de",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "fr",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "es",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "it",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "TemplateValueProperties",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/properties"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "NullPlaceholder",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/null"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "000-001 null resolved",
+              "modelType": "Property"
+            },
+            {
+              "idShort": "ResolvedRange",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/range"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:double",
+              "min": "0",
+              "max": "100",
+              "modelType": "Range"
+            },
+            {
+              "idShort": "ResolvedFile",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/file"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg",
+              "contentType": "image/jpeg",
+              "modelType": "File"
+            },
+            {
+              "idShort": "UnresolvedBlob",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/blob"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "contentType": "text/plain",
+              "modelType": "Blob"
+            },
+            {
+              "idShort": "ResolvedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/resolved-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "entityType": "SelfManagedEntity",
+              "globalAssetId": "https://mm-software.com/ids/assets/template-machine",
+              "specificAssetIds": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/manufacturer-id"
+                      }
+                    ]
+                  },
+                  "name": "Manufacturer",
+                  "value": "M&M Software"
+                }
+              ],
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "MixedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/mixed-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "statements": [
+                {
+                  "idShort": "Statement",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/entity-statement"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "000-001 plugin statement",
+                  "modelType": "Property"
+                }
+              ],
+              "entityType": "SelfManagedEntity",
+              "globalAssetId": "https://mm-software.com/ids/assets/template-component",
+              "specificAssetIds": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/manufacturer-id"
+                      }
+                    ]
+                  },
+                  "name": "Manufacturer",
+                  "value": "M&M Software"
+                },
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/serial-id"
+                      }
+                    ]
+                  },
+                  "name": "SerialNumber",
+                  "value": "000-001-SERIAL"
+                },
+                {
+                  "name": "UnmappedIdentifier",
+                  "value": "Kept from template"
+                }
+              ],
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "CoManagedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/co-managed-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "statements": [
+                {
+                  "idShort": "Statement",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-statement"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Template-owned statement",
+                  "modelType": "Property"
+                }
+              ],
+              "entityType": "CoManagedEntity",
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "ExternalReference",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/external-reference"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://www.mm-software.com/"
+                  }
+                ]
+              },
+              "modelType": "ReferenceElement"
+            }
+          ],
+          "modelType": "SubmodelElementCollection"
         }
       ],
       "modelType": "Submodel"
@@ -1657,7 +2464,7 @@
                 }
               ],
               "valueType": "xs:string",
-              "value": "Manager001",
+              "value": "0173-1#07-AAS931#001",
               "modelType": "Property"
             },
             {
@@ -1682,7 +2489,11 @@
               "value": [
                 {
                   "language": "en",
-                  "text": "Acme Corporation"
+                  "text": "M&M software"
+                },
+                {
+                  "language": "de",
+                  "text": "M&M Software aus dem Plugin"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -1713,6 +2524,230 @@
                 }
               ],
               "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "Phone0",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "234-567-8901"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Office",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            },
+            {
+              "idShort": "Phone1",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "345-678-9012"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Mobile",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Montags, 10-16 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
             },
             {
               "idShort": "Email",
@@ -1783,7 +2818,7 @@
                     }
                   ],
                   "valueType": "xs:string",
-                  "value": "Work",
+                  "value": "0173-1#07-AAS754#001",
                   "modelType": "Property"
                 }
               ],
@@ -2021,6 +3056,122 @@
               "valueType": "xs:string",
               "value": "https://www.mm-software.com/mobile-arbeitsmaschinen/",
               "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementCollection"
+        },
+        {
+          "idShort": "ContactInformation1",
+          "description": [
+            {
+              "language": "en",
+              "text": "The SMC “ContactInformation” contains information on how to contact the manufacturer or an authorised service provider, e.g. when a maintenance service is required"
+            }
+          ],
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "kind": "ConceptQualifier",
+              "type": "Multiplicity",
+              "valueType": "xs:string",
+              "value": "OneToMany"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "RoleOfContactPerson",
+              "description": [
+                {
+                  "language": "en",
+                  "text": "enumeration: 0173-1#07-AAS927#001 (administrativ contact), 0173-1#07-AAS928#001 (commercial contact), 0173-1#07-AAS929#001 (other contact), 0173-1#07-AAS930#001 (hazardous goods contact), 0173-1#07-AAS931#001 (technical contact). Note: the above mentioned ECLASS enumeration should be declared as “open” for further addition. ECLASS enumeration IRDI is preferable. If no IRDI available, custom input as String may also be accepted."
+                }
+              ],
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO204#003"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "0173-1#07-AAS931#001",
+              "modelType": "Property"
+            },
+            {
+              "idShort": "Company",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAW001#001"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "en",
+                  "text": "M&M software"
+                },
+                {
+                  "language": "de",
+                  "text": "M&M Software aus dem Plugin"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "Department",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO127#003"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "language": "de",
+                  "text": "Marketing"
+                }
+              ],
+              "modelType": "MultiLanguageProperty"
             },
             {
               "idShort": "Phone0",
@@ -2245,118 +3396,6 @@
                 }
               ],
               "modelType": "SubmodelElementCollection"
-            }
-          ],
-          "modelType": "SubmodelElementCollection"
-        },
-        {
-          "idShort": "ContactInformation1",
-          "description": [
-            {
-              "language": "en",
-              "text": "The SMC “ContactInformation” contains information on how to contact the manufacturer or an authorised service provider, e.g. when a maintenance service is required"
-            }
-          ],
-          "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation"
-              }
-            ]
-          },
-          "qualifiers": [
-            {
-              "kind": "ConceptQualifier",
-              "type": "Multiplicity",
-              "valueType": "xs:string",
-              "value": "OneToMany"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "RoleOfContactPerson",
-              "description": [
-                {
-                  "language": "en",
-                  "text": "enumeration: 0173-1#07-AAS927#001 (administrativ contact), 0173-1#07-AAS928#001 (commercial contact), 0173-1#07-AAS929#001 (other contact), 0173-1#07-AAS930#001 (hazardous goods contact), 0173-1#07-AAS931#001 (technical contact). Note: the above mentioned ECLASS enumeration should be declared as “open” for further addition. ECLASS enumeration IRDI is preferable. If no IRDI available, custom input as String may also be accepted."
-                }
-              ],
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO204#003"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "valueType": "xs:string",
-              "value": "Marketing Manager",
-              "modelType": "Property"
-            },
-            {
-              "idShort": "Company",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAW001#001"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "en",
-                  "text": "Acme Corporation"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
-            },
-            {
-              "idShort": "Department",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "0173-1#02-AAO127#003"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "language": "de",
-                  "text": "Marketing"
-                }
-              ],
-              "modelType": "MultiLanguageProperty"
             },
             {
               "idShort": "Email",
@@ -2427,7 +3466,7 @@
                     }
                   ],
                   "valueType": "xs:string",
-                  "value": "Work",
+                  "value": "0173-1#07-AAS754#001",
                   "modelType": "Property"
                 }
               ],
@@ -2665,230 +3704,6 @@
               "valueType": "xs:string",
               "value": "https://www.mm-software.com/more-the-newsroom/",
               "modelType": "Property"
-            },
-            {
-              "idShort": "Phone0",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "234-567-8901"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Office",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
-            },
-            {
-              "idShort": "Phone1",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "345-678-9012"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Mobile",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Montags, 10-16 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
             }
           ],
           "modelType": "SubmodelElementCollection"
@@ -3872,6 +4687,12 @@
                               "value": "Operation@en"
                             }
                           ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
+                            }
+                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -4130,6 +4951,12 @@
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
+                            }
+                          ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"
@@ -5378,7 +6205,7 @@
                                 }
                               ],
                               "valueType": "xs:string",
-                              "value": "de",
+                              "value": "en",
                               "valueId": {
                                 "type": "ExternalReference",
                                 "keys": [
@@ -6805,6 +7632,12 @@
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
+                            }
+                          ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"
@@ -8524,6 +9357,12 @@
                               "value": "Operation@en"
                             }
                           ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
+                            }
+                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -8812,7 +9651,7 @@
                                 }
                               ],
                               "valueType": "xs:string",
-                              "value": "de",
+                              "value": "en",
                               "valueId": {
                                 "type": "ExternalReference",
                                 "keys": [
@@ -9744,7 +10583,7 @@
             }
           ],
           "valueType": "xs:double",
-          "min": "24",
+          "min": "0.5",
           "max": "54",
           "modelType": "Range"
         },
@@ -10773,7 +11612,7 @@
                     }
                   ],
                   "valueType": "xs:date",
-                  "value": "2022-01-01",
+                  "value": "2032-01-01",
                   "modelType": "Property"
                 },
                 {
@@ -10860,6 +11699,213 @@
                   ],
                   "valueType": "xs:string",
                   "value": "0047",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "MultipleTemplateMarkings",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-many"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-many/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "CE",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "TEMPLATE-001:1",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-many/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "UKCA",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "",
                   "modelType": "Property"
                 }
               ],
@@ -10964,7 +12010,7 @@
               ],
               "valueType": "xs:date",
               "min": "2040-02-02",
-              "max": "2050-02-06",
+              "max": "2030-12-31",
               "modelType": "Range"
             },
             {
@@ -11090,10 +12136,6 @@
                 {
                   "language": "de",
                   "text": "Name der Produktklasse im verwendeten Klassifizierungssystem"
-                },
-                {
-                  "language": "",
-                  "text": ""
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -11192,7 +12234,7 @@
                   },
                   {
                     "type": "SubmodelElementList",
-                    "value": "Documents"
+                    "value": "TechnicalPropertyAreas"
                   },
                   {
                     "type": "SubmodelElementCollection",
@@ -11204,6 +12246,175 @@
             }
           ],
           "modelType": "SubmodelElementCollection"
+        },
+        {
+          "idShort": "Single-TemplateLanguage",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-one"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "semanticIdListElement": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-one/item"
+              }
+            ]
+          },
+          "typeValueListElement": "Property",
+          "valueTypeListElement": "xs:string",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-one/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "en",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "SingleTemplateMarking",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-one"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-one/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "CE",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "TEMPLATE-001",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            }
+          ],
+          "modelType": "SubmodelElementList"
         },
         {
           "idShort": "Target_model",
@@ -11242,6 +12453,443 @@
             ]
           },
           "modelType": "ReferenceElement"
+        },
+        {
+          "idShort": "TemplateLanguages",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "semanticIdListElement": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "typeValueListElement": "Property",
+          "valueTypeListElement": "xs:string",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "en",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "de",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "fr",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "es",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "it",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "TemplateValueProperties",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/properties"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "NullPlaceholder",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/null"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "000-002 null resolved",
+              "modelType": "Property"
+            },
+            {
+              "idShort": "ResolvedRange",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/range"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:double",
+              "min": "0",
+              "max": "100",
+              "modelType": "Range"
+            },
+            {
+              "idShort": "ResolvedFile",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/file"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg",
+              "contentType": "image/jpeg",
+              "modelType": "File"
+            },
+            {
+              "idShort": "UnresolvedBlob",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/blob"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "contentType": "text/plain",
+              "modelType": "Blob"
+            },
+            {
+              "idShort": "ResolvedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/resolved-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "entityType": "SelfManagedEntity",
+              "globalAssetId": "https://mm-software.com/ids/assets/template-machine",
+              "specificAssetIds": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/manufacturer-id"
+                      }
+                    ]
+                  },
+                  "name": "Manufacturer",
+                  "value": "M&M Software"
+                }
+              ],
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "MixedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/mixed-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "statements": [
+                {
+                  "idShort": "Statement",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/entity-statement"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "000-002 plugin statement",
+                  "modelType": "Property"
+                }
+              ],
+              "entityType": "SelfManagedEntity",
+              "globalAssetId": "https://mm-software.com/ids/assets/template-component",
+              "specificAssetIds": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/manufacturer-id"
+                      }
+                    ]
+                  },
+                  "name": "Manufacturer",
+                  "value": "M&M Software"
+                },
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/serial-id"
+                      }
+                    ]
+                  },
+                  "name": "SerialNumber",
+                  "value": "000-002-SERIAL"
+                },
+                {
+                  "name": "UnmappedIdentifier",
+                  "value": "Kept from template"
+                }
+              ],
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "CoManagedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/co-managed-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "statements": [
+                {
+                  "idShort": "Statement",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-statement"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Template-owned statement",
+                  "modelType": "Property"
+                }
+              ],
+              "entityType": "CoManagedEntity",
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "ExternalReference",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/external-reference"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://www.mm-software.com/"
+                  }
+                ]
+              },
+              "modelType": "ReferenceElement"
+            }
+          ],
+          "modelType": "SubmodelElementCollection"
         }
       ],
       "modelType": "Submodel"
@@ -11312,7 +12960,7 @@
                 }
               ],
               "valueType": "xs:string",
-              "value": "Manager001",
+              "value": "0173-1#07-AAS931#001",
               "modelType": "Property"
             },
             {
@@ -11337,7 +12985,11 @@
               "value": [
                 {
                   "language": "en",
-                  "text": "Acme Corporation"
+                  "text": "M&M software"
+                },
+                {
+                  "language": "de",
+                  "text": "M&M Software aus dem Plugin"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -11368,6 +13020,230 @@
                 }
               ],
               "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "Phone0",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "234-567-8901"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Office",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            },
+            {
+              "idShort": "Phone1",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "345-678-9012"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Mobile",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Montags, 10-16 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
             },
             {
               "idShort": "Email",
@@ -11438,7 +13314,7 @@
                     }
                   ],
                   "valueType": "xs:string",
-                  "value": "Work",
+                  "value": "0173-1#07-AAS754#001",
                   "modelType": "Property"
                 }
               ],
@@ -11676,230 +13552,6 @@
               "valueType": "xs:string",
               "value": "https://www.mm-software.com/more-the-newsroom/",
               "modelType": "Property"
-            },
-            {
-              "idShort": "Phone0",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "234-567-8901"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Office",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
-            },
-            {
-              "idShort": "Phone1",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "345-678-9012"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Mobile",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Montags, 10-16 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
             }
           ],
           "modelType": "SubmodelElementCollection"
@@ -11956,7 +13608,7 @@
                 }
               ],
               "valueType": "xs:string",
-              "value": "Assistant Manager",
+              "value": "0173-1#07-AAS931#001",
               "modelType": "Property"
             },
             {
@@ -11981,7 +13633,11 @@
               "value": [
                 {
                   "language": "en",
-                  "text": "Beta Corporation"
+                  "text": "M&M software"
+                },
+                {
+                  "language": "de",
+                  "text": "M&M Software aus dem Plugin"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -12194,7 +13850,7 @@
                     }
                   ],
                   "valueType": "xs:string",
-                  "value": "Work",
+                  "value": "0173-1#07-AAS754#001",
                   "modelType": "Property"
                 }
               ],
@@ -13153,6 +14809,12 @@
                               "value": "Operation@en"
                             }
                           ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
+                            }
+                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -13441,7 +15103,7 @@
                                 }
                               ],
                               "valueType": "xs:string",
-                              "value": "de",
+                              "value": "en",
                               "valueId": {
                                 "type": "ExternalReference",
                                 "keys": [
@@ -14870,6 +16532,12 @@
                               "value": "Operation@en"
                             }
                           ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
+                            }
+                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -16090,7 +17758,7 @@
             }
           ],
           "valueType": "xs:double",
-          "min": "4",
+          "min": "0.5",
           "max": "62",
           "modelType": "Range"
         },
@@ -17119,7 +18787,7 @@
                     }
                   ],
                   "valueType": "xs:date",
-                  "value": "2022-01-01",
+                  "value": "2032-01-01",
                   "modelType": "Property"
                 },
                 {
@@ -17206,6 +18874,213 @@
                   ],
                   "valueType": "xs:string",
                   "value": "0044",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "MultipleTemplateMarkings",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-many"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-many/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "CE",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "TEMPLATE-001:1",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-many/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "UKCA",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "",
                   "modelType": "Property"
                 }
               ],
@@ -17310,7 +19185,7 @@
               ],
               "valueType": "xs:date",
               "min": "2012-02-02",
-              "max": "2032-02-06",
+              "max": "2030-12-31",
               "modelType": "Range"
             },
             {
@@ -17436,10 +19311,6 @@
                 {
                   "language": "de",
                   "text": "Name der Produktklasse im verwendeten Klassifizierungssystem"
-                },
-                {
-                  "language": "",
-                  "text": ""
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -17538,7 +19409,7 @@
                   },
                   {
                     "type": "SubmodelElementList",
-                    "value": "Markings"
+                    "value": "TechnicalPropertyAreas"
                   },
                   {
                     "type": "SubmodelElementCollection",
@@ -17550,6 +19421,175 @@
             }
           ],
           "modelType": "SubmodelElementCollection"
+        },
+        {
+          "idShort": "Single-TemplateLanguage",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-one"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "semanticIdListElement": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-one/item"
+              }
+            ]
+          },
+          "typeValueListElement": "Property",
+          "valueTypeListElement": "xs:string",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-one/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "en",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "SingleTemplateMarking",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-one"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking-one/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "MarkingName",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-marking/name"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "CE",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "DesignationOfCertificateOrApproval",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0112/2///61987#ABH783#003"
+                      }
+                    ]
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "type": "ExternalReference",
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "0173-1#02-ABI975#002"
+                        }
+                      ]
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "semanticId": {
+                        "type": "ExternalReference",
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                          }
+                        ]
+                      },
+                      "kind": "TemplateQualifier",
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "TEMPLATE-001",
+                  "modelType": "Property"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            }
+          ],
+          "modelType": "SubmodelElementList"
         },
         {
           "idShort": "Target_model",
@@ -17588,6 +19628,443 @@
             ]
           },
           "modelType": "ReferenceElement"
+        },
+        {
+          "idShort": "TemplateLanguages",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "semanticIdListElement": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "typeValueListElement": "Property",
+          "valueTypeListElement": "xs:string",
+          "value": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "en",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "de",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "fr",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "es",
+              "modelType": "Property"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-five/item"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "it",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementList"
+        },
+        {
+          "idShort": "TemplateValueProperties",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/properties"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "NullPlaceholder",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/null"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "000-003 null resolved",
+              "modelType": "Property"
+            },
+            {
+              "idShort": "ResolvedRange",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/range"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:double",
+              "min": "0",
+              "max": "100",
+              "modelType": "Range"
+            },
+            {
+              "idShort": "ResolvedFile",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/file"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg",
+              "contentType": "image/jpeg",
+              "modelType": "File"
+            },
+            {
+              "idShort": "UnresolvedBlob",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/blob"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "contentType": "text/plain",
+              "modelType": "Blob"
+            },
+            {
+              "idShort": "ResolvedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/resolved-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "entityType": "SelfManagedEntity",
+              "globalAssetId": "https://mm-software.com/ids/assets/template-machine",
+              "specificAssetIds": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/manufacturer-id"
+                      }
+                    ]
+                  },
+                  "name": "Manufacturer",
+                  "value": "M&M Software"
+                }
+              ],
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "MixedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/mixed-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "statements": [
+                {
+                  "idShort": "Statement",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/entity-statement"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "000-003 plugin statement",
+                  "modelType": "Property"
+                }
+              ],
+              "entityType": "SelfManagedEntity",
+              "globalAssetId": "https://mm-software.com/ids/assets/template-component",
+              "specificAssetIds": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/manufacturer-id"
+                      }
+                    ]
+                  },
+                  "name": "Manufacturer",
+                  "value": "M&M Software"
+                },
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/serial-id"
+                      }
+                    ]
+                  },
+                  "name": "SerialNumber",
+                  "value": "000-003-SERIAL"
+                },
+                {
+                  "name": "UnmappedIdentifier",
+                  "value": "Kept from template"
+                }
+              ],
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "CoManagedEntity",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/co-managed-entity"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "statements": [
+                {
+                  "idShort": "Statement",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://mm-software.com/template-values/static-statement"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "type": "SMT/Cardinality",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Template-owned statement",
+                  "modelType": "Property"
+                }
+              ],
+              "entityType": "CoManagedEntity",
+              "modelType": "Entity"
+            },
+            {
+              "idShort": "ExternalReference",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/external-reference"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "value": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://www.mm-software.com/"
+                  }
+                ]
+              },
+              "modelType": "ReferenceElement"
+            }
+          ],
+          "modelType": "SubmodelElementCollection"
         }
       ],
       "modelType": "Submodel"
@@ -17658,7 +20135,7 @@
                 }
               ],
               "valueType": "xs:string",
-              "value": "Product Manager0003",
+              "value": "0173-1#07-AAS931#001",
               "modelType": "Property"
             },
             {
@@ -17683,7 +20160,11 @@
               "value": [
                 {
                   "language": "en",
-                  "text": "Acme Corporation"
+                  "text": "M&M software"
+                },
+                {
+                  "language": "de",
+                  "text": "M&M Software aus dem Plugin"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -17714,6 +20195,230 @@
                 }
               ],
               "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "Phone0",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "234-567-8901"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Office",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            },
+            {
+              "idShort": "Phone1",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "345-678-9012"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Mobile",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Montags, 10-16 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
             },
             {
               "idShort": "Email",
@@ -17784,7 +20489,7 @@
                     }
                   ],
                   "valueType": "xs:string",
-                  "value": "Work",
+                  "value": "0173-1#07-AAS754#001",
                   "modelType": "Property"
                 }
               ],
@@ -18022,230 +20727,6 @@
               "valueType": "xs:string",
               "value": "https://www.mm-software.com/more-the-newsroom/",
               "modelType": "Property"
-            },
-            {
-              "idShort": "Phone0",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "234-567-8901"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Office",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
-            },
-            {
-              "idShort": "Phone1",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "345-678-9012"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Mobile",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Montags, 10-16 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
             }
           ],
           "modelType": "SubmodelElementCollection"
@@ -18302,7 +20783,7 @@
                 }
               ],
               "valueType": "xs:string",
-              "value": "Manager",
+              "value": "0173-1#07-AAS931#001",
               "modelType": "Property"
             },
             {
@@ -18327,7 +20808,11 @@
               "value": [
                 {
                   "language": "en",
-                  "text": "Acme Corporation"
+                  "text": "M&M software"
+                },
+                {
+                  "language": "de",
+                  "text": "M&M Software aus dem Plugin"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -18358,6 +20843,230 @@
                 }
               ],
               "modelType": "MultiLanguageProperty"
+            },
+            {
+              "idShort": "Phone0",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "234-567-8901"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Office",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
+            },
+            {
+              "idShort": "Phone1",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "kind": "ConceptQualifier",
+                  "type": "Multiplicity",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "TelephoneNumber",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO136#002"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "One"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "en",
+                      "text": "345-678-9012"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                },
+                {
+                  "idShort": "TypeOfTelephone",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
+                    }
+                  ],
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "0173-1#02-AAO137#003"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "valueType": "xs:string",
+                  "value": "Mobile",
+                  "modelType": "Property"
+                },
+                {
+                  "idShort": "AvailableTime",
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
+                      }
+                    ]
+                  },
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "Multiplicity",
+                      "valueType": "xs:string",
+                      "value": "ZeroToOne"
+                    }
+                  ],
+                  "value": [
+                    {
+                      "language": "de",
+                      "text": "Montags, 10-16 Uhr"
+                    }
+                  ],
+                  "modelType": "MultiLanguageProperty"
+                }
+              ],
+              "modelType": "SubmodelElementCollection"
             },
             {
               "idShort": "Email",
@@ -18428,7 +21137,7 @@
                     }
                   ],
                   "valueType": "xs:string",
-                  "value": "Work",
+                  "value": "0173-1#07-AAS754#001",
                   "modelType": "Property"
                 }
               ],
@@ -18666,230 +21375,6 @@
               "valueType": "xs:string",
               "value": "https://www.mm-software.com/more-the-newsroom/",
               "modelType": "Property"
-            },
-            {
-              "idShort": "Phone0",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "234-567-8901"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Office",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Dienstags bis Donnerstags, 9-17 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
-            },
-            {
-              "idShort": "Phone1",
-              "semanticId": {
-                "type": "ExternalReference",
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/Phone"
-                  }
-                ]
-              },
-              "qualifiers": [
-                {
-                  "kind": "ConceptQualifier",
-                  "type": "Multiplicity",
-                  "valueType": "xs:string",
-                  "value": "ZeroToOne"
-                }
-              ],
-              "value": [
-                {
-                  "idShort": "TelephoneNumber",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": "Recommendation: property declaration as MLP is required by its semantic definition. As the property value is language independent, users are recommended to provide maximal 1 string in any language of the user’s choice."
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO136#002"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "One"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "345-678-9012"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                },
-                {
-                  "idShort": "TypeOfTelephone",
-                  "description": [
-                    {
-                      "language": "en",
-                      "text": " enumeration: 0173-1#07-AAS754#001 (office), 0173-1#07-AAS755#001 (office mobile), 0173-1#07-AAS756#001 (secretary), 0173-1#07-AAS757#001 (substitute), 0173-1#07-AAS758#001 (home), 0173-1#07-AAS759#001 (private mobile)"
-                    }
-                  ],
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "0173-1#02-AAO137#003"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "valueType": "xs:string",
-                  "value": "Mobile",
-                  "modelType": "Property"
-                },
-                {
-                  "idShort": "AvailableTime",
-                  "semanticId": {
-                    "type": "ExternalReference",
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation/AvailableTime/"
-                      }
-                    ]
-                  },
-                  "qualifiers": [
-                    {
-                      "kind": "ConceptQualifier",
-                      "type": "Multiplicity",
-                      "valueType": "xs:string",
-                      "value": "ZeroToOne"
-                    }
-                  ],
-                  "value": [
-                    {
-                      "language": "de",
-                      "text": "Montags, 10-16 Uhr"
-                    }
-                  ],
-                  "modelType": "MultiLanguageProperty"
-                }
-              ],
-              "modelType": "SubmodelElementCollection"
             }
           ],
           "modelType": "SubmodelElementCollection"
@@ -18946,7 +21431,7 @@
                 }
               ],
               "valueType": "xs:string",
-              "value": "Assistant Manager",
+              "value": "0173-1#07-AAS931#001",
               "modelType": "Property"
             },
             {
@@ -18971,7 +21456,11 @@
               "value": [
                 {
                   "language": "en",
-                  "text": "Beta Corporation"
+                  "text": "M&M software"
+                },
+                {
+                  "language": "de",
+                  "text": "M&M Software aus dem Plugin"
                 }
               ],
               "modelType": "MultiLanguageProperty"
@@ -19184,7 +21673,7 @@
                     }
                   ],
                   "valueType": "xs:string",
-                  "value": "Work",
+                  "value": "0173-1#07-AAS754#001",
                   "modelType": "Property"
                 }
               ],
@@ -20141,6 +22630,12 @@
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
+                            }
+                          ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"
@@ -22384,6 +24879,12 @@
                               "value": "Operation@en"
                             }
                           ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
+                            }
+                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -22644,6 +25145,12 @@
                               "value": "Operation@en"
                             }
                           ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
+                            }
+                          ],
                           "modelType": "MultiLanguageProperty"
                         },
                         {
@@ -22902,6 +25409,12 @@
                               "type": "ExampleValue",
                               "valueType": "xs:string",
                               "value": "Operation@en"
+                            }
+                          ],
+                          "value": [
+                            {
+                              "language": "fr",
+                              "text": "TestFR"
                             }
                           ],
                           "modelType": "MultiLanguageProperty"
@@ -24150,7 +26663,7 @@
                                 }
                               ],
                               "valueType": "xs:string",
-                              "value": "de",
+                              "value": "en",
                               "valueId": {
                                 "type": "ExternalReference",
                                 "keys": [
@@ -25108,7 +27621,7 @@
                                 }
                               ],
                               "valueType": "xs:string",
-                              "value": "hi",
+                              "value": "en",
                               "valueId": {
                                 "type": "ExternalReference",
                                 "keys": [

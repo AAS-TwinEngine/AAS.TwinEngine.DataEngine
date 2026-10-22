@@ -974,6 +974,12 @@
                           "value": "Operation@en"
                         }
                       ],
+                      "value": [
+                        {
+                          "language": "fr",
+                          "text": "TestFR"
+                        }
+                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -1232,6 +1238,12 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Operation@en"
+                        }
+                      ],
+                      "value": [
+                        {
+                          "language": "fr",
+                          "text": "TestFR"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -2480,7 +2492,7 @@
                             }
                           ],
                           "valueType": "xs:string",
-                          "value": "de",
+                          "value": "en",
                           "valueId": {
                             "type": "ExternalReference",
                             "keys": [
@@ -3907,6 +3919,12 @@
                           "type": "ExampleValue",
                           "valueType": "xs:string",
                           "value": "Operation@en"
+                        }
+                      ],
+                      "value": [
+                        {
+                          "language": "fr",
+                          "text": "TestFR"
                         }
                       ],
                       "modelType": "MultiLanguageProperty"
@@ -5626,6 +5644,12 @@
                           "value": "Operation@en"
                         }
                       ],
+                      "value": [
+                        {
+                          "language": "fr",
+                          "text": "TestFR"
+                        }
+                      ],
                       "modelType": "MultiLanguageProperty"
                     },
                     {
@@ -5914,7 +5938,7 @@
                             }
                           ],
                           "valueType": "xs:string",
-                          "value": "de",
+                          "value": "en",
                           "valueId": {
                             "type": "ExternalReference",
                             "keys": [

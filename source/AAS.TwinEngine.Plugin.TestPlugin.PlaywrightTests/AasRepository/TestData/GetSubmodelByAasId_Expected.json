@@ -84,7 +84,7 @@
         }
       ],
       "valueType": "xs:double",
-      "min": "24",
+      "min": "0.5",
       "max": "962",
       "modelType": "Range"
     },
@@ -1113,7 +1113,7 @@
                 }
               ],
               "valueType": "xs:date",
-              "value": "2022-01-01",
+              "value": "2032-01-01",
               "modelType": "Property"
             },
             {
@@ -1200,6 +1200,213 @@
               ],
               "valueType": "xs:string",
               "value": "0044",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementCollection"
+        }
+      ],
+      "modelType": "SubmodelElementList"
+    },
+    {
+      "idShort": "MultipleTemplateMarkings",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://mm-software.com/template-values/static-marking-many"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "One"
+        }
+      ],
+      "typeValueListElement": "SubmodelElementCollection",
+      "value": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-many/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "MarkingName",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking/name"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "CE",
+              "modelType": "Property"
+            },
+            {
+              "idShort": "DesignationOfCertificateOrApproval",
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                }
+              ],
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0112/2///61987#ABH783#003"
+                  }
+                ]
+              },
+              "supplementalSemanticIds": [
+                {
+                  "type": "ExternalReference",
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "0173-1#02-ABI975#002"
+                    }
+                  ]
+                }
+              ],
+              "qualifiers": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                      }
+                    ]
+                  },
+                  "kind": "TemplateQualifier",
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "TEMPLATE-001:1",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementCollection"
+        },
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-many/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "MarkingName",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking/name"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "UKCA",
+              "modelType": "Property"
+            },
+            {
+              "idShort": "DesignationOfCertificateOrApproval",
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                }
+              ],
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0112/2///61987#ABH783#003"
+                  }
+                ]
+              },
+              "supplementalSemanticIds": [
+                {
+                  "type": "ExternalReference",
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "0173-1#02-ABI975#002"
+                    }
+                  ]
+                }
+              ],
+              "qualifiers": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                      }
+                    ]
+                  },
+                  "kind": "TemplateQualifier",
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "",
               "modelType": "Property"
             }
           ],
@@ -1304,7 +1511,7 @@
           ],
           "valueType": "xs:date",
           "min": "2010-02-02",
-          "max": "2030-02-06",
+          "max": "2030-12-31",
           "modelType": "Range"
         },
         {
@@ -1430,10 +1637,6 @@
             {
               "language": "de",
               "text": "Name der Produktklasse im verwendeten Klassifizierungssystem"
-            },
-            {
-              "language": "",
-              "text": ""
             }
           ],
           "modelType": "MultiLanguageProperty"
@@ -1532,7 +1735,7 @@
               },
               {
                 "type": "SubmodelElementList",
-                "value": "Documents"
+                "value": "TechnicalPropertyAreas"
               },
               {
                 "type": "SubmodelElementCollection",
@@ -1544,6 +1747,175 @@
         }
       ],
       "modelType": "SubmodelElementCollection"
+    },
+    {
+      "idShort": "Single-TemplateLanguage",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://mm-software.com/template-values/static-one"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "One"
+        }
+      ],
+      "semanticIdListElement": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://mm-software.com/template-values/static-one/item"
+          }
+        ]
+      },
+      "typeValueListElement": "Property",
+      "valueTypeListElement": "xs:string",
+      "value": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-one/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "en",
+          "modelType": "Property"
+        }
+      ],
+      "modelType": "SubmodelElementList"
+    },
+    {
+      "idShort": "SingleTemplateMarking",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://mm-software.com/template-values/static-marking-one"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "One"
+        }
+      ],
+      "typeValueListElement": "SubmodelElementCollection",
+      "value": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-marking-one/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "MarkingName",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-marking/name"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "CE",
+              "modelType": "Property"
+            },
+            {
+              "idShort": "DesignationOfCertificateOrApproval",
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Note: Approval identifier, reference to the certificate number, to be entered without spaces "
+                }
+              ],
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0112/2///61987#ABH783#003"
+                  }
+                ]
+              },
+              "supplementalSemanticIds": [
+                {
+                  "type": "ExternalReference",
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "0173-1#02-ABI975#002"
+                    }
+                  ]
+                }
+              ],
+              "qualifiers": [
+                {
+                  "semanticId": {
+                    "type": "ExternalReference",
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                      }
+                    ]
+                  },
+                  "kind": "TemplateQualifier",
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "ZeroToOne"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "TEMPLATE-001",
+              "modelType": "Property"
+            }
+          ],
+          "modelType": "SubmodelElementCollection"
+        }
+      ],
+      "modelType": "SubmodelElementList"
     },
     {
       "idShort": "Target_model",
@@ -1582,6 +1954,443 @@
         ]
       },
       "modelType": "ReferenceElement"
+    },
+    {
+      "idShort": "TemplateLanguages",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://mm-software.com/template-values/static-five"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "One"
+        }
+      ],
+      "semanticIdListElement": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://mm-software.com/template-values/static-five/item"
+          }
+        ]
+      },
+      "typeValueListElement": "Property",
+      "valueTypeListElement": "xs:string",
+      "value": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "en",
+          "modelType": "Property"
+        },
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "de",
+          "modelType": "Property"
+        },
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "fr",
+          "modelType": "Property"
+        },
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "es",
+          "modelType": "Property"
+        },
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/static-five/item"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "it",
+          "modelType": "Property"
+        }
+      ],
+      "modelType": "SubmodelElementList"
+    },
+    {
+      "idShort": "TemplateValueProperties",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://mm-software.com/template-values/properties"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "One"
+        }
+      ],
+      "value": [
+        {
+          "idShort": "NullPlaceholder",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/null"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:string",
+          "value": "000-001 null resolved",
+          "modelType": "Property"
+        },
+        {
+          "idShort": "ResolvedRange",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/range"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "valueType": "xs:double",
+          "min": "0",
+          "max": "100",
+          "modelType": "Range"
+        },
+        {
+          "idShort": "ResolvedFile",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/file"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg",
+          "contentType": "image/jpeg",
+          "modelType": "File"
+        },
+        {
+          "idShort": "UnresolvedBlob",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/blob"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "contentType": "text/plain",
+          "modelType": "Blob"
+        },
+        {
+          "idShort": "ResolvedEntity",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/resolved-entity"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "entityType": "SelfManagedEntity",
+          "globalAssetId": "https://mm-software.com/ids/assets/template-machine",
+          "specificAssetIds": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/manufacturer-id"
+                  }
+                ]
+              },
+              "name": "Manufacturer",
+              "value": "M&M Software"
+            }
+          ],
+          "modelType": "Entity"
+        },
+        {
+          "idShort": "MixedEntity",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/mixed-entity"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "statements": [
+            {
+              "idShort": "Statement",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/entity-statement"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "000-001 plugin statement",
+              "modelType": "Property"
+            }
+          ],
+          "entityType": "SelfManagedEntity",
+          "globalAssetId": "https://mm-software.com/ids/assets/template-component",
+          "specificAssetIds": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/manufacturer-id"
+                  }
+                ]
+              },
+              "name": "Manufacturer",
+              "value": "M&M Software"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/serial-id"
+                  }
+                ]
+              },
+              "name": "SerialNumber",
+              "value": "000-001-SERIAL"
+            },
+            {
+              "name": "UnmappedIdentifier",
+              "value": "Kept from template"
+            }
+          ],
+          "modelType": "Entity"
+        },
+        {
+          "idShort": "CoManagedEntity",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/co-managed-entity"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "statements": [
+            {
+              "idShort": "Statement",
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/static-statement"
+                  }
+                ]
+              },
+              "qualifiers": [
+                {
+                  "type": "SMT/Cardinality",
+                  "valueType": "xs:string",
+                  "value": "One"
+                }
+              ],
+              "valueType": "xs:string",
+              "value": "Template-owned statement",
+              "modelType": "Property"
+            }
+          ],
+          "entityType": "CoManagedEntity",
+          "modelType": "Entity"
+        },
+        {
+          "idShort": "ExternalReference",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://mm-software.com/template-values/external-reference"
+              }
+            ]
+          },
+          "qualifiers": [
+            {
+              "type": "SMT/Cardinality",
+              "valueType": "xs:string",
+              "value": "One"
+            }
+          ],
+          "value": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://www.mm-software.com/"
+              }
+            ]
+          },
+          "modelType": "ReferenceElement"
+        }
+      ],
+      "modelType": "SubmodelElementCollection"
     }
   ],
   "modelType": "Submodel"

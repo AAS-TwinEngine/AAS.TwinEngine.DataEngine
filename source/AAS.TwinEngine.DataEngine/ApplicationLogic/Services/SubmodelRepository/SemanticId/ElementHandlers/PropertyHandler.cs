@@ -23,9 +23,10 @@ public class PropertyHandler(ISemanticIdResolver semanticIdResolver) : ISubmodel
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)
     {
-        if (values is SemanticLeafNode leafValueNode)
+        var property = (Property)element;
+        if (values is SemanticLeafNode leafValueNode && !TemplateValueChecker.IsResolved(property.Value))
         {
-            ((Property)element).Value = (string?)leafValueNode.Value;
+            property.Value = (string?)leafValueNode.Value;
         }
     }
 }

@@ -252,6 +252,55 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task GetSubmodelElementAsync_ReturnsIndexedProperty_WhenPluginExpandsCollectionListAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string IdShortPath = "Markings[1].ContactName";
+
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePluginResponseWithMultipleMarkings())
+        }));
+
+        using var httpClient = new HttpClient(messageHandler)
+        {
+            BaseAddress = new Uri("https://testendpoint.com")
+        };
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithPluginExpandedMarkings());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, IdShortPath));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.Equal("ContactName", json["idShort"]?.GetValue<string>());
+        Assert.Equal("Second marking", json["value"]?.GetValue<string>());
+        _ = _httpClientFactory.Received(1).CreateClient(HttpClientName);
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementAsync_ReturnsIndexedProperty_WhenTemplateDefinesMultipleCollectionValuesAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        const string IdShortPath = "Markings[1].ContactName";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, IdShortPath));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.Equal("ContactName", json["idShort"]?.GetValue<string>());
+        Assert.Equal("Second template marking", json["value"]?.GetValue<string>());
+        _ = _httpClientFactory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
     public async Task GetSubmodelElementAsync_WithNotFound_Returns404Async()
     {
         const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";

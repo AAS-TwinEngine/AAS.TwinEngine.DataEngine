@@ -171,8 +171,6 @@ public partial class SubmodelTemplateService(
                 var listElement = GetListElementByIdShort(currentSubmodelElements!, idShortWithoutIndex);
                 var selectedElement = GetElementAtIndex(listElement, index);
 
-                listElement.Value = [selectedElement!];
-
                 if (isLast)
                 {
                     return submodel;
@@ -249,7 +247,7 @@ public partial class SubmodelTemplateService(
             throw new InternalDataProcessingException();
         }
 
-        if (list.TypeValueListElement is AasSubmodelElements.SubmodelElementCollection or AasSubmodelElements.SubmodelElementList && list.Value?.Count > 0)
+        if (list.TypeValueListElement is AasSubmodelElements.SubmodelElementCollection or AasSubmodelElements.SubmodelElementList && list.Value?.Count == 1)
         {
             if (GetCardinality(list.Value.FirstOrDefault()!) is Cardinality.OneToMany or Cardinality.ZeroToMany)
             {

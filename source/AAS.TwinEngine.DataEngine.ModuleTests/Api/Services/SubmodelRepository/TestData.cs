@@ -97,6 +97,53 @@ internal static class TestData
           ]);
     }
 
+    public static Submodel CreateSubmodelWithPluginExpandedMarkings()
+    {
+        var contactName = CreateContactName();
+        contactName.Qualifiers = [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")];
+
+        var markingPrototype = new SubmodelElementCollection(
+            idShort: "Marking",
+            semanticId: new Reference(
+                ReferenceTypes.ExternalReference,
+                [new Key(KeyTypes.SubmodelElementCollection, "http://example.com/idta/digital-nameplate/marking")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "ZeroToMany")],
+            value: [contactName]);
+
+        var markings = new SubmodelElementList(
+            typeValueListElement: AasSubmodelElements.SubmodelElementCollection,
+            idShort: "Markings",
+            semanticId: new Reference(
+                ReferenceTypes.ExternalReference,
+                [new Key(KeyTypes.SubmodelElementList, "http://example.com/idta/digital-nameplate/markings")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            value: [markingPrototype]);
+
+        var submodel = CreateSubmodel();
+        submodel.SubmodelElements = [markings];
+        return submodel;
+    }
+
+      public static Submodel CreateSubmodelWithTemplateDefinedMarkings()
+      {
+        var markings = new SubmodelElementList(
+          typeValueListElement: AasSubmodelElements.SubmodelElementCollection,
+          idShort: "Markings",
+          semanticId: new Reference(
+            ReferenceTypes.ExternalReference,
+            [new Key(KeyTypes.SubmodelElementList, "http://example.com/idta/digital-nameplate/markings")]),
+          qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+          value:
+          [
+            CreateMarkingWithContactName("FirstMarking", "First template marking"),
+            CreateMarkingWithContactName("SecondMarking", "Second template marking")
+          ]);
+
+        var submodel = CreateSubmodel();
+        submodel.SubmodelElements = [markings];
+        return submodel;
+      }
+
     public static Submodel CreateSubmodel()
     {
         return new Submodel(
@@ -115,6 +162,21 @@ internal static class TestData
             CreateThumbnail()
             ]);
     }
+
+          private static SubmodelElementCollection CreateMarkingWithContactName(string idShort, string contactNameValue)
+          {
+            var contactName = CreateContactName();
+            contactName.Value = contactNameValue;
+            contactName.Qualifiers = [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")];
+
+            return new SubmodelElementCollection(
+              idShort: idShort,
+              semanticId: new Reference(
+                ReferenceTypes.ExternalReference,
+                [new Key(KeyTypes.SubmodelElementCollection, "http://example.com/idta/digital-nameplate/marking")]),
+              qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "ZeroToMany")],
+              value: [contactName]);
+          }
 
     public static ConceptDescription CreateConceptDescription()
     {
@@ -143,6 +205,19 @@ internal static class TestData
       }
     }
     """;
+
+    public static string CreatePluginResponseWithMultipleMarkings() => """
+        {
+          "http://example.com/idta/digital-nameplate/semantic-id": {
+            "http://example.com/idta/digital-nameplate/markings": {
+              "http://example.com/idta/digital-nameplate/marking": [
+                { "http://example.com/idta/digital-nameplate/contact-name": "First marking" },
+                { "http://example.com/idta/digital-nameplate/contact-name": "Second marking" }
+              ]
+            }
+          }
+        }
+        """;
 
     public static string CreatePluginResponseForFileAttachment() => """
         {

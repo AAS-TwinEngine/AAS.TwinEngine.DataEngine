@@ -65,43 +65,82 @@ public static class TemplateInstanceValidator
         {
             if (sibling is SubmodelElementList list)
             {
-                ValidateRepeatedListItems(list.Value, semanticIdResolver, elementHelper, logger, $"{parentPath}/{sibling.IdShort}");
+                ValidateMultiItemList(list.Value, semanticIdResolver, elementHelper, logger, $"{parentPath}/{sibling.IdShort}");
             }
 
             Validate(GetChildren(sibling), semanticIdResolver, elementHelper, logger, $"{parentPath}/{sibling.IdShort}");
         }
     }
 
-    private static void ValidateRepeatedListItems(
-        IEnumerable<ISubmodelElement>? items,
+    private static void ValidateMultiItemList(
+        IList<ISubmodelElement>? items,
         ISemanticIdResolver semanticIdResolver,
         ISubmodelElementHelper elementHelper,
         ILogger logger,
         string listPath)
     {
-        if (items is null)
+        if (items is not { Count: > 1 })
         {
             return;
         }
 
-        var repeatedItems = items
-                           .Where(item => item is not (SubmodelElementCollection or SubmodelElementList))
-                           .GroupBy(semanticIdResolver.ExtractSemanticId, StringComparer.Ordinal)
-                           .Where(group => group.Key.Length > 0 && group.Count() > 1);
-
-        foreach (var group in repeatedItems)
+        foreach (var item in items)
         {
-            foreach (var item in group)
+            var missing = FindUnresolvedMandatory(item, semanticIdResolver, elementHelper).FirstOrDefault();
+            if (missing is null)
             {
-                if (IsMandatory(item, semanticIdResolver) && HasUnresolvedValue(item, elementHelper))
-                {
-                    logger.LogError(
-                        "List '{Path}' contains repeated items for semantic id '{SemanticId}', but mandatory item '{IdShort}' has no value.",
-                        listPath,
-                        group.Key,
-                        item.IdShort);
-                    throw new TemplateNotValidException();
-                }
+                continue;
+            }
+
+            logger.LogError(
+                "List '{Path}' contains {Count} items, but mandatory element '{IdShort}' of item '{Item}' has no value.",
+                listPath,
+                items.Count,
+                missing.IdShort,
+                item.IdShort);
+            throw new TemplateNotValidException();
+        }
+    }
+
+    /// <summary>Returns elements whose values come only from the template: items of multi-item lists and repeated collection/list instances.</summary>
+    public static HashSet<ISubmodelElement> FindTemplateOwnedElements(IEnumerable<ISubmodelElement>? elements, ISemanticIdResolver semanticIdResolver)
+    {
+        ArgumentNullException.ThrowIfNull(semanticIdResolver);
+
+        var owned = new HashSet<ISubmodelElement>(ReferenceEqualityComparer.Instance);
+        CollectTemplateOwned(elements, semanticIdResolver, owned);
+        return owned;
+    }
+
+    private static void CollectTemplateOwned(IEnumerable<ISubmodelElement>? elements, ISemanticIdResolver semanticIdResolver, HashSet<ISubmodelElement> owned)
+    {
+        if (elements is null)
+        {
+            return;
+        }
+
+        var siblings = elements.ToList();
+
+        foreach (var instance in siblings
+                                 .Where(element => element is SubmodelElementCollection or SubmodelElementList)
+                                 .GroupBy(semanticIdResolver.ExtractSemanticId, StringComparer.Ordinal)
+                                 .Where(group => group.Key.Length > 0 && group.Count() > 1)
+                                 .SelectMany(group => group))
+        {
+            _ = owned.Add(instance);
+        }
+
+        foreach (var sibling in siblings)
+        {
+            if (sibling is SubmodelElementList { Value.Count: > 1 } list)
+            {
+                _ = owned.Add(list);
+                continue;
+            }
+
+            if (!owned.Contains(sibling))
+            {
+                CollectTemplateOwned(GetChildren(sibling), semanticIdResolver, owned);
             }
         }
     }

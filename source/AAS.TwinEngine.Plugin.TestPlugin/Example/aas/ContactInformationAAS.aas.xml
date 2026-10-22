@@ -114,6 +114,10 @@
                   <language>en</language>
                   <text>M&amp;M software</text>
                 </langStringTextType>
+                <langStringTextType>
+                  <language>de</language>
+                  <text></text>
+                </langStringTextType>
               </value>
             </multiLanguageProperty>
             <multiLanguageProperty>

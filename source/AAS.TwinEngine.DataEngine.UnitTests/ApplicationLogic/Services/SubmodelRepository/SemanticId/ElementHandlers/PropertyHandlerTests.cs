@@ -93,6 +93,17 @@ public class PropertyHandlerTests
     }
 
     [Fact]
+    public void FillOut_WithLeafNode_PreservesResolvedTemplateValue()
+    {
+        var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.String, value: "TemplateValue");
+        var values = new SemanticLeafNode("http://test/my-prop", "PluginValue", DataType.String, Cardinality.One);
+
+        _sut.FillOut(property, values, (_, _, _) => { });
+
+        Equal("TemplateValue", property.Value);
+    }
+
+    [Fact]
     public void FillOut_WithBranchNode_DoesNotModifyPropertyValue()
     {
         var property = new Property(idShort: "MyProp", valueType: DataTypeDefXsd.String, value: "original");
