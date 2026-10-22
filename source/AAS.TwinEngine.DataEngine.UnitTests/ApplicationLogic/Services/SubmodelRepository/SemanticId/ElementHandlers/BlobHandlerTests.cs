@@ -83,7 +83,7 @@ public class BlobHandlerTests
     }
 
     [Fact]
-    public void FillOut_WithLeafNodeAndNoTemplateValue_SetsBase64Value()
+    public void FillOut_WithLeafNodeAndNoTemplateValue_DoesnotSetValueIfValueIsNotPresent()
     {
         var blob = new Blob(contentType: "image/png", idShort: "MyBlob");
         var base64 = Convert.ToBase64String(new byte[] { 1, 2, 3 });
@@ -91,8 +91,7 @@ public class BlobHandlerTests
 
         _sut.FillOut(blob, values, (_, _, _) => { });
 
-        NotNull(blob.Value);
-        Equal([1, 2, 3], blob.Value);
+        Null(blob.Value);
     }
 
     [Fact]
