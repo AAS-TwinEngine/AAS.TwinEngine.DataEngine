@@ -2222,7 +2222,7 @@
                 }
               ],
               "entityType": "SelfManagedEntity",
-              "globalAssetId": "https://mm-software.com/ids/assets/template-machine",
+              "globalAssetId": "https://mm-software.com/ids/assets/000-001",
               "specificAssetIds": [
                 {
                   "semanticId": {
