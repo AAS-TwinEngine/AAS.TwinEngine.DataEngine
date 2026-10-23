@@ -5,19 +5,24 @@
 This example extends [`AAS.TwinEngine.Minimal`](../AAS.TwinEngine.Minimal/README.md) with a **second,
 independent BaSyx Go environment** acting as an external AAS Registry/Repository, and runs the
 **Export Service** against it. It demonstrates the full export flow end-to-end: data created, updated,
-or deleted at the source is reflected in the target on a time-based schedule — observable live in two
-separate AAS Web UIs.
+or deleted at the source is reflected in the target on a time-based schedule — observable live in
+the target AAS Web UI through its own Nginx gateway. The source exposes APIs only, with no AAS UI.
 
 ```
 SOURCE                                            TARGET
 ┌───────────────────────────────┐                 ┌──────────────────────────────┐
-│ nginx :8080 (aas-ui-source)   │                 │ aas-ui-target :8090          │
-│  └─ twinengine-dataengine     │   export-service │  └─ target-registry-         │
+│ twinengine-dataengine        │                 │ nginx :8080                  │
+│  (internal source API)       │   export-service │  └─ target-registry-         │
 │      └─ dpp-plugin            │ ───────────────▶│      repository :8092        │
 │      └─ source-registry-      │   (cron, */3min) │      (pre-seeded pair)       │
 │          repository :8082     │                 └──────────────────────────────┘
 └───────────────────────────────┘
 ```
+
+The target gateway serves `aas-ui-target` at `/aas-ui/` and proxies the target AAS API routes to
+`target-registry-repository:8082`. Both `/` and `/aas-ui` redirect to `/aas-ui/`.
+The UI has no directly published port. The exporter reads directly from the source services;
+the gateway exposes only the target environment.
 
 ## Included Submodel Templates
 
@@ -30,17 +35,11 @@ Same as the Minimal example — 5 Digital Product Passport for Industry 4.0 temp
 
 - **Docker** (v20.10+) and **Docker Compose** (v1.29+)
 - **Available Ports**:
-  - `8080` — Source API Gateway (nginx) + source AAS UI (`/aas-ui/`)
+  - `8080` — Target Nginx gateway (AAS UI at `/aas-ui/` and target APIs)
   - `8081` — PGAdmin
-  - `8082` — Source BaSyx Go registry/repository (debug access)
-  - `8085` — DataEngine (debug access)
-  - `8086` — DPP Plugin (debug access)
-  - `8087` — Export Service (health check only, no public API)
   - `3000` — Grafana (observability stack)
   - `9090` — Prometheus (observability stack)
-  - `9999` — PostgreSQL (for the bulk data loader)
-  - `8090` — Target AAS UI
-  - `8092` — Target BaSyx Go registry/repository
+  - `8092` — Target BaSyx Go registry/repository (direct debug access)
 
 ### Repository Structure
 
@@ -67,11 +66,14 @@ docker compose up -d --build
 The `--build` flag is required here (unlike the Minimal example) because the Export Service has no
 published container image yet — it is always built from local source.
 
+When upgrading an existing demo, remove the old source UI container with
+`docker compose up -d --build --remove-orphans`. No database volume reset is required.
+
 ### Watching the Export Happen
 
-1. Open the **source** UI: `http://localhost:8080/aas-ui/` — populated immediately, same data as the
-   Minimal example.
-2. Open the **target** UI: `http://localhost:8090/` — it already contains the
+1. Check the **target** API at `http://localhost:8080/shell-descriptors`. There is no source UI;
+   the exporter accesses the source services directly over the Docker network.
+2. Open the **target** UI through Nginx: `http://localhost:8080/aas-ui/` — it already contains the
    `PreExistingTargetAsset` shell with its `PreExistingTargetDetails` and `PreExistingTargetNameplate`
    submodels. The `OwnershipMarker` value in the details submodel identifies it as target-owned.
 3. Wait for the Export Service's scheduled run (every 3 minutes by default — see
@@ -101,9 +103,10 @@ Export run finished at ... with status Success.
 
 ### Health Checks
 
-The exporter exposes aggregate readiness at `http://localhost:8087/healthz`.
-DataEngine source probes use `/healthz` through nginx. The source concept-description
-repository and all target registry/repository probes use BaSyx's `/health` route.
+The exporter exposes aggregate readiness at `/healthz` on its internal port `8080`.
+DataEngine source probes use `/healthz` directly over the Docker network. The source
+concept-description repository and all target registry/repository probes use BaSyx's `/health`
+route. The public gateway's `http://localhost:8080/healthz` probes target BaSyx's `/health`.
 Readiness includes PostgreSQL and both endpoints of every enabled source phase.
 
 ### Export Ownership and Run Outcomes
@@ -260,28 +263,28 @@ reports `Skipped` for everything and finishes in seconds.
 
 | Service                        | Port  | Role                                                               |
 | ------------------------------- | ----- | ------------------------------------------------------------------- |
-| **nginx**                       | 8080  | Source API gateway & source AAS UI proxy                            |
-| **twinengine-dataengine**       | 8085  | Source: aggregates plugin + template data into one API              |
-| **dpp-plugin**                  | 8086  | Source: Digital Product Passport plugin (relational DB backed)      |
-| **source-registry-repository**  | 8082  | Source: BaSyx Go environment, pre-seeded with the 5 templates        |
+| **nginx**                       | 8080  | Target API gateway and target UI proxy at `/aas-ui/`                |
+| **twinengine-dataengine**       | -     | Source: aggregates plugin + template data into one API              |
+| **dpp-plugin**                  | -     | Source: Digital Product Passport plugin (relational DB backed)      |
+| **source-registry-repository**  | -     | Source: BaSyx Go environment, pre-seeded with the 5 templates        |
 | **basyx_configuration_source**  | -     | One-shot schema setup for the source BaSyx Go environment            |
-| **aas-ui-source**                | 8080  | Source AAS UI (served through nginx at `/aas-ui/`)                   |
-| **export-service**               | 8087  | Reads from source, writes to target, on a cron schedule (`/healthz`) |
+| **export-service**               | -     | Reads from source, writes to target, on a cron schedule (`/healthz`) |
 | **target-registry-repository**  | 8092  | Target: independent BaSyx Go environment, pre-seeded with a target-only shell/submodel pair |
 | **basyx_configuration_target**  | -     | One-shot schema setup for the target BaSyx Go environment             |
-| **aas-ui-target**                | 8090  | Target AAS UI, points directly at the target registry/repository     |
+| **aas-ui-target**                | -     | Target AAS UI, accessed only through nginx at `/aas-ui/`             |
 | **postgres**                     | -     | Single Postgres instance hosting `twinengine`, `basyxSourceDB`, `basyxTargetDB`, and `exportstate` as separate databases |
 | **pgadmin**                      | 8081  | Web UI for managing all four databases                               |
 
-### Why the descriptor hrefs still point at :8080
+### Descriptor endpoint addresses
 
 The Export Service forwards shell/submodel/concept-description payloads **verbatim** — it does not
-rewrite `endpoints[].protocolInformation.href`. So descriptors created in the target registry still
-reference the source gateway (`http://localhost:8080/...`) for resolving actual AAS/Submodel content,
-even though the registry *entry* itself now lives in the target. This mirrors how real AAS registry
-federation works (a registry only stores *where* to find data, not the data itself) and is why
-`aas-ui-target` can still successfully open shells/submodels it lists, even though they were primarily
-exported for their registry entries.
+rewrite `endpoints[].protocolInformation.href`. DataEngine and target BaSyx are both configured
+to advertise `http://localhost:8080`, which now routes to the target registry/repository.
+Opening an exported descriptor through the UI therefore resolves its content from the target.
+
+Existing descriptors are not rewritten by changing this configuration. When using a different
+public host or port, update the UI endpoint environment variables, DataEngine's
+`General__DataEngineRepositoryBaseUrl`, and target BaSyx's `GENERAL_EXTERNALURL` consistently.
 
 ## Resetting the Demo
 

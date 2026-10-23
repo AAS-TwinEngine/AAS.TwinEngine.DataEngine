@@ -17,9 +17,6 @@ services:
       POSTGRES_DB: twinengine
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin  
-    ports:
-      # Exposed so the bulk data loader can populate the DPP schema from the host.
-      - "9999:5432"
     volumes:
       - ./postgres/00_create_databases.sql:/docker-entrypoint-initdb.d/00_create_databases.sql:ro
       - ../shared/postgres/01_init_tables.sql:/docker-entrypoint-initdb.d/01_init_tables.sql:ro
@@ -36,31 +33,7 @@ services:
     networks:
       - twinengine-network
 
-  # ---------------------------------------------------------------------------     
-  # SOURCE side — identical in role to the AAS.TwinEngine.Minimal example:
-  # DataEngine aggregates the DPP plugin + the source BaSyx Go templates,
-  # exposed to the browser via nginx on :8080.
-  # ---------------------------------------------------------------------------
-  nginx:
-    image: nginx:1.31.6
-    container_name: nginx
-    ports:
-      - "8080:80"
-    volumes:
-      - ../shared/nginx/html:/usr/share/nginx/html
-      - ../shared/nginx/default.conf.template:/etc/nginx/templates/default.conf.template
-    restart: always
-    depends_on:
-      source-registry-repository:
-        condition: service_started
-      aas-ui-source:
-        condition: service_started
-    networks:
-      - twinengine-network
-
   twinengine-dataengine:
-    ports:
-      - "8085:8080"
     image: ghcr.io/aas-twinengine/dataengine:v1.2.0
     container_name: twinengine-dataengine
     build:
@@ -77,7 +50,7 @@ services:
       retries: 3
       start_period: 20s
     environment:
-      - General__DataEngineRepositoryBaseUrl=http://localhost:8092
+      - General__DataEngineRepositoryBaseUrl=http://localhost:8080
       - General__CustomerDomainUrl=https://mm-software.com
       - General__OpenTelemetry__OtlpEndpoint=http://otel-lgtm:4317
       - General__OpenTelemetry__ServiceName=TwinEngine
@@ -181,8 +154,6 @@ services:
 
   # Pre-seeded with the DPP submodel/shell templates — this is what DataEngine exports FROM.
   source-registry-repository:
-    ports:
-      - "8082:8082"
     image: eclipsebasyx/aasenvironment-go:1.0.12
     container_name: source-registry-repository
     command: ["/app/aasenvironmentservice"]
@@ -216,30 +187,6 @@ services:
       twinengine-network:
         aliases:
           - template-repository-registry
-
-  aas-ui-source:
-    image: eclipsebasyx/aas-gui:v2-260801
-    container_name: aas-ui-source
-    volumes:
-      - ../shared/logo:/usr/src/app/dist/Logo
-    environment:
-      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
-      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
-      AAS_REPO_PATH: http://localhost:8080/shells
-      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
-      CD_REPO_PATH: http://localhost:8080/concept-descriptions
-      BASE_PATH: "/aas-ui"
-      LOGO_PATH: "MM_Logo.svg"
-      PRIMARY_DARK_COLOR: "#00F2E5"
-      PRIMARY_LIGHT_COLOR: "#041b2b"
-    restart: always
-    depends_on:
-      source-registry-repository:
-        condition: service_started
-    networks:
-      twinengine-network:
-        aliases:
-          - aas-web-ui
 
   # ---------------------------------------------------------------------------
   # TARGET side — a second, independent BaSyx Go environment. It is pre-seeded
@@ -290,7 +237,7 @@ services:
       - GENERAL_AASREGISTRYINTEGRATION=true
       - GENERAL_SUBMODELREGISTRYINTEGRATION=true
       - GENERAL_DISCOVERYINTEGRATION=true
-      - GENERAL_EXTERNALURL=http://localhost:8092
+      - GENERAL_EXTERNALURL=http://localhost:8080
       - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
     restart: always
     depends_on:
@@ -302,17 +249,15 @@ services:
   aas-ui-target:
     image: eclipsebasyx/aas-gui:v2-260801
     container_name: aas-ui-target
-    ports:
-      - "8090:3000"
     volumes:
       - ../shared/logo:/usr/src/app/dist/Logo
     environment:
-      AAS_REGISTRY_PATH: http://localhost:8092/shell-descriptors
-      SUBMODEL_REGISTRY_PATH: http://localhost:8092/submodel-descriptors
-      AAS_REPO_PATH: http://localhost:8092/shells
-      SUBMODEL_REPO_PATH: http://localhost:8092/submodels
-      CD_REPO_PATH: http://localhost:8092/concept-descriptions
-      BASE_PATH: "/"
+      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
+      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
+      AAS_REPO_PATH: http://localhost:8080/shells
+      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
+      CD_REPO_PATH: http://localhost:8080/concept-descriptions
+      BASE_PATH: "/aas-ui"
       LOGO_PATH: "MM_Logo.svg"
       PRIMARY_DARK_COLOR: "#00F2E5"
       PRIMARY_LIGHT_COLOR: "#2b0404"
@@ -323,13 +268,28 @@ services:
     networks:
       - twinengine-network
 
+  nginx:
+    image: nginx:1.31.6
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../shared/nginx/html:/usr/share/nginx/html:ro
+    restart: always
+    depends_on:
+      aas-ui-target:
+        condition: service_started
+      target-registry-repository:
+        condition: service_started
+    networks:
+      - twinengine-network
+
   # ---------------------------------------------------------------------------
-  # The Export Service: reads from the SOURCE (via nginx + the source BaSyx Go
+  # The Export Service: reads from the SOURCE (via DataEngine + the source BaSyx Go
   # environment) and writes to the TARGET BaSyx Go environment, on a cron schedule.
   # ---------------------------------------------------------------------------
   export-service:
-    ports:
-      - "8087:8080"
     image: exportservice:1.0.0
     container_name: export-service
     build:
@@ -370,32 +330,32 @@ services:
       - ExportService__Performance__MaxDegreeOfParallelism=${EXPORT_PARALLELISM:-10}
       - ExportService__StateStore__ConnectionString=Host=postgres;Port=5432;Database=exportstate;Username=postgres;Password=admin
       - ExportService__StateStore__Schema=export_service
-      # Sources — read from the source stack via the nginx gateway (same aggregated API the browser uses).
-      - ExportService__Sources__ShellDescriptors__BaseUrl=http://nginx:80
+      # Sources — read directly from DataEngine and the source template repository.
+      - ExportService__Sources__ShellDescriptors__BaseUrl=http://twinengine-dataengine:8080
       - ExportService__Sources__ShellDescriptors__Path=/shell-descriptors
       - ExportService__Sources__ShellDescriptors__HealthEndpoint=/healthz
       - ExportService__Sources__ShellDescriptors__Limit=250
       - ExportService__Sources__ShellDescriptors__Enabled=true
-      - ExportService__Sources__SubmodelDescriptors__BaseUrl=http://nginx:80
+      - ExportService__Sources__SubmodelDescriptors__BaseUrl=http://twinengine-dataengine:8080
       - ExportService__Sources__SubmodelDescriptors__Path=/submodel-descriptors
       - ExportService__Sources__SubmodelDescriptors__HealthEndpoint=/healthz
       - ExportService__Sources__SubmodelDescriptors__Limit=250
       - ExportService__Sources__SubmodelDescriptors__Enabled=true
-      - ExportService__Sources__Shells__BaseUrl=http://nginx:80
+      - ExportService__Sources__Shells__BaseUrl=http://twinengine-dataengine:8080
       - ExportService__Sources__Shells__Path=/shells
       - ExportService__Sources__Shells__HealthEndpoint=/healthz
       - ExportService__Sources__Shells__Limit=250
       - ExportService__Sources__Shells__Enabled=true
-      - ExportService__Sources__Submodels__BaseUrl=http://nginx:80
+      - ExportService__Sources__Submodels__BaseUrl=http://twinengine-dataengine:8080
       - ExportService__Sources__Submodels__Path=/submodels
       - ExportService__Sources__Submodels__HealthEndpoint=/healthz
       - ExportService__Sources__Submodels__Limit=250
       - ExportService__Sources__Submodels__Enabled=true
-      - ExportService__Sources__ConceptDescriptions__BaseUrl=http://source-registry-repository:8082
+      - ExportService__Sources__ConceptDescriptions__BaseUrl=http://source-registry-repository:8080
       - ExportService__Sources__ConceptDescriptions__Path=/concept-descriptions
-      - ExportService__Sources__ConceptDescriptions__HealthEndpoint=/health
+      - ExportService__Sources__ConceptDescriptions__HealthEndpoint=/healthz
       - ExportService__Sources__ConceptDescriptions__Limit=250
-      - ExportService__Sources__ConceptDescriptions__Enabled=true
+      - ExportService__Sources__ConceptDescriptions__Enabled=false
       # Targets — write to the independent target environment, which also contains
       # a target-only shell/submodel pair not owned by the exporter.
       - ExportService__Targets__ShellDescriptors__BaseUrl=http://target-registry-repository:8082
