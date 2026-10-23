@@ -107,7 +107,7 @@ public static class TestDataMapperProfiles
         Extensions = new List<Extension> { CreateExtension() },
         Administration = CreateAdministration(),
         SemanticId = CreateReference(),
-        SupplementalSemanticId = new List<Reference> { CreateReference() },
+        SupplementalSemanticIds = new List<Reference> { CreateReference() },
         Endpoints = new List<EndpointData> { CreateEndpointData() }
     };
 

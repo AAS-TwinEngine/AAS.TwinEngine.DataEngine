@@ -11,9 +11,7 @@ public class PaginatorTests
     public PaginatorTests()
     {
         _idSelector = i => i.Id;
-        _items = Enumerable.Range(1, 20)
-            .Select(i => new TestItem { Id = $"id{i}", Value = $"value{i}" })
-            .ToList();
+        _items = [.. Enumerable.Range(1, 20).Select(i => new TestItem { Id = $"id{i}", Value = $"value{i}" })];
     }
 
     [Fact]
@@ -86,8 +84,8 @@ public class PaginatorTests
         var (pagedItems1, _) = Paginator.GetPagedResult(_items, _idSelector, 0, null);
         var (pagedItems2, _) = Paginator.GetPagedResult(_items, _idSelector, -10, null);
 
-        Assert.Equal(0, pagedItems1.Count);
-        Assert.Equal(0, pagedItems2.Count);
+        Assert.Empty(pagedItems1);
+        Assert.Empty(pagedItems2);
     }
 
     [Fact]
