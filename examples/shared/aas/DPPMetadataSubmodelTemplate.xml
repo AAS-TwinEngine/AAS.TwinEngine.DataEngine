@@ -265,7 +265,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>https://mm-software.com/ids/assets/000-001</value>
+          <value></value>
         </property>
         <property>
           <idShort>dppSchemaVersion</idShort>
@@ -295,7 +295,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>ENXXX:v1.0</value>
+          <value></value>
         </property>
         <property>
           <idShort>dppStatus</idShort>
@@ -325,7 +325,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>Active</value>
+          <value></value>
         </property>
         <property>
           <idShort>economicOperatorId</idShort>
@@ -355,7 +355,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>gxx:ppp456789</value>
+          <value></value>
         </property>
         <property>
           <idShort>facilityId</idShort>
@@ -385,7 +385,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>gxx:xxx987654</value>
+          <value></value>
         </property>
         <property>
           <idShort>granularity</idShort>
@@ -426,7 +426,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>Item</value>
+          <value></value>
         </property>
         <property>
           <idShort>lastUpdate</idShort>
@@ -467,7 +467,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:dateTime</valueType>
-          <value>2026-06-11T12:00:00+00:00</value>
+          <value></value>
         </property>
         <property>
           <idShort>uniqueProductIdentifier</idShort>
@@ -497,7 +497,7 @@
             </qualifier>
           </qualifiers>
           <valueType>xs:string</valueType>
-          <value>https://mm-software.com/ids/aas/000-001</value>
+          <value></value>
         </property>
       </submodelElements>
     </submodel>
