@@ -687,7 +687,7 @@
                         }
                       ],
                       "valueType": "xs:boolean",
-                      "value": "False",
+                      "value": "false",
                       "modelType": "Property"
                     }
                   ],
