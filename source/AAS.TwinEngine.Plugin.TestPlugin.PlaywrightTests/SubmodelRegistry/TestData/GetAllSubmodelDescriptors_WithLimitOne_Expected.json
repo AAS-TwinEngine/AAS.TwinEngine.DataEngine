@@ -23,7 +23,7 @@
           }
         ]
       },
-      "supplementalSemanticId": null,
+      "supplementalSemanticIds": null,
       "endpoints": [
         {
           "interface": "SUBMODEL-3.0",
