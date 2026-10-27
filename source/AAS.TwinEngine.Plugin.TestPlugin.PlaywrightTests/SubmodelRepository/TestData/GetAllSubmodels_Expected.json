@@ -3354,7 +3354,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -3616,7 +3616,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "False",
+                          "value": "false",
                           "modelType": "Property"
                         }
                       ],
@@ -6551,7 +6551,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -8268,7 +8268,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -12897,7 +12897,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -14614,7 +14614,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -19887,7 +19887,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -21604,7 +21604,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "False",
+                          "value": "false",
                           "modelType": "Property"
                         }
                       ],
@@ -21866,7 +21866,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -22128,7 +22128,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "False",
+                          "value": "false",
                           "modelType": "Property"
                         }
                       ],
