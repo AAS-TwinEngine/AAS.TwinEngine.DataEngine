@@ -5,7 +5,10 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -21,6 +24,27 @@ namespace AAS.TwinEngine.DataEngine.ModuleTests.Api.Services.ConfigurationMigrat
 /// </summary>
 public class ConfigurationBackwardCompatibilityModuleTests
 {
+    [Theory]
+    [InlineData("v1-config")]
+    [InlineData("v2-config")]
+    public async Task DisposeAsync_WhenHostStops_DisposesEnvironmentConfigFileProviderAsync(string configDir)
+    {
+        await using var appFactory = new ConfigTestFactory(configDir);
+        var configuration = appFactory.Services.GetRequiredService<IConfiguration>();
+        var configurationRoot = Assert.IsAssignableFrom<IConfigurationRoot>(configuration);
+        var environmentConfig = Assert.Single(configurationRoot.Providers
+            .OfType<JsonConfigurationProvider>()
+            .Where(provider => provider.Source.Path?.EndsWith("dataengine-env.json", StringComparison.Ordinal) == true));
+        var fileProvider = Assert.IsType<PhysicalFileProvider>(environmentConfig.Source.FileProvider);
+        Assert.True(environmentConfig.Source.Optional);
+        Assert.True(environmentConfig.Source.ReloadOnChange);
+        Assert.True(fileProvider.Watch(environmentConfig.Source.Path!).ActiveChangeCallbacks);
+
+        await appFactory.DisposeAsync();
+
+        Assert.Throws<ObjectDisposedException>(() => fileProvider.Watch("disposed-provider-check.json"));
+    }
+
     /// <summary>
     /// Custom factory that boots the app using a specific config directory.
     /// Each directory contains an appsettings.json in either V1 or V2 format.
@@ -333,4 +357,3 @@ public class ConfigurationBackwardCompatibilityModuleTests
         _ = Assert.Single(tmConfig.TemplateMappingRules.AasIdExtractionRules);
     }
 }
-

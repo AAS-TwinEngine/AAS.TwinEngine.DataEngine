@@ -8,6 +8,8 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration;
 
 using Asp.Versioning;
 
+using Microsoft.Extensions.Configuration.Json;
+
 using Serilog;
 
 namespace AAS.TwinEngine.DataEngine;
@@ -21,7 +23,16 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        _ = builder.Configuration.AddJsonFile("/config/dataengine-env.json", optional: true, reloadOnChange: true);
+        var environmentConfigSource = new JsonConfigurationSource
+        {
+            Path = "/config/dataengine-env.json",
+            Optional = true,
+            ReloadOnChange = true
+        };
+        environmentConfigSource.ResolveFileProvider();
+        // Absolute JSON paths create a file provider that configuration disposal does not own.
+        using var environmentConfigFileProvider = environmentConfigSource.FileProvider as IDisposable;
+        builder.Configuration.Sources.Add(environmentConfigSource);
 
         _ = builder.Host.UseSerilog();
         builder.ConfigureLogging(builder.Configuration);
@@ -68,6 +79,8 @@ public class Program
         .AddMvc();
 
         var app = builder.Build();
+        using var environmentConfigShutdownRegistration = app.Lifetime.ApplicationStopped.Register(
+            () => environmentConfigFileProvider?.Dispose());
 
         _ = app.MapHealthChecks("/healthz");
 
