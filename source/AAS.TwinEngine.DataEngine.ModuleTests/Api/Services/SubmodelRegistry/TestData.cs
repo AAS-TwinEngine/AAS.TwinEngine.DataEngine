@@ -57,7 +57,7 @@ internal static class TestData
                     ],
                     "referredSemanticId": null
                 },
-                "supplementalSemanticId": [],
+                "supplementalSemanticIds": [],
                 "endpoints": [
                     {
                         "interface": "SUBMODEL-3.0",
