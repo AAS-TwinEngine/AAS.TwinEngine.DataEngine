@@ -16,13 +16,13 @@ using Range = AasCore.Aas3_1.Range;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.ApplicationLogic.Services.SubmodelRepository.SemanticId.Extraction;
 
-public class TemplateInstanceValidatorTests
+public class TemplateCollectionValidatorTests
 {
     private readonly ISemanticIdResolver _resolver = Substitute.For<ISemanticIdResolver>();
     private readonly ISubmodelElementHelper _elementHelper = Substitute.For<ISubmodelElementHelper>();
     private readonly ILogger _logger = Substitute.For<ILogger>();
 
-    public TemplateInstanceValidatorTests()
+    public TemplateCollectionValidatorTests()
     {
         _ = _resolver.ExtractSemanticId(Arg.Any<ISubmodelElement>())
                      .Returns(call => call.Arg<ISubmodelElement>().SemanticId?.Keys.FirstOrDefault()?.Value ?? string.Empty);
@@ -194,7 +194,7 @@ public class TemplateInstanceValidatorTests
     public void Validate_NullElements_DoesNotThrow() => Validate(null);
 
     private void Validate(IEnumerable<ISubmodelElement>? elements)
-        => TemplateInstanceValidator.Validate(elements, _resolver, _elementHelper, _logger, "Submodel");
+        => TemplateCollectionValidator.Validate(elements, _resolver, _elementHelper, _logger, "Submodel");
 
     private void ValidatePair(ISubmodelElement first, ISubmodelElement second)
         => Validate([Container(first), Container(second)]);

@@ -14,7 +14,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository
 /// When a template holds several collection/list instances of the same semantic id, the template is the only source for them,
 /// so every mandatory element of every instance must already carry a value.
 /// </summary>
-public static class TemplateInstanceValidator
+public static class TemplateCollectionValidator
 {
     /// <summary>Validates mandatory values in repeated template instances before extraction.</summary>
     public static void Validate(
