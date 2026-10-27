@@ -55,10 +55,15 @@ public class SemanticIdHandlerTests
     [Fact]
     public void Extract_Submodel_ReturnsSemanticTreeNode()
     {
-        var node = (SemanticBranchNode)_sut.Extract(TestData.CreateSubmodel());
+        var submodel = TestData.WithoutTemplateValues(TestData.CreateSubmodel());
+        var contactList = (SubmodelElementList)submodel.SubmodelElements![2];
+        contactList.Value!.Cast<Property>().ToList().ForEach(property => property.Value = "From template");
+
+        var node = (SemanticBranchNode)_sut.Extract(submodel);
 
         Equal("http://example.com/idta/digital-nameplate/semantic-id", node.SemanticId);
-        Equal(8, node.Children.Count);
+        Equal(7, node.Children.Count);
+        DoesNotContain(node.Children, child => child.SemanticId == "http://example.com/idta/digital-nameplate/contact-list");
         var manufacturerNameNode = node.Children[0] as SemanticBranchNode;
         NotNull(manufacturerNameNode);
         Equal("http://example.com/idta/digital-nameplate/manufacturer-name", manufacturerNameNode.SemanticId);
@@ -77,17 +82,7 @@ public class SemanticIdHandlerTests
         Equal("http://example.com/idta/digital-nameplate/model-type", modelTypeNode.SemanticId);
         Equal(DataType.Number, modelTypeNode.DataType);
         Equal(Cardinality.ZeroToOne, modelTypeNode.Cardinality);
-        var contactListNode = node.Children[2] as SemanticBranchNode;
-        NotNull(contactListNode);
-        Equal("http://example.com/idta/digital-nameplate/contact-list", contactListNode.SemanticId);
-        Equal(2, contactListNode.Children.Count);
-        var contactNameNode = contactListNode.Children[0] as SemanticLeafNode;
-        NotNull(contactNameNode);
-        Equal("http://example.com/idta/digital-nameplate/contact-name", contactNameNode.SemanticId);
-        var modelNameNode = contactListNode.Children[1] as SemanticLeafNode;
-        NotNull(modelNameNode);
-        Equal("http://example.com/idta/digital-nameplate/model-name", modelNameNode.SemanticId);
-        var contactInformationNode = node.Children[3] as SemanticBranchNode;
+        var contactInformationNode = node.Children[2] as SemanticBranchNode;
         NotNull(contactInformationNode);
         Equal("http://example.com/idta/digital-nameplate/contact-information", contactInformationNode.SemanticId);
         _ = Single(contactInformationNode.Children);
@@ -95,19 +90,19 @@ public class SemanticIdHandlerTests
         NotNull(contactNameNode2);
         Equal("http://example.com/idta/digital-nameplate/contact-name", contactNameNode2.SemanticId);
 
-        var file = node.Children[4] as SemanticLeafNode;
+        var file = node.Children[3] as SemanticLeafNode;
         NotNull(file);
         Equal("http://example.com/idta/digital-nameplate/thumbnail", file.SemanticId);
         Equal(DataType.String, file.DataType);
         Equal(Cardinality.ZeroToOne, file.Cardinality);
 
-        var blob = node.Children[5] as SemanticLeafNode;
+        var blob = node.Children[4] as SemanticLeafNode;
         NotNull(blob);
         Equal("http://example.com/idta/digital-nameplate/blob", blob.SemanticId);
         Equal(DataType.String, blob.DataType);
         Equal(Cardinality.ZeroToOne, blob.Cardinality);
 
-        var range = node.Children[6] as SemanticBranchNode;
+        var range = node.Children[5] as SemanticBranchNode;
         NotNull(range);
         Equal("http://example.com/idta/digital-nameplate/range", range.SemanticId);
         var rangeMinNode = range.Children[0] as SemanticLeafNode;
@@ -115,7 +110,7 @@ public class SemanticIdHandlerTests
         var rangeMaxNode = range.Children[1] as SemanticLeafNode;
         Equal("http://example.com/idta/digital-nameplate/range_max", rangeMaxNode!.SemanticId);
 
-        var entityNode = node.Children[7] as SemanticBranchNode;
+        var entityNode = node.Children[6] as SemanticBranchNode;
         NotNull(entityNode);
         Equal("http://example.com/idta/digital-nameplate/entitynode", entityNode.SemanticId);
         var entityNodeLeaf = entityNode.Children[0] as SemanticLeafNode;
@@ -156,9 +151,238 @@ public class SemanticIdHandlerTests
     }
 
     [Fact]
+    public void Extract_ListWithOneUnresolvedMandatoryProperty_RequestsPropertyValue()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreatePropertyList([""]));
+
+        var root = (SemanticBranchNode)_sut.Extract(submodel);
+        var listNode = IsType<SemanticBranchNode>(Single(root.Children));
+
+        var propertyNode = IsType<SemanticLeafNode>(Single(listNode.Children));
+        Equal("http://test/list-property_aastwinengineindex_0", propertyNode.SemanticId);
+    }
+
+    [Fact]
+    public void Extract_ListWithOneResolvedProperty_DoesNotRequestAndPreservesTemplateValue()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreatePropertyList(["Value"]));
+
+        var root = (SemanticBranchNode)_sut.Extract(submodel);
+        var result = (Submodel)_sut.FillOutTemplate(submodel, root);
+
+        Empty(root.Children);
+        var list = IsType<SubmodelElementList>(Single(result.SubmodelElements!));
+        Equal("Value", IsType<Property>(Single(list.Value!)).Value);
+    }
+
+    [Fact]
+    public void Extract_ListWithFiveResolvedProperties_DoesNotRequestAndPreservesTemplateValues()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreatePropertyList(["A", "B", "C", "D", "E"]));
+
+        var root = (SemanticBranchNode)_sut.Extract(submodel);
+        var result = (Submodel)_sut.FillOutTemplate(submodel, root);
+
+        Empty(root.Children);
+        var list = IsType<SubmodelElementList>(Single(result.SubmodelElements!));
+        Equal(["A", "B", "C", "D", "E"], list.Value!.Cast<Property>().Select(property => property.Value));
+    }
+
+    [Fact]
+    public void Extract_ListWithFivePropertiesAndOneMissingMandatoryValue_ThrowsTemplateNotValid()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreatePropertyList(["A", "B", "", "D", "E"]));
+
+        _ = Throws<TemplateNotValidException>(() => _sut.Extract(submodel));
+    }
+
+    [Fact]
+    public void Extract_MakingsListWithOneFullyResolvedMarking_DoesNotRequestPluginValues()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(TestData.CreateMakingsList(
+        [
+            TestData.CreateMarking("Marking", "Stamp", "Blue", "A")
+        ]));
+
+        var root = (SemanticBranchNode)_sut.Extract(submodel);
+        var result = (Submodel)_sut.FillOutTemplate(submodel, root);
+
+        Empty(root.Children);
+        var makings = IsType<SubmodelElementList>(Single(result.SubmodelElements!));
+        AssertMarkingValues(IsType<SubmodelElementCollection>(Single(makings.Value!)), "Stamp", "Blue", "A");
+    }
+
+    [Fact]
+    public void ExtractAndFillOut_MakingsListWithPartialMarking_RequestsMissingPropertiesAndExpandsPluginValues()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(TestData.CreateMakingsList(
+        [
+            TestData.CreateMarking("Marking", "Stamp", "", "")
+        ]));
+
+        var requestTree = (SemanticBranchNode)_sut.Extract(submodel);
+        var makingsRequest = IsType<SemanticBranchNode>(Single(requestTree.Children));
+        var markingRequest = IsType<SemanticBranchNode>(Single(makingsRequest.Children));
+        Equal(["http://test/marking/color", "http://test/marking/code"], markingRequest.Children.Select(child => child.SemanticId));
+
+        var values = new SemanticBranchNode(requestTree.SemanticId, Cardinality.One);
+        var makingsValues = new SemanticBranchNode("http://test/makings", Cardinality.One);
+        makingsValues.AddChild(TestData.CreateMarkingValues("Blue", "A"));
+        makingsValues.AddChild(TestData.CreateMarkingValues("Red", "B"));
+        values.AddChild(makingsValues);
+
+        var result = (Submodel)_sut.FillOutTemplate(submodel, values);
+
+        var makings = IsType<SubmodelElementList>(Single(result.SubmodelElements!));
+        Equal(2, makings.Value!.Count);
+        AssertMarkingValues(IsType<SubmodelElementCollection>(makings.Value[0]), "Stamp", "Blue", "A");
+        AssertMarkingValues(IsType<SubmodelElementCollection>(makings.Value[1]), "Stamp", "Red", "B");
+    }
+
+    [Fact]
+    public void Extract_ReturnsIndexedProperty_WhenPluginExpandsCollectionList()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(TestData.CreateMakingsList(
+        [
+            TestData.CreateMarking("Marking", "Stamp", "", "")
+        ]));
+        var pluginValues = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.One);
+        var makingsValues = new SemanticBranchNode("http://test/makings", Cardinality.One);
+        makingsValues.AddChild(TestData.CreateMarkingValues("Blue", "A"));
+        makingsValues.AddChild(TestData.CreateMarkingValues("Red", "B"));
+        pluginValues.AddChild(makingsValues);
+
+        var filledSubmodel = (Submodel)_sut.FillOutTemplate(submodel, pluginValues);
+        var result = _sut.Extract(filledSubmodel, "Makings[1].Color");
+
+        Equal("Red", IsType<Property>(result).Value);
+    }
+
+    [Fact]
+    public void Extract_MakingsListWithEmptyMarking_RequestsAllMandatoryProperties()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(TestData.CreateMakingsList(
+        [
+            TestData.CreateMarking("Marking", "", "", "")
+        ]));
+
+        var root = (SemanticBranchNode)_sut.Extract(submodel);
+        var makings = IsType<SemanticBranchNode>(Single(root.Children));
+        var marking = IsType<SemanticBranchNode>(Single(makings.Children));
+
+        Equal(
+            ["http://test/marking/name", "http://test/marking/color", "http://test/marking/code"],
+            marking.Children.Select(child => child.SemanticId));
+    }
+
+    [Fact]
+    public void Extract_MakingsListWithMultipleFullyResolvedMarkings_DoesNotRequestPluginValues()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(TestData.CreateMakingsList(
+        [
+            TestData.CreateMarking("Marking0", "Stamp 1", "Blue", "A"),
+            TestData.CreateMarking("Marking1", "Stamp 2", "Red", "B")
+        ]));
+
+        var root = (SemanticBranchNode)_sut.Extract(submodel);
+        var result = (Submodel)_sut.FillOutTemplate(submodel, root);
+
+        Empty(root.Children);
+        var makings = IsType<SubmodelElementList>(Single(result.SubmodelElements!));
+        Equal(2, makings.Value!.Count);
+        AssertMarkingValues(IsType<SubmodelElementCollection>(makings.Value[0]), "Stamp 1", "Blue", "A");
+        AssertMarkingValues(IsType<SubmodelElementCollection>(makings.Value[1]), "Stamp 2", "Red", "B");
+    }
+
+    [Fact]
+    public void Extract_MakingsListWithMultipleMarkingsAndOneMissingMandatoryProperty_ThrowsTemplateNotValid()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(TestData.CreateMakingsList(
+        [
+            TestData.CreateMarking("Marking0", "Stamp 1", "Blue", "A"),
+            TestData.CreateMarking("Marking1", "Stamp 2", "", "B")
+        ]));
+
+        _ = Throws<TemplateNotValidException>(() => _sut.Extract(submodel));
+    }
+
+    [Fact]
+    public void Extract_MakingsListWithMultipleMarkingsAndMissingOptionalProperty_DoesNotRequestPluginValues()
+    {
+        var incompleteMarking = TestData.CreateMarking("Marking1", "Stamp 2", "", "B");
+        MakeOptional(incompleteMarking.Value![1]);
+        var submodel = CreateSubmodelWithSubmodelElement(TestData.CreateMakingsList(
+        [
+            TestData.CreateMarking("Marking0", "Stamp 1", "Blue", "A"),
+            incompleteMarking
+        ]));
+
+        var root = (SemanticBranchNode)_sut.Extract(submodel);
+        var result = (Submodel)_sut.FillOutTemplate(submodel, root);
+
+        Empty(root.Children);
+        var makings = IsType<SubmodelElementList>(Single(result.SubmodelElements!));
+        AssertMarkingValues(IsType<SubmodelElementCollection>(makings.Value![1]), "Stamp 2", "", "B");
+    }
+
+    [Fact]
+    public void Extract_ListWithMultipleDifferentItemsAndMissingMandatoryValue_ThrowsTemplateNotValid()
+    {
+        var list = CreatePropertyList(["A", ""]);
+        list.Value![1].SemanticId = new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.Property, "http://test/other-property")]);
+        var submodel = CreateSubmodelWithSubmodelElement(list);
+
+        _ = Throws<TemplateNotValidException>(() => _sut.Extract(submodel));
+    }
+
+    [Fact]
+    public void Extract_MultipleCollectionInstancesWithMissingOptionalValue_RequestsNothing()
+    {
+        var incompleteContact = CreateContact("Contact2", "John", null, "M&M");
+        MakeOptional(incompleteContact.Value![1]);
+        var submodel = new Submodel(
+            id: "http://example.com/idta/digital-nameplate",
+            idShort: "DigitalNameplate",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.Submodel, "http://example.com/idta/digital-nameplate/semantic-id")]),
+            submodelElements: [CreateContact("Contact1", "Hardi", "HR", "M&M"), incompleteContact]);
+
+        var node = (SemanticBranchNode)_sut.Extract(submodel);
+
+        Empty(node.Children);
+    }
+
+    private static void MakeOptional(ISubmodelElement element)
+        => element.Qualifiers = [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "ZeroToOne")];
+
+    private static SubmodelElementList CreatePropertyList(IReadOnlyList<string?> values)
+    {
+        var properties = values.Select((value, index) => (ISubmodelElement)new Property(
+            idShort: $"Value{index}",
+            valueType: DataTypeDefXsd.String,
+            value: value,
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.Property, "http://test/list-property")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")])).ToList();
+
+        return new SubmodelElementList(
+            typeValueListElement: AasSubmodelElements.Property,
+            idShort: "Values",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.SubmodelElementList, "http://test/list")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            value: properties);
+    }
+
+    private static void AssertMarkingValues(SubmodelElementCollection marking, string name, string color, string code)
+    {
+        var properties = marking.Value!.Cast<Property>().ToDictionary(property => property.IdShort!, property => property.Value);
+        Equal(name, properties["Name"]);
+        Equal(color, properties["Color"]);
+        Equal(code, properties["Code"]);
+    }
+
+    [Fact]
     public void Extract_SubmodelWithReferenceElement_ReturnsExpectedStructure()
     {
-        var submodel = TestData.CreateSubmodelWithReferenceElement();
+        var submodel = TestData.WithoutTemplateValues(TestData.CreateSubmodelWithReferenceElement());
 
         var node = _sut.Extract(submodel) as SemanticBranchNode;
 
@@ -183,7 +407,7 @@ public class SemanticIdHandlerTests
     [Fact]
     public void Extract_SubmodelWithRelationshipElement_ReturnsExpectedStructure()
     {
-        var submodel = TestData.CreateSubmodelRelationshipElement();
+        var submodel = TestData.WithoutTemplateValues(TestData.CreateSubmodelRelationshipElement());
 
         var node = _sut.Extract(submodel) as SemanticBranchNode;
 
@@ -207,24 +431,14 @@ public class SemanticIdHandlerTests
     }
 
     [Fact]
-    public void Extract_SubmodelWithModel3DList_ReturnsExpectedStructure()
+    public void Extract_SubmodelWithMultiItemModel3DList_DoesNotRequestPluginValues()
     {
-        var submodel = TestData.CreateSubmodelWithModel3DList();
+        var submodel = TestData.WithoutTemplateValues(TestData.CreateSubmodelWithModel3DList());
 
         var node = _sut.Extract(submodel) as SemanticBranchNode;
 
         Equal("http://example.com/idta/digital-nameplate/semantic-id", node?.SemanticId);
-        Single(node!.Children);
-        var model3D = node!.Children[0] as SemanticBranchNode;
-        NotNull(model3D);
-        Equal("http://example.com/idta/digital-nameplate/model-3d", model3D.SemanticId);
-        Equal(2, model3D.Children.Count);
-        Equal(Cardinality.ZeroToOne, model3D.Cardinality);
-        var modelDataCollection = model3D.Children[0] as SemanticBranchNode;
-        Equal("http://example.com/idta/digital-nameplate/model-data_aastwinengineindex_1", modelDataCollection?.SemanticId);
-        Equal(Cardinality.ZeroToMany, modelDataCollection?.Cardinality);
-        var modelDataCollectionFile = modelDataCollection!.Children[0] as SemanticLeafNode;
-        Equal(DataType.String, modelDataCollectionFile?.DataType);
+        Empty(node!.Children);
     }
 
     [Fact]
@@ -424,7 +638,7 @@ public class SemanticIdHandlerTests
     [Fact]
     public void FillOutTemplate_Submodel_ReturnsSubmodelWithValues()
     {
-        var submodel = TestData.CreateSubmodel();
+        var submodel = TestData.WithoutTemplateValues(TestData.CreateSubmodel());
         var values = TestData.SubmodelTreeNode;
 
         var submodelWithNewValues = (Submodel)_sut.FillOutTemplate(submodel, values);
@@ -499,10 +713,10 @@ public class SemanticIdHandlerTests
         AssertModelType(complexData0, 1, "22.47");
         AssertModelType(complexData1, 1, "22.47");
         AssertContactList(complexData0, 2, "Test John Doe", "Test Example Model");
-        AssertContactList(complexData1, 3, "Test1 John Doe", "Test1 Example Model");
-        AssertContactList(complexData1, 4, "Test2 John Doe", "Test2 Example Model");
+        AssertContactList(complexData1, 2, "Test1 John Doe", "Test1 Example Model");
+        AssertContactList(complexData1, 3, "Test2 John Doe", "Test2 Example Model");
         AssertContactInfo(complexData0, 3, "Test John Doe");
-        AssertContactInfo(complexData1, 2, "Test1 John Doe");
+        AssertContactInfo(complexData1, 4, "Test1 John Doe");
     }
 
     [Fact]
@@ -527,9 +741,9 @@ public class SemanticIdHandlerTests
         AssertModelType(complexData1, 1, "22.47");
         AssertContactList(complexData0, 2, "Test John Doe", "Test Example Model");
         AssertContactInfo(complexData0, 3, "Test John Doe");
-        AssertContactInfo(complexData1, 2, "Test1 John Doe");
-        AssertContactList(complexData1, 3, "Test1 John Doe", "Test1 Example Model");
-        AssertContactList(complexData1, 4, "Test2 John Doe", "Test2 Example Model");
+        AssertContactList(complexData1, 2, "Test1 John Doe", "Test1 Example Model");
+        AssertContactList(complexData1, 3, "Test2 John Doe", "Test2 Example Model");
+        AssertContactInfo(complexData1, 4, "Test1 John Doe");
     }
 
     [Fact]
@@ -571,7 +785,7 @@ public class SemanticIdHandlerTests
     public void FillOutTemplate_WhereModelReference_AndEachLeafNodeValueIsPresent_InReferenceElement()
     {
         var value = TestData.CreateReferenceElementWithModelReference();
-        var submodel = CreateSubmodelWithSubmodelElement(value);
+        var submodel = TestData.WithoutTemplateValues(CreateSubmodelWithSubmodelElement(value));
         var semanticTree = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.One);
         semanticTree.AddChild(TestData.CreateReferenceElementTreeNodeWhereEachValueOfLeafIsPresent());
 
@@ -607,8 +821,9 @@ public class SemanticIdHandlerTests
         IsType<ReferenceElement>(result!.SubmodelElements![0]);
         var referenceElement = result.SubmodelElements[0] as ReferenceElement;
         Equal(TestData.CreateFilledReferenceElementWithModelReferenceWithTemplateValueForProperty()!.Value!.Keys!.Count!, referenceElement!.Value!.Keys!.Count);
-        var expectedKeys = TestData.CreateFilledReferenceElementWithModelReference()!.Value!.Keys!;
-        for (var i = 0; i < expectedKeys.Count - 1; i++)
+        var expectedKeys = TestData.CreateReferenceElementWithModelReference().Value!.Keys;
+        expectedKeys[0].Value = "http://example.com/idta/digital-nameplate";
+        for (var i = 0; i < expectedKeys.Count; i++)
         {
             var expectedKey = expectedKeys[i];
             var actualKey = referenceElement.Value.Keys[i];
@@ -638,7 +853,7 @@ public class SemanticIdHandlerTests
     public void FillOutTemplate_RelationShipElementHaveOneModelReference_ProvidesAllLeafNodeValue()
     {
         var value = TestData.CreateRelationshipElementWithOneExternalReferenceAndOneModelReference();
-        var submodel = CreateSubmodelWithSubmodelElement(value);
+        var submodel = TestData.WithoutTemplateValues(CreateSubmodelWithSubmodelElement(value));
         var semanticTree = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.One);
         semanticTree.AddChild(TestData.CreateRelationShipElementHaveOneModelReferenceWhereEachValueOfLeafIsPresent());
 
@@ -803,6 +1018,242 @@ public class SemanticIdHandlerTests
         NotNull(mlp);
         NotNull(mlp.Value);
         Empty(mlp.Value);
+    }
+
+    [Fact]
+    public void Extract_CollectionWithSomeValuesInTemplate_RequestsOnlyMissingValues()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreateContact("ContactInformation", "", "", "M&M"));
+
+        var node = (SemanticBranchNode)_sut.Extract(submodel);
+
+        var contact = IsType<SemanticBranchNode>(Single(node.Children));
+        Equal(["http://test/name", "http://test/department"], contact.Children.Select(c => c.SemanticId));
+    }
+
+    [Fact]
+    public void Extract_SingleCollectionFullyResolvedInTemplate_RequestsNothing()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreateContact("ContactInformation", "Hardi", "HR", "M&M"));
+
+        var node = (SemanticBranchNode)_sut.Extract(submodel);
+
+        Empty(node.Children);
+    }
+
+    [Fact]
+    public void Extract_MultipleCollectionInstancesWithMissingMandatoryValue_ThrowsTemplateNotValid()
+    {
+        var submodel = new Submodel(
+            id: "http://example.com/idta/digital-nameplate",
+            idShort: "DigitalNameplate",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.Submodel, "http://example.com/idta/digital-nameplate/semantic-id")]),
+            submodelElements: [CreateContact("Contact1", "Hardi", "HR", "M&M"), CreateContact("Contact2", "John", null, "M&M")]);
+
+        _ = Throws<TemplateNotValidException>(() => _sut.Extract(submodel));
+    }
+
+    [Fact]
+    public void Extract_MultipleCollectionInstancesFullyResolved_RequestsNothing()
+    {
+        var submodel = new Submodel(
+            id: "http://example.com/idta/digital-nameplate",
+            idShort: "DigitalNameplate",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.Submodel, "http://example.com/idta/digital-nameplate/semantic-id")]),
+            submodelElements: [CreateContact("Contact1", "Hardi", "HR", "M&M"), CreateContact("Contact2", "John", "IT", "M&M")]);
+
+        var node = (SemanticBranchNode)_sut.Extract(submodel);
+
+        Empty(node.Children);
+    }
+
+    [Fact]
+    public void FillOutTemplate_CollectionWithTemplateValue_CombinesPluginAndTemplateValues()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreateContact("ContactInformation", "", "", "M&M"));
+        var values = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.One);
+        var contactValues = new SemanticBranchNode("http://test/contact", Cardinality.ZeroToMany);
+        contactValues.AddChild(new SemanticLeafNode("http://test/name", "John", DataType.String, Cardinality.One));
+        contactValues.AddChild(new SemanticLeafNode("http://test/department", "HR", DataType.String, Cardinality.One));
+        values.AddChild(contactValues);
+
+        var result = (Submodel)_sut.FillOutTemplate(submodel, values);
+
+        var contact = (SubmodelElementCollection)Single(result.SubmodelElements!);
+        Equal(["John", "HR", "M&M"], contact.Value!.Cast<Property>().Select(p => p.Value));
+    }
+
+    [Fact]
+    public void FillOutTemplate_ClonedCollections_KeepTemplateValueInEveryInstance()
+    {
+        var submodel = CreateSubmodelWithSubmodelElement(CreateContact("ContactInformation", "", "", "M&M"));
+        var values = new SemanticBranchNode("http://example.com/idta/digital-nameplate/semantic-id", Cardinality.One);
+        foreach (var name in new[] { "John", "Jane" })
+        {
+            var contactValues = new SemanticBranchNode("http://test/contact", Cardinality.ZeroToMany);
+            contactValues.AddChild(new SemanticLeafNode("http://test/name", name, DataType.String, Cardinality.One));
+            contactValues.AddChild(new SemanticLeafNode("http://test/department", "HR", DataType.String, Cardinality.One));
+            values.AddChild(contactValues);
+        }
+
+        var result = (Submodel)_sut.FillOutTemplate(submodel, values);
+
+        Equal(2, result.SubmodelElements!.Count);
+        Equal(["M&M", "M&M"], result.SubmodelElements.Cast<SubmodelElementCollection>().Select(c => ((Property)c.Value![2]).Value));
+        Equal(["John", "Jane"], result.SubmodelElements.Cast<SubmodelElementCollection>().Select(c => ((Property)c.Value![0]).Value));
+    }
+
+    [Fact]
+    public void ExtractAndFillOut_RangeWithMinInTemplate_RequestsMaxOnlyAndKeepsMin()
+    {
+        var range = TestData.CreateRange();
+        range.Min = "10";
+        range.Max = null;
+        var submodel = CreateSubmodelWithSubmodelElement(range);
+
+        var node = (SemanticBranchNode)_sut.Extract(submodel);
+
+        var rangeNode = IsType<SemanticBranchNode>(Single(node.Children));
+        Equal("http://example.com/idta/digital-nameplate/range_max", Single(rangeNode.Children).SemanticId);
+
+        var values = new SemanticBranchNode(node.SemanticId, Cardinality.One);
+        var rangeValues = new SemanticBranchNode(rangeNode.SemanticId, Cardinality.ZeroToOne);
+        rangeValues.AddChild(new SemanticLeafNode("http://example.com/idta/digital-nameplate/range_max", "99", DataType.Number, Cardinality.ZeroToOne));
+        values.AddChild(rangeValues);
+
+        var result = (Submodel)_sut.FillOutTemplate(submodel, values);
+
+        var filled = (AasCore.Aas3_1.Range)Single(result.SubmodelElements!);
+        Equal("10", filled.Min);
+        Equal("99", filled.Max);
+    }
+
+    [Fact]
+    public void ExtractAndFillOut_MultiLanguagePropertyWithEnglishInTemplate_RequestsGermanOnly()
+    {
+        var mlp = TestData.CreateManufacturerName();
+        mlp.Value = [new LangStringTextType("en", "Pump"), new LangStringTextType("de", "null")];
+        var submodel = CreateSubmodelWithSubmodelElement(mlp);
+
+        var node = (SemanticBranchNode)_sut.Extract(submodel);
+
+        var mlpNode = IsType<SemanticBranchNode>(Single(node.Children));
+        Equal("http://example.com/idta/digital-nameplate/manufacturer-name_de", Single(mlpNode.Children).SemanticId);
+
+        var values = new SemanticBranchNode(node.SemanticId, Cardinality.One);
+        var mlpValues = new SemanticBranchNode(mlpNode.SemanticId, Cardinality.One);
+        mlpValues.AddChild(new SemanticLeafNode("http://example.com/idta/digital-nameplate/manufacturer-name_de", "Pumpe", DataType.String, Cardinality.ZeroToOne));
+        values.AddChild(mlpValues);
+
+        var result = (Submodel)_sut.FillOutTemplate(submodel, values);
+
+        var filled = (MultiLanguageProperty)Single(result.SubmodelElements!);
+        Equal("Pump", filled.Value!.Single(text => text.Language == "en").Text);
+        Equal("Pumpe", filled.Value!.Single(text => text.Language == "de").Text);
+    }
+
+    [Theory]
+    [InlineData("Range")]
+    [InlineData("Language")]
+    [InlineData("File")]
+    [InlineData("Entity")]
+    [InlineData("Reference")]
+    public void FillOutTemplate_SharedSemanticId_PreservesResolvedSibling(string elementType)
+    {
+        const string SemanticId = "http://test/shared";
+        static Reference SemanticReference() => new(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, SemanticId)]);
+        ISubmodelElement CreateElement(string idShort, string value) => elementType switch
+        {
+            "Range" => new AasCore.Aas3_1.Range(DataTypeDefXsd.String, idShort: idShort, semanticId: SemanticReference(), min: value, max: value),
+            "Language" => new MultiLanguageProperty(idShort: idShort, semanticId: SemanticReference(), value: [new LangStringTextType("en", value)]),
+            "File" => new File(contentType: "text/plain", idShort: idShort, semanticId: SemanticReference(), value: value),
+            "Entity" => new Entity(entityType: EntityType.SelfManagedEntity, idShort: idShort, semanticId: SemanticReference(), globalAssetId: value,
+                specificAssetIds: [new SpecificAssetId("Manufacturer", value, semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://test/manufacturer")]))]),
+            "Reference" => new ReferenceElement(idShort: idShort, semanticId: SemanticReference(), value: new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, value)])),
+            _ => throw new ArgumentOutOfRangeException(nameof(elementType))
+        };
+        var resolved = CreateElement("Resolved", "template");
+        var unresolved = CreateElement("Unresolved", "");
+        var expected = Jsonization.Serialize.ToJsonObject(resolved).ToJsonString();
+        var submodel = CreateSubmodelWithSubmodelElement(resolved);
+        submodel.SubmodelElements!.Add(unresolved);
+        var response = new SemanticBranchNode(GetSemanticId(submodel), Cardinality.One);
+        if (elementType == "File")
+        {
+            response.AddChild(new SemanticLeafNode(SemanticId, "plugin", DataType.String, Cardinality.One));
+        }
+        else
+        {
+            var branch = new SemanticBranchNode(SemanticId, Cardinality.One);
+            var suffixes = elementType switch
+            {
+                "Range" => new[] { "_min", "_max" },
+                "Language" => new[] { "_en" },
+                "Entity" => new[] { SemanticIdResolver.EntityGlobalAssetIdPostFix },
+                _ => new[] { "_Submodel" }
+            };
+            foreach (var suffix in suffixes)
+            {
+                branch.AddChild(new SemanticLeafNode(SemanticId + suffix, "plugin", DataType.String, Cardinality.One));
+            }
+            if (elementType == "Entity")
+            {
+                branch.AddChild(new SemanticLeafNode("http://test/manufacturer", "plugin", DataType.String, Cardinality.One));
+            }
+            response.AddChild(branch);
+        }
+
+        _sut.FillOutTemplate(submodel, response);
+
+        Equal(expected, Jsonization.Serialize.ToJsonObject(resolved).ToJsonString());
+        var actualValue = unresolved switch
+        {
+            AasCore.Aas3_1.Range range => range.Min,
+            MultiLanguageProperty language => language.Value![0].Text,
+            File file => file.Value,
+            Entity entity => entity.GlobalAssetId,
+            ReferenceElement reference => reference.Value!.Keys[0].Value,
+            _ => null
+        };
+        Equal("plugin", actualValue);
+        if (unresolved is Entity filledEntity)
+        {
+            Equal("plugin", filledEntity.SpecificAssetIds![0].Value);
+        }
+    }
+
+    [Fact]
+    public void FillOutTemplate_PartiallyResolvedRange_PreservesConflictingTemplateMinimum()
+    {
+        var range = new AasCore.Aas3_1.Range(DataTypeDefXsd.String, idShort: "Range", min: "template", max: "",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://test/range")]));
+        var submodel = CreateSubmodelWithSubmodelElement(range);
+        var response = new SemanticBranchNode(GetSemanticId(submodel), Cardinality.One);
+        var branch = new SemanticBranchNode("http://test/range", Cardinality.One);
+        branch.AddChild(new SemanticLeafNode("http://test/range_min", "conflict", DataType.String, Cardinality.One));
+        branch.AddChild(new SemanticLeafNode("http://test/range_max", "plugin", DataType.String, Cardinality.One));
+        response.AddChild(branch);
+
+        _sut.FillOutTemplate(submodel, response);
+
+        Equal("template", range.Min);
+        Equal("plugin", range.Max);
+    }
+
+    private static SubmodelElementCollection CreateContact(string idShort, string? name, string? department, string company)
+    {
+        static Property Prop(string idShort, string semanticId, string? value) => new(
+            valueType: DataTypeDefXsd.String,
+            idShort: idShort,
+            value: value,
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, semanticId)]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")]);
+
+        return new SubmodelElementCollection(
+            idShort: idShort,
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://test/contact")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "ZeroToMany")],
+            value: [Prop("Name", "http://test/name", name), Prop("Department", "http://test/department", department), Prop("Company", "http://test/company", company)]);
     }
 
     private static SubmodelElementCollection GetSubmodelElementCollection(Submodel submodel, int index) => (submodel.SubmodelElements?[index] as SubmodelElementCollection)!;

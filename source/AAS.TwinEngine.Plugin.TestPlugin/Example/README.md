@@ -4,17 +4,17 @@
 
 This project provides a basic setup to demonstrate how **TwinEngine** can be integrated and run locally. It provides a complete environment for managing Asset Administration Shells (AAS) and related components.
 
-This example includes three submodels:
+This example includes three submodels for each existing product (`000-001`, `000-002`, and `000-003`):
 
-- Nameplate
 - ContactInformation
-- Reliability
+- CustomSubmodel
+- HandoverDocumentation
 
 ---
 
 ## Default configuration
 
-- `example/aas/` — contains default submodel templates (Nameplate, ContactInformation, Reliability).
+- [aas/](aas/) contains the existing submodel templates and shell template.
 - `plugin/`— contain JSON files mounted into the plugin containers:
   Changes to these JSON files on the host not visible to the running containers, you must restart the container.
 
@@ -22,6 +22,17 @@ This example includes three submodels:
 
 - twinengine-dataengine (built from local DataEngine source)
 - twinengine-plugin (plugin build)
+
+### Running the Checks
+
+1. Reload/import the modified XML into the template repository used by this setup. A repository with persisted templates may not overwrite them merely because its container restarts; confirm that the repository serves the updated template before testing.
+2. Restart `twinengine-plugin` after updating its mounted JSON data. Docker uses [plugin/mock-submodel-data.json](plugin/mock-submodel-data.json); local runs use [../Data/mock-submodel-data.json](../Data/mock-submodel-data.json). These copies contain the same scenario data.
+3. In the existing [API collection](apiCollection/README.md), retrieve each existing product's ContactInformation, CustomSubmodel, and HandoverDocumentation submodels. Inspect the fields and counts from the tables above.
+4. Repeat with `GET /submodels` to compare batch retrieval with individual submodel retrieval. Confirm the added static entries retain their relative template order.
+5. Retrieve a fully populated element, for example `FiveTemplateLanguages` from CustomSubmodel or `CorporateContact` from ContactInformation, through `GET /submodels/{submodelIdentifier}/submodel-elements/{idShortPath}`. No plugin data request is needed for those elements.
+6. Inspect the schema requests sent to TestPlugin: resolved IDs such as `0173-1#02-AAW001#001_en` and `https://mm-software.com/template-values/zero` must be absent. German company IDs and unresolved property/entity IDs must be present in their structural context. A mixed submodel still needs a plugin request for its unresolved fields.
+
+Existing Playwright requests can exercise these scenarios after the setup is reloaded. Full-response snapshots must be reviewed against the new fields, language entries, and static list items before they are refreshed; this change does not update those snapshots or add test code.
 
 ---
 

@@ -16,6 +16,8 @@ This example includes 5 standardized submodel templates from the **Digital Produ
 - **CarbonFootprint**
 - **HandoverDocumentation**
 
+The shared [Nameplate](../shared/aas/Nameplate.xml) and [TechnicalData](../shared/aas/TechnicalData.xml) templates set every `ManufacturerName` value to `M&M Software`. DataEngine reuses these populated template values instead of requesting manufacturer names from the plugin. The other included templates do not contain a `ManufacturerName` element.
+
 ## Quick Start
 
 ### Prerequisites

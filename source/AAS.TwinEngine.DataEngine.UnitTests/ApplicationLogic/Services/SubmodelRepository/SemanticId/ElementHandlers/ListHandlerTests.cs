@@ -63,6 +63,21 @@ public class ListHandlerTests
     }
 
     [Fact]
+    public void Extract_AllChildrenResolvedInTemplate_ReturnsNull()
+    {
+        var child = new Property(idShort: "Item", valueType: DataTypeDefXsd.String, value: "A");
+        var list = new SubmodelElementList(
+            idShort: "MyList",
+            typeValueListElement: AasSubmodelElements.Property,
+            value: new List<ISubmodelElement> { child }
+        );
+        _resolver.ResolveElementSemanticId(list, "MyList").Returns("http://test/list");
+        _resolver.GetCardinality(list).Returns(Cardinality.ZeroToMany);
+
+        Null(_sut.Extract(list, _ => null));
+    }
+
+    [Fact]
     public void Extract_WithNullValue_LogsWarningAndReturnsEmptyBranch()
     {
         var list = new SubmodelElementList(

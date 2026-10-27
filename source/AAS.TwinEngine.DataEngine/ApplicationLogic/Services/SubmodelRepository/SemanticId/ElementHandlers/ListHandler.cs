@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.DomainModel.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -28,7 +29,7 @@ public class ListHandler(
             logger.LogWarning("No elements defined in SubmodelElementList {ListIdShort}", list.IdShort);
         }
 
-        return node;
+        return node.Children.Count == 0 && TemplateValueChecker.HasResolvedValue(list) ? null : node;
     }
 
     public void FillOut(ISubmodelElement element, SemanticTreeNode values, Action<List<ISubmodelElement>, SemanticTreeNode, bool> fillOutChildren)

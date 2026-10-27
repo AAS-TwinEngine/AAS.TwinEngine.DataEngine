@@ -48,15 +48,13 @@ public class SubmodelFiller(
                 continue;
             }
 
-            _ = submodelTemplate.SubmodelElements.Remove(submodelElement);
-
             if (matchingNodes.Count > 1)
             {
                 HandleMultipleMatchingNodes(matchingNodes, submodelElement, submodelTemplate, index);
             }
             else
             {
-                HandleSingleMatchingNode(matchingNodes[0], submodelElement, submodelTemplate, index);
+                _ = FillOutElement(submodelElement, matchingNodes[0], index);
             }
         }
 
@@ -98,6 +96,9 @@ public class SubmodelFiller(
 
     private void HandleMultipleMatchingNodes(IReadOnlyList<SemanticTreeNode> matchingNodes, ISubmodelElement baseElement, ISubmodel submodelTemplate, SemanticValueIndex index)
     {
+        var elementIndex = submodelTemplate.SubmodelElements!.IndexOf(baseElement);
+        submodelTemplate.SubmodelElements.RemoveAt(elementIndex);
+
         var clones = elementHelper.CloneElements(baseElement, matchingNodes.Count);
         var appendIndex = baseElement is SubmodelElementCollection;
 
@@ -111,14 +112,8 @@ public class SubmodelFiller(
             }
 
             _ = FillOutElement(clonedElement, matchingNodes[i], index);
-            submodelTemplate.SubmodelElements?.Add(clonedElement);
+            submodelTemplate.SubmodelElements?.Insert(elementIndex + i, clonedElement);
         }
-    }
-
-    private void HandleSingleMatchingNode(SemanticTreeNode node, ISubmodelElement element, ISubmodel submodelTemplate, SemanticValueIndex index)
-    {
-        _ = FillOutElement(element, node, index);
-        submodelTemplate.SubmodelElements?.Add(element);
     }
 
     public ISubmodelElement FillOutElement(ISubmodelElement element, SemanticTreeNode values)
@@ -198,7 +193,8 @@ public class SubmodelFiller(
 
     private void ReplaceWithClones(List<ISubmodelElement> elements, ISubmodelElement element, IReadOnlyList<SemanticTreeNode> nodes, bool updateIdShort, SemanticValueIndex index)
     {
-        _ = elements.Remove(element);
+        var elementIndex = elements.IndexOf(element);
+        elements.RemoveAt(elementIndex);
 
         var clones = elementHelper.CloneElements(element, nodes.Count);
 
@@ -212,7 +208,7 @@ public class SubmodelFiller(
             }
 
             _ = FillOutElement(cloned, nodes[i], index);
-            elements.Add(cloned);
+            elements.Insert(elementIndex + i, cloned);
         }
     }
 }
