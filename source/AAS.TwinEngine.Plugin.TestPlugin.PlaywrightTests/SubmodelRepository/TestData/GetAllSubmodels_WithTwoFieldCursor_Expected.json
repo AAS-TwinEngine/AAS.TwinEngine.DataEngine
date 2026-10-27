@@ -1654,7 +1654,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
@@ -3371,7 +3371,7 @@
                             }
                           ],
                           "valueType": "xs:boolean",
-                          "value": "True",
+                          "value": "true",
                           "modelType": "Property"
                         }
                       ],
