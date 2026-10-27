@@ -7,6 +7,69 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Providers.PluginDat
 
 public class JsonSchemaParserTests
 {
+    [Theory]
+    [InlineData("true")]
+    [InlineData("false")]
+    public void ParseJsonSchema_WhenRootPropertyIsBoolean_ReturnsLowercaseString(string booleanValue)
+    {
+        var json = $$"""{"enabled": {{booleanValue}}}""";
+
+        var result = JsonSchemaParser.ParseJsonSchema(json);
+
+        var branch = Assert.IsType<SemanticBranchNode>(result);
+        var leaf = Assert.IsType<SemanticLeafNode>(Assert.Single(branch.Children));
+        Assert.Equal("enabled", leaf.SemanticId);
+        Assert.Equal(booleanValue, Assert.IsType<string>(leaf.Value));
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("false")]
+    public void ParseJsonSchema_WhenNestedPropertyIsBoolean_ReturnsLowercaseString(string booleanValue)
+    {
+        var json = $$$"""{"root": {"enabled": {{{booleanValue}}}}}""";
+        using var document = JsonDocument.Parse(json);
+
+        var result = JsonSchemaParser.ParseJsonSchema(document.RootElement);
+
+        var branch = Assert.IsType<SemanticBranchNode>(result);
+        var leaf = Assert.IsType<SemanticLeafNode>(Assert.Single(branch.Children));
+        Assert.Equal("enabled", leaf.SemanticId);
+        Assert.Equal(booleanValue, Assert.IsType<string>(leaf.Value));
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("false")]
+    public void ParseJsonSchema_WhenArrayItemIsBoolean_ReturnsLowercaseString(string booleanValue)
+    {
+        var json = $$"""{"items": [{{booleanValue}}]}""";
+
+        var result = JsonSchemaParser.ParseJsonSchema(json);
+
+        var branch = Assert.IsType<SemanticBranchNode>(result);
+        var item = Assert.IsType<SemanticBranchNode>(Assert.Single(branch.Children));
+        var leaf = Assert.IsType<SemanticLeafNode>(Assert.Single(item.Children));
+        Assert.Equal("items", leaf.SemanticId);
+        Assert.Equal(booleanValue, Assert.IsType<string>(leaf.Value));
+    }
+
+    [Theory]
+    [InlineData("\"True\"", "True")]
+    [InlineData("\"False\"", "False")]
+    [InlineData("42", "42")]
+    [InlineData("null", "")]
+    public void ParseJsonSchema_WhenNestedPropertyIsNotBoolean_PreservesPrimitiveValue(string jsonValue, string expectedValue)
+    {
+        var json = $$$"""{"root": {"value": {{{jsonValue}}}}}""";
+
+        var result = JsonSchemaParser.ParseJsonSchema(json);
+
+        var branch = Assert.IsType<SemanticBranchNode>(result);
+        var leaf = Assert.IsType<SemanticLeafNode>(Assert.Single(branch.Children));
+        Assert.Equal(expectedValue, Assert.IsType<string>(leaf.Value));
+    }
+
     [Fact]
     public void ParseJsonSchema_ShouldParseSimpleObject()
     {
