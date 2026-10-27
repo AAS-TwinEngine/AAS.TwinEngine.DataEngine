@@ -107,10 +107,6 @@ public sealed class SourceEntityHttpClient(
             using var document = await JsonDocument.ParseAsync(stream, cancellationToken: timeout.Token).ConfigureAwait(false);
             return ParsePage(document.RootElement);
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
         catch (Exception ex)
         {
             throw new SourceUnavailableException(
@@ -157,10 +153,6 @@ public sealed class SourceEntityHttpClient(
             await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
             using var document = await JsonDocument.ParseAsync(stream, cancellationToken: timeout.Token).ConfigureAwait(false);
             return ParseSingle(document.RootElement, identifier);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
