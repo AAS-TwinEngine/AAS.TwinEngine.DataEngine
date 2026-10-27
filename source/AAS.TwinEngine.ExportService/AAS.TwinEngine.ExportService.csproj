@@ -24,8 +24,8 @@
 
   <ItemGroup>
     <PackageReference Include="Cronos" Version="[0.13.0]" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.8]" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="[10.0.8]" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.14]" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="[10.0.14]" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="[10.6.0]" />
     <PackageReference Include="Npgsql" Version="[10.0.3]" />
     <PackageReference Include="OpenTelemetry" Version="[1.15.3]" />
@@ -33,11 +33,11 @@
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="[1.15.3]" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="[1.15.2]" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="[1.15.1]" />
-    <PackageReference Include="Polly.Core" Version="[8.6.6]" />
+    <PackageReference Include="Polly.Core" Version="[8.8.1]" />
     <PackageReference Include="Serilog" Version="[4.3.1]" />
     <PackageReference Include="Serilog.AspNetCore" Version="[10.0.0]" />
     <PackageReference Include="Serilog.Sinks.Console" Version="[6.1.1]" />
-    <PackageReference Include="System.Text.Json" Version="[10.0.8]" />
+    <PackageReference Include="System.Text.Json" Version="[10.0.14]" />
   </ItemGroup>
 
   <ItemGroup>
