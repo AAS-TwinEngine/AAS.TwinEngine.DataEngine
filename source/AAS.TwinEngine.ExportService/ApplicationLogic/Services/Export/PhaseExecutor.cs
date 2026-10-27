@@ -32,10 +32,7 @@ public sealed class PhaseExecutor(
 
     private async Task<PhaseResult> ExecuteAsync(EntityKind kind, bool deletionsOnly, CancellationToken cancellationToken)
     {
-        using var phaseSpan = ExportServiceTracing.StartSpan(
-            ExportServiceTracing.Spans.ExportPhase,
-            ExportServiceTracing.Attributes.EntityKind,
-            kind.ToString());
+        using var phaseSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.ExportPhase, ExportServiceTracing.Attributes.EntityKind, kind.ToString());
 
         _logger.LogInformation("Starting export phase for {EntityKind}", kind);
 
@@ -77,8 +74,7 @@ public sealed class PhaseExecutor(
                 continue;
             }
 
-            await ProcessForwardPageAsync(kind, pages.Current, stateByIdentifier, parallelOptions, counters)
-                .ConfigureAwait(false);
+            await ProcessForwardPageAsync(kind, pages.Current, stateByIdentifier, parallelOptions, counters).ConfigureAwait(false);
         }
     }
 
@@ -117,17 +113,10 @@ public sealed class PhaseExecutor(
         using (var decisionSpan = ExportServiceTracing.StartSpan(ExportServiceTracing.Spans.DecideCrudOperations))
         {
             _ = decisionSpan?.SetTag(ExportServiceTracing.Attributes.EntityKind, kind.ToString());
-            decisions = _decisionMaker.Decide(
-                kind,
-                page,
-                pageState.DistinctBy(entity => entity.Identifier).ToArray());
+            decisions = _decisionMaker.Decide(kind, page, pageState.DistinctBy(entity => entity.Identifier).ToArray());
         }
 
-        await ApplyDecisionsAsync(
-            kind,
-            decisions.Where(decision => decision.Operation != ExportOperation.Delete),
-            parallelOptions,
-            counters).ConfigureAwait(false);
+        await ApplyDecisionsAsync(kind, decisions.Where(decision => decision.Operation != ExportOperation.Delete), parallelOptions, counters).ConfigureAwait(false);
     }
 
     private async Task ApplyMissingEntitiesAsync(
@@ -145,30 +134,16 @@ public sealed class PhaseExecutor(
             decisions = _decisionMaker.Decide(kind, Array.Empty<SourceEntity>(), missingState);
         }
 
-        await ApplyDecisionsAsync(
-            kind,
-            decisions.Where(decision => decision.Operation == ExportOperation.Delete),
-            parallelOptions,
-            counters).ConfigureAwait(false);
+        await ApplyDecisionsAsync(kind, decisions.Where(decision => decision.Operation == ExportOperation.Delete), parallelOptions, counters).ConfigureAwait(false);
     }
 
-    private Task ApplyDecisionsAsync(
-        EntityKind kind,
-        IEnumerable<CrudDecision> decisions,
-        ParallelOptions parallelOptions,
-        PhaseCounters counters)
+    private Task ApplyDecisionsAsync(EntityKind kind, IEnumerable<CrudDecision> decisions, ParallelOptions parallelOptions, PhaseCounters counters)
     {
-        return Parallel.ForEachAsync(
-            decisions,
-            parallelOptions,
-            (decision, token) => ApplyDecisionAsync(kind, decision, counters, token));
+        return Parallel.ForEachAsync( decisions, parallelOptions, (decision, token)
+            => ApplyDecisionAsync(kind, decision, counters, token));
     }
 
-    private async ValueTask ApplyDecisionAsync(
-        EntityKind kind,
-        CrudDecision decision,
-        PhaseCounters counters,
-        CancellationToken cancellationToken)
+    private async ValueTask ApplyDecisionAsync(EntityKind kind, CrudDecision decision, PhaseCounters counters, CancellationToken cancellationToken)
     {
         if (decision.Operation == ExportOperation.Skip)
         {
@@ -187,12 +162,7 @@ public sealed class PhaseExecutor(
         catch (Exception ex)
         {
             counters.RecordFailure();
-            _logger.LogError(
-                ex,
-                "Failed to {Operation} {EntityKind} {Identifier}. Continuing with remaining entities.",
-                decision.Operation,
-                kind,
-                decision.Identifier);
+            _logger.LogError(ex, "Failed to {Operation} {EntityKind} {Identifier}. Continuing with remaining entities.", decision.Operation, kind, decision.Identifier);
         }
     }
 
@@ -292,9 +262,7 @@ public sealed class PhaseExecutor(
             return false;
         }
 
-        var describedEntity = await _stateStore
-            .GetAsync(describedKind, decision.Identifier, cancellationToken)
-            .ConfigureAwait(false);
+        var describedEntity = await _stateStore.GetAsync(describedKind, decision.Identifier, cancellationToken).ConfigureAwait(false);
 
         return describedEntity is not null;
     }

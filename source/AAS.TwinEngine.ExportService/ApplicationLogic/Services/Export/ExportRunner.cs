@@ -7,10 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.ExportService.ApplicationLogic.Services.Export;
 
-public sealed class ExportRunner(
-    IPhaseExecutor phaseExecutor,
-    IOptions<ExportServiceConfig> config,
-    ILogger<ExportRunner> logger) : IExportRunner
+public sealed class ExportRunner(IPhaseExecutor phaseExecutor, IOptions<ExportServiceConfig> config, ILogger<ExportRunner> logger) : IExportRunner
 {
     private static readonly EntityKind[] PhaseOrder =
     [
@@ -49,17 +46,10 @@ public sealed class ExportRunner(
             "Export run finished at {FinishedAt:O} with status {Status}. Duration: {DurationSeconds:F1}s.",
             finishedAt, status, (finishedAt - startedAt).TotalSeconds);
 
-        return new ExportRunResult(
-            startedAt,
-            finishedAt,
-            status,
-            enabledPhases.Where(phases.ContainsKey).Select(kind => phases[kind]).ToList());
+        return new ExportRunResult(startedAt, finishedAt, status, enabledPhases.Where(phases.ContainsKey).Select(kind => phases[kind]).ToList());
     }
 
-    private async Task<RunStatus> ExecuteForwardPassAsync(
-        Dictionary<EntityKind, PhaseResult> phases,
-        List<EntityKind> enabledPhases,
-        CancellationToken cancellationToken)
+    private async Task<RunStatus> ExecuteForwardPassAsync(Dictionary<EntityKind, PhaseResult> phases, List<EntityKind> enabledPhases, CancellationToken cancellationToken)
     {
         var status = RunStatus.Success;
 
@@ -87,8 +77,7 @@ public sealed class ExportRunner(
             }
             catch (OperationCanceledException ex)
             {
-                throw new OperationCanceledException(
-                    $"Export run was cancelled during phase {kind}.", ex, ex.CancellationToken);
+                throw new OperationCanceledException($"Export run was cancelled during phase {kind}.", ex, ex.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -123,8 +112,7 @@ public sealed class ExportRunner(
             }
             catch (OperationCanceledException ex)
             {
-                throw new OperationCanceledException(
-                    $"Export run was cancelled during deletion phase {kind}.", ex, ex.CancellationToken);
+                throw new OperationCanceledException($"Export run was cancelled during deletion phase {kind}.", ex, ex.CancellationToken);
             }
             catch (Exception ex)
             {

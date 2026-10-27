@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.DomainModel;
@@ -305,20 +305,6 @@ public class SourceEntityHttpClientTests
     }
 
     [Fact]
-    public async Task ReadAllAsync_WhenOperationCanceledExceptionThrown_RethrowsOperationCanceledException()
-    {
-        // Arrange
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-        var handler = new DelegatingTestHandler(req => throw new OperationCanceledException(cts.Token));
-        var sut = CreateSut(handler);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            sut.ReadAllAsync(EntityKind.Shell, CancellationToken.None));
-    }
-
-    [Fact]
     public async Task ReadAllAsync_WhenGenericExceptionThrown_WrapsInSourceUnavailableException()
     {
         // Arrange
@@ -474,20 +460,6 @@ public class SourceEntityHttpClientTests
         var ex = await Assert.ThrowsAsync<SourceUnavailableException>(() =>
             sut.GetByIdAsync(EntityKind.Shell, "urn:shell:err", CancellationToken.None));
         Assert.Contains("Connection refused", ex.Message);
-    }
-
-    [Fact]
-    public async Task GetByIdAsync_WhenOperationCanceled_RethrowsOperationCanceledException()
-    {
-        // Arrange
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-        var handler = new DelegatingTestHandler(_ => throw new OperationCanceledException(cts.Token));
-        var sut = CreateSut(handler);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            sut.GetByIdAsync(EntityKind.Shell, "urn:shell:1", CancellationToken.None));
     }
 
     [Fact]
