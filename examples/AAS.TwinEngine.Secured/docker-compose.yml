@@ -223,22 +223,22 @@ services:
     volumes:
       - ../shared/logo:/usr/src/app/dist/Logo
     environment:
-      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
-      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
-      AAS_REPO_PATH: http://localhost:8080/shells
-      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
-      CD_REPO_PATH: http://localhost:8080/concept-descriptions
-      BASE_PATH: "/aas-ui"
-      LOGO_PATH: "MM_Logo.svg"
-      PRIMARY_DARK_COLOR: "#00F2E5"
-      PRIMARY_LIGHT_COLOR: "#041b2b"
-      ENDPOINT_CONFIG_AVAILABLE: "false"
-      KEYCLOAK_URL: http://localhost:9090
-      KEYCLOAK_REALM: basyx
-      KEYCLOAK_CLIENT_ID: basyx-ui
-      ALLOW_EDITING: "false"
-      SM_VIEWER_EDITOR: "false"
-      ALLOW_UPLOADING: "false"
+      - AAS_REGISTRY_PATH=http://localhost:8080/shell-descriptors
+      - SUBMODEL_REGISTRY_PATH=http://localhost:8080/submodel-descriptors
+      - AAS_REPO_PATH=http://localhost:8080/shells
+      - SUBMODEL_REPO_PATH=http://localhost:8080/submodels
+      - CD_REPO_PATH=http://localhost:8080/concept-descriptions
+      - BASE_PATH=/aas-ui
+      - LOGO_PATH=MM_Logo.svg
+      - PRIMARY_DARK_COLOR=#00F2E5
+      - PRIMARY_LIGHT_COLOR=#041b2b
+      - ENDPOINT_CONFIG_AVAILABLE=false
+      - KEYCLOAK_URL=http://localhost:9090
+      - KEYCLOAK_REALM=basyx
+      - KEYCLOAK_CLIENT_ID=basyx-ui
+      - ALLOW_EDITING=false
+      - SM_VIEWER_EDITOR=false
+      - ALLOW_UPLOADING=false
     depends_on:
       template-repository-registry:
         condition: service_started
@@ -254,22 +254,22 @@ services:
     image: keycloak/keycloak:26.0.6
     container_name: keycloak
     environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/basyxTestDB
-      KC_DB_USERNAME: postgres
-      KC_DB_PASSWORD: admin
-      KC_HOSTNAME: keycloak.localhost
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HTTP_ENABLED: "true"
-      KC_HTTPS_ENABLED: "false"
-      KC_HEALTH_ENABLED: "true"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
-      KC_HTTP_PORT: "9090"
-      KC_HTTP_MANAGEMENT_PORT: "9000"
-      KC_IMPORT: /opt/keycloak/data/import/
-      KC_HTTP_MANAGEMENT_ENABLED: "true"
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/basyxTestDB
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=admin
+      - KC_HOSTNAME=keycloak.localhost
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_ENABLED=true
+      - KC_HTTPS_ENABLED=false
+      - KC_HEALTH_ENABLED=true
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_BACKCHANNEL=false
+      - KC_HTTP_PORT=9090
+      - KC_HTTP_MANAGEMENT_PORT=9000
+      - KC_IMPORT=/opt/keycloak/data/import/
+      - KC_HTTP_MANAGEMENT_ENABLED=true
     command: ["start-dev", "--import-realm", "--health-enabled=true", "--http-port=9090"]
     ports:
       - "9090:9090"
@@ -300,9 +300,9 @@ services:
     image: postgres:16-alpine
     container_name: postgres
     environment:
-      POSTGRES_DB: twinengine
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
+      - POSTGRES_DB=twinengine
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
     volumes:
       - ../shared/postgres:/docker-entrypoint-initdb.d
       - postgres-data:/var/lib/postgresql/data
@@ -321,8 +321,8 @@ services:
     ports:
       - "8081:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
     depends_on:
       postgres:
         condition: service_healthy

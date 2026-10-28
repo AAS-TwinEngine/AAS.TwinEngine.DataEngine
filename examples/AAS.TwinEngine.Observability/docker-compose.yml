@@ -202,18 +202,18 @@ services:
     volumes:
       - ../shared/logo:/usr/src/app/dist/Logo
     environment:
-      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
-      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
-      AAS_REPO_PATH: http://localhost:8080/shells
-      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
-      CD_REPO_PATH: http://localhost:8080/concept-descriptions
-      BASE_PATH: "/aas-ui"
-      LOGO_PATH: "MM_Logo.svg"
-      PRIMARY_DARK_COLOR: "#00F2E5"
-      PRIMARY_LIGHT_COLOR: "#041b2b"
-      ALLOW_EDITING: "false"
-      SM_VIEWER_EDITOR: "false"
-      ALLOW_UPLOADING: "false"
+      - AAS_REGISTRY_PATH=http://localhost:8080/shell-descriptors
+      - SUBMODEL_REGISTRY_PATH=http://localhost:8080/submodel-descriptors
+      - AAS_REPO_PATH=http://localhost:8080/shells
+      - SUBMODEL_REPO_PATH=http://localhost:8080/submodels
+      - CD_REPO_PATH=http://localhost:8080/concept-descriptions
+      - BASE_PATH=/aas-ui
+      - LOGO_PATH=MM_Logo.svg
+      - PRIMARY_DARK_COLOR=#00F2E5
+      - PRIMARY_LIGHT_COLOR=#041b2b
+      - ALLOW_EDITING=false
+      - SM_VIEWER_EDITOR=false
+      - ALLOW_UPLOADING=false
     restart: always
     depends_on:
       template-repository-registry:
@@ -229,9 +229,9 @@ services:
     ports:
       - "9999:5432"
     environment:
-      POSTGRES_DB: twinengine
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
+      - POSTGRES_DB=twinengine
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
     volumes:
       - ../shared/postgres:/docker-entrypoint-initdb.d
       - postgres-data:/var/lib/postgresql/data
@@ -250,8 +250,8 @@ services:
     ports:
       - "8081:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
     depends_on:
       postgres:
         condition: service_healthy
