@@ -549,6 +549,12 @@ If the path already contains a query, the builder appends `&limit=...`.
 It does not remove existing `limit` or `cursor` query parameters; configure the
 collection path without conflicting pagination parameters.
 
+`Performance.SourcePageRequestDelayMilliseconds` adds a cancellable delay before each
+collection request after the first page. For example, a 1,000-entity source with a limit of
+250 makes four page requests and waits three times between them. The default is `0` (no delay).
+This setting applies to collection pagination for all enabled source kinds; it does not delay
+the first request, deletion-verification GET-by-ID calls, or target writes.
+
 ### 8.3 Supported response shapes
 
 Plain array:
@@ -1601,6 +1607,7 @@ under the normal host configuration setup.
 | `Resilience.BackoffMultiplier` | 2.0 | 2.0 |
 | `Resilience.TimeoutInSeconds` | 30 | 30 |
 | `Performance.MaxDegreeOfParallelism` | 8 | 10 |
+| `Performance.SourcePageRequestDelayMilliseconds` | 0 | 0 |
 | `EndpointConfig.Limit` | 250 | 250 for sources |
 | `Sources.<Kind>.Enabled` | true | All sources true; controls the matching target too |
 | `EndpointConfig.HealthEndpoint` | `/healthz` | BaSyx endpoints override `/health` |
@@ -1616,7 +1623,7 @@ schedule. Always inspect the effective deployment configuration.
 |---|---|
 | `Scheduler` | Enablement, UTC cron, whole-run timeout |
 | `Resilience` | HTTP retry count, base delay, multiplier, per-attempt timeout |
-| `Performance` | Decision concurrency within a phase |
+| `Performance` | Source page-request pacing and decision concurrency within a phase |
 | `StateStore` | PostgreSQL connection and schema |
 | `Sources` | Read endpoint for each entity kind |
 | `Targets` | Write endpoint for each entity kind and null-stripping option |
@@ -1645,7 +1652,10 @@ also be valid or explicitly disabled; this is not a standalone complete settings
       "BackoffMultiplier": 2.0,
       "TimeoutInSeconds": 30
     },
-    "Performance": { "MaxDegreeOfParallelism": 10 },
+    "Performance": {
+      "MaxDegreeOfParallelism": 10,
+      "SourcePageRequestDelayMilliseconds": 0
+    },
     "Sources": {
       "Submodels": {
         "BaseUrl": "http://dataengine:8080",
@@ -1677,6 +1687,7 @@ ExportService__Scheduler__CronExpression=*/5 * * * *
 ExportService__Scheduler__RunTimeoutMinutes=30
 ExportService__Resilience__TimeoutInSeconds=30
 ExportService__Performance__MaxDegreeOfParallelism=10
+ExportService__Performance__SourcePageRequestDelayMilliseconds=250
 ExportService__Sources__Submodels__BaseUrl=http://dataengine:8080
 ExportService__Sources__Submodels__HealthEndpoint=/healthz
 ExportService__Targets__Submodels__BaseUrl=http://target:8082
@@ -1700,6 +1711,7 @@ checks:
 
 - Five-field parseable cron and positive run timeout.
 - Positive maximum parallelism.
+- Nonnegative source page-request delay in milliseconds.
 - Retry count at least one.
 - Nonnegative initial delay.
 - Finite backoff multiplier at least one.

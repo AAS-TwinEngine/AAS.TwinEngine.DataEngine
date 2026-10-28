@@ -1,7 +1,7 @@
 namespace AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
 /// <summary>
-/// Tuning knobs for how aggressively a phase applies changes to the target.
+/// Tuning knobs for source request pacing and phase execution.
 /// </summary>
 public sealed class PerformanceConfig
 {
