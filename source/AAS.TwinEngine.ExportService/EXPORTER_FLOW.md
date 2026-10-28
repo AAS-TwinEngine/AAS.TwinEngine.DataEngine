@@ -1,7 +1,7 @@
 # Export Service: In-Depth Code and Execution Guide
 
 > **Audience:** developers, technical leads, QA engineers, and operators.
-> **Reviewed against:** the working-tree implementation on 2026-10-19.
+> **Reviewed against:** the working-tree implementation on 2026-10-26.
 > **Scope:** the complete Export Service, including dependency health checks.
 > **Reading rule:** code excerpts are selected implementation excerpts unless explicitly
 > labelled as pseudocode or illustrative data. Examples with reduced AAS objects explain
@@ -140,6 +140,88 @@ the service-configuration namespace.
 | Health registration/routes | [ExportServiceHealthCheckExtensions](./ServiceConfiguration/ExportServiceHealthCheckExtensions.cs) | What does readiness include? |
 | HTTP dependency probe | [EndpointHealthCheck](./Infrastructure/Monitoring/EndpointHealthCheck.cs) | How is a dependency checked? |
 | Database probe | [StateStoreHealthCheck](./Infrastructure/Monitoring/StateStoreHealthCheck.cs) | What does database readiness prove? |
+
+For statement-by-statement walkthroughs, see [ExportRunner](./EXPORT_RUNNER_LINE_BY_LINE.md),
+[PhaseExecutor](./PHASE_EXECUTOR_LINE_BY_LINE.md), and
+[CrudDecisionMaker](./CRUD_DECISION_MAKER_LINE_BY_LINE.md).
+
+## 2.3 Function descriptions
+
+These short descriptions are grouped by the class that owns each function.
+
+| Class | Function | Description |
+|---|---|---|
+| `Program` | `Main` | Builds the host, registers services, maps health checks, and runs the service. |
+| `LoggingConfigurationExtension` | `ConfigureLogging` | Configures structured logging, tracing, metrics, and telemetry exporters. |
+| `InfrastructureDependencyInjectionExtensions` | `ConfigureInfrastructure` | Binds and validates configuration, then registers infrastructure services and hosted services. |
+| `ApplicationDependencyInjectionExtensions` | `ConfigureApplication` | Registers the export runner, phase executor, and CRUD decision maker. |
+| `StateSchemaInitializer` | `StartAsync` | Creates a scope and ensures the ledger schema before normal host operation. |
+| `PostgreSqlStateStore` | `EnsureSchemaAsync` | Creates or updates the configured PostgreSQL ownership-ledger schema. |
+| `PostgreSqlStateStore` | `LoadAsync` | Loads all ledger entities for one kind. |
+| `PostgreSqlStateStore` | `GetAsync` | Looks up one ledger entity by kind and identifier. |
+| `PostgreSqlStateStore` | `UpsertAsync` | Inserts or updates ownership and content-hash state while preserving original creation time. |
+| `PostgreSqlStateStore` | `QuoteSchema` | Restricts schema names to letters, digits, and underscores before inserting them into SQL text. |
+| `ExportBackgroundService` | `ExecuteAsync` | Waits for each UTC cron occurrence and invokes one scheduled tick. |
+| `ExportBackgroundService` | `TickAsync` | Acquires the in-process run lock, applies the whole-run timeout, creates a scope, and runs the exporter. |
+| `ExportRunLock` | `TryAcquire` | Atomically acquires the single-process run lock or reports that another run holds it. |
+| `ExportRunLock` | `Release` / `Dispose` | Releases the acquired run lock when the tick's disposable lease ends. |
+| `ExportRunner` | `RunAsync` | Runs forward phases and, unless aborted, reverse-order deletion phases; then returns the combined result. |
+| `ExportRunner` | `ExecuteForwardPassAsync` | Runs enabled entity kinds in dependency-first order and aborts remaining phases on phase-level failures. |
+| `ExportRunner` | `ExecuteDeletionPassAsync` | Runs enabled deletion phases in reverse order and combines their counters with forward results. |
+| `ExportRunner` | `EscalateOnFailures` | Raises a successful run status to PartialFailure when a phase reports failed entities. |
+| `ExportRunner` | `IsPhaseEnabled` | Reads the source-side enablement flag that controls both directions for an entity kind. |
+| `ExportRunner` | `ResolveFinalStatus` | Derives Success, FullFailure, PartialFailure, or Aborted from run status and phase counters. |
+| `ExportRunner` | `Merge` | Adds forward and deletion counters into one result for an entity kind. |
+| `PhaseExecutor` | `ExecuteAsync` | Loads ownership state, streams source pages, applies forward decisions or deletion preparation, and logs phase totals. |
+| `PhaseExecutor` | `ExecuteDeletionsAsync` | Selects the deletion-only mode of the phase executor. |
+| `PhaseExecutor` | `ProcessSourcePagesAsync` | Streams source pages for forward processing or deletion comparison. |
+| `PhaseExecutor` | `MoveToNextPageAsync` | Advances the source-page enumerator and records a fetch activity for tracing. |
+| `PhaseExecutor` | `AddSourceIdentifiers` | Adds a deletion-scan page's identifiers to the source-presence set. |
+| `PhaseExecutor` | `ProcessForwardPageAsync` | Selects ledger rows for a page, decides operations, and applies non-delete decisions. |
+| `PhaseExecutor` | `ApplyMissingEntitiesAsync` | Turns ledger entities absent from the source listing into deletion candidates. |
+| `PhaseExecutor` | `ApplyDecisionsAsync` | Applies decisions with the configured bounded parallelism. |
+| `PhaseExecutor` | `ApplyDecisionAsync` | Counts skips, applies one operation, and records/logs any exception from that operation as a per-entity failure. |
+| `PhaseExecutor` | `LogPhaseResult` | Builds phase counters, adds them to the trace, and logs the phase summary. |
+| `PhaseExecutor` | `ApplyAsync` | Routes a CRUD decision to create, update, delete, or skip handling. |
+| `PhaseExecutor` | `ApplyCreationAsync` | Creates the target entity; reconciles a conflict only when ledger evidence permits descriptor adoption. |
+| `PhaseExecutor` | `CanAdoptConflictingEntityAsync` | Checks whether the conflicting descriptor's shell or submodel is already exporter-managed. |
+| `PhaseExecutor` | `RecordOwnershipAsync` | Upserts the entity identifier and source-content hash after a successful target write. |
+| `PhaseExecutor` | `ApplyDeletionAsync` | Confirms source absence, deletes the target entity, then removes its ledger row. |
+| `CrudDecisionMaker` | `Decide` | Compares source identifiers and hashes with ledger state to produce CRUD decisions. |
+| `SourceEntity` | `ContentHash` | Computes the source JSON's SHA-256 digest used for ledger comparison. |
+| `SourceEntityHttpClient` | `ReadPagesAsync` | Reads source collections page by page, following cursors and rejecting incomplete pagination. |
+| `SourceEntityHttpClient` | `ReadAllAsync` | Materializes all pages for compatibility with callers that need a complete list. |
+| `SourceEntityHttpClient` | `GetByIdAsync` | Reads one source entity for deletion verification; returns null only for HTTP 404. |
+| `SourceEntityHttpClient` | `ReadPageAsync` | Sends one collection request, parses its response stream, and returns entities with the next cursor. |
+| `SourceEntityHttpClient` | `BuildPageUri` | Adds the configured page limit and URL-escaped continuation cursor to the collection path. |
+| `SourceEntityHttpClient` | `BuildItemUri` | Appends the Base64URL-encoded identifier to the source collection path. |
+| `SourceEntityHttpClient` | `ParsePage` | Validates an array or paged wrapper and converts identified items into source entities. |
+| `SourceEntityHttpClient` | `ParseSingle` | Validates a single-object response and uses the requested identifier if the object has none. |
+| `SourceEntityHttpClient` | `ExtractNextCursor` | Reads a nonempty string cursor from paging metadata when available. |
+| `SourceEntityHttpClient` | `ExtractIdentifier` | Reads an entity identifier from `id` or legacy `identification.id`. |
+| `TargetEntityHttpClient` | `CreateAsync` | POSTs a new entity and reports HTTP 409 for caller-level ownership handling. |
+| `TargetEntityHttpClient` | `UpdateAsync` | PUTs an entity to its Base64URL item path. |
+| `TargetEntityHttpClient` | `DeleteAsync` | DELETEs an entity by item path and treats target HTTP 404 as already deleted. |
+| `TargetEntityHttpClient` | `JsonContent` | Builds JSON request content, optionally removing null-valued object properties. |
+| `TargetEntityHttpClient` | `BuildItemPath` | Appends the encoded identifier to the target collection path. |
+| `TargetEntityHttpClient` | `CreateRequestUri` | Constructs a request URI from the configured target path. |
+| `TargetEntityHttpClient` | `EnsureSuccessAsync` | Accepts successful responses or throws with method, entity, status, and bounded response body. |
+| `TargetEntityHttpClient` | `ReadErrorBodyAsync` | Reads and truncates a target error body, handling unreadable content. |
+| `Base64Url` | `Encode` | Converts a UTF-8 identifier to unpadded Base64URL for an item-path segment. |
+| `NullPropertyStripper` | `Strip` | Parses JSON and recursively removes null-valued object properties when enabled. |
+| `NullPropertyStripper` | `StripNode` | Removes null-valued object properties recursively while preserving array elements. |
+| `ExportServiceConfigValidator` | `Validate` | Checks bound configuration and returns validation failures before the host starts. |
+| `ExportServiceHealthCheckExtensions` | `AddExportServiceHealthChecks` | Registers the ledger probe and source/target probes for enabled kinds. |
+| `EndpointHealthCheck` | `CheckHealthAsync` | GETs a dependency health path and maps success or known request failures to health status. |
+| `StateStoreHealthCheck` | `CheckHealthAsync` | Opens the database and executes a lightweight query to verify connectivity. |
+| `ResilienceHandlerExtensions` | `AddStandardResilience` | Adds configured HTTP retry and timeout strategies to an endpoint client. |
+| `ResilienceHandlerExtensions` | `CalculateRetryDelay` | Calculates exponential backoff before jitter is applied. |
+| `ResilienceHandlerExtensions` | `AddJitter` | Applies a random multiplier to a retry delay to spread concurrent retries. |
+| `ConfiguredTokenProvider` | `GetTokenAsync` | Resolves a static or cached bearer token, acquiring an OAuth token when needed. |
+| `ConfiguredTokenProvider` | `AcquireOAuthTokenAsync` | Requests and validates a client-credentials token, then returns its cache lifetime. |
+| `BearerTokenHandler` | `SendAsync` | Adds the endpoint's bearer token to an outgoing HTTP request when one is available. |
+| `ExportServiceTracing` | `StartSpan` | Starts a custom Export Service tracing activity, optionally with an initial tag. |
+| `ExportServiceTracing` | `RecordError` | Marks a tracing activity as failed and records exception details. |
 
 ## 3. Domain objects
 
@@ -1334,20 +1416,21 @@ No active phases can therefore produce Success with an empty phase list.
 | Target write / ledger change for one entity | Count Failed, log, continue |
 | Source verification for one deletion | Count Failed, preserve state, continue |
 | Explicit cancellation check in runner | Cancellation propagates |
-| Per-entity `ApplyAsync` throws cancellation | Broad per-entity catch can count it as Failed |
+| Per-entity `ApplyAsync` throws cancellation | Caught by the general per-entity handler and counted as Failed |
 | OAuth acquisition throws cancellation | Generic authentication failure |
 
-The source HTTP methods currently wrap exceptions broadly in
-`SourceUnavailableException`, including cancellation from their HTTP/read blocks.
-A canceled collection read may therefore be reported by the runner as Aborted
-rather than a propagated cancellation.
+The source HTTP methods rethrow `OperationCanceledException` from their HTTP/read blocks;
+other exceptions from those blocks are wrapped in `SourceUnavailableException`. During
+per-entity decision application, however, `ApplyDecisionAsync` catches exceptions broadly,
+so cancellation thrown by an individual operation is counted as Failed and logged.
 
-`Parallel.ForEachAsync` still receives the run token and can propagate cancellation
-from its own scheduling/waiting behavior. The distinction is between the parallel
-loop observing cancellation and an individual operation throwing into the broad catch.
+`Parallel.ForEachAsync` also receives the run token. Cancellation observed by the loop itself,
+or outside the per-entity catch, can still stop the phase and propagate. Ordinary exceptions
+from an individual operation are counted as Failed and allow remaining decisions to continue.
 
-These are current implementation semantics, not a claim that cancellation is
-uniformly handled across all branches.
+OAuth acquisition has a separate broad exception handler that translates cancellation
+inside token acquisition into `AuthenticationFailedException`. Cancellation behavior
+therefore still depends on which operation observes it.
 
 ### 16.3 Results are not persisted as run history
 
