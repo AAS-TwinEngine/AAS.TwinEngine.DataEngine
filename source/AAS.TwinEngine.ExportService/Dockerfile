@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ea8bde36c11b6e7eec2656d0e59101d4462f6bd630730f2c8201ed0572b295d5 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.403@sha256:de4fe90a98845d75910b9769662465c84de1a934665c431279d1382b2bddc02b AS build
+RUN dotnet --info && test "$(dotnet --version)" = "10.0.403"
 # Install CycloneDX SBOM Generator Package
 RUN dotnet tool install --global CycloneDX --version 5.5.0
 ENV PATH="$PATH:/root/.dotnet/tools"
@@ -25,7 +26,8 @@ FROM scratch AS app-sbom-artifact
 COPY --from=build /App/sbom/bom.xml /sbom_application.cyclonedx.xml
 
 # Create final image containing application
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:57bd717ac18ff6c8a39cc0ee4a76c1f15adc46df50434c73eff0c3f1df4c88f0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.14-alpine3.24@sha256:254fe017495996d3abcc487ffacdcce2b73affb380d3af87af12c8dff41fe0b0
+RUN dotnet --list-runtimes && dotnet --list-runtimes | grep -Fq 'Microsoft.NETCore.App 10.0.14 '
 RUN apk add --no-cache tzdata
 USER app
 WORKDIR /App

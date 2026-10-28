@@ -6,6 +6,12 @@ namespace AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 public sealed class PerformanceConfig
 {
     /// <summary>
+    /// Delay in milliseconds between paginated source collection requests. The first request
+    /// is immediate. Set to <c>0</c> to disable the delay. Default: <c>0</c>.
+    /// </summary>
+    public int SourcePageRequestDelayMilliseconds { get; set; }
+
+    /// <summary>
     /// Maximum number of entities applied to the target concurrently within a single phase
     /// (create/update/delete-verify/delete). Set to <c>1</c> for fully sequential behavior.
     /// Higher values reduce wall-clock time for large datasets at the cost of more concurrent

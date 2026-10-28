@@ -19,6 +19,11 @@ public sealed class ExportServiceConfigValidator : IValidateOptions<ExportServic
             failures.Add("Performance.MaxDegreeOfParallelism must be greater than zero.");
         }
 
+        if (options.Performance.SourcePageRequestDelayMilliseconds < 0)
+        {
+            failures.Add("Performance.SourcePageRequestDelayMilliseconds must not be negative.");
+        }
+
         ValidateResilience(options.Resilience, failures);
 
         if (string.IsNullOrWhiteSpace(options.StateStore.ConnectionString))
