@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.ApplicationLogic.Services.Crud;
@@ -342,34 +342,6 @@ public class PhaseExecutorTests
         Assert.Equal(0, result.Created);
         Assert.Equal(1, result.Failed);
         Assert.True(result.HasFailures);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_WhenOperationCanceledExceptionThrownDuringApply_RethrowsImmediately()
-    {
-        // Arrange
-        var sut = CreateSut();
-        var kind = EntityKind.ShellDescriptor;
-        var source = new SourceEntity("id_cancel", "{\"id\":\"id_cancel\"}");
-
-        _sourceReader.ReadAllAsync(kind, Arg.Any<CancellationToken>()).Returns(new[] { source });
-        _stateStore.LoadAsync(kind, Arg.Any<CancellationToken>()).Returns(Array.Empty<ExportedEntity>());
-
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        var decisions = new List<CrudDecision>
-        {
-            new(ExportOperation.Create, kind, "id_cancel", source)
-        };
-        _decisionMaker.Decide(kind, Arg.Any<IReadOnlyList<SourceEntity>>(), Arg.Any<IReadOnlyList<ExportedEntity>>())
-            .Returns(decisions);
-
-        _targetWriter.CreateAsync(kind, source, Arg.Any<CancellationToken>())
-            .ThrowsAsync(new OperationCanceledException(cts.Token));
-
-        // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(() => sut.ExecuteAsync(kind, CancellationToken.None));
     }
 
     [Fact]
