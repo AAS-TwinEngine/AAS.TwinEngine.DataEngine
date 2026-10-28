@@ -218,8 +218,6 @@ services:
       - twinengine-network
 
   target-registry-repository:
-    ports:
-      - "8092:8082"
     image: eclipsebasyx/aasenvironment-go:1.1.2
     container_name: target-registry-repository
     command: ["/app/aasenvironmentservice"]
