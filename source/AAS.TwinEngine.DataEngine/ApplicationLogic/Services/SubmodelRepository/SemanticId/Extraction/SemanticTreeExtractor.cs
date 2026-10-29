@@ -24,8 +24,8 @@ public class SemanticTreeExtractor(
             throw new InvalidDependencyException(nameof(submodelTemplate), logger);
         }
 
-        TemplateInstanceValidator.Validate(submodelTemplate.SubmodelElements, semanticIdResolver, elementHelper, logger, submodelTemplate.IdShort ?? string.Empty);
-        var templateOwned = TemplateInstanceValidator.FindTemplateOwnedElements(submodelTemplate.SubmodelElements, semanticIdResolver);
+        TemplateCollectionValidator.Validate(submodelTemplate.SubmodelElements, semanticIdResolver, elementHelper, logger, submodelTemplate.IdShort ?? string.Empty);
+        var templateOwned = TemplateCollectionValidator.FindTemplateOwnedElements(submodelTemplate.SubmodelElements, semanticIdResolver);
 
         var rootNode = new SemanticBranchNode(semanticIdResolver.ResolveSemanticId(submodelTemplate, submodelTemplate.IdShort!), Cardinality.One);
         var childNodes = submodelTemplate.SubmodelElements!

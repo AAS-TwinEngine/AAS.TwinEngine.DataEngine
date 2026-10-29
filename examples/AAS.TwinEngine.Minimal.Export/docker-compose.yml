@@ -129,7 +129,7 @@ services:
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__0=CarbonFootprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__1=Footprint
       - ExtractionRules__SubmodelNameExtractionRules__4__pattern__2=Carbon
-      - ExtractionRules__SubmodelNameExtractionRules__5__SubmodelName=DppMetadata
+       - ExtractionRules__SubmodelNameExtractionRules__5__SubmodelName=DppMetadata
       - ExtractionRules__SubmodelNameExtractionRules__5__pattern__0=DppMetadata
       - ExtractionRules__SubmodelNameExtractionRules__5__pattern__1=Metadata
       - ExtractionRules__SubmodelNameExtractionRules__5__pattern__2=Dpp
