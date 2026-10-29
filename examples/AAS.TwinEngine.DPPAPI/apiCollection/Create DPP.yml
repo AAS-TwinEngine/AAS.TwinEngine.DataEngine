@@ -1,0 +1,176 @@
+info:
+  name: Create DPP
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseUrl}}/v1/dpps"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "digitalProductPassportId": "{{dppId}}",
+        "uniqueProductIdentifier": "{{productId}}",
+        "granularity": "Item",
+        "dppSchemaVersion": "ENXXX:v1.0",
+        "dppStatus": "Active",
+        "lastUpdate": "{{currentTimestamp}}",
+        "economicOperatorId": "gxx:ppp456789",
+        "facilityId": "gxx:xxx987654",
+        "contentSpecificationIds": [
+          "https://admin-shell-io/idta/digitalproductpassport/Nameplate/1",
+          "https://admin-shell.io/idta/CarbonFootprint/CarbonFootprint/1/0",
+          "https://admin-shell-io/idta/digitalproductpassport/HandoverDocumentation/2",
+          "https://admin-shell-io/idta/digitalproductpassport/Circularity/1"
+        ],
+        "https://admin-shell-io/idta/digitalproductpassport/Nameplate/1": {
+          "ManufacturerName": "VoltFabrik GmbH",
+          "ProductName": [
+            {
+              "value": "BPX 92 kWh traction battery pack",
+              "language": "en-GB"
+            },
+            {
+              "value": "BPX 92 kWh Traktionsbatterie",
+              "language": "de-DE"
+            }
+          ],
+          "ProductArticleNumber": "BPX-92-2026",
+          "SerialNumber": "BPX-2026-000184",
+          "ManufacturingDate": "2026-05-18"
+        },
+        "https://admin-shell.io/idta/CarbonFootprint/CarbonFootprint/1/0": {
+          "ProductCarbonFootprints": [
+            {
+              "QuantityOfMeasureForCalculation": 1.0,
+              "PcfCo2eq": 4180.75,
+              "ReferenceImpactUnitForCalculation": "kg CO2e",
+              "WebLinkToPublicCarbonFootprintStudy": [
+                "https://manufacturer.example/reports/bpx-2026-000184-carbon-footprint.pdf"
+              ],
+              "PcfCalculationMethods": [
+                "ISO 14067"
+              ],
+              "PerformanceClass": "third-party verified",
+              "LifeCyclePhases": [
+                "raw material extraction",
+                "cell manufacturing",
+                "pack assembly",
+                "inbound logistics"
+              ]
+            }
+          ]
+        },
+        "https://admin-shell-io/idta/digitalproductpassport/HandoverDocumentation/2": {
+          "Documents": [
+            {
+              "DocumentIds": [
+                {
+                  "DocumentIdentifier": "XF90-884",
+                  "DocumentIsPrimary": true,
+                  "DocumentDomainId": "1213455566"
+                }
+              ],
+              "DocumentVersions": [
+                {
+                  "DigitalFiles": [
+                    {
+                      "resourceTitle": "User Manual for BPX 92 kWh traction battery pack",
+                      "contentType": "application/pdf",
+                      "url": "https://manufacturer.example/docs/bpx-92-user-manual.pdf",
+                      "language": "en-GB"
+                    },
+                    {
+                      "resourceTitle": "Benutzerhandbuch BPX 92 kWh Traktionsbatterie",
+                      "contentType": "application/pdf",
+                      "url": "https://manufacturer.example/docs/bpx-92-benutzerhandbuch.pdf",
+                      "language": "de-DE"
+                    }
+                  ],
+                  "Title": [
+                    {
+                      "value": "User Manual for BPX 92 kWh traction battery pack",
+                      "language": "en-GB"
+                    },
+                    {
+                      "value": "Benutzerhandbuch BPX 92 kWh Traktionsbatterie",
+                      "language": "de-DE"
+                    }
+                  ],
+                  "Description": [
+                    {
+                      "value": "Installation, operation and service information for the battery pack.",
+                      "language": "en-GB"
+                    },
+                    {
+                      "value": "Installations-, Betriebs- und Serviceinformationen fuer das Batteriepack.",
+                      "language": "de-DE"
+                    }
+                  ],
+                  "Language": [
+                    "en-GB",
+                    "de-DE"
+                  ],
+                  "Version": "V1.2"
+                }
+              ],
+              "DocumentClassifications": [
+                {
+                  "ClassName": [
+                    {
+                      "value": "Operation",
+                      "language": "en-GB"
+                    },
+                    {
+                      "value": "Bedienung",
+                      "language": "de-DE"
+                    }
+                  ],
+                  "ClassId": "03-02",
+                  "ClassificationSystem": "VDI2770 Blatt 1:2020"
+                }
+              ]
+            }
+          ]
+        },
+        "https://admin-shell-io/idta/digitalproductpassport/Circularity/1": {
+          "RecycledContentPercent": 29.4,
+          "RecyclabilityPercent": 87.2,
+          "RecommendedEndOfLifeRoute": "certified battery recycling with second-life assessment first",
+          "DismantlingInstructions": {
+            "resourceTitle": "Dismantling instructions for BPX 92 kWh traction battery pack",
+            "contentType": "application/pdf",
+            "url": "https://manufacturer.example/docs/bpx-92-dismantling-instructions.pdf",
+            "language": "en-GB"
+          }
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: bru.setVar("currentTimestamp", new Date().toISOString());
+    - type: tests
+      code: |-
+        test("created or already exists", function () {
+          expect([201, 409]).to.include(res.getStatus());
+        });
+
+        if (res.getStatus() === 201) {
+          const body = res.getBody();
+          bru.setVar("dppId", body.digitalProductPassportId);
+          bru.setVar("historicalDate", new Date().toISOString());
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

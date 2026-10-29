@@ -1,0 +1,22 @@
+info:
+  name: Delete DPP
+  type: http
+  seq: 7
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/v1/dpps/:dppIdEncoded"
+  headers:
+    - name: Accept
+      value: application/json
+  params:
+    - name: dppIdEncoded
+      value: "{{dppId}}"
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
