@@ -155,10 +155,6 @@ public sealed class PhaseExecutor(
         {
             counters.Record(await ApplyAsync(decision, cancellationToken).ConfigureAwait(false));
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
         catch (Exception ex)
         {
             counters.RecordFailure();
