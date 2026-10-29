@@ -237,6 +237,18 @@ public class ExportServiceConfigValidatorTests
         Assert.Contains(result.Failures, failure => failure.Contains("Performance.MaxDegreeOfParallelism", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void Validate_WhenSourcePageRequestDelayIsNegative_ReturnsFailure()
+    {
+        var config = CreateValidConfig();
+        config.Performance.SourcePageRequestDelayMilliseconds = -1;
+
+        var result = _sut.Validate(null, config);
+
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("Performance.SourcePageRequestDelayMilliseconds", StringComparison.Ordinal));
+    }
+
     private static ExportServiceConfig CreateValidConfig()
     {
         var endpoint = new EndpointConfig

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 
 using AAS.TwinEngine.ExportService.ApplicationLogic.Exceptions;
 using AAS.TwinEngine.ExportService.DomainModel;
@@ -161,6 +162,31 @@ public class SourceEntityHttpClientTests
         Assert.Equal("e1", result[0].Identifier);
         Assert.Equal("e2", result[1].Identifier);
         Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task ReadAllAsync_WhenSourcePageDelayIsConfigured_DelaysBetweenPageRequests()
+    {
+        _configValue.Performance.SourcePageRequestDelayMilliseconds = 100;
+        var handler = new DelegatingTestHandler(req =>
+        {
+            var uri = req.RequestUri?.ToString() ?? string.Empty;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(uri.Contains("cursor=", StringComparison.Ordinal)
+                    ? "{\"result\":[{\"id\":\"e2\"}]}"
+                    : "{\"paging_metadata\":{\"cursor\":\"next\"},\"result\":[{\"id\":\"e1\"}]}")
+            };
+        });
+        var sut = CreateSut(handler);
+        var stopwatch = Stopwatch.StartNew();
+
+        var result = await sut.ReadAllAsync(EntityKind.Shell, CancellationToken.None);
+
+        stopwatch.Stop();
+        Assert.Equal(2, result.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.True(stopwatch.ElapsedMilliseconds >= 80, $"Expected at least 80ms elapsed, got {stopwatch.ElapsedMilliseconds}ms.");
     }
 
     [Fact]
