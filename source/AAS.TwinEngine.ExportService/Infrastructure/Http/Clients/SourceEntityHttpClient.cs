@@ -63,6 +63,12 @@ public sealed class SourceEntityHttpClient(
         for (var page = 0; page < MaxPagesPerRead; page++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var delayMilliseconds = _config.Value.Performance.SourcePageRequestDelayMilliseconds;
+            if (page > 0 && delayMilliseconds > 0)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(delayMilliseconds), cancellationToken).ConfigureAwait(false);
+            }
+
             var (entities, nextCursor) = await ReadPageAsync(client, kind, endpoint, cursor, cancellationToken).ConfigureAwait(false);
             if (!string.IsNullOrEmpty(nextCursor) && !seenCursors.Add(nextCursor))
             {
