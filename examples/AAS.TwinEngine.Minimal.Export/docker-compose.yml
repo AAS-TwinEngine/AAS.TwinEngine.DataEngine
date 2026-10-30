@@ -142,7 +142,7 @@ services:
 
   basyx_configuration_source:
     container_name: basyx_configuration_source
-    image: eclipsebasyx/basyxconfigurationservice-go:1.1.2
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
@@ -160,7 +160,7 @@ services:
 
   # Pre-seeded with the DPP submodel/shell templates — this is what DataEngine exports FROM.
   source-registry-repository:
-    image: eclipsebasyx/aasenvironment-go:1.1.2
+    image: eclipsebasyx/aasenvironment-go:1.0.12
     container_name: source-registry-repository
     command: ["/app/aasenvironmentservice"]
     volumes:
@@ -201,7 +201,7 @@ services:
   # ---------------------------------------------------------------------------
   basyx_configuration_target:
     container_name: basyx_configuration_target
-    image: eclipsebasyx/basyxconfigurationservice-go:1.1.2
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
@@ -220,7 +220,7 @@ services:
   target-registry-repository:
     ports:
     - "8092:8082" 
-    image: eclipsebasyx/aasenvironment-go:1.1.2
+    image: eclipsebasyx/aasenvironment-go:1.0.12
     container_name: target-registry-repository
     command: ["/app/aasenvironmentservice"]
     volumes:

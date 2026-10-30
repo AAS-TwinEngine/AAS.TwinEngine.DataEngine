@@ -7,7 +7,7 @@ include:
 
 services:
   dpp-api:
-    image: eclipsebasyx/dppapi-go:1.1.2
+    image: eclipsebasyx/dppapi-go:1.0.12
     container_name: dpp-api
     environment:
       - SERVER_PORT=8083
