@@ -156,7 +156,7 @@ services:
       - twinengine-network
 
   template-repository-registry:
-    image: eclipsebasyx/aasenvironment-go:1.1.2
+    image: eclipsebasyx/aasenvironment-go:1.0.12
     container_name: template-repository-registry
     pull_policy: always
     command: ["/app/aasenvironmentservice"]
@@ -200,7 +200,7 @@ services:
 
   basyx_configuration:
     container_name: basyx_configuration
-    image: eclipsebasyx/basyxconfigurationservice-go:1.1.2
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
     pull_policy: always
     environment:
       - POSTGRES_HOST=postgres

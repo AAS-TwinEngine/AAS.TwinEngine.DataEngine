@@ -90,7 +90,6 @@ services:
       - ./security_env/trustlist.json:/security_env/trustlist.json:ro
       - ./security_env/access-rules.json:/security_env/access-rules.json:ro
     environment:
-      GENERAL_EXTERNALURL: http://localhost:8092
       ABAC_ENABLED: "true"
       ABAC_MODELPATH: /security_env/access-rules.json
       ABAC_POLICY_FILE_IMPORT: always
