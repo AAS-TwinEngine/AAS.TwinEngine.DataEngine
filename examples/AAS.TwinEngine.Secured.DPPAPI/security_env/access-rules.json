@@ -1,0 +1,89 @@
+{
+  "AllAccessPermissionRules": {
+    "DEFATTRIBUTES": [
+      { "name": "anonymous_attr", "attributes": [{ "GLOBAL": "ANONYMOUS" }] },
+      { "name": "role_attr", "attributes": [{ "CLAIM": "role" }] }
+    ],
+    "DEFOBJECTS": [
+      {
+        "name": "current_dpp",
+        "objects": [
+          { "ROUTE": "/v1/dpps/https%3A%2F%2Fmm-software.com%2Fids%2Faas%2F000-001" },
+          { "ROUTE": "/v1/dpps/https%3A%2F%2Fmm-software.com%2Fids%2Faas%2F000-002" },
+          { "ROUTE": "/v1/dpps/https%3A%2F%2Fmm-software.com%2Fids%2Faas%2F001-001" },
+          { "ROUTE": "/v1/dpps/https://mm-software.com/ids/aas/000-001" },
+          { "ROUTE": "/v1/dpps/https://mm-software.com/ids/aas/000-002" },
+          { "ROUTE": "/v1/dpps/https://mm-software.com/ids/aas/001-001" }
+        ]
+      },
+      {
+        "name": "dpp_routes",
+        "objects": [
+          { "ROUTE": "/v1/dpps" },
+          { "ROUTE": "/v1/dpps/*" },
+          { "ROUTE": "/v1/dppsByIdAndDate/*" },
+          { "ROUTE": "/v1/dppsByProductId/*" },
+          { "ROUTE": "/v1/dppsByProductIds" }
+        ]
+      },
+      {
+        "name": "aas_routes",
+        "objects": [
+          { "ROUTE": "/description" },
+          { "ROUTE": "/shells" },
+          { "ROUTE": "/shells/*" },
+          { "ROUTE": "/submodels" },
+          { "ROUTE": "/submodels/*" },
+          { "ROUTE": "/shell-descriptors" },
+          { "ROUTE": "/shell-descriptors/*" },
+          { "ROUTE": "/submodel-descriptors" },
+          { "ROUTE": "/submodel-descriptors/*" },
+          { "ROUTE": "/concept-descriptions" },
+          { "ROUTE": "/concept-descriptions/*" },
+          { "ROUTE": "/lookup/*" }
+        ]
+      }
+    ],
+    "DEFACLS": [
+      {
+        "name": "public_read",
+        "acl": { "USEATTRIBUTES": "anonymous_attr", "RIGHTS": ["READ"], "ACCESS": "ALLOW" }
+      },
+      {
+        "name": "viewer_read",
+        "acl": { "USEATTRIBUTES": "role_attr", "RIGHTS": ["READ"], "ACCESS": "ALLOW" }
+      },
+      {
+        "name": "admin_all",
+        "acl": { "USEATTRIBUTES": "role_attr", "RIGHTS": ["ALL"], "ACCESS": "ALLOW" }
+      }
+    ],
+    "DEFFORMULAS": [
+      {
+        "name": "is_viewer",
+        "formula": { "$eq": [{ "$attribute": { "CLAIM": "role" } }, { "$strVal": "viewer" }] }
+      },
+      {
+        "name": "is_admin",
+        "formula": { "$eq": [{ "$attribute": { "CLAIM": "role" } }, { "$strVal": "admin" }] }
+      }
+    ],
+    "rules": [
+      {
+        "USEACL": "public_read",
+        "USEOBJECTS": ["current_dpp"],
+        "FORMULA": { "$boolean": true }
+      },
+      {
+        "USEACL": "viewer_read",
+        "USEOBJECTS": ["dpp_routes", "aas_routes"],
+        "USEFORMULA": "is_viewer"
+      },
+      {
+        "USEACL": "admin_all",
+        "USEOBJECTS": ["dpp_routes", "aas_routes"],
+        "USEFORMULA": "is_admin"
+      }
+    ]
+  }
+}

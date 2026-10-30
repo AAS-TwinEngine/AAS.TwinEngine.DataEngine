@@ -1,0 +1,165 @@
+include:
+  - path:
+      - ../AAS.TwinEngine.Minimal.Export/docker-compose.yml
+    project_directory: ../AAS.TwinEngine.Minimal.Export
+
+services:
+  keycloak:
+    image: keycloak/keycloak:26.0.6
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/basyxSourceDB
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: admin
+      KC_HOSTNAME: keycloak.localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_HTTPS_ENABLED: "false"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KC_HTTP_PORT: "9090"
+      KC_HTTP_MANAGEMENT_PORT: "9000"
+    command: ["start-dev", "--import-realm", "--health-enabled=true", "--http-port=9090"]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../AAS.TwinEngine.Secured/keycloak/realm:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - twinengine-network
+
+  keycloak-healthcheck:
+    image: curlimages/curl:latest
+    container_name: keycloak-healthcheck
+    command: >
+      sh -c "
+        echo 'Waiting for Keycloak to become ready...';
+        until curl -sf http://keycloak:9000/health/ready; do
+          sleep 5;
+        done;
+        echo 'Keycloak is ready!'"
+    depends_on:
+      - keycloak
+    networks:
+      - twinengine-network
+
+  twinengine-dataengine:
+    depends_on:
+      source-registry-repository:
+        condition: service_started
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+    environment:
+      TemplateManagement__AasTemplateRepository__headerMappings__0__source: Authorization
+      TemplateManagement__AasTemplateRepository__headerMappings__0__target: Authorization
+      TemplateManagement__AasTemplateRepository__headerMappings__0__required: "false"
+      TemplateManagement__SubmodelTemplateRepository__headerMappings__0__source: Authorization
+      TemplateManagement__SubmodelTemplateRepository__headerMappings__0__target: Authorization
+      TemplateManagement__SubmodelTemplateRepository__headerMappings__0__required: "false"
+      TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__source: Authorization
+      TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__target: Authorization
+      TemplateManagement__ConceptDescriptionTemplateRepository__headerMappings__0__required: "false"
+      TemplateManagement__AasTemplateRegistry__headerMappings__0__source: Authorization
+      TemplateManagement__AasTemplateRegistry__headerMappings__0__target: Authorization
+      TemplateManagement__AasTemplateRegistry__headerMappings__0__required: "false"
+      TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__source: Authorization
+      TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__target: Authorization
+      TemplateManagement__SubmodelTemplateRegistry__headerMappings__0__required: "false"
+
+  source-registry-repository:
+    volumes:
+      - ./security_env:/security_env:ro
+    environment:
+      ABAC_ENABLED: "true"
+      ABAC_MODELPATH: /security_env/access-rules.json
+      ABAC_POLICY_FILE_IMPORT: always
+      OIDC_TRUSTLISTPATH: /security_env/trustlist.json
+    depends_on:
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "keycloak.localhost:host-gateway"
+
+  target-registry-repository:
+    volumes:
+      - ./security_env/trustlist.json:/security_env/trustlist.json:ro
+      - ./security_env/access-rules.json:/security_env/access-rules.json:ro
+    environment:
+      GENERAL_EXTERNALURL: http://localhost:8092
+      ABAC_ENABLED: "true"
+      ABAC_MODELPATH: /security_env/access-rules.json
+      ABAC_POLICY_FILE_IMPORT: always
+      OIDC_TRUSTLISTPATH: /security_env/trustlist.json
+    depends_on:
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "keycloak.localhost:host-gateway"
+
+  aas-ui-target:
+    environment:
+      KEYCLOAK_URL: http://keycloak.localhost:9090
+      KEYCLOAK_REALM: basyx
+      KEYCLOAK_CLIENT_ID: basyx-ui
+      ALLOW_EDITING: "false"
+      SM_VIEWER_EDITOR: "false"
+      ALLOW_UPLOADING: "false"
+
+  export-service:
+    depends_on:
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+    environment:
+      ExportService__Sources__ShellDescriptors__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Sources__ShellDescriptors__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Sources__ShellDescriptors__Auth__ClientId: aas-env
+      ExportService__Sources__ShellDescriptors__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Sources__SubmodelDescriptors__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Sources__SubmodelDescriptors__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Sources__SubmodelDescriptors__Auth__ClientId: aas-env
+      ExportService__Sources__SubmodelDescriptors__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Sources__Shells__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Sources__Shells__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Sources__Shells__Auth__ClientId: aas-env
+      ExportService__Sources__Shells__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Sources__Submodels__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Sources__Submodels__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Sources__Submodels__Auth__ClientId: aas-env
+      ExportService__Sources__Submodels__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Sources__ConceptDescriptions__BaseUrl: http://source-registry-repository:8082
+      ExportService__Sources__ConceptDescriptions__HealthEndpoint: /health
+      ExportService__Sources__ConceptDescriptions__Enabled: "true"
+      ExportService__Sources__ConceptDescriptions__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Sources__ConceptDescriptions__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Sources__ConceptDescriptions__Auth__ClientId: aas-env
+      ExportService__Sources__ConceptDescriptions__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Targets__ShellDescriptors__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Targets__ShellDescriptors__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Targets__ShellDescriptors__Auth__ClientId: aas-env
+      ExportService__Targets__ShellDescriptors__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Targets__SubmodelDescriptors__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Targets__SubmodelDescriptors__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Targets__SubmodelDescriptors__Auth__ClientId: aas-env
+      ExportService__Targets__SubmodelDescriptors__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Targets__Shells__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Targets__Shells__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Targets__Shells__Auth__ClientId: aas-env
+      ExportService__Targets__Shells__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Targets__Submodels__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Targets__Submodels__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Targets__Submodels__Auth__ClientId: aas-env
+      ExportService__Targets__Submodels__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+      ExportService__Targets__ConceptDescriptions__Auth__Kind: OAuth2ClientCredentials
+      ExportService__Targets__ConceptDescriptions__Auth__TokenEndpoint: http://keycloak:9090/realms/basyx/protocol/openid-connect/token
+      ExportService__Targets__ConceptDescriptions__Auth__ClientId: aas-env
+      ExportService__Targets__ConceptDescriptions__Auth__ClientSecret: ${KEYCLOAK_AAS_ENV_CLIENT_SECRET:-gqj6bXy7uBx0F97mXzy4vOsnD1frqYcB}
+
+  otel-lgtm:
+    ports: !override
+      - "3000:3000"
+      - "9091:9090"

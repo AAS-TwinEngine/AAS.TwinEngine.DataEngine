@@ -1,0 +1,214 @@
+{
+  "AllAccessPermissionRules": {
+    "DEFATTRIBUTES": [
+      { "name": "anonymous_attr", "attributes": [{ "GLOBAL": "ANONYMOUS" }] },
+      { "name": "role_attr", "attributes": [{ "CLAIM": "role" }] }
+    ],
+    "DEFOBJECTS": [
+      {
+        "name": "all_api",
+        "objects": [
+          { "ROUTE": "/health" },
+          { "ROUTE": "/description" },
+          { "ROUTE": "/shell-descriptors" },
+          { "ROUTE": "/shell-descriptors/*" },
+          { "ROUTE": "/submodel-descriptors" },
+          { "ROUTE": "/submodel-descriptors/*" },
+          { "ROUTE": "/lookup/shells" },
+          { "ROUTE": "/lookup/shells/*" },
+          { "ROUTE": "/lookup/shellsByAssetLink" },
+          { "ROUTE": "/shells" },
+          { "ROUTE": "/shells/*" },
+          { "ROUTE": "/submodels" },
+          { "ROUTE": "/submodels/*" },
+          { "ROUTE": "/concept-descriptions" },
+          { "ROUTE": "/concept-descriptions/*" }
+        ]
+      },
+      {
+        "name": "public_identifiables",
+        "objects": [
+          {
+            "IDENTIFIABLE": "$aas(\"https://mm-software.com/ids/aas/000-001\")"
+          },
+          {
+            "DESCRIPTOR": "$aasdesc(\"https://mm-software.com/ids/aas/000-001\")"
+          },
+          {
+            "IDENTIFIABLE": "$aas(\"https://mm-software.com/ids/aas/000-002\")"
+          },
+          {
+            "DESCRIPTOR": "$aasdesc(\"https://mm-software.com/ids/aas/000-002\")"
+          },
+          {
+            "IDENTIFIABLE": "$aas(\"https://mm-software.com/ids/aas/001-001\")"
+          },
+          {
+            "DESCRIPTOR": "$aasdesc(\"https://mm-software.com/ids/aas/001-001\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-001/Nameplate\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-001/Nameplate\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-001/CarbonFootprint\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-001/CarbonFootprint\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-002/Nameplate\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-002/Nameplate\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-002/CarbonFootprint\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-002/CarbonFootprint\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/001-001/Nameplate\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/001-001/Nameplate\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/001-001/CarbonFootprint\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/001-001/CarbonFootprint\")"
+          }
+        ]
+      },
+      {
+        "name": "viewer_identifiables",
+        "objects": [
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-001/MaintenanceInstructions\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-001/MaintenanceInstructions\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-001/TechnicalData\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-001/TechnicalData\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-002/MaintenanceInstructions\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-002/MaintenanceInstructions\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-002/TechnicalData\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-002/TechnicalData\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/000-002/HandoverDocumentation\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/000-002/HandoverDocumentation\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/001-001/MaintenanceInstructions\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/001-001/MaintenanceInstructions\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/001-001/TechnicalData\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/001-001/TechnicalData\")"
+          },
+          {
+            "IDENTIFIABLE": "$sm(\"https://mm-software.com/submodel/001-001/HandoverDocumentation\")"
+          },
+          {
+            "DESCRIPTOR": "$smdesc(\"https://mm-software.com/submodel/001-001/HandoverDocumentation\")"
+          }
+        ]
+      },
+      {
+        "name": "public_metadata",
+        "objects": [
+          { "ROUTE": "/description" },
+          { "ROUTE": "/concept-descriptions" },
+          { "ROUTE": "/concept-descriptions/*" }
+        ]
+      }
+    ],
+    "DEFACLS": [
+      {
+        "name": "anonymous_read",
+        "acl": {
+          "USEATTRIBUTES": "anonymous_attr",
+          "RIGHTS": ["READ"],
+          "ACCESS": "ALLOW"
+        }
+      },
+      {
+        "name": "viewer_read",
+        "acl": {
+          "USEATTRIBUTES": "role_attr",
+          "RIGHTS": ["READ"],
+          "ACCESS": "ALLOW"
+        }
+      },
+      {
+        "name": "admin_all",
+        "acl": {
+          "USEATTRIBUTES": "role_attr",
+          "RIGHTS": ["ALL"],
+          "ACCESS": "ALLOW"
+        }
+      }
+    ],
+    "DEFFORMULAS": [
+      {
+        "name": "is_admin",
+        "formula": {
+          "$eq": [{ "$attribute": { "CLAIM": "role" } }, { "$strVal": "admin" }]
+        }
+      },
+      {
+        "name": "is_viewer",
+        "formula": {
+          "$eq": [
+            { "$attribute": { "CLAIM": "role" } },
+            { "$strVal": "viewer" }
+          ]
+        }
+      }
+    ],
+    "rules": [
+      {
+        "USEACL": "anonymous_read",
+        "USEOBJECTS": ["public_identifiables", "public_metadata"],
+        "FORMULA": { "$boolean": true }
+      },
+      {
+        "USEACL": "viewer_read",
+        "USEOBJECTS": [
+          "public_identifiables",
+          "viewer_identifiables",
+          "public_metadata"
+        ],
+        "USEFORMULA": "is_viewer"
+      },
+      {
+        "USEACL": "admin_all",
+        "USEOBJECTS": ["all_api"],
+        "USEFORMULA": "is_admin"
+      }
+    ]
+  }
+}
