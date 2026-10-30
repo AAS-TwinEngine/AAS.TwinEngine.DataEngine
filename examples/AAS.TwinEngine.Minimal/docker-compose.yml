@@ -52,7 +52,7 @@ services:
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__5__templateId=https://admin-shell.io/idta/SubmodelTemplate/DppMetadata/1/0
       - TemplateManagement__TemplateMappingRules__SubmodelTemplateMappings__5__pattern__0=DppMetadata
       - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__templateId=https://mm-software.com/aas/aasTemplate
-      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=
+      - TemplateManagement__TemplateMappingRules__ShellTemplateMappings__0__pattern__0=.+
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Strategy=Split
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Pattern=/
       - TemplateManagement__TemplateMappingRules__AasIdExtractionRules__0__Index=5
@@ -153,7 +153,7 @@ services:
 
   basyx_configuration:
     container_name: basyx_configuration
-    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12
+    image: eclipsebasyx/basyxconfigurationservice-go:1.0.12  
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
@@ -170,20 +170,20 @@ services:
       - twinengine-network
 
   aas-web-ui:
-    image: eclipsebasyx/aas-gui:v2-260801
+    image: eclipsebasyx/aas-gui:v2-261013
     container_name: aas-ui
     volumes:
       - ../shared/logo:/usr/src/app/dist/Logo
     environment:
-      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
-      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
-      AAS_REPO_PATH: http://localhost:8080/shells
-      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
-      CD_REPO_PATH: http://localhost:8080/concept-descriptions
-      BASE_PATH: "/aas-ui"
-      LOGO_PATH: "MM_Logo.svg"
-      PRIMARY_DARK_COLOR: "#00F2E5"
-      PRIMARY_LIGHT_COLOR: "#041b2b"
+      - AAS_REGISTRY_PATH=http://localhost:8080/shell-descriptors
+      - SUBMODEL_REGISTRY_PATH=http://localhost:8080/submodel-descriptors
+      - AAS_REPO_PATH=http://localhost:8080/shells
+      - SUBMODEL_REPO_PATH=http://localhost:8080/submodels
+      - CD_REPO_PATH=http://localhost:8080/concept-descriptions
+      - BASE_PATH="/aas-ui"
+      - LOGO_PATH="MM_Logo.svg"
+      - PRIMARY_DARK_COLOR="#00F2E5"
+      - PRIMARY_LIGHT_COLOR="#041b2b"
     restart: always
     depends_on:
       template-repository-registry:
@@ -216,8 +216,8 @@ services:
     ports:
       - "8081:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
     depends_on:
       postgres:
         condition: service_healthy

@@ -113,10 +113,10 @@
                 </qualifier>
               </qualifiers>
               <valueType>xs:string</valueType>
-              <value>https://admin-shell-io/idta/digitalproductpassport/Nameplate/1</value>
+              <value>https://admin-shell.io/idta/nameplate/3/0/Nameplate</value>
             </property>
             <property>
-              <idShort>contentSpecificationId---10E12140</idShort>
+              <idShort>contentSpecificationId</idShort>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
@@ -146,7 +146,7 @@
               <value>https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0</value>
             </property>
             <property>
-              <idShort>contentSpecificationId---0DD7DE3D</idShort>
+              <idShort>contentSpecificationId</idShort>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
@@ -176,7 +176,7 @@
               <value>0173-1#01-AHF578#003</value>
             </property>
             <property>
-              <idShort>contentSpecificationId---3A935A69</idShort>
+              <idShort>contentSpecificationId</idShort>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
@@ -206,7 +206,7 @@
               <value>0173-1#01-AHX837#002</value>
             </property>
             <property>
-              <idShort>contentSpecificationId---7F22713F</idShort>
+              <idShort>contentSpecificationId</idShort>
               <semanticId>
                 <type>ExternalReference</type>
                 <keys>
