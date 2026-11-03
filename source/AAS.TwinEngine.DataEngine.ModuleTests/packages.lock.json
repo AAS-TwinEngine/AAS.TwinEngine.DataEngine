@@ -759,8 +759,8 @@
       },
       "Polly.Core": {
         "type": "Transitive",
-        "resolved": "8.8.0",
-        "contentHash": "TewV9uNFsoRFggoFbTAGFwsMYPuckA+wTIpQPyhLL9BANRPQRENz2S4bwATrB3HBOakN5oKLFIllPiDnVecmJg=="
+        "resolved": "8.9.0",
+        "contentHash": "Imm3q+XvH+8fiOdCkp+GggDQuxN3e4VznbRxODjjJxCurmAIfUEO4dKcPx8RCwocTkvP6Udw2DyXtC+45tu3jA=="
       },
       "Polly.Extensions": {
         "type": "Transitive",
@@ -978,7 +978,7 @@
           "OpenTelemetry.Extensions.Hosting": "[1.20.1, 1.20.1]",
           "OpenTelemetry.Instrumentation.AspNetCore": "[1.20.1, 1.20.1]",
           "OpenTelemetry.Instrumentation.Http": "[1.20.1, 1.20.1]",
-          "Polly.Core": "[8.8.0, 8.8.0]",
+          "Polly.Core": "[8.9.0, 8.9.0]",
           "Serilog": "[4.4.0, 4.4.0]",
           "Serilog.AspNetCore": "[10.0.0, 10.0.0]",
           "Serilog.Sinks.Console": "[6.1.1, 6.1.1]",
