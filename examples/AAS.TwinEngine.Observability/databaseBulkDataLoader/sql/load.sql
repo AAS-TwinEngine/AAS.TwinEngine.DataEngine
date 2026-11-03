@@ -139,19 +139,17 @@ BEGIN
             'https://mm-software.com/ids/assets/' || pid,
             'https://mm-software.com/ids/aas/' || pid,
             CASE
-                WHEN asset_sequence % 3 = 1 THEN 'Instance'
-                WHEN asset_sequence % 3 = 2 THEN 'Type'
-                ELSE 'Batch'
+                WHEN asset_sequence % 2 = 1 THEN 'Instance'
+                ELSE 'Type'
             END,
             '',
             'EN18223:2026',
             'Active',
             'gxx:xxx' || lpad((987654321 + asset_sequence)::text, 9, '0'),
             'gxx:ppp' || lpad((123456789 + asset_sequence)::text, 9, '0'),
-            CASE asset_sequence % 3
+            CASE asset_sequence % 2
                 WHEN 1 THEN 'Item'
-                WHEN 2 THEN 'Model'
-                ELSE 'Batch'
+                ELSE 'Model'
             END,
             LOCALTIMESTAMP,
             'image/jpeg',
