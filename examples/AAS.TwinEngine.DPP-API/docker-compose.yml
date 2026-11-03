@@ -350,7 +350,7 @@ services:
   # environment) and writes to the TARGET BaSyx Go environment, on a cron schedule.
   # ---------------------------------------------------------------------------
   export-service:
-    image: exportservice:1.0.0
+    image: ghcr.io/aas-twinengine/exportservice:v1.3.0
     container_name: export-service
     build:
       context: ../../source
