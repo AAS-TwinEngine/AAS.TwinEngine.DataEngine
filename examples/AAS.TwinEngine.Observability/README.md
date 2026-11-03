@@ -2,6 +2,8 @@
 
 This example runs TwinEngine DataEngine with the BaSyx Go services and a local observability stack. It includes the dpp plugin, PostgreSQL, pgAdmin, Grafana, Prometheus, OpenTelemetry, Docker resource metrics, and the BaSyx web UI behind Nginx.
 
+The core application services are imported from `../AAS.TwinEngine.Minimal/docker-compose.yml`. This Compose file adds the observability services and the Observability-specific OTLP, resource, and PostgreSQL port settings.
+
 ## Prerequisites
 
 - Docker Desktop with Docker Compose

@@ -5,16 +5,16 @@ meta {
 }
 
 get {
-  url: {{DataEngineBaseUrl}}/shell-descriptors?limit=1&cursor=&assetKind=&assetType=
+  url: {{DataEngineBaseUrl}}/shell-descriptors?limit=1
   body: none
   auth: inherit
 }
 
 params:query {
   limit: 1
-  cursor: 
-  assetKind: 
-  assetType: 
+  ~cursor: 
+  ~assetKind: 
+  ~assetType: 
 }
 
 settings {
