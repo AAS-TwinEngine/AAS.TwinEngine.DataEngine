@@ -2,9 +2,7 @@
 
 ## Overview
 
-This example combines the DataEngine minimal example with a secured AAS environment setup pattern. It keeps the DataEngine DPP plugin, PostgreSQL seed data, and shared template files from the DataEngine examples, and enables Keycloak/OIDC plus ABAC on the template repository/registry service.
-
-The setup is intended for local integration testing of DataEngine header forwarding into a secured AAS environment.
+The setup is intended for local integration testing of DataEngine header forwarding into a secured AAS environment. It keeps the DataEngine DPP plugin, PostgreSQL seed data, and shared template files from the DataEngine examples, and enables Keycloak/OIDC plus ABAC on the template repository/registry service.
 
 > **Note:** This example uses the BaSyx Go standard AAS APIs for the AAS environment (registry and repository).
 
@@ -12,7 +10,7 @@ DataEngine is built from the local `../../source` tree so this example includes 
 
 ## What This Combines
 
-From the DataEngine minimal example:
+From the DataEngine example:
 
 - `twinengine-dataengine` as the orchestration API
 - `dpp-plugin` as the DPP data provider

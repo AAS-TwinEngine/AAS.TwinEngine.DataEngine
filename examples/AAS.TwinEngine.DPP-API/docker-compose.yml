@@ -1,6 +1,8 @@
+name: twinengine-dpp-api
+
 networks:
   twinengine-network:
-    name: twinengine-network-export
+    name: twinengine-network-dpp-api
 
 volumes:
   postgres-data:
@@ -245,10 +247,62 @@ services:
       - GENERAL_DISCOVERYINTEGRATION=true
       - GENERAL_EXTERNALURL=http://localhost:8080
       - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
+      # Audit history, required for the DPP API historical versions
+      - BASYX_HISTORY_MODE=audit
+      - BASYX_HISTORY_RETENTION_DAYS=0
+      - BASYX_HISTORY_FULL_SNAPSHOT_INTERVAL=1
+      - BASYX_HISTORY_IMMUTABILITY=none
+      - BASYX_AUDIT_IDENTITY_MODE=extended
+      - BASYX_HISTORY_EVIDENCE_ENABLED=false
+      - BASYX_HISTORY_EVIDENCE_PROVIDER=none
+      - BASYX_HISTORY_INTEGRITY_ANCHOR_PROVIDER=none
     restart: always
     depends_on:
       basyx_configuration_target:
         condition: service_completed_successfully
+    networks:
+      - twinengine-network
+
+  # ---------------------------------------------------------------------------
+  # DPP API: serves Digital Product Passports from the exported target data.
+  # It reads the target database directly and does not call DataEngine.
+  # ---------------------------------------------------------------------------
+  dpp-api:
+    image: eclipsebasyx/dppapi-go:1.0.12
+    container_name: dpp-api
+    environment:
+      - SERVER_PORT=8083
+      - CORS_ALLOWEDORIGINS=*
+      - CORS_ALLOWEDHEADERS=*
+      - CORS_ALLOWEDMETHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTargetDB
+      - POSTGRES_MAXOPENCONNECTIONS=50
+      - POSTGRES_MAXIDLECONNECTIONS=25
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+      - POSTGRES_CONNMAXIDLETIMEMINUTES=0
+      - ABAC_ENABLED=false
+      - GENERAL_AASREGISTRYINTEGRATION=true
+      - GENERAL_SUBMODELREGISTRYINTEGRATION=true
+      - GENERAL_DISCOVERYINTEGRATION=true
+      - GENERAL_EXTERNALURL=http://localhost:8083
+    ports:
+      - "8083:8083"
+    depends_on:
+      basyx_configuration_target:
+        condition: service_completed_successfully
+      target-registry-repository:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/bin/healthprobe"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
     networks:
       - twinengine-network
 

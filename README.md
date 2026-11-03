@@ -112,18 +112,16 @@ flowchart LR
 
 ### Try it
 
-The [Export Service demonstrator](examples/AAS.TwinEngine.Minimal.Export/README.md) runs DataEngine, the DPP Plugin, a source and a target AAS environment, and the Export Service together. The target UI initially shows only a pre-existing target-owned shell; after the next scheduled run (every 3 minutes) the exported shells and submodels appear next to it, and the target-owned shell stays untouched.
+The [DPP-API demonstrator](examples/AAS.TwinEngine.DPP-API/README.md) runs DataEngine, the DPP Plugin, a source and a target AAS environment, the Export Service and a DPP API together. The target UI initially shows only a pre-existing target-owned shell; after the next scheduled run (every 3 minutes) the exported shells and submodels appear next to it, and the target-owned shell stays untouched. The DPP API then serves Digital Product Passports from the exported data.
 
 ```bash
 git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine.git
 git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.Plugin.DPP.git
-cd AAS.TwinEngine.DataEngine/examples/AAS.TwinEngine.Minimal.Export
+cd AAS.TwinEngine.DataEngine/examples/AAS.TwinEngine.DPP-API
 docker compose up -d --build
 ```
 
-Open `http://localhost:8080/aas-ui/` to watch the export. The demonstrator builds the Export Service (and the DPP Plugin) from source, so both repositories must be cloned side by side.
-
-To retrieve Digital Product Passports from the exported data, see the [DPP API example](examples/AAS.TwinEngine.DPPAPI/README.md), which adds a DPP API on top of the export demonstrator.
+Open `http://localhost:8080/aas-ui/` to watch the export, and `http://localhost:8083/swagger` to call the DPP API. The demonstrator builds the Export Service (and the DPP Plugin) from source, so both repositories must be cloned side by side.
 
 ---
 
@@ -154,8 +152,7 @@ To retrieve Digital Product Passports from the exported data, see the [DPP API e
 | Example | Description |
 |---|---|
 | [AAS.TwinEngine.Minimal](examples/AAS.TwinEngine.Minimal/README.md) | DataEngine with the DPP Plugin, an AAS registry/repository and the AAS Web UI |
-| [AAS.TwinEngine.Minimal.Export](examples/AAS.TwinEngine.Minimal.Export/README.md) | Minimal example plus the Export Service and a second, independent target AAS environment |
-| [AAS.TwinEngine.DPPAPI](examples/AAS.TwinEngine.DPPAPI/README.md) | Export example plus a DPP API that serves Digital Product Passports from the exported data |
+| [AAS.TwinEngine.DPP-API](examples/AAS.TwinEngine.DPP-API/README.md) | Minimal example plus the Export Service, a second target AAS environment and a DPP API that serves Digital Product Passports from the exported data |
 | [AAS.TwinEngine.Observability](examples/AAS.TwinEngine.Observability/README.md) | Minimal example with Grafana, Prometheus and a bulk data loader for load and performance tests |
 | [AAS.TwinEngine.Secured](examples/AAS.TwinEngine.Secured/README.md) | Minimal example secured with Keycloak (OIDC) and ABAC |
 
