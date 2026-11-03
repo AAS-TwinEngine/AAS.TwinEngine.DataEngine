@@ -26,8 +26,9 @@ the gateway exposes only the target environment.
 
 ## Included Submodel Templates
 
-Same as the Minimal example — 5 Digital Product Passport for Industry 4.0 templates: **Nameplate**,
-**MaintenanceInstructions**, **TechnicalData**, **CarbonFootprint**, **HandoverDocumentation**.
+Same as the Minimal example — 6 Digital Product Passport for Industry 4.0 templates: **Nameplate**,
+**MaintenanceInstructions**, **TechnicalData**, **CarbonFootprint**, **HandoverDocumentation**,
+**DPP Metadata**.
 
 ## Quick Start
 
@@ -63,8 +64,8 @@ cd AAS.TwinEngine.DataEngine/examples/AAS.TwinEngine.Minimal.Export
 docker compose up -d --build
 ```
 
-The `--build` flag is required here (unlike the Minimal example) because the Export Service has no
-published container image yet — it is always built from local source.
+The `--build` flag is required here (unlike the Minimal example) because this demonstrator builds the
+Export Service from local source instead of pulling a published image.
 
 When upgrading an existing demo, remove the old source UI container with
 `docker compose up -d --build --remove-orphans`. No database volume reset is required.
@@ -266,7 +267,7 @@ reports `Skipped` for everything and finishes in seconds.
 | **nginx**                       | 8080  | Target API gateway and target UI proxy at `/aas-ui/`                |
 | **twinengine-dataengine**       | -     | Source: aggregates plugin + template data into one API              |
 | **dpp-plugin**                  | -     | Source: Digital Product Passport plugin (relational DB backed)      |
-| **source-registry-repository**  | -     | Source: BaSyx Go environment, pre-seeded with the 5 templates        |
+| **source-registry-repository**  | -     | Source: BaSyx Go environment, pre-seeded with the 6 templates        |
 | **basyx_configuration_source**  | -     | One-shot schema setup for the source BaSyx Go environment            |
 | **export-service**               | -     | Reads from source, writes to target, on a cron schedule (`/healthz`) |
 | **target-registry-repository**  | 8092  | Target: independent BaSyx Go environment, pre-seeded with a target-only shell/submodel pair |

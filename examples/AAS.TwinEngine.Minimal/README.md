@@ -8,13 +8,14 @@ The setup includes a complete tech stack with services for AAS registry, reposit
 
 ## Included Submodel Templates
 
-This example includes 5 standardized submodel templates from the **Digital Product Passport for Industry 4.0**:
+This example includes 6 standardized submodel templates from the **Digital Product Passport for Industry 4.0**:
 
 - **Nameplate**
 - **MaintenanceInstructions**
 - **TechnicalData**
 - **CarbonFootprint**
 - **HandoverDocumentation**
+- **DPP Metadata**
 
 The shared [Nameplate](../shared/aas/Nameplate.xml) and [TechnicalData](../shared/aas/TechnicalData.xml) templates set every `ManufacturerName` value to `M&M Software`. DataEngine reuses these populated template values instead of requesting manufacturer names from the plugin. The other included templates do not contain a `ManufacturerName` element.
 
@@ -127,9 +128,9 @@ The docker-compose setup includes the following services, all running on a share
 | Service                          | Port | Image                                              | Purpose                               |
 | -------------------------------- | ---- | -------------------------------------------------- | ------------------------------------- |
 | **nginx**                        | 8080 | `nginx:1.31.6`                                     | API Gateway & Web UI proxy            |
-| **twinengine-dataengine**        | -    | `ghcr.io/aas-twinengine/dataengine:v1.2.0`         | Main TwinEngine DataEngine service    |
+| **twinengine-dataengine**        | -    | `ghcr.io/aas-twinengine/dataengine:v1.3.0`         | Main TwinEngine DataEngine service    |
 | **template-registry-repository** | -    | `eclipsebasyx/aasenvironment-go:1.0.12`            | AAS Environment & Submodel repository |
-| **dpp-plugin**                   | -    | `ghcr.io/aas-twinengine/plugindpp:v1.2.0`          | Digital Product Passport Plugin       |
+| **dpp-plugin**                   | -    | `ghcr.io/aas-twinengine/plugindpp:v1.3.0`          | Digital Product Passport Plugin       |
 | **basyx_configuration**          | -    | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | BasyX Go configuration service        |
 | **aas-web-ui**                   | -    | `eclipsebasyx/aas-gui:v2-260801`                   | Web User Interface (served via nginx) |
 
