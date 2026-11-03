@@ -123,6 +123,8 @@ docker compose up -d --build
 
 Open `http://localhost:8080/aas-ui/` to watch the export. The demonstrator builds the Export Service (and the DPP Plugin) from source, so both repositories must be cloned side by side.
 
+To retrieve Digital Product Passports from the exported data, see the [DPP API example](examples/AAS.TwinEngine.DPPAPI/README.md), which adds a DPP API on top of the export demonstrator.
+
 ---
 
 ## **Quick Start Guide**
@@ -153,6 +155,7 @@ Open `http://localhost:8080/aas-ui/` to watch the export. The demonstrator build
 |---|---|
 | [AAS.TwinEngine.Minimal](examples/AAS.TwinEngine.Minimal/README.md) | DataEngine with the DPP Plugin, an AAS registry/repository and the AAS Web UI |
 | [AAS.TwinEngine.Minimal.Export](examples/AAS.TwinEngine.Minimal.Export/README.md) | Minimal example plus the Export Service and a second, independent target AAS environment |
+| [AAS.TwinEngine.DPPAPI](examples/AAS.TwinEngine.DPPAPI/README.md) | Export example plus a DPP API that serves Digital Product Passports from the exported data |
 | [AAS.TwinEngine.Observability](examples/AAS.TwinEngine.Observability/README.md) | Minimal example with Grafana, Prometheus and a bulk data loader for load and performance tests |
 | [AAS.TwinEngine.Secured](examples/AAS.TwinEngine.Secured/README.md) | Minimal example secured with Keycloak (OIDC) and ABAC |
 

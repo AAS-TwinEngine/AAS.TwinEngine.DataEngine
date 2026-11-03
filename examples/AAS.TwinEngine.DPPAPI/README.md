@@ -3,9 +3,21 @@
 ## Overview
 
 This example extends the [Minimal.Export example](../AAS.TwinEngine.Minimal.Export/README.md)
-with the BaSyx DPP API. The Export Service copies AAS data from DataEngine to
-the target BaSyx environment. The DPP API reads the exported data from the
-target environment's PostgreSQL database.
+with a DPP API. The Export Service copies AAS data from DataEngine to
+the target AAS environment. The DPP API reads the exported data from the
+target environment's PostgreSQL database and serves Digital Product Passports
+(DPP) through standard DPP retrieval operations.
+
+> **Note:** This example uses the BaSyx Go standard AAS APIs and the BaSyx Go DPP API.
+
+```mermaid
+flowchart LR
+    DE["DataEngine<br/>+ DPP Plugin"] --> EX["Export Service"]
+    EX --> TG[("Target AAS environment<br/>PostgreSQL")]
+    TG --> UI["Target AAS UI<br/>:8080"]
+    TG --> API["DPP API<br/>:8083 (Swagger)"]
+    C["Client"] --> API
+```
 
 ## Quick Start
 
@@ -58,7 +70,7 @@ The Compose file includes the Minimal.Export services and adds the DPP API.
 | Service | Port | Purpose |
 | --- | --- | --- |
 | `nginx` | `8080` | Target AAS gateway and UI |
-| `target-registry-repository` | `8092` | BaSyx repository and precomputed registries |
+| `target-registry-repository` | `8092` | Target AAS repository and precomputed registries |
 | `export-service` | - | Copies data from DataEngine to the target |
 | `dpp-api` | `8083` | Provides DPP retrieval operations |
 | `postgres` | - | Stores source and target data |

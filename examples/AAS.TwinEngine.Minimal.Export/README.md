@@ -104,5 +104,6 @@ DataEngine, the DPP Plugin and the Export Service send traces, logs and metrics 
 
 ## More Information
 
+- [DPP API example](../AAS.TwinEngine.DPPAPI/README.md) - adds a DPP API that serves Digital Product Passports from the exported target data
 - [Large datasets](../AAS.TwinEngine.Observability/databaseBulkDataLoader/README.md) - bulk data loader (raise the cron interval, timeout and parallelism first)
 
