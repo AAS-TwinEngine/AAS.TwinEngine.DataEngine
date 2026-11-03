@@ -10,12 +10,12 @@ the target AAS Web UI through its own Nginx gateway. The source exposes APIs onl
 
 ```
 SOURCE                                            TARGET
-┌───────────────────────────────┐                 ┌──────────────────────────────┐
-│ twinengine-dataengine        │                 │ nginx :8080                  │
-│  (internal source API)       │   export-service │  └─ target-registry-         │
+┌───────────────────────────────┐                  ┌──────────────────────────────┐
+│ twinengine-dataengine         │                  │ nginx :8080                  │
+│  (internal source API)        │   export-service │  └─ target-registry-         │
 │      └─ dpp-plugin            │ ───────────────▶│      repository :8092        │
 │      └─ source-registry-      │   (cron, */3min) │      (pre-seeded pair)       │
-│          repository :8082     │                 └──────────────────────────────┘
+│          repository :8082     │                  └──────────────────────────────┘
 └───────────────────────────────┘
 ```
 
