@@ -36,11 +36,15 @@ vars:pre-request {
   idShort: Product2
   submodelIdentifierNameplate-2: https://mm-software.com/submodel/{{productId-2}}/Nameplate
   submodelIdentifierNameplate-3: https://mm-software.com/submodel/{{productId-3}}/Nameplate
+  submodelIdentifierDppMetadata-1: https://mm-software.com/submodel/{{productId-1}}/DppMetadata
 }
 
 script:pre-request {
   function b64EncodeUnicode(str){
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m,p)=>String.fromCharCode('0x'+p)));
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m,p)=>String.fromCharCode('0x'+p)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
   }
   
   const varsToEncode = [
@@ -54,6 +58,7 @@ script:pre-request {
     'submodelIdentifierHandoverDocumentation-1',
     'submodelIdentifierTechnicalData-1',
     'submodelIdentifierCarbonFootprint-1',
+    'submodelIdentifierDppMetadata-1',
     'assetId-product1',
     'assetId-product2'
   ];

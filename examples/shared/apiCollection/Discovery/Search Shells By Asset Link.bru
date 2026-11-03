@@ -5,14 +5,14 @@ meta {
 }
 
 post {
-  url: {{DataEngineBaseUrl}}/lookup/shellsByAssetLink?limit&cursor
+  url: {{DataEngineBaseUrl}}/lookup/shellsByAssetLink
   body: json
   auth: inherit
 }
 
 params:query {
-  limit: 
-  cursor: 
+  ~limit: 
+  ~cursor: 
 }
 
 body:json {

@@ -4,6 +4,8 @@ This example runs TwinEngine DataEngine with the Go AAS registry/repository serv
 
 > **Note:** This example uses the BaSyx Go standard AAS APIs for the AAS registry and repository.
 
+The core application services are imported from `../AAS.TwinEngine.Minimal/docker-compose.yml`. This Compose file adds the observability services and the Observability-specific OTLP, resource, and PostgreSQL port settings.
+
 ## Prerequisites
 
 - Docker Desktop with Docker Compose
