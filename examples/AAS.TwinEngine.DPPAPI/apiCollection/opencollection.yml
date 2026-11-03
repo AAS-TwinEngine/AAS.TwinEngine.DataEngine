@@ -1,0 +1,65 @@
+opencollection: 1.0.0
+
+info:
+  name: DPP API
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: dppId
+      value: https://mm-software.com/ids/aas/100-002
+    - name: productId
+      value: https://mm-software.com/ids/assets/100-002
+    - name: representation
+      value: compressed
+    - name: dppId1
+      value: https://mm-software.com/ids/aas/000-001
+    - name: dppId2
+      value: https://mm-software.com/ids/aas/000-002
+    - name: dppId3
+      value: https://mm-software.com/ids/aas/001-001
+    - name: productId1
+      value: https://mm-software.com/ids/assets/000-001
+    - name: productId2
+      value: https://mm-software.com/ids/assets/000-002
+    - name: productId3
+      value: https://mm-software.com/ids/assets/001-001
+    - name: currentTimestamp
+      value: ""
+    - name: elementIdPath
+      value: $['https://admin-shell.io/idta/CarbonFootprint/CarbonFootprint/1/0']['ProductCarbonFootprints']
+  scripts:
+    - type: before-request
+      code: |-
+        const varsToEncode = [
+          "dppId",
+          "dppId1",
+          "dppId2",
+          "dppId3",
+          "productId1",
+          "productId2",
+          "productId3",
+          "elementIdPath"
+        ];
+
+        varsToEncode.forEach((name) => {
+          const plain = bru.getCollectionVar(name);
+          const encoded = encodeURIComponent(plain);
+          bru.setVar(name, encoded);
+        });
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
