@@ -6,6 +6,7 @@ This example shows the full path from product data to **Digital Product Passport
 
 1. **DataEngine** and the **DPP Plugin** generate AAS shells and submodels from templates and database values (the **source**).
 2. The **Export Service** periodically copies them to a second, independent AAS environment (the **target**).
+    - For more info : [Export Service](https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/wiki/Export-Service)
 3. The **DPP API** reads the exported data from the target database and serves Digital Product Passports through standard DPP retrieval operations.
 
 > **Note:** This example uses the BaSyx Go standard AAS APIs for the source and target AAS registries and repositories, and the BaSyx Go DPP API.
@@ -105,4 +106,5 @@ DataEngine, the DPP Plugin and the Export Service send traces, logs and metrics 
 
 ## More Information
 
+- For more info : [Export Service](https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/wiki/Export-Service) - architecture, configuration and behavior of the Export Service
 - [Large datasets](../AAS.TwinEngine.Observability/databaseBulkDataLoader/README.md) - bulk data loader (raise the cron interval, timeout and parallelism first)
