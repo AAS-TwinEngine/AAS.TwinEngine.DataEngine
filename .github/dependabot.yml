@@ -35,6 +35,21 @@ updates:
     cooldown:
       default-days: 3
 
+  - package-ecosystem: "docker"
+    target-branch: "develop"
+    directory: "/source/AAS.TwinEngine.ExportService"
+    groups:
+      major-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 3
+
   - package-ecosystem: "github-actions"
     target-branch: "develop"
     directory: "/"
