@@ -1,10 +1,12 @@
-# TwinEngine Demonstrator Setup
+# TwinEngine AAS Environment Example
 
 ## Overview
 
 This folder provides a complete, containerized setup to demonstrate how **TwinEngine.DataEngine** can be integrated and run locally. It creates a fully functional environment for managing Asset Administration Shells (AAS), submodels, and related digital asset components using Docker Compose.
 
 The setup includes a complete tech stack with services for AAS registry, repository, submodel management, data persistence, UI access, and a plugin system—all orchestrated through Docker containers on a shared network.
+
+> **Note:** This example uses the BaSyx Go standard AAS APIs for the AAS registry and repository.
 
 ## Included Submodel Templates
 
@@ -131,7 +133,7 @@ The docker-compose setup includes the following services, all running on a share
 | **twinengine-dataengine**        | -    | `ghcr.io/aas-twinengine/dataengine:v1.3.0`         | Main TwinEngine DataEngine service    |
 | **template-registry-repository** | -    | `eclipsebasyx/aasenvironment-go:1.0.12`            | AAS Environment & Submodel repository |
 | **dpp-plugin**                   | -    | `ghcr.io/aas-twinengine/plugindpp:v1.3.0`          | Digital Product Passport Plugin       |
-| **basyx_configuration**          | -    | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | BasyX Go configuration service        |
+| **basyx_configuration**          | -    | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | AAS environment configuration service |
 | **aas-web-ui**                   | -    | `eclipsebasyx/aas-gui:v2-260801`                   | Web User Interface (served via nginx) |
 
 ### Infrastructure Services
@@ -175,7 +177,7 @@ PGAdmin provides a web-based interface to manage the PostgreSQL database without
 **How changes affect the Plugin:**
 
 - Updates to application data (e.g., shell records, submodels, submodel element values) are reflected in what the Plugin serves.
-- Submodel and shell templates are managed by BaSyx services and are not modified via PostgreSQL.
+- Submodel and shell templates are managed by the AAS environment services and are not modified via PostgreSQL.
 
 ---
 

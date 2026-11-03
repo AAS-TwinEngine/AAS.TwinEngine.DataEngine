@@ -10,7 +10,7 @@
 
 It acts as the **core orchestration layer** in the TwinEngine ecosystem, transforming static AAS templates into **live, ready-to-consume AAS representations** through a **plugin-based value resolution mechanism**.
 
-DataEngine integrates seamlessly with **Eclipse BaSyx** components and is also capable of orchestrating other **open-source AAS-related components**, enabling a **flexible, vendor-neutral AAS infrastructure**.
+DataEngine integrates seamlessly with standard **AAS registry and repository** components and is also capable of orchestrating other **open-source AAS-related components**, enabling a **flexible, vendor-neutral AAS infrastructure**.
 
 The repository also contains the **Export Service**, which periodically publishes the generated AAS shells, submodels and descriptors to an external AAS registry/repository. See [Export Service](#export-service).
 
@@ -112,7 +112,7 @@ flowchart LR
 
 ### Try it
 
-The [Export Service demonstrator](examples/AAS.TwinEngine.Minimal.Export/README.md) runs DataEngine, the DPP Plugin, a source and a target BaSyx environment, and the Export Service together. The target UI initially shows only a pre-existing target-owned shell; after the next scheduled run (every 3 minutes) the exported shells and submodels appear next to it, and the target-owned shell stays untouched.
+The [Export Service demonstrator](examples/AAS.TwinEngine.Minimal.Export/README.md) runs DataEngine, the DPP Plugin, a source and a target AAS environment, and the Export Service together. The target UI initially shows only a pre-existing target-owned shell; after the next scheduled run (every 3 minutes) the exported shells and submodels appear next to it, and the target-owned shell stays untouched.
 
 ```bash
 git clone https://github.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine.git
@@ -151,10 +151,10 @@ Open `http://localhost:8080/aas-ui/` to watch the export. The demonstrator build
 
 | Example | Description |
 |---|---|
-| [AAS.TwinEngine.Minimal](examples/AAS.TwinEngine.Minimal/README.md) | DataEngine with the DPP Plugin, BaSyx and the AAS Web UI |
-| [AAS.TwinEngine.Minimal.Export](examples/AAS.TwinEngine.Minimal.Export/README.md) | Minimal example plus the Export Service and a second, independent BaSyx target environment |
+| [AAS.TwinEngine.Minimal](examples/AAS.TwinEngine.Minimal/README.md) | DataEngine with the DPP Plugin, an AAS registry/repository and the AAS Web UI |
+| [AAS.TwinEngine.Minimal.Export](examples/AAS.TwinEngine.Minimal.Export/README.md) | Minimal example plus the Export Service and a second, independent target AAS environment |
 | [AAS.TwinEngine.Observability](examples/AAS.TwinEngine.Observability/README.md) | Minimal example with Grafana, Prometheus and a bulk data loader for load and performance tests |
-| [AAS.TwinEngine.Secured](examples/AAS.TwinEngine.Secured/README.md) | Minimal example secured with Keycloak (OIDC) and BaSyx ABAC |
+| [AAS.TwinEngine.Secured](examples/AAS.TwinEngine.Secured/README.md) | Minimal example secured with Keycloak (OIDC) and ABAC |
 
 ---
 

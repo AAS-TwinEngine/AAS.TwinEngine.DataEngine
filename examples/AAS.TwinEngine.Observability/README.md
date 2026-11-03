@@ -1,6 +1,8 @@
 # TwinEngine Observability Example
 
-This example runs TwinEngine DataEngine with the BaSyx Go services and a local observability stack. It includes the dpp plugin, PostgreSQL, pgAdmin, Grafana, Prometheus, OpenTelemetry, Docker resource metrics, and the BaSyx web UI behind Nginx.
+This example runs TwinEngine DataEngine with the Go AAS registry/repository services and a local observability stack. It includes the dpp plugin, PostgreSQL, pgAdmin, Grafana, Prometheus, OpenTelemetry, Docker resource metrics, and the AAS web UI behind Nginx.
+
+> **Note:** This example uses the BaSyx Go standard AAS APIs for the AAS registry and repository.
 
 ## Prerequisites
 
@@ -49,7 +51,7 @@ To remove the database volume as well, use `docker compose down -v`. This perman
 | Endpoint                                  | Purpose                                 |
 | ----------------------------------------- | --------------------------------------- |
 | `http://localhost:8080/`                  | DataEngine gateway; redirects to the UI |
-| `http://localhost:8080/aas-ui/`           | BaSyx web UI                            |
+| `http://localhost:8080/aas-ui/`           | AAS web UI                              |
 | `http://localhost:8080/shell-descriptors` | AAS descriptor API                      |
 | `http://localhost:8081`                   | pgAdmin                                 |
 | `http://localhost:3000`                   | Grafana and LGTM UI                     |
@@ -61,7 +63,7 @@ The default pgAdmin credentials are:
 - Email: `admin@example.com`
 - Password: `admin`
 
-Inside the Compose network, PostgreSQL is available at host `postgres`, port `5432`, user `postgres`, and password `admin`. The plugin uses database `twinengine`; BaSyx configuration uses `basyxTestDB`.
+Inside the Compose network, PostgreSQL is available at host `postgres`, port `5432`, user `postgres`, and password `admin`. The plugin uses database `twinengine`; the AAS environment configuration uses `basyxTestDB`.
 
 ## Services
 
@@ -70,16 +72,16 @@ Inside the Compose network, PostgreSQL is available at host `postgres`, port `54
 | `nginx`                        | `nginx:1.31.6`                                     | API gateway and UI proxy                             |
 | `twinengine-dataengine`        | Local build or GHCR image                          | TwinEngine DataEngine with OpenTelemetry export      |
 | `dpp-plugin`                   | Local build or GHCR image                          | dpp plugin with OpenTelemetry export |
-| `template-repository-registry` | `eclipsebasyx/aasenvironment-go:1.0.12`            | BaSyx Go AAS environment and repositories            |
-| `basyx_configuration`          | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | BaSyx Go database configuration initialization       |
-| `postgres`                     | `postgres:16-alpine`                               | Plugin and BaSyx persistence                         |
-| `aas-web-ui`                   | `eclipsebasyx/aas-gui:v2-260801`                   | BaSyx web UI                                         |
+| `template-repository-registry` | `eclipsebasyx/aasenvironment-go:1.0.12`            | Go AAS environment and repositories                  |
+| `basyx_configuration`          | `eclipsebasyx/basyxconfigurationservice-go:1.0.12` | Go database configuration initialization             |
+| `postgres`                     | `postgres:16-alpine`                               | Plugin and AAS environment persistence               |
+| `aas-web-ui`                   | `eclipsebasyx/aas-gui:v2-260801`                   | AAS web UI                                           |
 | `otel-lgtm`                    | `grafana/otel-lgtm:0.29.0`                         | Grafana, Prometheus, and OTLP backends               |
 | `otel-docker-stats-collector`  | OpenTelemetry Collector                            | Docker container metrics collection                  |
 | `docker-resource-exporter`     | Local build                                        | Docker resource metrics exporter                     |
 | `pgadmin`                      | `dpage/pgadmin4:9.16`                              | PostgreSQL administration                            |
 
-BaSyx Go configuration service version `1.0.12` requires PostgreSQL 16 or newer. The Compose file uses PostgreSQL 16 accordingly.
+The Go configuration service version `1.0.12` requires PostgreSQL 16 or newer. The Compose file uses PostgreSQL 16 accordingly.
 
 ## Database Bulk Loader
 
@@ -138,7 +140,7 @@ These values are used by the `twinengine-dataengine`, `dpp-plugin`, and `postgre
 
 ## Troubleshooting
 
-Inspect the BaSyx and database startup logs:
+Inspect the AAS environment and database startup logs:
 
 ```powershell
 docker compose logs basyx_configuration
