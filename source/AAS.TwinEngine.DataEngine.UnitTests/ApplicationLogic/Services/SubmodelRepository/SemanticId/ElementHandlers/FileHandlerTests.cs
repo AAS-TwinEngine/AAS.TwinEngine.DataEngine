@@ -55,6 +55,26 @@ public class FileHandlerTests
     }
 
     [Fact]
+    public void Extract_TemplateValueResolved_ReturnsNull()
+    {
+        var file = new File(contentType: "image/png", idShort: "Thumbnail", value: "https://localhost/image.png");
+
+        Null(_sut.Extract(file, _ => null));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("NULL")]
+    public void Extract_TemplateValueUnresolved_ReturnsLeafNode(string? value)
+    {
+        var file = new File(contentType: "image/png", idShort: "Thumbnail", value: value);
+        _resolver.ResolveElementSemanticId(file, "Thumbnail").Returns("http://test/thumbnail");
+
+        _ = IsType<SemanticLeafNode>(_sut.Extract(file, _ => null));
+    }
+
+    [Fact]
     public void FillOut_WithLeafNode_SetsFileValue()
     {
         var file = new File(contentType: "image/png", idShort: "Thumbnail", value: "");

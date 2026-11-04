@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients;
 using AAS.TwinEngine.DataEngine.Infrastructure.Http.Clients.Caching;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Options;
 
 using NSubstitute;
 
+using ForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.ForbiddenException;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
 namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Clients.Caching;
@@ -91,7 +93,7 @@ public class CachedGetRequestClientTests
     [Theory]
     [InlineData(HttpStatusCode.NotFound, typeof(ResourceNotFoundException))]
     [InlineData(HttpStatusCode.Unauthorized, typeof(UnauthorizedAccessException))]
-    [InlineData(HttpStatusCode.Forbidden, typeof(UnauthorizedAccessException))]
+    [InlineData(HttpStatusCode.Forbidden, typeof(ForbiddenException))]
     [InlineData(HttpStatusCode.RequestTimeout, typeof(RequestTimeoutException))]
     [InlineData(HttpStatusCode.InternalServerError, typeof(ValidationFailedException))]
     [InlineData(HttpStatusCode.BadRequest, typeof(ValidationFailedException))]
@@ -171,6 +173,60 @@ public class CachedGetRequestClientTests
         // Assert
         var expectedHash = ComputeHash(RelativeUrl);
         Assert.Equal($"anonymous:req:{expectedHash}", capturedKey);
+    }
+
+    [Fact]
+    public async Task GetStringAsync_BuildsCredentialScopedCacheKey_FromAuthorizationHeader()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        const string Authorization = "Bearer admin-token";
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers.Authorization = Authorization;
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+
+        string? capturedKey = null;
+        SetupCacheCapture(key => capturedKey = key);
+
+        // Act
+        await _sut.GetStringAsync(RelativeUrl, "client", 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal($"credential:{ComputeHash(Authorization)}:req:{ComputeHash(RelativeUrl)}", capturedKey);
+        Assert.DoesNotContain(Authorization, capturedKey, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetStringAsync_AdminThenAnonymous_UsesDifferentCacheKeys()
+    {
+        // Arrange
+        const string RelativeUrl = "api/test";
+        var adminContext = new DefaultHttpContext();
+        adminContext.Request.Headers.Authorization = "Bearer admin-token";
+        var anonymousContext = new DefaultHttpContext();
+
+        var accessor = new HttpContextAccessor { HttpContext = adminContext };
+        var sut = new CachedGetRequestClient(
+            _clientFactory,
+            _cache,
+            accessor,
+            _cacheOptions,
+            _logger);
+        var capturedKeys = new List<string>();
+        SetupCacheCapture(capturedKeys.Add);
+
+        // Act
+        await sut.GetStringAsync(RelativeUrl, "client", 5, CancellationToken.None);
+        accessor.HttpContext = anonymousContext;
+        await sut.GetStringAsync(RelativeUrl, "client", 5, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, capturedKeys.Count);
+        var adminCacheKey = capturedKeys[0];
+        var anonymousCacheKey = capturedKeys[1];
+        Assert.NotEqual(adminCacheKey, anonymousCacheKey);
+        Assert.StartsWith("credential:", adminCacheKey, StringComparison.Ordinal);
+        Assert.StartsWith("anonymous:", anonymousCacheKey, StringComparison.Ordinal);
     }
 
     [Fact]

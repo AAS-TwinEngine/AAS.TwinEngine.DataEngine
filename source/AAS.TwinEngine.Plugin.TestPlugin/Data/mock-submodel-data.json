@@ -5,7 +5,8 @@
         {
           "0173-1#02-AAO204#003": "Manager001",
           "0173-1#02-AAW001#001": {
-            "0173-1#02-AAW001#001_en": "Acme Corporation"
+            "0173-1#02-AAW001#001_en": "Acme Corporation",
+            "0173-1#02-AAW001#001_de": "M&M Software aus dem Plugin"
           },
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
@@ -62,7 +63,8 @@
         {
           "0173-1#02-AAO204#003": "Marketing Manager",
           "0173-1#02-AAW001#001": {
-            "0173-1#02-AAW001#001_en": "Acme Corporation"
+            "0173-1#02-AAW001#001_en": "Acme Corporation",
+            "0173-1#02-AAW001#001_de": "M&M Software aus dem Plugin"
           },
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
@@ -407,6 +409,14 @@
   },
   "https://mm-software.com/submodel/000-001/CustomSubmodel": {
     "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
+      "https://mm-software.com/template-values/properties": {
+        "https://mm-software.com/template-values/null": "000-001 null resolved",
+        "https://mm-software.com/template-values/blob": "UGx1Z2luIGJsb2I=",
+        "https://mm-software.com/template-values/mixed-entity": {
+          "https://mm-software.com/template-values/serial-id": "000-001-SERIAL",
+          "https://mm-software.com/template-values/entity-statement": "000-001 plugin statement"
+        }
+      },
       "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
         "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
           "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0": {
@@ -497,7 +507,8 @@
         {
           "0173-1#02-AAO204#003": "Manager001",
           "0173-1#02-AAW001#001": {
-            "0173-1#02-AAW001#001_en": "Acme Corporation"
+            "0173-1#02-AAW001#001_en": "Acme Corporation",
+            "0173-1#02-AAW001#001_de": "M&M Software aus dem Plugin"
           },
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
@@ -554,7 +565,8 @@
         {
           "0173-1#02-AAO204#003": "Assistant Manager",
           "0173-1#02-AAW001#001": {
-            "0173-1#02-AAW001#001_en": "Beta Corporation"
+            "0173-1#02-AAW001#001_en": "Beta Corporation",
+            "0173-1#02-AAW001#001_de": "M&M Software aus dem Plugin"
           },
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Vertrieb"
@@ -761,6 +773,14 @@
   },
   "https://mm-software.com/submodel/000-002/CustomSubmodel": {
     "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
+      "https://mm-software.com/template-values/properties": {
+        "https://mm-software.com/template-values/null": "000-002 null resolved",
+        "https://mm-software.com/template-values/blob": "UGx1Z2luIGJsb2I=",
+        "https://mm-software.com/template-values/mixed-entity": {
+          "https://mm-software.com/template-values/serial-id": "000-002-SERIAL",
+          "https://mm-software.com/template-values/entity-statement": "000-002 plugin statement"
+        }
+      },
       "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
         "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
           "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0": {
@@ -851,7 +871,8 @@
         {
           "0173-1#02-AAO204#003": "Product Manager0003",
           "0173-1#02-AAW001#001": {
-            "0173-1#02-AAW001#001_en": "Acme Corporation"
+            "0173-1#02-AAW001#001_en": "Acme Corporation",
+            "0173-1#02-AAW001#001_de": "M&M Software aus dem Plugin"
           },
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
@@ -908,7 +929,8 @@
         {
           "0173-1#02-AAO204#003": "Manager",
           "0173-1#02-AAW001#001": {
-            "0173-1#02-AAW001#001_en": "Acme Corporation"
+            "0173-1#02-AAW001#001_en": "Acme Corporation",
+            "0173-1#02-AAW001#001_de": "M&M Software aus dem Plugin"
           },
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Marketing"
@@ -965,7 +987,8 @@
         {
           "0173-1#02-AAO204#003": "Assistant Manager",
           "0173-1#02-AAW001#001": {
-            "0173-1#02-AAW001#001_en": "Beta Corporation"
+            "0173-1#02-AAW001#001_en": "Beta Corporation",
+            "0173-1#02-AAW001#001_de": "M&M Software aus dem Plugin"
           },
           "0173-1#02-AAO127#003": {
             "0173-1#02-AAO127#003_de": "Vertrieb"
@@ -1284,6 +1307,14 @@
   },
   "https://mm-software.com/submodel/000-003/CustomSubmodel": {
     "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1": {
+      "https://mm-software.com/template-values/properties": {
+        "https://mm-software.com/template-values/null": "000-003 null resolved",
+        "https://mm-software.com/template-values/blob": "UGx1Z2luIGJsb2I=",
+        "https://mm-software.com/template-values/mixed-entity": {
+          "https://mm-software.com/template-values/serial-id": "000-003-SERIAL",
+          "https://mm-software.com/template-values/entity-statement": "000-003 plugin statement"
+        }
+      },
       "https://admin-shell.io/idta/HierarchicalStructures/EntryNode/1/0": {
         "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0": {
           "https://admin-shell.io/idta/HierarchicalStructures/ChildNode/1/0": {

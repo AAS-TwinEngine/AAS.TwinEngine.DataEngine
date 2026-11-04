@@ -1,0 +1,116 @@
+using System.Net;
+
+using AAS.TwinEngine.ExportService.Infrastructure.Http.Policies;
+using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Polly.Timeout;
+
+namespace AAS.TwinEngine.ExportService.UnitTests.Infrastructure.Http.Policies;
+
+public class ResilienceHandlerExtensionsTests
+{
+    private sealed class FlakyHandler : HttpMessageHandler
+    {
+        private int _attempts;
+        public int Attempts => _attempts;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            _attempts++;
+            if (_attempts < 3)
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        }
+    }
+
+    private sealed class SlowHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+
+    [Theory]
+    [InlineData(0, 2, 3, 2)]
+    [InlineData(1, 2, 3, 6)]
+    [InlineData(2, 2, 3, 18)]
+    public void CalculateRetryDelay_UsesConfiguredBackoffMultiplier(
+        int attemptNumber,
+        int initialDelaySeconds,
+        double backoffMultiplier,
+        int expectedDelaySeconds)
+    {
+        // Arrange
+        var config = new ResilienceConfig
+        {
+            InitialDelaySeconds = initialDelaySeconds,
+            BackoffMultiplier = backoffMultiplier
+        };
+
+        // Act
+        var delay = ResilienceHandlerExtensions.CalculateRetryDelay(attemptNumber, config);
+
+        // Assert
+        Assert.Equal(TimeSpan.FromSeconds(expectedDelaySeconds), delay);
+    }
+
+    [Fact]
+    public async Task AddStandardResilience_AppliesRetryOnTransientFailures()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        _ = services.AddLogging(builder => builder.AddConsole());
+
+        var config = new ResilienceConfig
+        {
+            MaxRetryAttempts = 3,
+            InitialDelaySeconds = 0
+        };
+
+        var flakyHandler = new FlakyHandler();
+        _ = services.AddHttpClient("resilient-client")
+            .ConfigurePrimaryHttpMessageHandler(() => flakyHandler)
+            .AddStandardResilience(config);
+
+        var provider = services.BuildServiceProvider();
+        var clientFactory = provider.GetRequiredService<IHttpClientFactory>();
+        var client = clientFactory.CreateClient("resilient-client");
+
+        // Act
+        var response = await client.GetAsync(new Uri("http://localhost/test"), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(3, flakyHandler.Attempts);
+    }
+
+    [Fact]
+    public async Task AddStandardResilience_CancelsRequestAfterConfiguredTimeout()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ResilienceConfig
+        {
+            MaxRetryAttempts = 1,
+            InitialDelaySeconds = 0,
+            TimeoutInSeconds = 1
+        };
+        _ = services.AddHttpClient("timeout-client")
+            .ConfigurePrimaryHttpMessageHandler(() => new SlowHandler())
+            .AddStandardResilience(config);
+
+        using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("timeout-client");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TimeoutRejectedException>(() =>
+            client.GetAsync(new Uri("http://localhost/test"), CancellationToken.None));
+    }
+}

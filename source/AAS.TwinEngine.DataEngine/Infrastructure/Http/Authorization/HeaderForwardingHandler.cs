@@ -11,7 +11,14 @@ public sealed class HeaderForwardingHandler(
     {
         var httpContext = httpContextAccessor.HttpContext;
 
-        requestHeaderMapper.ApplyMappings(httpContext, request, clientName);
+        if (request.Options.TryGetValue(RequestHeaderForwardingOptions.IncomingHeaders, out var incomingHeaders))
+        {
+            requestHeaderMapper.ApplyMappings(incomingHeaders, request, clientName);
+        }
+        else
+        {
+            requestHeaderMapper.ApplyMappings(httpContext, request, clientName);
+        }
 
         return base.SendAsync(request, cancellationToken);
     }

@@ -19,6 +19,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
+using ApplicationForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base.ForbiddenException;
 using Template = AAS.TwinEngine.DataEngine.Infrastructure.Providers.TemplateProvider.Services.TemplateProvider;
 using UnauthorizedAccessException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.UnauthorizedAccessException;
 
@@ -56,6 +57,18 @@ public class TemplateProviderTests
             _cachedHttp,
             new MemoryCache(new MemoryCacheOptions()),
             _httpContextAccessor);
+    }
+
+    [Fact]
+    public async Task GetShellDescriptorTemplateAsync_TranslatesInfrastructureForbiddenException()
+    {
+        _cachedHttp.GetStringAsync(Arg.Any<string>(), HttpClientNames.AasRegistry, Arg.Any<int>(), Arg.Any<CancellationToken>())
+                   .ThrowsAsync(new ForbiddenException());
+
+        var exception = await Assert.ThrowsAsync<ApplicationForbiddenException>(() =>
+            _sut.GetShellDescriptorTemplateAsync(TemplateId, CancellationToken.None));
+
+        Assert.Equal("The requested resource is forbidden.", exception.Message);
     }
 
     [Fact]

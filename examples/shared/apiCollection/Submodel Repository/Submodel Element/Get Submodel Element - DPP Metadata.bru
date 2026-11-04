@@ -1,0 +1,21 @@
+meta {
+  name: Get Submodel Element - DPP Metadata
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierDppMetadata-1}}
+  idShortPath: dppSchemaVersion
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
