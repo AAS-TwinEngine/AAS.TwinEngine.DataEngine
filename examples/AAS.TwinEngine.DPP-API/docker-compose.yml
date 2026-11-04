@@ -36,7 +36,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:v1.3.0
+    image: ghcr.io/aas-twinengine/dataengine:v1.2.0
     container_name: twinengine-dataengine
     build:
       context: ../../source
@@ -97,7 +97,7 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:v1.3.0
+    image: ghcr.io/aas-twinengine/plugindpp:v1.2.0
     container_name: dpp-plugin
     build:
       context: ../../../AAS.TwinEngine.Plugin.DPP/source
@@ -350,7 +350,7 @@ services:
   # environment) and writes to the TARGET BaSyx Go environment, on a cron schedule.
   # ---------------------------------------------------------------------------
   export-service:
-    image: ghcr.io/aas-twinengine/exportservice:v1.3.0
+    image: ghcr.io/aas-twinengine/exportservice:v1.2.0
     container_name: export-service
     build:
       context: ../../source
