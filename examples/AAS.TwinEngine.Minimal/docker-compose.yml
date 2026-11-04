@@ -180,10 +180,10 @@ services:
       - AAS_REPO_PATH=http://localhost:8080/shells
       - SUBMODEL_REPO_PATH=http://localhost:8080/submodels
       - CD_REPO_PATH=http://localhost:8080/concept-descriptions
-      - BASE_PATH="/aas-ui"
-      - LOGO_PATH="MM_Logo.svg"
-      - PRIMARY_DARK_COLOR="#00F2E5"
-      - PRIMARY_LIGHT_COLOR="#041b2b"
+      - BASE_PATH=/aas-ui
+      - LOGO_PATH=MM_Logo.svg
+      - PRIMARY_DARK_COLOR=#00F2E5
+      - PRIMARY_LIGHT_COLOR=#041b2b
     restart: always
     depends_on:
       template-repository-registry:
