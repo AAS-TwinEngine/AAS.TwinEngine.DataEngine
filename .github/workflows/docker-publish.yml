@@ -165,8 +165,8 @@ jobs:
           tmpdir="$(mktemp -d)"
           trap 'rm -rf "$tmpdir"' EXIT
 
-          curl -fsSL "${release_url}/${archive}" -o "$tmpdir/$archive"
-          curl -fsSL "${release_url}/trivy_${version}_checksums.txt" -o "$tmpdir/checksums.txt"
+          curl --proto '=https' --proto-redir '=https' -fsSL "${release_url}/${archive}" -o "$tmpdir/$archive"
+          curl --proto '=https' --proto-redir '=https' -fsSL "${release_url}/trivy_${version}_checksums.txt" -o "$tmpdir/checksums.txt"
           grep -E "[[:space:]]${archive}$" "$tmpdir/checksums.txt" > "$tmpdir/checksum"
           (cd "$tmpdir" && sha256sum --check --status checksum)
 
