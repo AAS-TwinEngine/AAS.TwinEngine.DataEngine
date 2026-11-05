@@ -32,31 +32,52 @@ public static class SerializationFormatResolver
             throw UnsupportedMediaTypeException();
         }
 
-        var format = mediaTypes
-                     .Where(mediaType => (mediaType.Quality ?? DefaultQuality) > 0)
-                     .OrderByDescending(mediaType => mediaType.Quality ?? DefaultQuality)
-                     .Select(TryMap)
-                     .FirstOrDefault(mapped => mapped is not null);
+        var format = SerializationMediaTypes.Supported
+                     .Select((supportedMediaType, supportedIndex) =>
+                     {
+                         var match = mediaTypes
+                                     .Select((mediaType, headerIndex) => new
+                                     {
+                                         Quality = mediaType.Quality ?? DefaultQuality,
+                                         Specificity = GetSpecificity(mediaType, supportedMediaType),
+                                         HeaderIndex = headerIndex
+                                     })
+                                     .Where(candidate => candidate.Specificity >= 0)
+                                     .OrderByDescending(candidate => candidate.Specificity)
+                                     .ThenByDescending(candidate => candidate.Quality)
+                                     .ThenBy(candidate => candidate.HeaderIndex)
+                                     .FirstOrDefault();
+
+                         return new
+                         {
+                             Format = SerializationMediaTypes.FromMediaType(supportedMediaType),
+                             Match = match,
+                             SupportedIndex = supportedIndex
+                         };
+                     })
+                     .Where(candidate => candidate.Match is { Quality: > 0 })
+                     .OrderByDescending(candidate => candidate.Match!.Quality)
+                     .ThenBy(candidate => candidate.Match!.HeaderIndex)
+                     .ThenBy(candidate => candidate.SupportedIndex)
+                     .Select(candidate => candidate.Format)
+                     .FirstOrDefault();
 
         return format ?? throw UnsupportedMediaTypeException();
     }
 
-    private static SerializationFormat? TryMap(MediaTypeHeaderValue mediaType)
+    private static int GetSpecificity(MediaTypeHeaderValue mediaType, string supportedMediaType)
     {
         if (mediaType.MatchesAllTypes)
         {
-            return SerializationMediaTypes.DefaultFormat;
+            return 0;
         }
 
-        // "application/*" is satisfied by every supported media type, so the default is served.
         if (mediaType.MatchesAllSubTypes)
         {
-            return mediaType.Type.Equals("application", StringComparison.OrdinalIgnoreCase)
-                       ? SerializationMediaTypes.DefaultFormat
-                       : null;
+            return mediaType.Type.Equals("application", StringComparison.OrdinalIgnoreCase) ? 1 : -1;
         }
 
-        return SerializationMediaTypes.FromMediaType(mediaType.MediaType.Value);
+        return string.Equals(mediaType.MediaType.Value, supportedMediaType, StringComparison.OrdinalIgnoreCase) ? 2 : -1;
     }
 
     private static InvalidRequestHeaderException UnsupportedMediaTypeException()

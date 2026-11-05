@@ -46,11 +46,20 @@ public class SerializationFormatResolverTests
         Assert.Equal(SerializationFormat.Xml, format);
     }
 
+    [Fact]
+    public void Resolve_UsesAnotherSupportedFormat_WhenWildcardIncludesExplicitlyExcludedFormat()
+    {
+        var format = SerializationFormatResolver.Resolve("application/asset-administration-shell-package+xml;q=0, */*;q=1");
+
+        Assert.Equal(SerializationFormat.Json, format);
+    }
+
     [Theory]
     [InlineData("text/csv")]
     [InlineData("text/*")]
     [InlineData("application/pdf, image/png")]
     [InlineData("*/*;q=0")]
+    [InlineData("application/asset-administration-shell-package+xml;q=0, application/json;q=0, application/xml;q=0, */*;q=1")]
     public void Resolve_Throws_WhenNoSupportedMediaTypeIsAcceptable(string acceptHeader)
     {
         var exception = Assert.Throws<InvalidRequestHeaderException>(() => SerializationFormatResolver.Resolve(acceptHeader));
