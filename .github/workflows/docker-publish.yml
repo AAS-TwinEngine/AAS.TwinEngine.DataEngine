@@ -34,6 +34,7 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   BUILD_CONTEXT: source
+  TRIVY_VERSION: v0.70.0
 
 
 jobs:
@@ -154,6 +155,27 @@ jobs:
           # The first tag in the list is the one with the highest priority
           echo "value=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)" >> $GITHUB_OUTPUT
 
+      - name: Install Trivy
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          set -euo pipefail
+          version="${TRIVY_VERSION#v}"
+          archive="trivy_${version}_Linux-64bit.tar.gz"
+          release_url="https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}"
+          tmpdir="$(mktemp -d)"
+          trap 'rm -rf "$tmpdir"' EXIT
+
+          curl --proto '=https' --proto-redir '=https' -fsSL "${release_url}/${archive}" -o "$tmpdir/$archive"
+          curl --proto '=https' --proto-redir '=https' -fsSL "${release_url}/trivy_${version}_checksums.txt" -o "$tmpdir/checksums.txt"
+          grep -E "[[:space:]]${archive}$" "$tmpdir/checksums.txt" > "$tmpdir/checksum"
+          (cd "$tmpdir" && sha256sum --check --status checksum)
+
+          install_dir="$HOME/.local/bin/trivy-bin"
+          mkdir -p "$install_dir"
+          tar -xzf "$tmpdir/$archive" -C "$install_dir" trivy
+          echo "$install_dir" >> "$GITHUB_PATH"
+          "$install_dir/trivy" --version
+
       # Generate container SBOM. 
       - name: Run Trivy in GitHub SBOM mode to generate CycloneDX SBOM for container
         if: ${{ github.event_name != 'pull_request' }}
@@ -166,6 +188,8 @@ jobs:
           output: 'sbom-output/sbom_container_amd64.cyclonedx.json'
           image-ref: ${{ steps.highest-priority-tag.outputs.value }}
           skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a separate SBOM for easier vulnerability management and because trivy misses important fields
+          version: ${{ env.TRIVY_VERSION }}
+          skip-setup-trivy: true
           
       # Scan ARM64 image separately when a multi-arch build was produced
       - name: Run Trivy scan for ARM64 image
@@ -179,6 +203,8 @@ jobs:
           output: 'sbom-output/sbom_container_arm64.cyclonedx.json'
           image-ref: ${{ steps.highest-priority-tag.outputs.value }}
           skip-dirs: '/App'
+          version: ${{ env.TRIVY_VERSION }}
+          skip-setup-trivy: true
 
       - name: Upload trivy/container AND application SBOMs as a Github artifact
         if: ${{ github.event_name != 'pull_request' }}

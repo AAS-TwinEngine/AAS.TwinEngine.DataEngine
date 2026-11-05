@@ -1,6 +1,8 @@
+name: twinengine-dpp-api
+
 networks:
   twinengine-network:
-    name: twinengine-network-export
+    name: twinengine-network-dpp-api
 
 volumes:
   postgres-data:
@@ -34,7 +36,7 @@ services:
       - twinengine-network
 
   twinengine-dataengine:
-    image: ghcr.io/aas-twinengine/dataengine:v1.2.0
+    image: ghcr.io/aas-twinengine/dataengine:v1.3.0
     container_name: twinengine-dataengine
     build:
       context: ../../source
@@ -95,7 +97,7 @@ services:
       - twinengine-network
 
   dpp-plugin:
-    image: ghcr.io/aas-twinengine/plugindpp:v1.2.0
+    image: ghcr.io/aas-twinengine/plugindpp:v1.3.0
     container_name: dpp-plugin
     build:
       context: ../../../AAS.TwinEngine.Plugin.DPP/source
@@ -219,7 +221,7 @@ services:
 
   target-registry-repository:
     ports:
-      - "8092:8082"
+    - "8092:8082" 
     image: eclipsebasyx/aasenvironment-go:1.0.12
     container_name: target-registry-repository
     command: ["/app/aasenvironmentservice"]
@@ -245,6 +247,15 @@ services:
       - GENERAL_DISCOVERYINTEGRATION=true
       - GENERAL_EXTERNALURL=http://localhost:8080
       - GENERAL_AAS_PRECONFIG_PATHS=/app/preconfiguration
+      # Audit history, required for the DPP API historical versions
+      - BASYX_HISTORY_MODE=audit
+      - BASYX_HISTORY_RETENTION_DAYS=0
+      - BASYX_HISTORY_FULL_SNAPSHOT_INTERVAL=1
+      - BASYX_HISTORY_IMMUTABILITY=none
+      - BASYX_AUDIT_IDENTITY_MODE=extended
+      - BASYX_HISTORY_EVIDENCE_ENABLED=false
+      - BASYX_HISTORY_EVIDENCE_PROVIDER=none
+      - BASYX_HISTORY_INTEGRITY_ANCHOR_PROVIDER=none
     restart: always
     depends_on:
       basyx_configuration_target:
@@ -252,21 +263,64 @@ services:
     networks:
       - twinengine-network
 
+  # ---------------------------------------------------------------------------
+  # DPP API: serves Digital Product Passports from the exported target data.
+  # It reads the target database directly and does not call DataEngine.
+  # ---------------------------------------------------------------------------
+  dpp-api:
+    image: eclipsebasyx/dppapi-go:1.0.12
+    container_name: dpp-api
+    environment:
+      - SERVER_PORT=8083
+      - CORS_ALLOWEDORIGINS=*
+      - CORS_ALLOWEDHEADERS=*
+      - CORS_ALLOWEDMETHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DBNAME=basyxTargetDB
+      - POSTGRES_MAXOPENCONNECTIONS=50
+      - POSTGRES_MAXIDLECONNECTIONS=25
+      - POSTGRES_CONNMAXLIFETIMEMINUTES=5
+      - POSTGRES_CONNMAXIDLETIMEMINUTES=0
+      - ABAC_ENABLED=false
+      - GENERAL_AASREGISTRYINTEGRATION=true
+      - GENERAL_SUBMODELREGISTRYINTEGRATION=true
+      - GENERAL_DISCOVERYINTEGRATION=true
+      - GENERAL_EXTERNALURL=http://localhost:8083
+    ports:
+      - "8083:8083"
+    depends_on:
+      basyx_configuration_target:
+        condition: service_completed_successfully
+      target-registry-repository:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/bin/healthprobe"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - twinengine-network
+
   aas-ui-target:
-    image: eclipsebasyx/aas-gui:v2-260801
+    image: eclipsebasyx/aas-gui:v2-261013
     container_name: aas-ui-target
     volumes:
       - ../shared/logo:/usr/src/app/dist/Logo
     environment:
-      AAS_REGISTRY_PATH: http://localhost:8080/shell-descriptors
-      SUBMODEL_REGISTRY_PATH: http://localhost:8080/submodel-descriptors
-      AAS_REPO_PATH: http://localhost:8080/shells
-      SUBMODEL_REPO_PATH: http://localhost:8080/submodels
-      CD_REPO_PATH: http://localhost:8080/concept-descriptions
-      BASE_PATH: "/aas-ui"
-      LOGO_PATH: "MM_Logo.svg"
-      PRIMARY_DARK_COLOR: "#00F2E5"
-      PRIMARY_LIGHT_COLOR: "#041b2b"
+      - AAS_REGISTRY_PATH=http://localhost:8080/shell-descriptors
+      - SUBMODEL_REGISTRY_PATH=http://localhost:8080/submodel-descriptors
+      - AAS_REPO_PATH=http://localhost:8080/shells
+      - SUBMODEL_REPO_PATH=http://localhost:8080/submodels
+      - CD_REPO_PATH=http://localhost:8080/concept-descriptions
+      - BASE_PATH=/aas-ui
+      - LOGO_PATH=MM_Logo.svg
+      - PRIMARY_DARK_COLOR=#00F2E5
+      - PRIMARY_LIGHT_COLOR=#041b2b
     restart: always
     depends_on:
       target-registry-repository:
@@ -296,7 +350,7 @@ services:
   # environment) and writes to the TARGET BaSyx Go environment, on a cron schedule.
   # ---------------------------------------------------------------------------
   export-service:
-    image: exportservice:1.0.0
+    image: ghcr.io/aas-twinengine/exportservice:v1.3.0
     container_name: export-service
     build:
       context: ../../source
@@ -407,8 +461,8 @@ services:
     ports:
       - "8081:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,25 @@
+info:
+  name: "Read DPP by DPP ID - compressed Representation "
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/v1/dpps/:dppIdEncoded?representation=compressed"
+  headers:
+    - name: Accept
+      value: application/json
+  params:
+    - name: representation
+      value: compressed
+      type: query
+    - name: dppIdEncoded
+      value: "{{dppId1}}"
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
