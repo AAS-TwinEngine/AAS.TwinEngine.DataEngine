@@ -1,5 +1,6 @@
 ﻿using System.Net;
 
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
@@ -7,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 using NSwag.Annotations;
 
@@ -23,6 +25,12 @@ public class SerializationController(
     /// <summary>
     /// Returns an appropriate serialization based on the specified format(see SerializationFormat)
     /// </summary>
+    /// <remarks>
+    /// The serialization format is selected through content negotiation using the <c>Accept</c> header.
+    /// Supported media types are <c>application/asset-administration-shell-package+xml</c> (AASX package),
+    /// <c>application/json</c> and <c>application/xml</c>.
+    /// When no <c>Accept</c> header is sent, or when it only contains wildcards, an AASX package is returned.
+    /// </remarks>
     /// <param name="aasIds">The Asset Administration Shells' unique ids (UTF8-BASE64-URL-encoded)</param>
     /// <param name="submodelIds">The Submodels' unique ids (UTF8-BASE64-URL-encoded)</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -32,7 +40,11 @@ public class SerializationController(
     /// <response code="404">Not Found</response>
     /// <response code="500">Internal Server Error</response>
     [HttpGet("")]
-    [ProducesResponseType(typeof(FileStreamResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(FileStreamResult),
+                          (int)HttpStatusCode.OK,
+                          SerializationMediaTypes.AasxPackage,
+                          SerializationMediaTypes.Json,
+                          SerializationMediaTypes.Xml)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -41,11 +53,13 @@ public class SerializationController(
                                                        CancellationToken cancellationToken,
                                                        [FromQuery] bool includeConceptDescriptions = true)
     {
-        logger.LogInformation("Start request to get aasx file");
+        logger.LogInformation("Start request to get appropriate serialization");
 
-        var request = new SerializeAasxRequest(aasIds, submodelIds, includeConceptDescriptions);
+        var acceptHeader = Request?.Headers[HeaderNames.Accept].ToString();
 
-        var response = await serializationHandler.GetAasxFileAsync(request, cancellationToken).ConfigureAwait(false);
+        var request = new SerializationRequest(aasIds, submodelIds, includeConceptDescriptions, acceptHeader);
+
+        var response = await serializationHandler.GetSerializationAsync(request, cancellationToken).ConfigureAwait(false);
 
         return response;
     }

@@ -1,4 +1,5 @@
-﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
+﻿using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
@@ -12,35 +13,40 @@ public class SerializationHandler(
     ILogger<SerializationHandler> logger,
     ISerializationService serializationService) : ISerializationHandler
 {
-    public Task<FileStreamResult> GetAasxFileAsync(
-        SerializeAasxRequest request,
+    public Task<FileStreamResult> GetSerializationAsync(
+        SerializationRequest request,
         CancellationToken cancellationToken)
         => GetSerializationResourceAsync(
                                          request.AasIdentifier,
                                          request.SubmodelIdentifier,
                                          request.IncludeConceptDescriptions,
+                                         SerializationFormatResolver.Resolve(request.AcceptHeader),
                                          cancellationToken);
 
     private async Task<FileStreamResult> GetSerializationResourceAsync(
         IList<string>? encodedAasIds,
         IList<string>? encodedSubmodelIds,
         bool? includeConceptDescriptions,
+        SerializationFormat format,
         CancellationToken cancellationToken)
     {
         var decodedAasIds = ValidateAndDecodeIdentifiers(encodedAasIds!, "AasIdentifier");
         var decodedSubmodelIds = ValidateAndDecodeIdentifiers(encodedSubmodelIds!, "SubmodelIdentifier");
         var conceptDescriptions = includeConceptDescriptions ?? false;
 
-        logger.LogInformation("Start serializing AASX package for AAS IDs: {AasIds} and Submodel IDs: {SubmodelIds}", decodedAasIds, decodedSubmodelIds);
+        logger.LogInformation("Start serializing AAS IDs: {AasIds} and Submodel IDs: {SubmodelIds} as {Format}",
+                              decodedAasIds,
+                              decodedSubmodelIds,
+                              format);
 
         var stream = await serializationService
-                           .GetAasxFileStreamAsync(decodedAasIds, decodedSubmodelIds, conceptDescriptions, cancellationToken)
+                           .GetSerializationStreamAsync(decodedAasIds, decodedSubmodelIds, conceptDescriptions, format, cancellationToken)
                            .ConfigureAwait(false);
 
-        ValidateResourceExists(stream, "AASX file", decodedAasIds.First());
+        ValidateResourceExists(stream, "Serialization", decodedAasIds.First());
 
-        var fileName = $"{decodedAasIds.First()}.aasx";
-        return new FileStreamResult(stream, "application/asset-administration-shell-package+xml")
+        var fileName = $"{decodedAasIds.First()}.{SerializationMediaTypes.ToFileExtension(format)}";
+        return new FileStreamResult(stream, SerializationMediaTypes.ToMediaType(format))
         {
             FileDownloadName = fileName
         };

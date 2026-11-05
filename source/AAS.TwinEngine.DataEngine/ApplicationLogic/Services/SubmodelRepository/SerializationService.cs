@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using System.Xml;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -21,10 +22,11 @@ public class SerializationService(
 
     public const string RootFolder = "aasx";
 
-    public async Task<Stream> GetAasxFileStreamAsync(IList<string> aasIds,
-                                                     IList<string> submodelIds,
-                                                     bool includeConceptDescriptions,
-                                                     CancellationToken cancellationToken)
+    public async Task<Stream> GetSerializationStreamAsync(IList<string> aasIds,
+                                                          IList<string> submodelIds,
+                                                          bool includeConceptDescriptions,
+                                                          SerializationFormat format,
+                                                          CancellationToken cancellationToken)
     {
         var shells = await FetchShellsByIdsAsync(aasIds, cancellationToken).ConfigureAwait(false);
 
@@ -43,7 +45,21 @@ public class SerializationService(
             conceptDescriptions = await FetchConceptDescriptionsAsync(submodels, cancellationToken).ConfigureAwait(false);
         }
 
-        return BuildAasxPackageStream(shells, submodels, conceptDescriptions);
+        var aasEnvironment = new Environment
+        {
+            AssetAdministrationShells = shells,
+            Submodels = submodels,
+            ConceptDescriptions = conceptDescriptions
+        };
+
+        logger.LogInformation("Serializing AAS environment using format {Format}", format);
+
+        return format switch
+        {
+            SerializationFormat.Json => BuildJsonStream(aasEnvironment),
+            SerializationFormat.Xml => BuildXmlStream(aasEnvironment),
+            _ => BuildAasxPackageStream(aasEnvironment, shells.FirstOrDefault()?.IdShort)
+        };
     }
 
     private async Task<List<ISubmodel>> FetchSubmodelsByIdsAsync(IList<string> submodelIds, CancellationToken cancellationToken)
@@ -150,16 +166,9 @@ public class SerializationService(
 
     private static string GetSemanticId(IHasSemantics hasSemantics) => hasSemantics.SemanticId?.Keys?.FirstOrDefault()?.Value ?? string.Empty;
 
-    private FileStream BuildAasxPackageStream(List<IAssetAdministrationShell> shells, List<ISubmodel> submodels, List<IConceptDescription>? conceptDescriptions)
+    private FileStream BuildAasxPackageStream(Environment aasEnvironment, string? idShort)
     {
-        var aasEnvironment = new Environment
-        {
-            AssetAdministrationShells = shells,
-            Submodels = submodels,
-            ConceptDescriptions = conceptDescriptions
-        };
-
-        var relativeFilePathOfXml = BuildRelativeXmlPath(shells.FirstOrDefault()?.IdShort);
+        var relativeFilePathOfXml = BuildRelativeXmlPath(idShort);
 
         var packageFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.aasx");
 
@@ -187,6 +196,39 @@ public class SerializationService(
 
         logger.LogInformation("AASX package created at {Path}", packageFilePath);
         return new FileStream(packageFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
+    }
+
+    private static MemoryStream BuildJsonStream(Environment aasEnvironment)
+    {
+        var environmentJson = Jsonization.Serialize.ToJsonObject(aasEnvironment);
+
+        var jsonMemoryStream = new MemoryStream();
+
+        using (var jsonWriter = new Utf8JsonWriter(jsonMemoryStream, new JsonWriterOptions { Indented = true }))
+        {
+            environmentJson.WriteTo(jsonWriter);
+        }
+
+        jsonMemoryStream.Position = 0;
+        return jsonMemoryStream;
+    }
+
+    private static MemoryStream BuildXmlStream(Environment aasEnvironment)
+    {
+        var xmlMemoryStream = new MemoryStream();
+
+        using (var environmentXmlWriter = XmlWriter.Create(xmlMemoryStream,
+                                                           new XmlWriterSettings
+                                                           {
+                                                               Indent = true,
+                                                               Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
+                                                           }))
+        {
+            Xmlization.Serialize.To(aasEnvironment, environmentXmlWriter);
+        }
+
+        xmlMemoryStream.Position = 0;
+        return xmlMemoryStream;
     }
 
     /// <summary>

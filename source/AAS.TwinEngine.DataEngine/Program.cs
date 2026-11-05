@@ -5,6 +5,7 @@ using AAS.TwinEngine.DataEngine.Infrastructure.Http.Authorization.Middleware;
 using AAS.TwinEngine.DataEngine.Infrastructure.Monitoring;
 using AAS.TwinEngine.DataEngine.Infrastructure.Providers.PluginDataProvider.Services;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration;
+using AAS.TwinEngine.DataEngine.ServiceConfiguration.OpenApi;
 
 using Asp.Versioning;
 
@@ -54,6 +55,7 @@ public class Program
         {
             settings.DocumentName = ApiVersion.ToString();
             settings.Title = ApiTitle;
+            settings.OperationProcessors.Add(new ResponseContentTypesOperationProcessor());
         });
 
         _ = builder.Services.AddApiVersioning(options =>
