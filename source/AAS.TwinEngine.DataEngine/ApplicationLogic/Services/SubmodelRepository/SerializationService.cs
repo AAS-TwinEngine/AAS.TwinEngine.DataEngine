@@ -58,7 +58,7 @@ public class SerializationService(
         {
             SerializationFormat.Json => BuildJsonStream(aasEnvironment),
             SerializationFormat.Xml => BuildXmlStream(aasEnvironment),
-            _ => BuildAasxPackageStream(aasEnvironment, shells.First()?.IdShort)
+            _ => BuildAasxPackageStream(aasEnvironment, shells[0]?.IdShort)
         };
     }
 
