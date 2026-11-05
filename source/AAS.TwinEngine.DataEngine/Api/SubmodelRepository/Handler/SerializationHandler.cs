@@ -43,9 +43,9 @@ public class SerializationHandler(
                            .GetSerializationStreamAsync(decodedAasIds, decodedSubmodelIds, conceptDescriptions, format, cancellationToken)
                            .ConfigureAwait(false);
 
-        ValidateResourceExists(stream, "Serialization", decodedAasIds.First());
+        ValidateResourceExists(stream, "Serialization", decodedAasIds[0]);
 
-        var fileName = $"{decodedAasIds.First()}.{SerializationMediaTypes.ToFileExtension(format)}";
+        var fileName = $"{decodedAasIds[0]}.{SerializationMediaTypes.ToFileExtension(format)}";
         return new FileStreamResult(stream, SerializationMediaTypes.ToMediaType(format))
         {
             FileDownloadName = fileName
