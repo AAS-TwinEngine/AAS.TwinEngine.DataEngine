@@ -33,15 +33,27 @@ permissions:
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/dataengine
-  DOCKERFILE_PATH: source/AAS.TwinEngine.DataEngine/Dockerfile
   BUILD_CONTEXT: source
+  TRIVY_VERSION: v0.70.0
 
 
 jobs:
-  build:
-
+  build-images:
+    name: Build ${{ matrix.image }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: dataengine
+            dockerfile: source/AAS.TwinEngine.DataEngine/Dockerfile
+            sbom_artifact: sbom-dataengine
+          - image: exportservice
+            dockerfile: source/AAS.TwinEngine.ExportService/Dockerfile
+            sbom_artifact: sbom-exportservice
+    env:
+      IMAGE_NAME: ${{ github.repository_owner }}/${{ matrix.image }}
+      DOCKERFILE_PATH: ${{ matrix.dockerfile }}
     permissions:
       contents: read
       packages: write
@@ -81,7 +93,7 @@ jobs:
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -120,8 +132,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
       # Extract the pure application SBOM from the artifact stage, we want to handle it separately from the container SBOM
       # This automaticaly re-uses the previously generated stage from cache, so we get the exact sbom from previous build step
@@ -143,6 +155,27 @@ jobs:
           # The first tag in the list is the one with the highest priority
           echo "value=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)" >> $GITHUB_OUTPUT
 
+      - name: Install Trivy
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          set -euo pipefail
+          version="${TRIVY_VERSION#v}"
+          archive="trivy_${version}_Linux-64bit.tar.gz"
+          release_url="https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}"
+          tmpdir="$(mktemp -d)"
+          trap 'rm -rf "$tmpdir"' EXIT
+
+          curl --proto '=https' --proto-redir '=https' -fsSL "${release_url}/${archive}" -o "$tmpdir/$archive"
+          curl --proto '=https' --proto-redir '=https' -fsSL "${release_url}/trivy_${version}_checksums.txt" -o "$tmpdir/checksums.txt"
+          grep -E "[[:space:]]${archive}$" "$tmpdir/checksums.txt" > "$tmpdir/checksum"
+          (cd "$tmpdir" && sha256sum --check --status checksum)
+
+          install_dir="$HOME/.local/bin/trivy-bin"
+          mkdir -p "$install_dir"
+          tar -xzf "$tmpdir/$archive" -C "$install_dir" trivy
+          echo "$install_dir" >> "$GITHUB_PATH"
+          "$install_dir/trivy" --version
+
       # Generate container SBOM. 
       - name: Run Trivy in GitHub SBOM mode to generate CycloneDX SBOM for container
         if: ${{ github.event_name != 'pull_request' }}
@@ -155,6 +188,8 @@ jobs:
           output: 'sbom-output/sbom_container_amd64.cyclonedx.json'
           image-ref: ${{ steps.highest-priority-tag.outputs.value }}
           skip-dirs: '/App' # Skip the /app directory as we handle the content of the application in a separate SBOM for easier vulnerability management and because trivy misses important fields
+          version: ${{ env.TRIVY_VERSION }}
+          skip-setup-trivy: true
           
       # Scan ARM64 image separately when a multi-arch build was produced
       - name: Run Trivy scan for ARM64 image
@@ -168,10 +203,27 @@ jobs:
           output: 'sbom-output/sbom_container_arm64.cyclonedx.json'
           image-ref: ${{ steps.highest-priority-tag.outputs.value }}
           skip-dirs: '/App'
+          version: ${{ env.TRIVY_VERSION }}
+          skip-setup-trivy: true
 
       - name: Upload trivy/container AND application SBOMs as a Github artifact
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: sbom
+          name: ${{ matrix.sbom_artifact }}
           path: '${{ github.workspace }}/sbom-output/'
+
+  build:
+    name: build
+    if: ${{ always() }}
+    needs: build-images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all image builds to pass
+        env:
+          IMAGE_BUILDS_RESULT: ${{ needs.build-images.result }}
+        run: |
+          if [[ "$IMAGE_BUILDS_RESULT" != "success" ]]; then
+            echo "::error::One or more Docker image builds did not succeed."
+            exit 1
+          fi

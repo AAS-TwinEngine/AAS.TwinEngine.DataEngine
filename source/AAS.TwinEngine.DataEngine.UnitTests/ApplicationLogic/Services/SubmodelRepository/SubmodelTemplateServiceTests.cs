@@ -1,4 +1,4 @@
-using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
+﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasEnvironment.Providers;
@@ -294,7 +294,7 @@ public class SubmodelTemplateServiceTests
 
         var list = result.SubmodelElements?.FirstOrDefault() as SubmodelElementList;
         Assert.NotNull(list);
-        Assert.Single(list.Value!);
+        Assert.Equal(2, list.Value!.Count);
         var collection = list.Value![0] as SubmodelElementCollection;
         Assert.Single(collection!.Value!);
         var file = collection!.Value!.FirstOrDefault() as File;
@@ -304,10 +304,10 @@ public class SubmodelTemplateServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelTemplateAsync_WithListIndexPath_ReturnsSubmodelWithCorrectIndexedElement()
+    public async Task GetSubmodelTemplateAsync_WithListIndexPath_PreservesFullListForFinalExtraction()
     {
         var expectedSubmodel = TestData.CreateSubmodelWithModel3DList();
-        const string path = "Model3D[0]";
+        const string path = "Model3D[1].ModelDataFile";
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(expectedSubmodel);
@@ -318,12 +318,13 @@ public class SubmodelTemplateServiceTests
 
         var list = result.SubmodelElements?.FirstOrDefault() as SubmodelElementList;
         Assert.NotNull(list);
-        Assert.Single(list.Value!);
-        var collection = list!.Value?[0] as SubmodelElementCollection;
-        Assert.Equal(2, collection?.Value?.Count);
+        Assert.Equal(2, list.Value!.Count);
+        var collection = list.Value[1] as SubmodelElementCollection;
+        Assert.Equal("ModelData2", collection?.IdShort);
+        Assert.Single(collection!.Value!);
         var file = collection!.Value!.FirstOrDefault() as File;
-        Assert.Equal("ModelFile", file?.IdShort);
-        Assert.Equal("https://localhost/ModelFile.glb", file?.Value);
+        Assert.Equal("ModelDataFile", file?.IdShort);
+        Assert.Equal("https://localhost/ModelDataFile.glb", file?.Value);
     }
 
     [Fact]
@@ -356,10 +357,24 @@ public class SubmodelTemplateServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelTemplateAsync_ReturnsSubmodel_WhenTypeValueListElementIsSubmodelCollection_AndListIndexExceedsAvailableElements()
+    public async Task GetSubmodelTemplateAsync_Throws_WhenStaticCollectionListIndexExceedsAvailableElements()
     {
-        var expectedSubmodel = TestData.CreateSubmodelWithModel3DList();
         var submodel = TestData.CreateSubmodelWithModel3DList();
+        const string path = "Model3D[5].ModelDataFile";
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
+            .Returns(submodel);
+
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
+            _sut.GetSubmodelTemplateAsync(SubmodelId, path, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelTemplateAsync_AllowsOutOfRangeIndex_WhenSingleCollectionIsRepeatablePrototype()
+    {
+        var submodel = TestData.CreateSubmodelWithModel3DList();
+        var list = (SubmodelElementList)submodel.SubmodelElements![0];
+        list.Value = [list.Value![0]];
         const string path = "Model3D[5].ModelDataFile";
         _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
@@ -367,17 +382,11 @@ public class SubmodelTemplateServiceTests
 
         var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, path, null, CancellationToken.None);
 
-        Assert.Equal(GetSemanticId(expectedSubmodel), GetSemanticId(result));
-
-        var list = result.SubmodelElements?.FirstOrDefault() as SubmodelElementList;
-        Assert.NotNull(list);
-        Assert.Single(list.Value!);
-        var collection = list.Value![0] as SubmodelElementCollection;
-        Assert.Single(collection!.Value!);
-        var file = collection!.Value!.FirstOrDefault() as File;
-        Assert.NotNull(file);
+        var resultList = Assert.IsType<SubmodelElementList>(Assert.Single(result.SubmodelElements!));
+        Assert.Single(resultList.Value!);
+        var collection = Assert.IsType<SubmodelElementCollection>(Assert.Single(resultList.Value!));
+        var file = Assert.IsType<File>(Assert.Single(collection.Value!));
         Assert.Equal("ModelDataFile", file.IdShort);
-        Assert.Equal("https://localhost/ModelDataFile.glb", file.Value);
     }
 
     [Fact]

@@ -63,7 +63,7 @@ public static class JsonSchemaParser
             default:
                 parentBranch.AddChild(new SemanticLeafNode(
                     parentBranch.SemanticId,
-                    valueElement.ToString(), DataType.Unknown, Cardinality.Unknown
+                    GetPrimitiveValue(valueElement), DataType.Unknown, Cardinality.Unknown
                 ));
                 break;
         }
@@ -73,11 +73,12 @@ public static class JsonSchemaParser
     {
         foreach (var property in objectElement.EnumerateObject())
         {
+
             if (IsPrimitiveValue(property.Value))
             {
                 parentBranch.AddChild(new SemanticLeafNode(
                     property.Name,
-                    property.Value.ToString(), DataType.Unknown, Cardinality.Unknown
+                   GetPrimitiveValue(property.Value), DataType.Unknown, Cardinality.Unknown
                 ));
             }
             else if (property.Value.ValueKind == JsonValueKind.Array)
@@ -115,6 +116,16 @@ public static class JsonSchemaParser
             JsonValueKind.False or
             JsonValueKind.Null => true,
             _ => false
+        };
+    }
+
+    private static string GetPrimitiveValue(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.True => "true",
+            JsonValueKind.False => "false",
+            _ => element.ToString()
         };
     }
 }

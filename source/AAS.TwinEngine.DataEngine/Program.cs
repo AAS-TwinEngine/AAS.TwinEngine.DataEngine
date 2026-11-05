@@ -36,9 +36,7 @@ public class Program
         var allowedHosts = builder.Configuration.GetValue<string>("General:AllowedHosts") ?? "*";
         _ = builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>
         {
-            options.AllowedHosts = allowedHosts
-                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .ToList();
+            options.AllowedHosts = [.. allowedHosts.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
         });
 
         _ = builder.Services.AddHybridCache();

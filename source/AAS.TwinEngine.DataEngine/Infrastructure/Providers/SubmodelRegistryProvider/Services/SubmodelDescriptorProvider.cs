@@ -15,6 +15,9 @@ using AasCore.Aas3_1;
 
 using Microsoft.Extensions.Options;
 
+using ApplicationForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base.ForbiddenException;
+using InfrastructureForbiddenException = AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Infrastructure.ForbiddenException;
+
 namespace AAS.TwinEngine.DataEngine.Infrastructure.Providers.SubmodelRegistryProvider.Services;
 
 public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logger, IOptions<TemplateManagementConfig> options, ICachedGetRequestClient cachedHttp) : ISubmodelDescriptorProvider
@@ -30,7 +33,15 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
 
         var url = $"/{SubModelRegistryPath}/{encodedAasId}";
 
-        var responseContent = await cachedHttp.GetStringAsync(url, HttpClientNames.SubmodelRegistry, _config.SubmodelTemplateRegistry.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
+        string responseContent;
+        try
+        {
+            responseContent = await cachedHttp.GetStringAsync(url, HttpClientNames.SubmodelRegistry, _config.SubmodelTemplateRegistry.LocalCacheExpirationInMinutes, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InfrastructureForbiddenException ex)
+        {
+            throw new ApplicationForbiddenException("The requested resource is forbidden.", ex);
+        }
 
         try
         {
@@ -69,7 +80,7 @@ public class SubmodelDescriptorProvider(ILogger<SubmodelDescriptorProvider> logg
             IdShort = descriptorNode["idShort"]?.GetValue<string>(),
             Id = descriptorNode["id"]?.GetValue<string>(),
             SemanticId = AasJsonNodeDeserializer.DeserializeAasNode(descriptorNode["semanticId"], Jsonization.Deserialize.ReferenceFrom),
-            SupplementalSemanticId = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["supplementalSemanticId"], Jsonization.Deserialize.ReferenceFrom),
+            SupplementalSemanticIds = AasJsonNodeDeserializer.DeserializeAasArray(descriptorNode["supplementalSemanticIds"], Jsonization.Deserialize.ReferenceFrom),
             Endpoints = descriptorNode["endpoints"]?.Deserialize<List<EndpointData>>()
         };
     }

@@ -8,6 +8,7 @@ using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 using NSubstitute;
 
@@ -15,7 +16,7 @@ namespace AAS.TwinEngine.DataEngine.UnitTests.Infrastructure.Http.Authorization;
 
 public class HeaderForwardingHandlerTests
 {
-    private static HeaderForwardingHandler CreateHandler(HttpContext httpContext, string clientName)
+    private static HeaderForwardingHandler CreateHandler(HttpContext? httpContext, string clientName, TemplateManagementConfig? templateManagementConfig = null)
     {
         var accessor = new HttpContextAccessor { HttpContext = httpContext };
 
@@ -45,13 +46,13 @@ public class HeaderForwardingHandlerTests
             ]
         });
 
-        var templateManagementConfig = Options.Create(new TemplateManagementConfig());
+        var templateManagementOptions = Options.Create(templateManagementConfig ?? new TemplateManagementConfig());
 
         var headerMapper = new RequestHeaderMapper(
             new NullLogger<RequestHeaderMapper>(),
             generalConfig,
             pluginsConfig,
-            templateManagementConfig);
+            templateManagementOptions);
 
         return new HeaderForwardingHandler(accessor, headerMapper, clientName)
         {
@@ -82,6 +83,45 @@ public class HeaderForwardingHandlerTests
         Assert.NotNull(innerHandler.LastRequest);
         Assert.True(innerHandler.LastRequest!.Headers.TryGetValues("X-Auth-Token", out var values));
         Assert.Contains("Bearer test-token", values);
+    }
+
+    [Fact]
+    public async Task HeaderForwardingHandler_UsesCapturedHeadersWhenHttpContextIsUnavailable()
+    {
+        var templateManagementConfig = new TemplateManagementConfig
+        {
+            AasTemplateRepository = new ServiceInstance
+            {
+                HeaderMappings =
+                [
+                    new HeaderMappingRule
+                    {
+                        Source = "Authorization",
+                        Target = "Authorization"
+                    }
+                ]
+            }
+        };
+
+        using var handler = CreateHandler(null, HttpClientNames.AasTemplateRepository, templateManagementConfig);
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://example.com")
+        };
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/test");
+        request.Options.Set(
+            RequestHeaderForwardingOptions.IncomingHeaders,
+            new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Authorization"] = "Bearer captured-token"
+            });
+
+        using var response = await client.SendAsync(request).ConfigureAwait(false);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var innerHandler = (TestHandler)handler.InnerHandler!;
+        Assert.Equal("Bearer", innerHandler.LastRequest!.Headers.Authorization?.Scheme);
+        Assert.Equal("captured-token", innerHandler.LastRequest.Headers.Authorization?.Parameter);
     }
 
     [Fact]
