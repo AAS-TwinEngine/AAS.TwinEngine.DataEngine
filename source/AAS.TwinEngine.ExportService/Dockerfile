@@ -25,7 +25,7 @@ FROM scratch AS app-sbom-artifact
 COPY --from=build /App/sbom/bom.xml /sbom_application.cyclonedx.xml
 
 # Create final image containing application
-FROM mcr.microsoft.com/dotnet/aspnet:10.0.14-alpine3.24@sha256:254fe017495996d3abcc487ffacdcce2b73affb380d3af87af12c8dff41fe0b0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.14-alpine3.24@sha256:486297ae006e95ee2ee3112a2c03e3d26e41fbbc64b7a29e28e7a18cc36b12bb
 RUN apk add --no-cache tzdata
 USER app
 WORKDIR /App
