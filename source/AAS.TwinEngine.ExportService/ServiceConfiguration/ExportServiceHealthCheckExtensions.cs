@@ -1,4 +1,4 @@
-using AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
+﻿using AAS.TwinEngine.ExportService.Infrastructure.Http.Authorization;
 using AAS.TwinEngine.ExportService.Infrastructure.Monitoring;
 using AAS.TwinEngine.ExportService.ServiceConfiguration.Config;
 
@@ -20,7 +20,7 @@ public static class ExportServiceHealthCheckExtensions
         var healthChecks = services.AddHealthChecks()
             .AddCheck<StateStoreHealthCheck>(
                 "state-store",
-                tags: ["ready"],
+                tags: new[] { "ready" },
                 timeout: HealthCheckTimeout);
 
         foreach (var endpoint in GetActiveEndpoints(config))
@@ -35,7 +35,7 @@ public static class ExportServiceHealthCheckExtensions
                 serviceProvider.GetRequiredService<ITokenProvider>(),
                 endpoint.ClientName));
 
-            healthChecks.Add(new HealthCheckRegistration(
+            _ = healthChecks.Add(new HealthCheckRegistration(
                 endpoint.ClientName,
                 serviceProvider => new EndpointHealthCheck(
                     serviceProvider.GetRequiredService<IHttpClientFactory>(),
@@ -68,7 +68,7 @@ public static class ExportServiceHealthCheckExtensions
     }
 
     private static void AddIfActive(
-        ICollection<(string ClientName, EndpointConfig Config)> endpoints,
+        ICollection<(string ClientName, EndpointConfig Config)> endpoints,  
         string sourceClientName,
         EndpointConfig source,
         string targetClientName,

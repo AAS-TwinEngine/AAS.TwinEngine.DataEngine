@@ -3,6 +3,7 @@ using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Base;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +34,7 @@ public class SerializationControllerTests
         {
             FileDownloadName = $"{AasIds.FirstOrDefault()}.aasx"
         };
-        _handler.GetAasxFileAsync(Arg.Any<SerializeAasxRequest>(), Arg.Any<CancellationToken>())
+        _handler.GetSerializationAsync(Arg.Any<SerializationRequest>(), Arg.Any<CancellationToken>())
                 .Returns(expectedResult);
 
         var result = await _sut.SerializeAasxAsync(AasIds, SubmodelIds, CancellationToken.None);
@@ -44,18 +45,36 @@ public class SerializationControllerTests
     }
 
     [Fact]
+    public async Task SerializeAasx_ForwardsAcceptHeader_ToHandler()
+    {
+        const string AcceptHeader = "application/json";
+        var stream = new MemoryStream("{}"u8.ToArray());
+        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        _sut.ControllerContext.HttpContext.Request.Headers.Accept = AcceptHeader;
+
+        _handler.GetSerializationAsync(Arg.Any<SerializationRequest>(), Arg.Any<CancellationToken>())
+                .Returns(new FileStreamResult(stream, "application/json"));
+
+        _ = await _sut.SerializeAasxAsync(AasIds, SubmodelIds, CancellationToken.None);
+
+        await _handler.Received(1)
+                      .GetSerializationAsync(Arg.Is<SerializationRequest>(request => request.AcceptHeader == AcceptHeader),
+                                             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task SerializeAasx_ThrowsNotFoundException_WhenHandlerThrows()
     {
-        _handler.GetAasxFileAsync(Arg.Any<SerializeAasxRequest>(), Arg.Any<CancellationToken>())
+        _handler.GetSerializationAsync(Arg.Any<SerializationRequest>(), Arg.Any<CancellationToken>())
                 .Throws(new NotFoundException());
 
-        var ex = await Assert.ThrowsAsync<NotFoundException>(() => _sut.SerializeAasxAsync(AasIds, SubmodelIds, CancellationToken.None));
+        _ = await Assert.ThrowsAsync<NotFoundException>(() => _sut.SerializeAasxAsync(AasIds, SubmodelIds, CancellationToken.None));
     }
 
     [Fact]
     public async Task SerializeAasx_ThrowsException_WhenHandlerFails()
     {
-        _handler.GetAasxFileAsync(Arg.Any<SerializeAasxRequest>(), Arg.Any<CancellationToken>())
+        _handler.GetSerializationAsync(Arg.Any<SerializationRequest>(), Arg.Any<CancellationToken>())
                 .Throws(new Exception("Unexpected error"));
 
         await Assert.ThrowsAsync<Exception>(() => _sut.SerializeAasxAsync(AasIds, SubmodelIds, CancellationToken.None));
@@ -64,11 +83,10 @@ public class SerializationControllerTests
     [Fact]
     public async Task SerializeAasx_ReturnsBadRequest_WhenSubmodelIdsIsNull()
     {
-        _handler.GetAasxFileAsync(Arg.Any<SerializeAasxRequest>(), Arg.Any<CancellationToken>())
+        _handler.GetSerializationAsync(Arg.Any<SerializationRequest>(), Arg.Any<CancellationToken>())
                 .Throws(new BadRequestException("SubmodelIds must not be null or empty."));
 
         var ex = await Assert.ThrowsAsync<BadRequestException>(() => _sut.SerializeAasxAsync(AasIds, null!, CancellationToken.None));
         Assert.Equal("SubmodelIds must not be null or empty.", ex.Message);
     }
-
 }
