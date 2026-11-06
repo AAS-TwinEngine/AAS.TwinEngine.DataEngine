@@ -21,16 +21,21 @@ public class ReferenceHelper(
 
         foreach (var group in keys.GroupBy(k => k.Type))
         {
-            group.Select((_, index) => new SemanticLeafNode(
-                                           semanticIdResolver.BuildReferenceKeySemanticId(semanticId, group.Key, index, group.Count()),
-                                           string.Empty,
-                                           DataType.String,
-                                           Cardinality.ZeroToOne))
-                 .ToList()
-                 .ForEach(branchNode.AddChild);
+            var keyList = group.ToList();
+
+            // The index is taken from the original key position so it still matches PopulateReferenceKeys.
+            keyList.Select((key, index) => (key, index))
+                   .Where(item => !TemplateValueChecker.IsResolved(item.key.Value))
+                   .Select(item => new SemanticLeafNode(
+                                       semanticIdResolver.BuildReferenceKeySemanticId(semanticId, group.Key, item.index, keyList.Count),
+                                       string.Empty,
+                                       DataType.String,
+                                       Cardinality.ZeroToOne))
+                   .ToList()
+                   .ForEach(branchNode.AddChild);
         }
 
-        return branchNode;
+        return branchNode.Children.Count == 0 ? null : branchNode;
     }
 
     public void PopulateReferenceKeys(IReference reference, SemanticTreeNode semanticNode, string semanticId)
@@ -80,6 +85,11 @@ public class ReferenceHelper(
         var keyList = group.ToList();
         for (var i = 0; i < keyList.Count; i++)
         {
+            if (TemplateValueChecker.IsResolved(keyList[i].Value))
+            {
+                continue;
+            }
+
             var indexedSemanticId = semanticIdResolver.BuildReferenceKeySemanticId(semanticId, group.Key, i, keyList.Count);
 
             var leafNode = branchNode.Children

@@ -94,7 +94,7 @@
       ],
       "valueType": "xs:date",
       "min": "2010-02-02",
-      "max": "2030-02-06",
+      "max": "2030-12-31",
       "modelType": "Range"
     },
     {
@@ -220,10 +220,6 @@
         {
           "language": "de",
           "text": "Name der Produktklasse im verwendeten Klassifizierungssystem"
-        },
-        {
-          "language": "",
-          "text": ""
         }
       ],
       "modelType": "MultiLanguageProperty"
@@ -322,7 +318,7 @@
           },
           {
             "type": "SubmodelElementList",
-            "value": "Documents"
+            "value": "TechnicalPropertyAreas"
           },
           {
             "type": "SubmodelElementCollection",

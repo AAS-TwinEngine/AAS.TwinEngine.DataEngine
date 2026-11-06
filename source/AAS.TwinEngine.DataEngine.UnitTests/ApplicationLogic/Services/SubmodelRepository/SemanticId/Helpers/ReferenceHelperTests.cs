@@ -40,8 +40,8 @@ public class ReferenceHelperTests
         var reference = new Reference(
             ReferenceTypes.ModelReference,
             [
-                new Key(KeyTypes.Submodel, "submodel-value"),
-                new Key(KeyTypes.Property, "prop-value"),
+                new Key(KeyTypes.Submodel, ""),
+                new Key(KeyTypes.Property, ""),
             ]
         );
 
@@ -62,8 +62,8 @@ public class ReferenceHelperTests
         var reference = new Reference(
             ReferenceTypes.ModelReference,
             [
-                new Key(KeyTypes.SubmodelElementCollection, "col0"),
-                new Key(KeyTypes.SubmodelElementCollection, "col1"),
+                new Key(KeyTypes.SubmodelElementCollection, ""),
+                new Key(KeyTypes.SubmodelElementCollection, ""),
             ]
         );
 
@@ -75,6 +75,39 @@ public class ReferenceHelperTests
         Equal("http://test/ref_SubmodelElementCollection_0", leaf0.SemanticId);
         var leaf1 = IsType<SemanticLeafNode>(result.Children[1]);
         Equal("http://test/ref_SubmodelElementCollection_1", leaf1.SemanticId);
+    }
+
+    [Fact]
+    public void ExtractReferenceKeys_SomeKeysResolved_KeepsOriginalIndexForUnresolvedKeys()
+    {
+        var reference = new Reference(
+            ReferenceTypes.ModelReference,
+            [
+                new Key(KeyTypes.SubmodelElementCollection, "col0"),
+                new Key(KeyTypes.SubmodelElementCollection, ""),
+                new Key(KeyTypes.Property, "prop"),
+            ]
+        );
+
+        var result = _sut.ExtractReferenceKeys(reference, "http://test/ref", Cardinality.One);
+
+        NotNull(result);
+        var leaf = IsType<SemanticLeafNode>(Single(result!.Children));
+        Equal("http://test/ref_SubmodelElementCollection_1", leaf.SemanticId);
+    }
+
+    [Fact]
+    public void ExtractReferenceKeys_AllKeysResolved_ReturnsNull()
+    {
+        var reference = new Reference(
+            ReferenceTypes.ModelReference,
+            [
+                new Key(KeyTypes.Submodel, "submodel-value"),
+                new Key(KeyTypes.Property, "prop-value"),
+            ]
+        );
+
+        Null(_sut.ExtractReferenceKeys(reference, "http://test/ref", Cardinality.One));
     }
 
     [Fact]
@@ -151,13 +184,13 @@ public class ReferenceHelperTests
     {
         var reference = new Reference(
             ReferenceTypes.ModelReference,
-            [new Key(KeyTypes.Submodel, "original")]
+            [new Key(KeyTypes.Submodel, "")]
         );
         var branchNode = new SemanticBranchNode("http://test/ref", Cardinality.One);
 
         _sut.PopulateReferenceKeys(reference, branchNode, "http://test/ref");
 
-        Equal("original", reference.Keys[0].Value);
+        Equal("", reference.Keys[0].Value);
         _logger.Received(1).Log(
             LogLevel.Warning,
             Arg.Any<EventId>(),

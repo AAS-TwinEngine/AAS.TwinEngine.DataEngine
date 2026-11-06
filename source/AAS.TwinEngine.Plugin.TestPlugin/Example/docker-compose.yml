@@ -94,8 +94,6 @@ services:
       context: ../../
       dockerfile: ./AAS.TwinEngine.Plugin.TestPlugin/Dockerfile
     image: twinengine-plugin:latest
-    ports:
-    - '8086:8080'
     container_name: twinengine-plugin
     restart: always
     volumes:
@@ -164,7 +162,7 @@ services:
       - dataengine-network
 
   aas-web-ui:
-    image: eclipsebasyx/aas-gui:v2-260526
+    image: eclipsebasyx/aas-gui:v2-261013
     container_name: aas-ui
     volumes:
       - ./logo:/usr/src/app/dist/Logo

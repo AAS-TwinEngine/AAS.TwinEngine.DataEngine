@@ -43,6 +43,12 @@ public class RelationshipElementHandler(
             }
         }
 
+        // Every model-reference key is already in the template, so there is nothing left to request.
+        if (relationshipElementNode.Children.Count == 0 && TemplateValueChecker.HasResolvedValue(relationshipElement))
+        {
+            return null;
+        }
+
         return relationshipElementNode;
     }
 

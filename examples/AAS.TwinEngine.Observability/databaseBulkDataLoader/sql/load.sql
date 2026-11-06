@@ -115,6 +115,7 @@ BEGIN
         -- ============================================================
         INSERT INTO "Asset" (
             "ProductId","IdShort","GlobalAssetId","AasId","AssetKind","AssetType",
+            "dppSchemaVersion","dppStatus","facilityId","economicOperatorId","granularity","lastUpdate",
             "ThumbnailContentType","ThumbnailPath","MaintenanceFreeAsset",
             "UriOfTheProduct","ManufacturerProductType","OrderCodeOfManufacturer",
             "ProductArticleNumberOfManufacturer","SerialNumber","YearOfConstruction",
@@ -138,11 +139,19 @@ BEGIN
             'https://mm-software.com/ids/assets/' || pid,
             'https://mm-software.com/ids/aas/' || pid,
             CASE
-                WHEN random() < 0.5 
-                    THEN 'Instance'
-                    ELSE 'Type'
+                WHEN asset_sequence % 2 = 1 THEN 'Instance'
+                ELSE 'Type'
             END,
             '',
+            'EN18223:2026',
+            'Active',
+            'gxx:xxx' || lpad((987654321 + asset_sequence)::text, 9, '0'),
+            'gxx:ppp' || lpad((123456789 + asset_sequence)::text, 9, '0'),
+            CASE asset_sequence % 2
+                WHEN 1 THEN 'Item'
+                ELSE 'Model'
+            END,
+            LOCALTIMESTAMP,
             'image/jpeg',
             c_product_image_url,
             (i % 2 = 1),
@@ -157,7 +166,7 @@ BEGIN
             '1.0.' || asset_sequence,
             '1.0.' || asset_sequence,
             CASE asset_sequence % 3 WHEN 1 THEN 'DE' WHEN 2 THEN 'IN' ELSE 'CN' END,
-            lpad((987654321 + asset_sequence)::text, 9, '0'),
+            'gxx:xxx' || lpad((987654321 + asset_sequence)::text, 9, '0'),
             CASE asset_sequence % 3 WHEN 1 THEN 'Main Street ' || asset_sequence WHEN 2 THEN 'MG Road ' || asset_sequence ELSE 'Century Avenue ' || asset_sequence END,
             CASE asset_sequence % 3 WHEN 1 THEN 'Musterstrasse ' || asset_sequence WHEN 2 THEN 'MG Road ' || asset_sequence ELSE 'Century Avenue ' || asset_sequence END,
             CASE asset_sequence % 3 WHEN 1 THEN '10115' WHEN 2 THEN '560001' ELSE '200120' END,

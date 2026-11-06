@@ -88,15 +88,57 @@ public class RangeHandlerTests
     }
 
     [Fact]
-    public void FillOut_WithMissingMinLeaf_SetsMinToNull()
+    public void FillOut_WithMissingMinLeaf_KeepsTemplateMin()
     {
-        var range = new Range(valueType: DataTypeDefXsd.Double, idShort: "TestRange");
+        var range = new Range(valueType: DataTypeDefXsd.Double, idShort: "TestRange", min: "10");
         var branchNode = new SemanticBranchNode("http://test/range", Cardinality.One);
         branchNode.AddChild(new SemanticLeafNode("http://test/range_max", "99.9", DataType.Number, Cardinality.One));
 
         _sut.FillOut(range, branchNode, (_, _, _) => { });
 
-        Null(range.Min);
+        Equal("10", range.Min);
         Equal("99.9", range.Max);
+    }
+
+    [Fact]
+    public void Extract_MinResolvedInTemplate_ReturnsBranchWithOnlyMaxLeaf()
+    {
+        var range = new Range(valueType: DataTypeDefXsd.Double, idShort: "TestRange", min: "10", max: "null");
+        SetupResolver(range);
+
+        var result = _sut.Extract(range, _ => null);
+
+        var branch = IsType<SemanticBranchNode>(result);
+        var maxLeaf = IsType<SemanticLeafNode>(Single(branch.Children));
+        Equal("http://test/range" + SemanticIdResolver.RangeMaximumPostFixSeparator, maxLeaf.SemanticId);
+    }
+
+    [Fact]
+    public void Extract_MaxResolvedInTemplate_ReturnsBranchWithOnlyMinLeaf()
+    {
+        var range = new Range(valueType: DataTypeDefXsd.Double, idShort: "TestRange", min: "", max: "0");
+        SetupResolver(range);
+
+        var result = _sut.Extract(range, _ => null);
+
+        var branch = IsType<SemanticBranchNode>(result);
+        var minLeaf = IsType<SemanticLeafNode>(Single(branch.Children));
+        Equal("http://test/range" + SemanticIdResolver.RangeMinimumPostFixSeparator, minLeaf.SemanticId);
+    }
+
+    [Fact]
+    public void Extract_BothResolvedInTemplate_ReturnsNull()
+    {
+        var range = new Range(valueType: DataTypeDefXsd.Double, idShort: "TestRange", min: "10", max: "20");
+        SetupResolver(range);
+
+        Null(_sut.Extract(range, _ => null));
+    }
+
+    private void SetupResolver(Range range)
+    {
+        _resolver.ExtractSemanticId(range).Returns("http://test/range");
+        _resolver.GetValueType(range).Returns(DataType.Number);
+        _resolver.GetCardinality(range).Returns(Cardinality.One);
     }
 }

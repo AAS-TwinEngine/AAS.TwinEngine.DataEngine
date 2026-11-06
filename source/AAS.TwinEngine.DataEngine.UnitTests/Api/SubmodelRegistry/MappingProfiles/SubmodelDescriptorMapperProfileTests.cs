@@ -41,9 +41,9 @@ public class SubmodelDescriptorMapperProfileTests
         Assert.Equal("1.0", result.Administration.Version);
         Assert.Equal("A", result.Administration.Revision);
 
-        Assert.NotNull(result.SupplementalSemanticId);
-        Assert.Single(result.SupplementalSemanticId);
-        Assert.Equal(ReferenceTypes.ExternalReference, result.SupplementalSemanticId[0].Type);
+        Assert.NotNull(result.SupplementalSemanticIds);
+        Assert.Single(result.SupplementalSemanticIds);
+        Assert.Equal(ReferenceTypes.ExternalReference, result.SupplementalSemanticIds[0].Type);
 
         Assert.NotNull(result.Endpoints);
         Assert.Single(result.Endpoints);

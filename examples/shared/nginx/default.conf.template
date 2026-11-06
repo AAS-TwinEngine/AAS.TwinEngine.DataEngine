@@ -7,6 +7,11 @@ server {
         return 302 /aas-ui/;
     }
 
+    location = /healthz {
+        proxy_pass http://twinengine-dataengine:8080/healthz;
+        proxy_set_header Host $host;
+    }
+
     # Serve static files
     location /fileprovider/ {
         # Allow only GET and OPTIONS requests, deny all other methods
