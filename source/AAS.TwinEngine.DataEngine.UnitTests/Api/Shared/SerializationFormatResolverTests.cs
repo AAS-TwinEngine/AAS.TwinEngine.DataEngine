@@ -31,35 +31,23 @@ public class SerializationFormatResolverTests
         => Assert.Equal(SerializationFormat.Xml, SerializationFormatResolver.Resolve(acceptHeader));
 
     [Theory]
-    [InlineData("application/xml;q=0.2, application/json;q=0.8", SerializationFormat.Json)]
-    [InlineData("application/json;q=0.3, application/xml;q=0.7", SerializationFormat.Xml)]
     [InlineData("text/csv, application/xml", SerializationFormat.Xml)]
     [InlineData("application/json, application/xml", SerializationFormat.Json)]
-    public void Resolve_HonoursQualityFactors(string acceptHeader, SerializationFormat expected)
+    [InlineData("application/xml, application/json", SerializationFormat.Xml)]
+    public void Resolve_ReturnsFirstSupportedMediaType_InHeaderOrder(string acceptHeader, SerializationFormat expected)
         => Assert.Equal(expected, SerializationFormatResolver.Resolve(acceptHeader));
 
-    [Fact]
-    public void Resolve_IgnoresMediaTypesWithZeroQuality()
-    {
-        var format = SerializationFormatResolver.Resolve("application/json;q=0, application/xml");
-
-        Assert.Equal(SerializationFormat.Xml, format);
-    }
-
-    [Fact]
-    public void Resolve_UsesAnotherSupportedFormat_WhenWildcardIncludesExplicitlyExcludedFormat()
-    {
-        var format = SerializationFormatResolver.Resolve("application/asset-administration-shell-package+xml;q=0, */*;q=1");
-
-        Assert.Equal(SerializationFormat.Json, format);
-    }
+    [Theory]
+    [InlineData("application/xml;q=0.2, application/json;q=0.8", SerializationFormat.Xml)]
+    [InlineData("application/json;q=0, application/xml", SerializationFormat.Json)]
+    [InlineData("application/json;q=0.5", SerializationFormat.Json)]
+    public void Resolve_IgnoresQualityFactors(string acceptHeader, SerializationFormat expected)
+        => Assert.Equal(expected, SerializationFormatResolver.Resolve(acceptHeader));
 
     [Theory]
     [InlineData("text/csv")]
     [InlineData("text/*")]
     [InlineData("application/pdf, image/png")]
-    [InlineData("*/*;q=0")]
-    [InlineData("application/asset-administration-shell-package+xml;q=0, application/json;q=0, application/xml;q=0, */*;q=1")]
     public void Resolve_Throws_WhenNoSupportedMediaTypeIsAcceptable(string acceptHeader)
     {
         var exception = Assert.Throws<InvalidRequestHeaderException>(() => SerializationFormatResolver.Resolve(acceptHeader));

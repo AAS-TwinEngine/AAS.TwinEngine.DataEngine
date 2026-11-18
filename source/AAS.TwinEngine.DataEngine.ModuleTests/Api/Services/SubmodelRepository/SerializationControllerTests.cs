@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json.Nodes;
 
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -236,7 +237,7 @@ public abstract class SerializationControllerTests : IDisposable
     [InlineData("application/json", "application/json")]
     [InlineData("application/xml", "application/xml")]
     [InlineData("*/*", "application/asset-administration-shell-package+xml")]
-    [InlineData("application/xml;q=0.4, application/json;q=0.9", "application/json")]
+    [InlineData("application/xml, application/json", "application/xml")]
     public async Task SerializeAsync_ReturnsRequestedContentType_WhenAcceptHeaderIsSupportedAsync(string acceptHeader, string expectedContentType)
     {
         // Arrange
@@ -314,12 +315,11 @@ public abstract class SerializationControllerTests : IDisposable
         var document = await _client.GetStringAsync("/swagger/1.0/swagger.json");
 
         // Assert
-        var okContent = JsonNode.Parse(document)?["paths"]?["/serialization"]?["get"]?["responses"]?["200"]?["content"];
+        var okContent = JsonNode.Parse(document)?["paths"]?["/serialization"]?["get"]?["responses"]?["200"]?["content"]?.AsObject();
 
         Assert.NotNull(okContent);
-        Assert.NotNull(okContent["application/asset-administration-shell-package+xml"]);
-        Assert.NotNull(okContent["application/json"]);
-        Assert.NotNull(okContent["application/xml"]);
+        Assert.Equal([.. SerializationMediaTypes.Supported.Order(StringComparer.Ordinal)],
+                     [.. okContent.Select(contentType => contentType.Key).Order(StringComparer.Ordinal)]);
     }
 
     private static string EncodeBase64Url(string plainText)

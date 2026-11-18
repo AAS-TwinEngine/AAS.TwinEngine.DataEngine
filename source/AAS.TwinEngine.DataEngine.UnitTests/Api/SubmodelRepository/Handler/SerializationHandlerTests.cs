@@ -52,7 +52,7 @@ public class SerializationHandlerTests
     [InlineData("application/json", SerializationFormat.Json, "application/json", "validAASID.json")]
     [InlineData("application/xml", SerializationFormat.Xml, "application/xml", "validAASID.xml")]
     [InlineData("*/*", SerializationFormat.AasxPackage, "application/asset-administration-shell-package+xml", "validAASID.aasx")]
-    [InlineData("application/xml;q=0.5, application/json;q=0.9", SerializationFormat.Json, "application/json", "validAASID.json")]
+    [InlineData("application/xml, application/json", SerializationFormat.Xml, "application/xml", "validAASID.xml")]
     public async Task GetSerializationAsync_SelectsFormat_BasedOnAcceptHeader(string acceptHeader,
                                                                               SerializationFormat expectedFormat,
                                                                               string expectedContentType,

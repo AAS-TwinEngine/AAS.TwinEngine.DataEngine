@@ -64,6 +64,20 @@ public class SerializationTests : ApiTestBase
         Assert.Contains("https://mm-software.com/submodel/000-003/HandoverDocumentation", content, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("application/xml, application/json", "application/xml")]
+    [InlineData("text/csv, application/json", "application/json")]
+    [InlineData("application/xml;q=0.2, application/json;q=0.9", "application/xml")]
+    public async Task GetAppropriateSerialization_WithMultipleAcceptValues_ShouldReturnFirstSupportedInHeaderOrder(string acceptHeader, string expectedContentType)
+    {
+        // Arrange & Act
+        var response = await GetSerializationAsync(acceptHeader);
+
+        // Assert
+        Assert.Equal(200, response.Status);
+        Assert.Equal(expectedContentType, GetContentType(response));
+    }
+
     [Fact]
     public async Task GetAppropriateSerialization_WithUnsupportedAcceptHeader_ShouldReturnBadRequest()
     {
