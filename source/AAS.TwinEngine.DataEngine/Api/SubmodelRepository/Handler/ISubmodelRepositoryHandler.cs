@@ -1,3 +1,7 @@
+using System.Text.Json.Nodes;
+
+using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.Shared.ContentModifiers;
 ﻿using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
@@ -17,4 +21,12 @@ public interface ISubmodelRepositoryHandler
     Task<SubmodelElementsDto> GetAllSubmodelElements(GetAllSubmodelElementsRequest request, CancellationToken cancellationToken);
 
     Task<FileAttachmentResult> GetFileAttachment(GetSubmodelElementRequest request, CancellationToken cancellationToken);
+
+    Task<JsonNode> GetSubmodelContent(GetSubmodelRequest request, Content content, CancellationToken cancellationToken);
+
+    Task<JsonNode?> GetSubmodelElementContent(GetSubmodelElementRequest request, Content content, CancellationToken cancellationToken);
+
+    Task<PagedContentDto> GetAllSubmodelsContent(GetAllSubmodelsRequest request, Content content, CancellationToken cancellationToken);
+
+    Task<PagedContentDto> GetAllSubmodelElementsContent(GetAllSubmodelElementsRequest request, Content content, CancellationToken cancellationToken);
 }

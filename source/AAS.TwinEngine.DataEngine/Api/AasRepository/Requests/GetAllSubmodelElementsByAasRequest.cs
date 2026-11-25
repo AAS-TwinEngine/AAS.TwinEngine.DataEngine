@@ -7,5 +7,5 @@ public record GetAllSubmodelElementsByAasRequest(
     string SubmodelId,
     int Limit,
     string? Cursor,
-    Level Level,
-    Extent Extent);
+    Level? Level,
+    Extent? Extent);

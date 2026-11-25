@@ -1,0 +1,41 @@
+meta {
+  name: Get All Submodels $value
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/$value
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 5
+  ~cursor: 
+  ~idShort: 
+  ~semanticId: 
+  ~level: deep
+  ~extent: withBlobValue
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a paged list of submodel values", function () {
+    expect(res.body.result).to.be.an('array');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the value-only representation of all submodels (`$value`).
+  
+  Allowed query parameters: `limit`, `cursor`, `idShort`, `semanticId`, `level` (core|deep), `extent` (withoutBlobValue|withBlobValue).
+}

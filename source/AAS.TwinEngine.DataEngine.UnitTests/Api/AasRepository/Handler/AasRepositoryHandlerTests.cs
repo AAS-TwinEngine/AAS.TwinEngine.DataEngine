@@ -2,6 +2,7 @@
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.Shared.ContentModifiers;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Requests;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
@@ -484,6 +485,129 @@ public class AasRepositoryHandlerTests
 
         await Assert.ThrowsAsync<SubmodelNotFoundException>(
             () => _sut.GetSubmodelElementByAasIdAsync(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelContentByAasIdAsync_WithMetadataAndLevel_ThrowsBeforeCallingService()
+    {
+        var request = new GetSubmodelByAasRequest("AasId".EncodeBase64Url(), "SubmodelId".EncodeBase64Url(), Level.core, null);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetSubmodelContentByAasIdAsync(request, Content.Metadata, CancellationToken.None));
+
+        await _aasRepositoryService.DidNotReceiveWithAnyArgs().GetSubmodelByAasIdAsync(default!, default!, default!, default);
+    }
+
+    [Theory]
+    [InlineData(Content.Metadata, null, null, "deep", "withoutBlobValue")]
+    [InlineData(Content.Value, Level.core, Extent.withBlobValue, "core", "withBlobValue")]
+    [InlineData(Content.Value, null, null, "deep", "withoutBlobValue")]
+    [InlineData(Content.Reference, Level.core, null, "deep", "withoutBlobValue")]
+    [InlineData(Content.Path, Level.core, null, "core", "withoutBlobValue")]
+    public async Task GetSubmodelContentByAasIdAsync_LoadsSubmodelWithEffectiveQueryOptions(
+        Content content, Level? level, Extent? extent, string expectedLevel, string expectedExtent)
+    {
+        var request = new GetSubmodelByAasRequest("AasId".EncodeBase64Url(), "SubmodelId".EncodeBase64Url(), level, extent);
+        _aasRepositoryService.GetSubmodelByAasIdAsync("AasId", "SubmodelId", Arg.Any<SubmodelQueryOptions>(), Arg.Any<CancellationToken>())
+            .Returns(new Submodel("SubmodelId"));
+
+        var result = await _sut.GetSubmodelContentByAasIdAsync(request, content, CancellationToken.None);
+
+        Assert.NotNull(result);
+        await _aasRepositoryService.Received(1).GetSubmodelByAasIdAsync(
+            "AasId",
+            "SubmodelId",
+            Arg.Is<SubmodelQueryOptions>(o => o.Level == expectedLevel && o.Extent == expectedExtent),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsContentByAasIdAsync_WithReference_ReturnsKeysWithDecodedSubmodelIdAndPagingCursor()
+    {
+        var request = new GetAllSubmodelElementsByAasRequest("AasId".EncodeBase64Url(), "SubmodelId".EncodeBase64Url(), 10, null, null, null);
+        _aasRepositoryService.GetAllSubmodelElementsByAasIdAsync("AasId", "SubmodelId", Arg.Any<SubmodelQueryOptions>(), 10, null, Arg.Any<CancellationToken>())
+            .Returns(new SubmodelElementsPage
+            {
+                PagingMetaData = new PagingMetaData { Cursor = "next" },
+                Result = [new Property(DataTypeDefXsd.String, idShort: "Name")]
+            });
+
+        var result = await _sut.GetAllSubmodelElementsContentByAasIdAsync(request, Content.Reference, CancellationToken.None);
+
+        Assert.Equal("next", result.PagingMetaData?.Cursor);
+        var keys = result.Result.AsArray().Single()!["keys"]!.AsArray();
+        Assert.Equal("SubmodelId", keys[0]!["value"]!.GetValue<string>());
+        Assert.Equal("Property", keys[1]!["type"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task GetAllSubmodelElementsContentByAasIdAsync_WithInvalidLimit_ThrowsInvalidUserInputException()
+    {
+        var request = new GetAllSubmodelElementsByAasRequest("AasId".EncodeBase64Url(), "SubmodelId".EncodeBase64Url(), -1, null, null, null);
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetAllSubmodelElementsContentByAasIdAsync(request, Content.Value, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementContentByAasIdAsync_WithReference_UsesReferenceServiceAndDoesNotLoadElement()
+    {
+        var request = new GetSubmodelElementByAasRequest("AasId".EncodeBase64Url(), "SubmodelId".EncodeBase64Url(), "Markings%5B0%5D.Name", null, null);
+        var reference = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "SubmodelId")]);
+        _aasRepositoryService.GetSubmodelElementReferenceByAasIdAsync("AasId", "SubmodelId", "Markings[0].Name", Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(reference);
+
+        var result = await _sut.GetSubmodelElementContentByAasIdAsync(request, Content.Reference, CancellationToken.None);
+
+        Assert.True(System.Text.Json.Nodes.JsonNode.DeepEquals(Jsonization.Serialize.ToJsonObject(reference), result));
+        await _aasRepositoryService.DidNotReceiveWithAnyArgs().GetSubmodelElementByAasIdAsync(default!, default!, default!, default!, default);
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementContentByAasIdAsync_WithPathOnCollection_PrefixesPathsWithDecodedIdShortPath()
+    {
+        var request = new GetSubmodelElementByAasRequest("AasId".EncodeBase64Url(), "SubmodelId".EncodeBase64Url(), "Group", null, null);
+        _aasRepositoryService.GetSubmodelElementByAasIdAsync("AasId", "SubmodelId", "Group", Arg.Any<SubmodelQueryOptions>(), Arg.Any<CancellationToken>())
+            .Returns(new SubmodelElementCollection(idShort: "Group", value: [new Property(DataTypeDefXsd.String, idShort: "Child")]));
+
+        var result = await _sut.GetSubmodelElementContentByAasIdAsync(request, Content.Path, CancellationToken.None);
+
+        Assert.Equal(["Group", "Group.Child"], result!.AsArray().Select(p => p!.GetValue<string>()));
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementContentByAasIdAsync_WithPathOnProperty_ThrowsInvalidUserInputException()
+    {
+        var request = new GetSubmodelElementByAasRequest("AasId".EncodeBase64Url(), "SubmodelId".EncodeBase64Url(), "Name", null, null);
+        _aasRepositoryService.GetSubmodelElementByAasIdAsync("AasId", "SubmodelId", "Name", Arg.Any<SubmodelQueryOptions>(), Arg.Any<CancellationToken>())
+            .Returns(new Property(DataTypeDefXsd.String, idShort: "Name"));
+
+        await Assert.ThrowsAsync<InvalidUserInputException>(() => _sut.GetSubmodelElementContentByAasIdAsync(request, Content.Path, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetShellReferencesAsync_ReturnsModelReferencePerShellWithPagingCursor()
+    {
+        _aasRepositoryService.GetShellsByFiltersAsync(Arg.Any<ShellSearchFilter?>(), 5, "abc", Arg.Any<CancellationToken>())
+            .Returns(new Shells
+            {
+                PagingMetaData = new PagingMetaData { Cursor = "next" },
+                Result = [new AssetAdministrationShell("aas-1", new AssetInformation(AssetKind.Instance))]
+            });
+
+        var result = await _sut.GetShellReferencesAsync(new GetShellsByAssetIdsRequest(null, "Product1", 5, "abc"), CancellationToken.None);
+
+        Assert.Equal("next", result.PagingMetaData?.Cursor);
+        var key = result.Result.AsArray().Single()!["keys"]!.AsArray().Single()!;
+        Assert.Equal("AssetAdministrationShell", key["type"]!.GetValue<string>());
+        Assert.Equal("aas-1", key["value"]!.GetValue<string>());
+        await _aasRepositoryService.Received(1).GetShellsByFiltersAsync(Arg.Is<ShellSearchFilter?>(f => f!.IdShort == "Product1"), 5, "abc", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetShellReferenceByIdAsync_WhenShellDoesNotExist_ThrowsTemplateNotFoundException()
+    {
+        _aasRepositoryService.GetShellByIdAsync("missing", Arg.Any<CancellationToken>()).Returns((IAssetAdministrationShell?)null);
+
+        await Assert.ThrowsAsync<TemplateNotFoundException>(() => _sut.GetShellReferenceByIdAsync(new GetShellRequest("missing".EncodeBase64Url()), CancellationToken.None));
     }
 
     [Fact]

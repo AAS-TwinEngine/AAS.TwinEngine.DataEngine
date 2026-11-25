@@ -1,0 +1,48 @@
+meta {
+  name: Get All Submodel Elements $reference
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/$reference
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 100
+  ~cursor: 
+  ~level: core
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a list of element references", function () {
+    expect(res.body.result).to.be.an('array');
+    res.body.result.forEach(function (ref) {
+      expect(ref.type).to.equal('ModelReference');
+      expect(ref.keys).to.be.an('array').that.is.not.empty;
+      expect(ref.keys[0].type).to.equal('Submodel');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) for every top-level submodel element.
+  
+  Allowed query parameters: `limit`, `cursor`, `level` (omitted or `core`; `deep` is rejected with HTTP 400).
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Get Submodel Element (leaf) $metadata
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$metadata
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: CountryOfOrigin
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns property metadata without value", function () {
+    expect(res.body).to.be.an('object');
+    expect(res.body).to.have.property('modelType');
+    expect(res.body).to.not.have.property('value');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the leaf Property `CountryOfOrigin` without its `value` (`$metadata`).
+}

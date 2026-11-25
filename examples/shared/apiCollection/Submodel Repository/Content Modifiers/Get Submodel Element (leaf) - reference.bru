@@ -1,0 +1,37 @@
+meta {
+  name: Get Submodel Element (leaf) $reference
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$reference
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: CountryOfOrigin
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a model reference to the property", function () {
+    expect(res.body.type).to.equal('ModelReference');
+    expect(res.body.keys).to.be.an('array').that.is.not.empty;
+    expect(res.body.keys[0].type).to.equal('Submodel');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) to the leaf Property `CountryOfOrigin`.
+}

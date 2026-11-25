@@ -1,0 +1,9 @@
+﻿{
+  "keys": [
+    {
+      "type": "Submodel",
+      "value": "https://mm-software.com/submodel/000-001/Nameplate"
+    }
+  ],
+  "type": "ModelReference"
+}

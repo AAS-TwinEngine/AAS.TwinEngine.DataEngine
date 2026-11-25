@@ -1,0 +1,37 @@
+meta {
+  name: Get Submodel Element (list index) $reference
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$reference
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: Markings[0].MarkingName
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a model reference through the list index", function () {
+    expect(res.body.type).to.equal('ModelReference');
+    expect(res.body.keys).to.be.an('array').that.is.not.empty;
+    expect(res.body.keys[0].type).to.equal('Submodel');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) to `Markings[0].MarkingName`. The index in the idShortPath addresses the first item of the `Markings` SubmodelElementList.
+}

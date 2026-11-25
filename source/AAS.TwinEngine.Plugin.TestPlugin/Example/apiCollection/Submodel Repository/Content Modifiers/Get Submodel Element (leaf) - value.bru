@@ -1,0 +1,35 @@
+meta {
+  name: Get Submodel Element (leaf) $value
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$value
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierContact}}
+  idShortPath: ContactInformation1.RoleOfContactPerson
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a scalar value", function () {
+    expect(['string', 'number', 'boolean']).to.include(typeof res.body);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the bare value (`$value`) of the leaf Property `ContactInformation1.RoleOfContactPerson` as a scalar, not wrapped in an object.
+}

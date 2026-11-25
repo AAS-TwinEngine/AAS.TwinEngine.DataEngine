@@ -254,6 +254,77 @@ public class SubmodelRepositoryServiceTests
 
     #endregion
 
+    #region GetSubmodelElementReferenceAsync
+
+    [Fact]
+    public async Task GetSubmodelElementReferenceAsync_ReturnsModelReferenceFollowingTheIdShortPath()
+    {
+        const string Path = "ContactInformation.ContactName";
+        var template = TestData.CreateSubmodelWithoutExtraElementsNested();
+        var filled = new Submodel(
+            "template-id",
+            submodelElements:
+            [
+                new SubmodelElementCollection(
+                    idShort: "ContactInformation",
+                    value: [new Property(DataTypeDefXsd.String, idShort: "ContactName", value: "John Doe")])
+            ]);
+        var queryOptions = new SubmodelQueryOptions("deep", "withoutBlobValue");
+        _templateService
+            .GetSubmodelTemplateAsync(SubmodelId, Path, queryOptions, Arg.Any<CancellationToken>())
+            .Returns(template);
+        ArrangeSemanticPipeline(template, filled);
+
+        var result = await _sut.GetSubmodelElementReferenceAsync(SubmodelId, Path, queryOptions, CancellationToken.None);
+
+        Assert.Equal(ReferenceTypes.ModelReference, result.Type);
+        Assert.Equal(
+            [(KeyTypes.Submodel, SubmodelId), (KeyTypes.SubmodelElementCollection, "ContactInformation"), (KeyTypes.Property, "ContactName")],
+            result.Keys.Select(k => (k.Type, k.Value)));
+        _semanticIdHandler.DidNotReceive().Extract(Arg.Any<ISubmodel>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementReferenceAsync_WhenElementIsMissingInFilledSubmodel_ThrowsSubmodelElementNotFoundException()
+    {
+        var template = TestData.CreateSubmodelWithoutExtraElementsNested();
+        _templateService
+            .GetSubmodelTemplateAsync(SubmodelId, "Missing", Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(template);
+        ArrangeSemanticPipeline(template, new Submodel("template-id", submodelElements: []));
+
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
+            _sut.GetSubmodelElementReferenceAsync(SubmodelId, "Missing", null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementReferenceAsync_WhenResourceNotFound_ThrowsSubmodelElementNotFoundException()
+    {
+        _templateService
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ResourceNotFoundException());
+
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
+            _sut.GetSubmodelElementReferenceAsync(SubmodelId, IdShortPath, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementReferenceAsync_WhenRequestTimesOut_ThrowsPluginNotAvailableException()
+    {
+        _templateService
+            .GetSubmodelTemplateAsync(SubmodelId, IdShortPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+        _semanticIdHandler.Extract(Arg.Any<ISubmodel>()).Returns(CreateSubmodelTreeNode(""));
+        _pluginDataHandler
+            .TryGetValuesAsync(Arg.Any<IReadOnlyList<PluginManifest>>(), Arg.Any<SemanticTreeNode>(), SubmodelId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new RequestTimeoutException());
+
+        await Assert.ThrowsAsync<PluginNotAvailableException>(() =>
+            _sut.GetSubmodelElementReferenceAsync(SubmodelId, IdShortPath, null, CancellationToken.None));
+    }
+
+    #endregion
+
     #region GetAllSubmodelsAsync
 
     [Fact]

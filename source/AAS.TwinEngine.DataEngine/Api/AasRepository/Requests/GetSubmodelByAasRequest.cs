@@ -2,4 +2,4 @@
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 
-public record GetSubmodelByAasRequest(string AasIdentifier, string SubmodelId, Level Level, Extent Extent);
+public record GetSubmodelByAasRequest(string AasIdentifier, string SubmodelId, Level? Level, Extent? Extent);

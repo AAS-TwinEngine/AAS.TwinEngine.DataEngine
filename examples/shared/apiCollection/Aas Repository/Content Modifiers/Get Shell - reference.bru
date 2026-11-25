@@ -1,0 +1,36 @@
+meta {
+  name: Get Shell $reference
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/$reference
+  body: none
+  auth: inherit
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a shell model reference", function () {
+    expect(res.body.type).to.equal('ModelReference');
+    expect(res.body.keys).to.be.an('array').that.is.not.empty;
+    expect(res.body.keys[0].type).to.equal('AssetAdministrationShell');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) to the shell of Product1.
+}

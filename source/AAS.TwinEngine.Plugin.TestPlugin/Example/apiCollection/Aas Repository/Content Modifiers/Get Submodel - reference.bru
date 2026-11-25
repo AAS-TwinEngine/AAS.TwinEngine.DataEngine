@@ -1,0 +1,43 @@
+meta {
+  name: Get Submodel $reference
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/$reference
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: core
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier}}
+  submodelIdentifier: {{submodelIdentifierContact}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a submodel model reference", function () {
+    expect(res.body.type).to.equal('ModelReference');
+    expect(res.body.keys).to.be.an('array').that.is.not.empty;
+    expect(res.body.keys[0].type).to.equal('Submodel');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) to the ContactInformation submodel.
+  
+  `level` may be omitted or `core`; `level=deep` is rejected with HTTP 400.
+}

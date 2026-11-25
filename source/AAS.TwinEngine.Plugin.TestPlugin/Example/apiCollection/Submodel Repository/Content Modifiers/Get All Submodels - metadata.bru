@@ -1,0 +1,45 @@
+meta {
+  name: Get All Submodels $metadata
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/$metadata
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 5
+  ~cursor: 
+  ~idShort: 
+  ~semanticId: 
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a paged list of submodel metadata", function () {
+    expect(res.body.result).to.be.an('array');
+    expect(res.body).to.have.property('paging_metadata');
+    res.body.result.forEach(function (submodel) {
+      expect(submodel).to.have.property('modelType');
+      expect(submodel).to.not.have.property('submodelElements');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the metadata of all submodels (`$metadata`): the submodel without its `submodelElements`.
+  
+  Allowed query parameters: `limit`, `cursor`, `idShort`, `semanticId`.
+  `level` must NOT be sent and `extent=withBlobValue` is rejected (HTTP 400).
+}

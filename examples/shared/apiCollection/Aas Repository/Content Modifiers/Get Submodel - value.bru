@@ -1,0 +1,44 @@
+meta {
+  name: Get Submodel $value
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/$value
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: deep
+  ~extent: withBlobValue
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a plain value object", function () {
+    expect(res.body).to.be.an('object');
+    expect(res.body).to.not.have.property('modelType');
+    expect(res.body).to.not.have.property('idShort');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the value-only representation (`$value`) of the Nameplate submodel of Product1, without `modelType` or `idShort` metadata.
+  
+  Allowed query parameters: `level` (core|deep), `extent` (withoutBlobValue|withBlobValue).
+}

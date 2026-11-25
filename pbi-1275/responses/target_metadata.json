@@ -1,0 +1,26 @@
+﻿{
+  "administration": {
+    "revision": "0",
+    "templateId": "https://admin-shell.io/idta-02006-3-0",
+    "version": "3"
+  },
+  "description": [
+    {
+      "language": "en",
+      "text": "Contains the nameplate information attached to the product"
+    }
+  ],
+  "id": "https://mm-software.com/submodel/000-001/Nameplate",
+  "idShort": "Nameplate",
+  "kind": "Instance",
+  "modelType": "Submodel",
+  "semanticId": {
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "https://admin-shell.io/idta/nameplate/3/0/Nameplate"
+      }
+    ],
+    "type": "ExternalReference"
+  }
+}

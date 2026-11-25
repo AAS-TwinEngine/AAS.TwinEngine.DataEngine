@@ -1,0 +1,39 @@
+meta {
+  name: Get Submodel (via Shell) $metadata - level core (400)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/$metadata?level=core
+  body: none
+  auth: inherit
+}
+
+params:query {
+  level: core
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("rejects the level parameter on $metadata", function () {
+    expect(res.status).to.equal(400);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Negative case: `$metadata` must not be combined with `level`, not even `core`. Expected HTTP 400.
+}

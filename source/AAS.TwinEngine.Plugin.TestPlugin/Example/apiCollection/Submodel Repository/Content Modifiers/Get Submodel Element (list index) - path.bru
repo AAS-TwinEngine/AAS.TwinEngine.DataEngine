@@ -1,0 +1,43 @@
+meta {
+  name: Get Submodel Element (list index) $path
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$path
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: deep
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation}}
+  idShortPath: Documents[0].DocumentVersions[0]
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns idShort paths as strings", function () {
+    expect(res.body).to.be.an('array');
+    res.body.forEach(function (path) {
+      expect(path).to.be.a('string');
+      expect(path.split(/[.\[]/)[0]).to.not.equal('HandoverDocumentation');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the idShort paths (`$path`) of `Documents[0].DocumentVersions[0]` of the HandoverDocumentation submodel and its children, using list-index notation.
+}

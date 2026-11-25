@@ -1,0 +1,35 @@
+meta {
+  name: Get Submodel Element $path - leaf property (400)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$path
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: CountryOfOrigin
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("rejects $path on a leaf property", function () {
+    expect(res.status).to.equal(400);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Negative case: `$path` is only valid for collection, list and entity elements. `CountryOfOrigin` is a leaf Property. Expected HTTP 400.
+}

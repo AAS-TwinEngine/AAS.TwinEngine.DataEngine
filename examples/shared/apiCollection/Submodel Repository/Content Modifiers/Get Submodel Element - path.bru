@@ -1,0 +1,45 @@
+meta {
+  name: Get Submodel Element $path
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$path
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: deep
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: AddressInformation
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns idShort paths as strings", function () {
+    expect(res.body).to.be.an('array');
+    res.body.forEach(function (path) {
+      expect(path).to.be.a('string');
+      expect(path.split(/[.\[]/)[0]).to.not.equal('Nameplate');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the idShort paths (`$path`) of the `AddressInformation` collection and its children.
+  
+  `$path` is only valid for collection, list and entity elements; on a leaf element it returns HTTP 400. Allowed query parameter: `level` (core|deep).
+}

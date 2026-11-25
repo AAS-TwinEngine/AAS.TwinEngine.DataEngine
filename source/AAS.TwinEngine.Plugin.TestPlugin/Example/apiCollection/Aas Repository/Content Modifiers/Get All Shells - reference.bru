@@ -1,0 +1,44 @@
+meta {
+  name: Get All Shells $reference
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/$reference
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~assetIds: {{assetId}}
+  ~idShort: 
+  ~limit: 100
+  ~cursor: 
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a paged list of shell references", function () {
+    expect(res.body.result).to.be.an('array');
+    res.body.result.forEach(function (ref) {
+      expect(ref.type).to.equal('ModelReference');
+      expect(ref.keys).to.be.an('array').that.is.not.empty;
+      expect(ref.keys[0].type).to.equal('AssetAdministrationShell');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) for every shell.
+  
+  Allowed query parameters: `assetIds` (base64-encoded JSON), `idShort`, `limit`, `cursor`.
+}

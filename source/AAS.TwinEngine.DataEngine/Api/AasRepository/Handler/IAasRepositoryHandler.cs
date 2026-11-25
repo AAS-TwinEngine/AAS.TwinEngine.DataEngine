@@ -1,7 +1,10 @@
-﻿using System.Text.Json;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
+using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.Shared.ContentModifiers;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.DomainModel.Shared;
 
@@ -28,4 +31,14 @@ public interface IAasRepositoryHandler
     Task<FileAttachmentResult> GetFileByPathByAasIdAsync(GetFileByPathByAasIdRequest request, CancellationToken cancellationToken);
 
     Task<FileAttachmentResult> GetThumbnailAsync(GetThumbnailRequest request, CancellationToken cancellationToken);
+
+    Task<PagedContentDto> GetShellReferencesAsync(GetShellsByAssetIdsRequest request, CancellationToken cancellationToken);
+
+    Task<JsonNode> GetShellReferenceByIdAsync(GetShellRequest request, CancellationToken cancellationToken);
+
+    Task<JsonNode> GetSubmodelContentByAasIdAsync(GetSubmodelByAasRequest request, Content content, CancellationToken cancellationToken);
+
+    Task<PagedContentDto> GetAllSubmodelElementsContentByAasIdAsync(GetAllSubmodelElementsByAasRequest request, Content content, CancellationToken cancellationToken);
+
+    Task<JsonNode?> GetSubmodelElementContentByAasIdAsync(GetSubmodelElementByAasRequest request, Content content, CancellationToken cancellationToken);
 }

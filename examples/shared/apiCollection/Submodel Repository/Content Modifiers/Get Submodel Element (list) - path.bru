@@ -1,0 +1,43 @@
+meta {
+  name: Get Submodel Element (list) $path
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$path
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: deep
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: Markings
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns idShort paths with list indexes", function () {
+    expect(res.body).to.be.an('array');
+    res.body.forEach(function (path) {
+      expect(path).to.be.a('string');
+      expect(path.split(/[.\[]/)[0]).to.not.equal('Nameplate');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the idShort paths (`$path`) of the `Markings` SubmodelElementList and its items, using list-index notation such as `Markings[0].MarkingName`.
+}

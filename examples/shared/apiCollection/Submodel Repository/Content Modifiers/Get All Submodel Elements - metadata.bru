@@ -1,0 +1,46 @@
+meta {
+  name: Get All Submodel Elements $metadata
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/$metadata
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 100
+  ~cursor: 
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a paged list of element metadata", function () {
+    expect(res.body.result).to.be.an('array');
+    expect(res.body).to.have.property('paging_metadata');
+    res.body.result.forEach(function (element) {
+      expect(element).to.have.property('modelType');
+      expect(element).to.not.have.property('value');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the metadata (`$metadata`) of all top-level submodel elements of the Nameplate submodel, without their `value`.
+  
+  Allowed query parameters: `limit`, `cursor`. `level` must NOT be sent and `extent=withBlobValue` is rejected (HTTP 400).
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Get Submodel Element (list index) $reference
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$reference
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierHandoverDocumentation}}
+  idShortPath: Documents[0].DocumentVersions[0]
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a model reference through the list indexes", function () {
+    expect(res.body.type).to.equal('ModelReference');
+    expect(res.body.keys).to.be.an('array').that.is.not.empty;
+    expect(res.body.keys[0].type).to.equal('Submodel');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) to `Documents[0].DocumentVersions[0]` of the HandoverDocumentation submodel. The indexes in the idShortPath address the first item of each SubmodelElementList.
+}
