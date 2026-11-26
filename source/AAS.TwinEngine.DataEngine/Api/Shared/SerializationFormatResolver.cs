@@ -11,9 +11,6 @@ namespace AAS.TwinEngine.DataEngine.Api.Shared;
 /// </summary>
 public static class SerializationFormatResolver
 {
-    // Candidate order breaks the remaining ties, so the default format wins for plain wildcards.
-    private static readonly SerializationFormat[] Candidates = [SerializationMediaTypes.DefaultFormat, SerializationFormat.Json, SerializationFormat.Xml];
-
     /// <summary>
     /// Maps the <c>Accept</c> header to the first supported serialization format in header order.
     /// Quality factors (<c>q</c>) are not evaluated, as the IDTA Serialization API does not define them.

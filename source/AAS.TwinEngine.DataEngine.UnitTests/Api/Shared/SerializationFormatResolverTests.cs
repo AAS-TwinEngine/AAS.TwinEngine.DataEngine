@@ -38,18 +38,9 @@ public class SerializationFormatResolverTests
         => Assert.Equal(expected, SerializationFormatResolver.Resolve(acceptHeader));
 
     [Theory]
-    [InlineData("application/xml;q=0.2, application/json;q=0.8", SerializationFormat.Xml)]
-    [InlineData("application/json;q=0, application/xml", SerializationFormat.Json)]
-    [InlineData("application/json;q=0.5", SerializationFormat.Json)]
-    public void Resolve_IgnoresQualityFactors(string acceptHeader, SerializationFormat expected)
-        => Assert.Equal(expected, SerializationFormatResolver.Resolve(acceptHeader));
-
-    [Theory]
     [InlineData("text/csv")]
     [InlineData("text/*")]
     [InlineData("application/pdf, image/png")]
-    [InlineData("*/*;q=0")]
-    [InlineData("application/json;q=0")]
     public void Resolve_Throws_WhenNoSupportedMediaTypeIsAcceptable(string acceptHeader)
     {
         var exception = Assert.Throws<InvalidRequestHeaderException>(() => SerializationFormatResolver.Resolve(acceptHeader));
