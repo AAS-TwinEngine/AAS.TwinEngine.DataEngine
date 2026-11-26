@@ -9,22 +9,24 @@ namespace AAS.TwinEngine.DataEngine.Api.Shared.ContentModifiers;
 /// </summary>
 internal static class MetadataSerializer
 {
+    private const string Value = "value";
+
     private static readonly Dictionary<string, string[]> FieldsWithoutMetadata = new(StringComparer.Ordinal)
     {
         ["AssetAdministrationShell"] = ["assetInformation", "submodels"],
         ["Submodel"] = ["submodelElements"],
-        ["SubmodelElementCollection"] = ["value"],
-        ["SubmodelElementList"] = ["value"],
+        ["SubmodelElementCollection"] = [Value],
+        ["SubmodelElementList"] = [Value],
         ["Entity"] = ["statements", "globalAssetId", "specificAssetIds"],
         ["BasicEventElement"] = ["observed"],
-        ["Property"] = ["value", "valueId"],
-        ["MultiLanguageProperty"] = ["value", "valueId"],
+        ["Property"] = [Value, "valueId"],
+        ["MultiLanguageProperty"] = [Value, "valueId"],
         ["Range"] = ["min", "max"],
-        ["ReferenceElement"] = ["value"],
+        ["ReferenceElement"] = [Value],
         ["RelationshipElement"] = ["first", "second"],
         ["AnnotatedRelationshipElement"] = ["first", "second", "annotations"],
-        ["Blob"] = ["value", "contentType"],
-        ["File"] = ["value", "contentType"]
+        ["Blob"] = [Value, "contentType"],
+        ["File"] = [Value, "contentType"]
     };
 
     public static JsonObject Serialize(IClass instance)
