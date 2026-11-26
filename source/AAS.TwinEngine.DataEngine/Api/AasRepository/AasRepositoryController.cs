@@ -12,7 +12,6 @@ using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Responses;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
 
 using AasCore.Aas3_1;
-
 using Asp.Versioning;
 
 using Microsoft.AspNetCore.Mvc;
