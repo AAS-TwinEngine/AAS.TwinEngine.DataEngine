@@ -1,6 +1,3 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
-
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers.Interfaces;
 using AAS.TwinEngine.DataEngine.ServiceConfiguration.Config;
@@ -11,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository.SemanticId.Helpers;
 
-public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger, IOptions<PluginsConfig> pluginsConfig) : ISubmodelElementHelper
+public class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger, IOptions<PluginsConfig> pluginsConfig) : ISubmodelElementHelper
 {
     private readonly HashSet<string>? _defaultLanguagesSet = pluginsConfig.Value.MultiLanguageProperty.DefaultLanguages is { Count: > 0 }
                                                                 ? new HashSet<string>(pluginsConfig.Value.MultiLanguageProperty.DefaultLanguages, StringComparer.OrdinalIgnoreCase)
@@ -37,18 +34,26 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
 
     public ISubmodelElement? GetElementByIdShort(IEnumerable<ISubmodelElement>? submodelElements, string idShort)
     {
-        if (TryParseIdShortWithBracketIndex(idShort, out var idShortWithoutIndex, out var index))
+        var segment = IdShortPathSegment.Parse(idShort);
+        if (!segment.HasIndices)
         {
-            return GetElementFromListByIndex(submodelElements, idShortWithoutIndex, index);
+            return submodelElements?.FirstOrDefault(e => e.IdShort == idShort);
         }
 
-        return submodelElements?.FirstOrDefault(e => e.IdShort == idShort);
+        var element = GetElementFromListByIndex(submodelElements, segment.IdShort, segment.Indices[0]);
+        foreach (var index in segment.Indices.Skip(1))
+        {
+            element = GetListItem(element, segment.IdShort, index);
+        }
+
+        return element;
     }
 
     public ISubmodelElement GetElementFromListByIndex(IEnumerable<ISubmodelElement>? elements, string idShortWithoutIndex, int index)
-    {
-        var baseElement = elements?.FirstOrDefault(e => e.IdShort == idShortWithoutIndex);
+        => GetListItem(elements?.FirstOrDefault(e => e.IdShort == idShortWithoutIndex), idShortWithoutIndex, index);
 
+    private ISubmodelElement GetListItem(ISubmodelElement? baseElement, string idShortWithoutIndex, int index)
+    {
         if (baseElement is not ISubmodelElementList list)
         {
             logger.LogError("Expected list element with IdShort '{IdShortWithoutIndex}' not found or is not a list.", idShortWithoutIndex);
@@ -71,6 +76,8 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
             ISubmodelElementCollection c => c.Value,
             ISubmodelElementList l => l.Value,
             IEntity entity => entity.Statements,
+            // Annotations are List<IDataElement>; a navigation-only copy is returned because IList<T> is invariant.
+            IAnnotatedRelationshipElement annotated => annotated.Annotations?.Cast<ISubmodelElement>().ToList(),
             _ => null
         };
     }
@@ -97,37 +104,4 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
 
     private static ISubmodelElement CloneSubmodelElement(ISubmodelElement element)
       => Jsonization.Deserialize.ISubmodelElementFrom(Jsonization.Serialize.ToJsonObject(element));
-
-    private static bool TryParseIdShortWithBracketIndex(string idShort, out string idShortWithoutIndex, out int index)
-    {
-        var match = SubmodelElementListIndex().Match(idShort);
-        if (!match.Success)
-        {
-            idShortWithoutIndex = string.Empty;
-            index = -1;
-            return false;
-        }
-
-        idShortWithoutIndex = match.Groups[1].Value;
-        var indexGroup = match.Groups[2].Success ? match.Groups[2] : match.Groups[3];
-        if (!indexGroup.Success)
-        {
-            idShortWithoutIndex = string.Empty;
-            index = -1;
-            return false;
-        }
-
-        index = int.Parse(indexGroup.Value, CultureInfo.InvariantCulture);
-        return true;
-    }
-
-    /// <summary>
-    /// Matches strings like "element[3]" and captures:
-    ///   Group 1 → element name (any characters, lazy match)
-    ///   Group 2 → index (digits inside square brackets)
-    /// e.g. "element[3]" -> matches Group1= "element", Group2 = "3"
-    /// Pattern: ^(.+?)\[(\d+)\]$
-    /// </summary>
-    [GeneratedRegex(@"^(.+?)(?:\[(\d+)\]|%5B(\d+)%5D)$")]
-    private static partial Regex SubmodelElementListIndex();
 }

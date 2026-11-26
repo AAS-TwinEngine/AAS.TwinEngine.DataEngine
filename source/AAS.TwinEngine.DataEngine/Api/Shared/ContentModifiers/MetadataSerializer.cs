@@ -11,6 +11,10 @@ internal static class MetadataSerializer
 {
     private const string Value = "value";
 
+    private const string OperationModelType = "Operation";
+
+    private static readonly string[] OperationVariableFields = ["inputVariables", "outputVariables", "inoutputVariables"];
+
     private static readonly Dictionary<string, string[]> FieldsWithoutMetadata = new(StringComparer.Ordinal)
     {
         ["AssetAdministrationShell"] = ["assetInformation", "submodels"],
@@ -32,7 +36,19 @@ internal static class MetadataSerializer
     public static JsonObject Serialize(IClass instance)
     {
         var json = Jsonization.Serialize.ToJsonObject(instance);
+        RemoveValueFields(json);
+        return json;
+    }
+
+    private static void RemoveValueFields(JsonObject json)
+    {
         var modelType = json["modelType"]?.GetValue<string>();
+
+        if (modelType == OperationModelType)
+        {
+            RemoveOperationVariableValues(json);
+            return;
+        }
 
         if (modelType is not null && FieldsWithoutMetadata.TryGetValue(modelType, out var fields))
         {
@@ -41,7 +57,25 @@ internal static class MetadataSerializer
                 _ = json.Remove(field);
             }
         }
+    }
 
-        return json;
+    // The operation signature (variable idShorts, types, semanticIds) is metadata; the variables' current values are not.
+    private static void RemoveOperationVariableValues(JsonObject operation)
+    {
+        foreach (var variableField in OperationVariableFields)
+        {
+            if (operation[variableField] is not JsonArray variables)
+            {
+                continue;
+            }
+
+            foreach (var variable in variables)
+            {
+                if (variable?[Value] is JsonObject variableElement)
+                {
+                    RemoveValueFields(variableElement);
+                }
+            }
+        }
     }
 }

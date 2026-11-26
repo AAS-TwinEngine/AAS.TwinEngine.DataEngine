@@ -191,6 +191,22 @@ public class ContentSerializerElementTypeTests
     }
 
     [Fact]
+    public void SerializeSubmodelElement_WithMetadataOnOperationWithPopulatedVariables_KeepsSignatureWithoutValues()
+    {
+        var operation = new Operation(
+            idShort: "Op",
+            inputVariables: [new OperationVariable(new Property(DataTypeDefXsd.Int, idShort: "In", value: "1", valueId: CreateReference("urn:in")))],
+            outputVariables: [new OperationVariable(new SubmodelElementCollection(idShort: "Out", value: [new Property(DataTypeDefXsd.String, idShort: "Child", value: "c")]))],
+            inoutputVariables: [new OperationVariable(new Range(DataTypeDefXsd.Int, idShort: "InOut", min: "1", max: "9"))]);
+
+        var result = ContentSerializer.SerializeSubmodelElement(operation, Content.Metadata, "Op")!.AsObject();
+
+        AssertJson("""{ "idShort": "In", "valueType": "xs:int", "modelType": "Property" }""", result["inputVariables"]![0]!["value"]);
+        AssertJson("""{ "idShort": "Out", "modelType": "SubmodelElementCollection" }""", result["outputVariables"]![0]!["value"]);
+        AssertJson("""{ "idShort": "InOut", "valueType": "xs:int", "modelType": "Range" }""", result["inoutputVariables"]![0]!["value"]);
+    }
+
+    [Fact]
     public void SerializeSubmodelElement_WithPathOnEntity_IncludesStatements()
     {
         var entity = new Entity(

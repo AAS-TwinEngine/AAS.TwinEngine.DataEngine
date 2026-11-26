@@ -67,8 +67,9 @@ public class SerializationTests : ApiTestBase
     [Theory]
     [InlineData("application/xml, application/json", "application/xml")]
     [InlineData("text/csv, application/json", "application/json")]
-    [InlineData("application/xml;q=0.2, application/json;q=0.9", "application/xml")]
-    public async Task GetAppropriateSerialization_WithMultipleAcceptValues_ShouldReturnFirstSupportedInHeaderOrder(string acceptHeader, string expectedContentType)
+    [InlineData("application/xml;q=0.2, application/json;q=0.9", "application/json")]
+    [InlineData("application/json;q=0, application/xml", "application/xml")]
+    public async Task GetAppropriateSerialization_WithMultipleAcceptValues_ShouldReturnPreferredSupportedFormat(string acceptHeader, string expectedContentType)
     {
         // Arrange & Act
         var response = await GetSerializationAsync(acceptHeader);

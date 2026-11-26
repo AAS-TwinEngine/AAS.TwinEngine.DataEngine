@@ -655,6 +655,54 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    // Annotated relationships have no value-filling handler, so they are placed in a template-owned list (more than one item),
+    // which the pipeline serves directly from the template.
+    [Fact]
+    public async Task GetSubmodelElementReferenceAsync_WithAnnotationPath_ReturnsModelReferenceAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        var relationships = new SubmodelElementList(
+            typeValueListElement: AasSubmodelElements.AnnotatedRelationshipElement,
+            idShort: "Relations",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://example.com/idta/relations")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            value: [CreateAnnotatedRelationship("First note"), CreateAnnotatedRelationship("Second note")]);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelWithElements(relationships));
+        var expected = JsonNode.Parse("""
+            {
+              "type": "ModelReference",
+              "keys": [
+                { "type": "Submodel", "value": "ContactInformation" },
+                { "type": "SubmodelElementList", "value": "Relations" },
+                { "type": "AnnotatedRelationshipElement", "value": "1" },
+                { "type": "Property", "value": "Note" }
+              ]
+            }
+            """);
+
+        var response = await _client.GetAsync($"{CreateSubmodelElementPath(SubmodelId, "Relations[1].Note")}/$reference");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonNode>();
+        Assert.True(JsonNode.DeepEquals(expected, json), json?.ToJsonString());
+    }
+
+    private static AnnotatedRelationshipElement CreateAnnotatedRelationship(string note)
+    {
+        var reference = new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "urn:example:related")]);
+        return new AnnotatedRelationshipElement(
+            first: reference,
+            second: reference,
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://example.com/idta/relations/relation")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            annotations:
+            [
+                new Property(DataTypeDefXsd.String, idShort: "Note", value: note),
+                new Property(DataTypeDefXsd.String, idShort: "Other", value: "other")
+            ]);
+    }
+
     private static string CreateSubmodelElementPath(string submodelIdentifier, string idShortPath)
         => $"/submodels/{submodelIdentifier}/submodel-elements/{Uri.EscapeDataString(idShortPath)}";
 }

@@ -162,37 +162,35 @@ public partial class SubmodelTemplateService(
         }
 
         var idShortPathSegments = idShortPath.Split('.');
-        var currentSubmodelElements = submodel.SubmodelElements;
+        IEnumerable<ISubmodelElement>? currentSubmodelElements = submodel.SubmodelElements;
 
-        foreach (var (idShort, isLast) in idShortPathSegments.Select((idShort, index) => (idShort, index == idShortPathSegments.Length - 1)))
+        foreach (var (rawSegment, isLast) in idShortPathSegments.Select((segment, index) => (segment, index == idShortPathSegments.Length - 1)))
         {
-            if (TryParseIdShortWithBracketIndex(idShort, out var idShortWithoutIndex, out var index))
+            var segment = IdShortPathSegment.Parse(rawSegment);
+            ISubmodelElement selectedElement;
+
+            if (segment.HasIndices)
             {
-                var listElement = GetListElementByIdShort(currentSubmodelElements!, idShortWithoutIndex);
-                var selectedElement = GetElementAtIndex(listElement, index);
-
-                if (isLast)
+                selectedElement = GetListElementByIdShort(currentSubmodelElements!, segment.IdShort);
+                foreach (var index in segment.Indices)
                 {
-                    return submodel;
+                    var list = selectedElement as SubmodelElementList ?? throw new InternalDataProcessingException();
+                    selectedElement = GetElementAtIndex(list, index) ?? throw new InternalDataProcessingException();
                 }
-
-                currentSubmodelElements = GetChildElements(selectedElement!) as List<ISubmodelElement>
-                                          ?? throw new InternalDataProcessingException();
-                continue;
             }
-
-            var matchedSubmodelElement = FindMatchingElement(currentSubmodelElements!, idShort);
-
-            matchedSubmodelElement.IdShort = idShort;
-            _ = currentSubmodelElements!.RemoveAll(x => x.IdShort != idShort);
+            else
+            {
+                selectedElement = FindMatchingElement(currentSubmodelElements!, rawSegment);
+                selectedElement.IdShort = rawSegment;
+                RetainOnly(currentSubmodelElements!, rawSegment);
+            }
 
             if (isLast)
             {
                 return submodel;
             }
 
-            currentSubmodelElements = GetChildElements(matchedSubmodelElement) as List<ISubmodelElement>
-                                          ?? throw new InternalDataProcessingException();
+            currentSubmodelElements = GetChildElements(selectedElement) ?? throw new InternalDataProcessingException();
         }
 
         throw new TemplateNotFoundException();
@@ -205,30 +203,7 @@ public partial class SubmodelTemplateService(
                ?? throw new SubmodelElementNotFoundException();
     }
 
-    private static bool TryParseIdShortWithBracketIndex(string idShort, out string idShortWithoutIndex, out int index)
-    {
-        var match = SubmodelElementListIndex().Match(idShort);
-        if (!match.Success)
-        {
-            idShortWithoutIndex = string.Empty;
-            index = -1;
-            return false;
-        }
-
-        idShortWithoutIndex = match.Groups[1].Value;
-        var indexGroup = match.Groups[2].Success ? match.Groups[2] : match.Groups[3];
-        if (!indexGroup.Success)
-        {
-            idShortWithoutIndex = string.Empty;
-            index = -1;
-            return false;
-        }
-
-        index = int.Parse(indexGroup.Value, CultureInfo.InvariantCulture);
-        return true;
-    }
-
-    private static SubmodelElementList GetListElementByIdShort(List<ISubmodelElement> elements, string idShort)
+    private static SubmodelElementList GetListElementByIdShort(IEnumerable<ISubmodelElement> elements, string idShort)
     {
         var element = elements.FirstOrDefault(e => e.IdShort == idShort);
         if (element is not SubmodelElementList list)
@@ -236,8 +211,24 @@ public partial class SubmodelTemplateService(
             throw new InternalDataProcessingException();
         }
 
-        _ = elements.RemoveAll(e => e.IdShort != idShort);
+        RetainOnly(elements, idShort);
         return list;
+    }
+
+    // Annotations are typed List<IDataElement>, so pruning has to handle both container element types.
+    private static void RetainOnly(IEnumerable<ISubmodelElement> elements, string idShort)
+    {
+        switch (elements)
+        {
+            case List<ISubmodelElement> submodelElements:
+                _ = submodelElements.RemoveAll(e => e.IdShort != idShort);
+                break;
+            case List<IDataElement> dataElements:
+                _ = dataElements.RemoveAll(e => e.IdShort != idShort);
+                break;
+            default:
+                throw new InternalDataProcessingException();
+        }
     }
 
     private static ISubmodelElement? GetElementAtIndex(SubmodelElementList list, int index)
@@ -270,19 +261,10 @@ public partial class SubmodelTemplateService(
             ISubmodelElementCollection collection => collection.Value,
             ISubmodelElementList list => list.Value,
             IEntity entity => entity.Statements,
+            IAnnotatedRelationshipElement annotated => annotated.Annotations,
             _ => null
         };
     }
-
-    /// <summary>
-    /// Matches strings like "element[3]" and captures:
-    ///   Group 1 → element name (any characters, lazy match)
-    ///   Group 2 → index (digits inside square brackets)
-    /// e.g. "element[3]" -> matches Group1= "element", Group2 = "3"
-    /// Pattern: ^(.+?)\[(\d+)\]$
-    /// </summary>
-    [GeneratedRegex(@"^(.+?)(?:\[(\d+)\]|%5B(\d+)%5D)$")]
-    private static partial Regex SubmodelElementListIndex();
 
     /// <summary>
     /// Matches one or more digits at the end of a string,

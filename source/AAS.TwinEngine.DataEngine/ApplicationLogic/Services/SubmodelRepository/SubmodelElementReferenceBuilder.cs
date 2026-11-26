@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Extensions;
@@ -12,7 +11,7 @@ namespace AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository
 /// Builds the ModelReference of a submodel element by walking its idShortPath through the submodel,
 /// adding one key per element on the way (IDTA-01002 Content=Reference).
 /// </summary>
-public static partial class SubmodelElementReferenceBuilder
+public static class SubmodelElementReferenceBuilder
 {
     public static IReference Build(ISubmodel submodel, string submodelId, string idShortPath)
     {
@@ -22,18 +21,14 @@ public static partial class SubmodelElementReferenceBuilder
         var keys = new List<IKey> { new Key(KeyTypes.Submodel, submodelId) };
         IEnumerable<ISubmodelElement>? currentElements = submodel.SubmodelElements;
 
-        foreach (var segment in idShortPath.Split('.'))
+        foreach (var segment in idShortPath.Split('.').Select(IdShortPathSegment.Parse))
         {
-            var match = ListIndexSegment().Match(segment);
-            var idShort = match.Success ? match.Groups[1].Value : segment;
-
-            var element = currentElements?.FirstOrDefault(e => string.Equals(e.IdShort, idShort, StringComparison.Ordinal))
+            var element = currentElements?.FirstOrDefault(e => string.Equals(e.IdShort, segment.IdShort, StringComparison.Ordinal))
                           ?? throw new SubmodelElementNotFoundException(idShortPath);
-            keys.Add(new Key(element.ToKeyType(), idShort));
+            keys.Add(new Key(element.ToKeyType(), segment.IdShort));
 
-            if (match.Success)
+            foreach (var index in segment.Indices)
             {
-                var index = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
                 if (element is not ISubmodelElementList list || list.Value is null || index >= list.Value.Count)
                 {
                     throw new SubmodelElementNotFoundException(idShortPath);
@@ -57,7 +52,4 @@ public static partial class SubmodelElementReferenceBuilder
         IAnnotatedRelationshipElement annotated => annotated.Annotations,
         _ => null
     };
-
-    [GeneratedRegex(@"^(.+?)\[(\d+)\]$")]
-    private static partial Regex ListIndexSegment();
 }
