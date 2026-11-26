@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Text;
+using System.Text.Json.Nodes;
 
+using AAS.TwinEngine.DataEngine.Api.Shared;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.Plugin.Providers;
@@ -228,6 +230,96 @@ public abstract class SerializationControllerTests : IDisposable
         var response = await _client.GetAsync(url);
 
         Assert.NotEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("application/asset-administration-shell-package+xml", "application/asset-administration-shell-package+xml")]
+    [InlineData("application/json", "application/json")]
+    [InlineData("application/xml", "application/xml")]
+    [InlineData("*/*", "application/asset-administration-shell-package+xml")]
+    [InlineData("application/xml, application/json", "application/xml")]
+    public async Task SerializeAsync_ReturnsRequestedContentType_WhenAcceptHeaderIsSupportedAsync(string acceptHeader, string expectedContentType)
+    {
+        // Arrange
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
+
+        var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
+
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Returns(TestData.CreateSubmodel());
+        _ = _mockAasRepositoryService.GetShellByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateShellTemplate());
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.TryAddWithoutValidation("Accept", acceptHeader);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedContentType, response.Content.Headers.ContentType?.MediaType);
+    }
+
+    [Fact]
+    public async Task SerializeAsync_ReturnsDeserializableEnvironment_WhenJsonIsRequestedAsync()
+    {
+        // Arrange
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
+
+        var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
+
+        _ = _mockSubmodelRepositoryService.GetSubmodelAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>()).Returns(TestData.CreateSubmodel());
+        _ = _mockAasRepositoryService.GetShellByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateShellTemplate());
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.TryAddWithoutValidation("Accept", "application/json");
+
+        // Act
+        var response = await _client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var environment = JsonNode.Parse(content);
+        Assert.NotNull(environment?["assetAdministrationShells"]);
+        Assert.NotNull(environment?["submodels"]);
+    }
+
+    [Theory]
+    [InlineData("text/csv")]
+    [InlineData("application/pdf")]
+    public async Task SerializeAsync_Returns400_WhenAcceptHeaderIsNotSupportedAsync(string acceptHeader)
+    {
+        // Arrange
+        var aasIds = new[] { "YWFzLTEyMw==" };
+        var submodelIds = new[] { "c3VibW9kZWwtNDU2" };
+
+        var url = $"/serialization?aasIds={string.Join("&aasIds=", aasIds)}&submodelIds={string.Join("&submodelIds=", submodelIds)}&includeConceptDescriptions=false";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.TryAddWithoutValidation("Accept", acceptHeader);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task OpenApiDocument_AdvertisesAllSupportedSerializationMediaTypesAsync()
+    {
+        // Act
+        var document = await _client.GetStringAsync("/swagger/1.0/swagger.json");
+
+        // Assert
+        var okContent = JsonNode.Parse(document)?["paths"]?["/serialization"]?["get"]?["responses"]?["200"]?["content"]?.AsObject();
+
+        Assert.NotNull(okContent);
+        Assert.Equal([.. SerializationMediaTypes.Supported.Order(StringComparer.Ordinal)],
+                     [.. okContent.Select(contentType => contentType.Key).Order(StringComparer.Ordinal)]);
     }
 
     private static string EncodeBase64Url(string plainText)

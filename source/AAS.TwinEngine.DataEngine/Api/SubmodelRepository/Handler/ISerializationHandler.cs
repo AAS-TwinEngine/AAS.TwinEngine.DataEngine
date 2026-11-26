@@ -6,5 +6,5 @@ namespace AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Handler;
 
 public interface ISerializationHandler
 {
-    Task<FileStreamResult> GetAasxFileAsync(SerializeAasxRequest request, CancellationToken cancellationToken);
+    Task<FileStreamResult> GetSerializationAsync(SerializationRequest request, CancellationToken cancellationToken);
 }
