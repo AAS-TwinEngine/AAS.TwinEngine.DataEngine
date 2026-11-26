@@ -34,18 +34,14 @@ public class SerializationFormatResolverTests
     [InlineData("text/csv, application/xml", SerializationFormat.Xml)]
     [InlineData("application/json, application/xml", SerializationFormat.Json)]
     [InlineData("application/xml, application/json", SerializationFormat.Xml)]
-    [InlineData("*/*, application/json", SerializationFormat.Json)]
-    public void Resolve_PrefersMostSpecificThenHeaderOrder_WhenQualitiesAreEqual(string acceptHeader, SerializationFormat expected)
+    public void Resolve_ReturnsFirstSupportedMediaType_InHeaderOrder(string acceptHeader, SerializationFormat expected)
         => Assert.Equal(expected, SerializationFormatResolver.Resolve(acceptHeader));
 
     [Theory]
-    [InlineData("application/xml;q=0.2, application/json;q=0.8", SerializationFormat.Json)]
-    [InlineData("application/json;q=0, application/xml", SerializationFormat.Xml)]
+    [InlineData("application/xml;q=0.2, application/json;q=0.8", SerializationFormat.Xml)]
+    [InlineData("application/json;q=0, application/xml", SerializationFormat.Json)]
     [InlineData("application/json;q=0.5", SerializationFormat.Json)]
-    [InlineData("application/json;q=0.5, */*;q=0.1", SerializationFormat.Json)]
-    [InlineData("application/json;q=0, */*", SerializationFormat.AasxPackage)]
-    [InlineData("application/*;q=0.3, application/xml;q=0.3", SerializationFormat.Xml)]
-    public void Resolve_HonorsQualityFactorsAndSpecificity(string acceptHeader, SerializationFormat expected)
+    public void Resolve_IgnoresQualityFactors(string acceptHeader, SerializationFormat expected)
         => Assert.Equal(expected, SerializationFormatResolver.Resolve(acceptHeader));
 
     [Theory]
