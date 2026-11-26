@@ -189,17 +189,17 @@ public class SemanticTreeExtractorTests
     }
 
     [Fact]
-    public void Extract_ByIdShortPath_ElementNotFound_ThrowsException()
+    public void Extract_ByIdShortPath_ElementNotFound_ThrowsSubmodelElementNotFoundException()
     {
         var submodel = Substitute.For<ISubmodel>();
         submodel.SubmodelElements.Returns([]);
         _elementHelper.GetElementByIdShort(Arg.Any<IEnumerable<ISubmodelElement>>(), "NonExistent").Returns((ISubmodelElement?)null);
 
-        Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, "NonExistent"));
+        Throws<SubmodelElementNotFoundException>(() => _sut.Extract(submodel, "NonExistent"));
     }
 
     [Fact]
-    public void Extract_ByIdShortPath_ChildElementsNull_ThrowsException()
+    public void Extract_ByIdShortPath_ChildElementsNull_ThrowsSubmodelElementNotFoundException()
     {
         var property = new Property(idShort: "Prop", valueType: DataTypeDefXsd.String);
         var submodel = Substitute.For<ISubmodel>();
@@ -207,7 +207,7 @@ public class SemanticTreeExtractorTests
         _elementHelper.GetElementByIdShort(Arg.Any<IEnumerable<ISubmodelElement>>(), "Prop").Returns(property);
         _elementHelper.GetChildElements(property).Returns((IList<ISubmodelElement>?)null);
 
-        Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, "Prop.Child"));
+        Throws<SubmodelElementNotFoundException>(() => _sut.Extract(submodel, "Prop.Child"));
     }
 
     [Fact]

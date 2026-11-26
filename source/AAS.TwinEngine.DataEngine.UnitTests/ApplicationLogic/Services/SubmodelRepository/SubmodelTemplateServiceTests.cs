@@ -189,6 +189,59 @@ public class SubmodelTemplateServiceTests
             _sut.GetSubmodelTemplateAsync(SubmodelId, idShortPath, null, CancellationToken.None));
     }
 
+    [Theory]
+    [InlineData("Prop.Child")]
+    [InlineData("Prop[0]")]
+    [InlineData("Missing[0]")]
+    [InlineData("Missing[0].Name")]
+    [InlineData("List[2]")]
+    [InlineData("List[2].Name")]
+    [InlineData("EmptyList[0]")]
+    [InlineData("List[0].Prop")]
+    public async Task GetSubmodelTemplateAsync_ThrowsSubmodelElementNotFoundException_WhenPathCannotBeResolved(string idShortPath)
+    {
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelWithListAndProperty());
+
+        var exception = await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
+            _sut.GetSubmodelTemplateAsync(SubmodelId, idShortPath, null, CancellationToken.None));
+
+        Assert.Contains("not found", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("List[0].Name")]
+    [InlineData("List[1].Name")]
+    [InlineData("List[1]")]
+    [InlineData("Prop")]
+    public async Task GetSubmodelTemplateAsync_ReturnsReducedSubmodel_WhenIndexedPathExists(string idShortPath)
+    {
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelWithListAndProperty());
+
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, idShortPath, null, CancellationToken.None);
+
+        Assert.Single(result.SubmodelElements!);
+    }
+
+    private static Submodel CreateSubmodelWithListAndProperty() => new(
+        "template-id",
+        submodelElements:
+        [
+            new Property(DataTypeDefXsd.String, idShort: "Prop"),
+            new SubmodelElementList(
+                AasSubmodelElements.SubmodelElementCollection,
+                idShort: "List",
+                value:
+                [
+                    new SubmodelElementCollection(value: [new Property(DataTypeDefXsd.String, idShort: "Name")]),
+                    new SubmodelElementCollection(value: [new Property(DataTypeDefXsd.String, idShort: "Name")])
+                ]),
+            new SubmodelElementList(AasSubmodelElements.SubmodelElementCollection, idShort: "EmptyList")
+        ]);
+
     [Fact]
     public async Task GetSubmodelTemplateAsync_WithIdShortPath_ThrowsInternalDataProcessingException_WhenSubmodelIdIsEmpty()
     {
@@ -357,7 +410,7 @@ public class SubmodelTemplateServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelTemplateAsync_Throws_WhenStaticCollectionListIndexExceedsAvailableElements()
+    public async Task GetSubmodelTemplateAsync_ThrowsSubmodelElementNotFoundException_WhenStaticCollectionListIndexExceedsAvailableElements()
     {
         var submodel = TestData.CreateSubmodelWithModel3DList();
         const string path = "Model3D[5].ModelDataFile";
@@ -365,7 +418,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(submodel);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetSubmodelTemplateAsync(SubmodelId, path, null, CancellationToken.None));
     }
 
@@ -390,7 +443,7 @@ public class SubmodelTemplateServiceTests
     }
 
     [Fact]
-    public async Task GetSubmodelTemplateAsync_ThrowsInternalDataProcessingException_WhenTypeValueListElementIsProperty_AndListIndexExceedsAvailableElements()
+    public async Task GetSubmodelTemplateAsync_ThrowsSubmodelElementNotFoundException_WhenTypeValueListElementIsProperty_AndListIndexExceedsAvailableElements()
     {
         var submodel = TestData.CreateSubmodelWithPropertyInsideList();
         const string path = "listProperty[2]";
@@ -398,7 +451,7 @@ public class SubmodelTemplateServiceTests
         _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>())
             .Returns(submodel);
 
-        await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
             _sut.GetSubmodelTemplateAsync(SubmodelId, path, null, CancellationToken.None));
     }
 

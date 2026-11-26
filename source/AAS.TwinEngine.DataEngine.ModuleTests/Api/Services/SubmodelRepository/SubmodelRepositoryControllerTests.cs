@@ -567,6 +567,69 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         return WebEncoders.Base64UrlEncode(bytes);
     }
 
+    [Theory]
+    [InlineData("ContactName.Child")]
+    [InlineData("ContactName[0]")]
+    [InlineData("Unknown[0]")]
+    [InlineData("Unknown.Child")]
+    public async Task GetSubmodelElementAsync_WhenIdShortPathDoesNotExistInTemplate_Returns404Async(string idShortPath)
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, idShortPath));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementAsync_WhenListIndexIsOutOfRangeInTemplate_Returns404Async()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, "Markings[5].ContactName"));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementAsync_WhenListIndexIsOutOfRangeAfterPluginExpansion_Returns404Async()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePluginResponseWithMultipleMarkings())
+        }));
+        using var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://testendpoint.com") };
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithPluginExpandedMarkings());
+
+        var response = await _client.GetAsync(CreateSubmodelElementPath(SubmodelId, "Markings[5].ContactName"));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("ContactName.Child")]
+    [InlineData("ContactName[0]")]
+    [InlineData("Unknown")]
+    public async Task GetFileAttachmentAsync_WhenIdShortPathDoesNotExist_Returns404Async(string idShortPath)
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodel());
+
+        var response = await _client.GetAsync($"{CreateSubmodelElementPath(SubmodelId, idShortPath)}/attachment");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     private static string CreateSubmodelElementPath(string submodelIdentifier, string idShortPath)
         => $"/submodels/{submodelIdentifier}/submodel-elements/{Uri.EscapeDataString(idShortPath)}";
 }

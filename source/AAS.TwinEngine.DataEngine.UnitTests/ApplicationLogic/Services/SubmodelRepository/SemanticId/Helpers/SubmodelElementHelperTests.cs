@@ -183,7 +183,7 @@ public class SubmodelElementHelperTests
     }
 
     [Fact]
-    public void GetElementFromListByIndex_OutOfBounds_ThrowsException()
+    public void GetElementFromListByIndex_OutOfBounds_ThrowsSubmodelElementNotFoundException()
     {
         var list = new SubmodelElementList(
             idShort: "TestList",
@@ -192,19 +192,32 @@ public class SubmodelElementHelperTests
         );
         var elements = new List<ISubmodelElement> { list };
 
-        Throws<InternalDataProcessingException>(() => _sut.GetElementFromListByIndex(elements, "TestList", 5));
+        Throws<SubmodelElementNotFoundException>(() => _sut.GetElementFromListByIndex(elements, "TestList", 5));
     }
 
     [Fact]
-    public void GetElementFromListByIndex_NotAList_ThrowsException()
+    public void GetElementFromListByIndex_ListWithoutValue_ThrowsSubmodelElementNotFoundException()
+    {
+        var list = new SubmodelElementList(idShort: "TestList", typeValueListElement: AasSubmodelElements.Property);
+        var elements = new List<ISubmodelElement> { list };
+
+        Throws<SubmodelElementNotFoundException>(() => _sut.GetElementFromListByIndex(elements, "TestList", 0));
+    }
+
+    [Fact]
+    public void GetElementFromListByIndex_NotAList_ThrowsSubmodelElementNotFoundException()
     {
         var elements = new List<ISubmodelElement>
         {
             new Property(idShort: "NotAList", valueType: DataTypeDefXsd.String),
         };
 
-        Throws<InternalDataProcessingException>(() => _sut.GetElementFromListByIndex(elements, "NotAList", 0));
+        Throws<SubmodelElementNotFoundException>(() => _sut.GetElementFromListByIndex(elements, "NotAList", 0));
     }
+
+    [Fact]
+    public void GetElementFromListByIndex_ListDoesNotExist_ThrowsSubmodelElementNotFoundException()
+        => Throws<SubmodelElementNotFoundException>(() => _sut.GetElementFromListByIndex([], "Missing", 0));
 
     [Fact]
     public void GetChildElements_Collection_ReturnsValue()

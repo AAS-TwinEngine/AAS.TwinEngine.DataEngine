@@ -168,16 +168,15 @@ public partial class SubmodelTemplateService(
         {
             if (TryParseIdShortWithBracketIndex(idShort, out var idShortWithoutIndex, out var index))
             {
-                var listElement = GetListElementByIdShort(currentSubmodelElements!, idShortWithoutIndex);
-                var selectedElement = GetElementAtIndex(listElement, index);
+                var listElement = GetListElementByIdShort(currentSubmodelElements!, idShortWithoutIndex, idShortPath);
+                var selectedElement = GetElementAtIndex(listElement, index, idShortPath);
 
                 if (isLast)
                 {
                     return submodel;
                 }
 
-                currentSubmodelElements = GetChildElements(selectedElement!) as List<ISubmodelElement>
-                                          ?? throw new InternalDataProcessingException();
+                currentSubmodelElements = GetChildElementsOrThrow(selectedElement!, idShortPath);
                 continue;
             }
 
@@ -191,8 +190,7 @@ public partial class SubmodelTemplateService(
                 return submodel;
             }
 
-            currentSubmodelElements = GetChildElements(matchedSubmodelElement) as List<ISubmodelElement>
-                                          ?? throw new InternalDataProcessingException();
+            currentSubmodelElements = GetChildElementsOrThrow(matchedSubmodelElement, idShortPath);
         }
 
         throw new TemplateNotFoundException();
@@ -228,23 +226,23 @@ public partial class SubmodelTemplateService(
         return true;
     }
 
-    private static SubmodelElementList GetListElementByIdShort(List<ISubmodelElement> elements, string idShort)
+    private static SubmodelElementList GetListElementByIdShort(List<ISubmodelElement> elements, string idShort, string idShortPath)
     {
         var element = elements.FirstOrDefault(e => e.IdShort == idShort);
         if (element is not SubmodelElementList list)
         {
-            throw new InternalDataProcessingException();
+            throw new SubmodelElementNotFoundException(idShortPath);
         }
 
         _ = elements.RemoveAll(e => e.IdShort != idShort);
         return list;
     }
 
-    private static ISubmodelElement? GetElementAtIndex(SubmodelElementList list, int index)
+    private static ISubmodelElement? GetElementAtIndex(SubmodelElementList list, int index, string idShortPath)
     {
         if (index < 0)
         {
-            throw new InternalDataProcessingException();
+            throw new SubmodelElementNotFoundException(idShortPath);
         }
 
         if (list.TypeValueListElement is AasSubmodelElements.SubmodelElementCollection or AasSubmodelElements.SubmodelElementList && list.Value?.Count == 1)
@@ -255,12 +253,19 @@ public partial class SubmodelTemplateService(
             }
         }
 
-        if (index >= list.Value?.Count)
+        if (list.Value is null || index >= list.Value.Count)
         {
-            throw new InternalDataProcessingException();
+            throw new SubmodelElementNotFoundException(idShortPath);
         }
 
-        return list.Value?[index];
+        return list.Value[index];
+    }
+
+    private static List<ISubmodelElement> GetChildElementsOrThrow(ISubmodelElement element, string idShortPath)
+    {
+        var children = GetChildElements(element) ?? throw new SubmodelElementNotFoundException(idShortPath);
+
+        return children as List<ISubmodelElement> ?? throw new InternalDataProcessingException();
     }
 
     private static IEnumerable<ISubmodelElement>? GetChildElements(ISubmodelElement element)

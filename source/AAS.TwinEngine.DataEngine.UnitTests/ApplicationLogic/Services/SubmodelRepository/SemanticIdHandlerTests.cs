@@ -576,7 +576,7 @@ public class SemanticIdHandlerTests
         var submodel = TestData.CreateSubmodelWithModel3DList();
         const string Path = "Model3D[0].ModelFileID";
 
-        Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, Path));
+        Throws<SubmodelElementNotFoundException>(() => _sut.Extract(submodel, Path));
     }
 
     [Fact]
@@ -584,8 +584,8 @@ public class SemanticIdHandlerTests
     {
         const string Path = "ContactName[0]";
 
-        var ex = Throws<InternalDataProcessingException>(() => _sut.Extract(TestData.CreateSubmodel(), Path));
-        Contains("Internal Server Error.", ex.Message, StringComparison.OrdinalIgnoreCase);
+        var ex = Throws<SubmodelElementNotFoundException>(() => _sut.Extract(TestData.CreateSubmodel(), Path));
+        Contains("not found", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -594,8 +594,8 @@ public class SemanticIdHandlerTests
         var submodel = TestData.CreateSubmodelWithModel3DList();
         const string Path = "Model3D[5].ModelFile1";
 
-        var ex = Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, Path));
-        Contains("Internal Server Error.", ex.Message, StringComparison.OrdinalIgnoreCase);
+        var ex = Throws<SubmodelElementNotFoundException>(() => _sut.Extract(submodel, Path));
+        Contains("not found", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -604,7 +604,7 @@ public class SemanticIdHandlerTests
         var submodel = TestData.CreateSubmodelWithoutExtraElements();
         const string Path = "NonExistent";
 
-        Throws<InternalDataProcessingException>(() => _sut.Extract(submodel, Path));
+        Throws<SubmodelElementNotFoundException>(() => _sut.Extract(submodel, Path));
     }
 
     [Theory]

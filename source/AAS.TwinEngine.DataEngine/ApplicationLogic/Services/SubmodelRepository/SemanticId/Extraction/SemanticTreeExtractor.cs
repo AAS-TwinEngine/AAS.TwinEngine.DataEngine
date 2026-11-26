@@ -61,14 +61,14 @@ public class SemanticTreeExtractor(
             var isLastSegment = index == idShortPathSegments.Length - 1;
 
             var matchedElement = elementHelper.GetElementByIdShort(currentSubmodelElements, currentIdShort)
-                                 ?? throw new InternalDataProcessingException();
+                                 ?? throw new SubmodelElementNotFoundException(idShortPath);
             if (isLastSegment)
             {
                 return matchedElement;
             }
 
             currentSubmodelElements = elementHelper.GetChildElements(matchedElement) as List<ISubmodelElement>
-                                      ?? throw new InternalDataProcessingException();
+                                      ?? throw new SubmodelElementNotFoundException(idShortPath);
         }
 
         throw new InternalDataProcessingException();

@@ -51,17 +51,18 @@ public partial class SubmodelElementHelper(ILogger<SubmodelElementHelper> logger
 
         if (baseElement is not ISubmodelElementList list)
         {
-            logger.LogError("Expected list element with IdShort '{IdShortWithoutIndex}' not found or is not a list.", idShortWithoutIndex);
-            throw new InternalDataProcessingException();
+            logger.LogWarning("Expected list element with IdShort '{IdShortWithoutIndex}' not found or is not a list.", idShortWithoutIndex);
+            throw new SubmodelElementNotFoundException(idShortWithoutIndex);
         }
 
-        if (index >= 0 && index < list.Value!.Count)
+        var count = list.Value?.Count ?? 0;
+        if (index >= 0 && index < count)
         {
-            return list.Value[index];
+            return list.Value![index];
         }
 
-        logger.LogError("Index {Index} is out of bounds for list '{IdShortWithoutIndex}' with count {Count}.", index, idShortWithoutIndex, list.Value!.Count);
-        throw new InternalDataProcessingException();
+        logger.LogWarning("Index {Index} is out of bounds for list '{IdShortWithoutIndex}' with count {Count}.", index, idShortWithoutIndex, count);
+        throw new SubmodelElementNotFoundException($"{idShortWithoutIndex}[{index}]");
     }
 
     public IList<ISubmodelElement>? GetChildElements(ISubmodelElement submodelElement)

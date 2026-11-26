@@ -223,6 +223,22 @@ public class SubmodelRepositoryServiceTests
     }
 
     [Fact]
+    public async Task GetSubmodelElementAsync_WhenElementIsMissingAfterTemplateIsFilled_ThrowsSubmodelElementNotFoundException()
+    {
+        const string MissingPath = "Markings[5].ContactName";
+        var submodel = TestData.CreateSubmodelWithoutExtraElementsNested();
+        var filledSubmodel = TestData.CreateFilledSubmodelWithOutExtraElements();
+        _templateService
+            .GetSubmodelTemplateAsync(SubmodelId, MissingPath, Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(submodel);
+        ArrangeSemanticPipeline(submodel, filledSubmodel);
+        _semanticIdHandler.Extract(filledSubmodel, MissingPath).Throws(new SubmodelElementNotFoundException(MissingPath));
+
+        await Assert.ThrowsAsync<SubmodelElementNotFoundException>(() =>
+            _sut.GetSubmodelElementAsync(SubmodelId, MissingPath, null, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task GetSubmodelElementAsync_WhenResponseParsingFails_ThrowsInternalDataProcessingException()
     {
         _templateService
