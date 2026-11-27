@@ -1,4 +1,6 @@
-﻿using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
+﻿using System.Text.Json.Nodes;
+
+using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.AasRepository;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Services.SubmodelRepository;
 
 using AasCore.Aas3_1;
@@ -27,7 +29,7 @@ public class SerializationServiceTests
     }
 
     [Fact]
-    public async Task GetAasxFileStreamAsync_ReturnsStream_WhenValidIdsAndConceptDescriptionIsFalse()
+    public async Task GetSerializationStreamAsync_ReturnsStream_WhenValidIdsAndConceptDescriptionIsFalse()
     {
         const string AasId = "aas-id";
         const string SubmodelId = "submodel-id";
@@ -37,14 +39,14 @@ public class SerializationServiceTests
         _shellService.GetShellByIdAsync(AasId, Arg.Any<CancellationToken>()).Returns(shell);
         _submodelRepositoryService.GetSubmodelAsync(SubmodelId, null, Arg.Any<CancellationToken>()).Returns(submodel);
 
-        var result = await _sut.GetAasxFileStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, CancellationToken.None);
+        var result = await _sut.GetSerializationStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, SerializationFormat.AasxPackage, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.IsType<FileStream>(result);
     }
 
     [Fact]
-    public async Task GetAasxFileStreamAsync_CallsShellService_ForEachAasId()
+    public async Task GetSerializationStreamAsync_CallsShellService_ForEachAasId()
     {
         var aasIds = new[] { "aas1", "aas2" };
         var submodelIds = new[] { "sub1" };
@@ -58,7 +60,7 @@ public class SerializationServiceTests
         _submodelRepositoryService.GetSubmodelAsync("sub1", null, Arg.Any<CancellationToken>())
                                   .Returns(Substitute.For<ISubmodel>());
 
-        await _sut.GetAasxFileStreamAsync(aasIds, submodelIds, IncludeConceptDescriptions, CancellationToken.None);
+        await _sut.GetSerializationStreamAsync(aasIds, submodelIds, IncludeConceptDescriptions, SerializationFormat.AasxPackage, CancellationToken.None);
 
         foreach (var id in aasIds)
         {
@@ -67,7 +69,7 @@ public class SerializationServiceTests
     }
 
     [Fact]
-    public async Task GetAasxFileStreamAsync_CallsSubmodelRepo_ForEachSubmodelId()
+    public async Task GetSerializationStreamAsync_CallsSubmodelRepo_ForEachSubmodelId()
     {
         var aasIds = new[] { "aas1" };
         var submodelIds = new[] { "sub1", "sub2" };
@@ -83,7 +85,7 @@ public class SerializationServiceTests
                                       .Returns(Substitute.For<ISubmodel>());
         }
 
-        await _sut.GetAasxFileStreamAsync(aasIds, submodelIds, IncludeConceptDescriptions, CancellationToken.None);
+        await _sut.GetSerializationStreamAsync(aasIds, submodelIds, IncludeConceptDescriptions, SerializationFormat.AasxPackage, CancellationToken.None);
 
         foreach (var id in submodelIds)
         {
@@ -92,7 +94,7 @@ public class SerializationServiceTests
     }
 
     [Fact]
-    public async Task GetAasxFileStreamAsync_SkipsMiddleFolder_WhenIdShortHasInvalidChars()
+    public async Task GetSerializationStreamAsync_SkipsMiddleFolder_WhenIdShortHasInvalidChars()
     {
         const string AasId = "aas1";
         const string SubmodelId = "sub1";
@@ -104,13 +106,13 @@ public class SerializationServiceTests
         _shellService.GetShellByIdAsync(AasId, Arg.Any<CancellationToken>()).Returns(shell);
         _submodelRepositoryService.GetSubmodelAsync(SubmodelId, null, Arg.Any<CancellationToken>()).Returns(submodel);
 
-        var result = await _sut.GetAasxFileStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, CancellationToken.None);
+        var result = await _sut.GetSerializationStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, SerializationFormat.AasxPackage, CancellationToken.None);
 
         Assert.NotNull(result);
     }
 
     [Fact]
-    public async Task GetAasxFileStreamAsync_ExtractsSemanticIdsFromNestedSubmodelElements_WhenFlagTrue()
+    public async Task GetSerializationStreamAsync_ExtractsSemanticIdsFromNestedSubmodelElements_WhenFlagTrue()
     {
         const string AasId = "aas1";
         const string SubmodelId = "sub1";
@@ -128,12 +130,79 @@ public class SerializationServiceTests
         _conceptDescriptionService.GetConceptDescriptionById("inner-semantic-1", Arg.Any<CancellationToken>()).Returns(cd1);
         _conceptDescriptionService.GetConceptDescriptionById("inner-semantic-2", Arg.Any<CancellationToken>()).Returns(cd2);
 
-        var result = await _sut.GetAasxFileStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, CancellationToken.None);
+        var result = await _sut.GetSerializationStreamAsync([AasId], [SubmodelId], IncludeConceptDescriptions, SerializationFormat.AasxPackage, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.IsType<FileStream>(result);
         await _conceptDescriptionService.Received(1).GetConceptDescriptionById("inner-semantic-1", Arg.Any<CancellationToken>());
         await _conceptDescriptionService.Received(1).GetConceptDescriptionById("inner-semantic-2", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSerializationStreamAsync_ReturnsJsonEnvironment_WhenFormatIsJson()
+    {
+        const string AasId = "https://example.com/aas/1";
+        const string SubmodelId = "https://example.com/submodels/1";
+
+        _shellService.GetShellByIdAsync(AasId, Arg.Any<CancellationToken>()).Returns(CreateDeserializedShell(AasId, "TestShell"));
+        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, null, Arg.Any<CancellationToken>()).Returns(CreateDeserializedSubmodel(SubmodelId, "TestSubmodel"));
+
+        await using var result = await _sut.GetSerializationStreamAsync([AasId], [SubmodelId], false, SerializationFormat.Json, CancellationToken.None);
+
+        using var reader = new StreamReader(result);
+        var content = await reader.ReadToEndAsync();
+
+        Assert.Contains("assetAdministrationShells", content, StringComparison.Ordinal);
+        Assert.Contains("submodels", content, StringComparison.Ordinal);
+        Assert.Contains(AasId, content, StringComparison.Ordinal);
+        Assert.Contains(SubmodelId, content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetSerializationStreamAsync_ReturnsXmlEnvironment_WhenFormatIsXml()
+    {
+        const string AasId = "https://example.com/aas/1";
+        const string SubmodelId = "https://example.com/submodels/1";
+
+        _shellService.GetShellByIdAsync(AasId, Arg.Any<CancellationToken>()).Returns(CreateDeserializedShell(AasId, "TestShell"));
+        _submodelRepositoryService.GetSubmodelAsync(SubmodelId, null, Arg.Any<CancellationToken>()).Returns(CreateDeserializedSubmodel(SubmodelId, "TestSubmodel"));
+
+        await using var result = await _sut.GetSerializationStreamAsync([AasId], [SubmodelId], false, SerializationFormat.Xml, CancellationToken.None);
+
+        using var reader = new StreamReader(result);
+        var content = await reader.ReadToEndAsync();
+
+        Assert.StartsWith("<?xml", content, StringComparison.Ordinal);
+        Assert.Contains("environment", content, StringComparison.Ordinal);
+        Assert.Contains(AasId, content, StringComparison.Ordinal);
+        Assert.Contains(SubmodelId, content, StringComparison.Ordinal);
+    }
+
+    private static IAssetAdministrationShell CreateDeserializedShell(string id, string idShort)
+    {
+        var node = JsonNode.Parse($$"""
+                                    {
+                                      "modelType": "AssetAdministrationShell",
+                                      "id": "{{id}}",
+                                      "idShort": "{{idShort}}",
+                                      "assetInformation": { "assetKind": "Instance" }
+                                    }
+                                    """);
+
+        return Jsonization.Deserialize.AssetAdministrationShellFrom(node!);
+    }
+
+    private static ISubmodel CreateDeserializedSubmodel(string id, string idShort)
+    {
+        var node = JsonNode.Parse($$"""
+                                    {
+                                      "modelType": "Submodel",
+                                      "id": "{{id}}",
+                                      "idShort": "{{idShort}}"
+                                    }
+                                    """);
+
+        return Jsonization.Deserialize.SubmodelFrom(node!);
     }
 
     private static IAssetAdministrationShell CreateShell(string idShort)

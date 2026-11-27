@@ -25,6 +25,7 @@ licenses.json
 .vs/
 .vscode/
 .idea/
+.aas-specs/
 .ionic/
 .sass-cache/
 .sourcemaps/

@@ -2,5 +2,9 @@
 
 public interface ISerializationService
 {
-    Task<Stream> GetAasxFileStreamAsync(IList<string> aasIds, IList<string> submodelIds, bool includeConceptDescriptions, CancellationToken cancellationToken);
+    Task<Stream> GetSerializationStreamAsync(IList<string> aasIds,
+                                             IList<string> submodelIds,
+                                             bool includeConceptDescriptions,
+                                             SerializationFormat format,
+                                             CancellationToken cancellationToken);
 }
