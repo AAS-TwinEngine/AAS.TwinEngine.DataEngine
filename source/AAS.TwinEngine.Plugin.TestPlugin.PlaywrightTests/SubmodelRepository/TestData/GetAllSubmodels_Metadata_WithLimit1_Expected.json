@@ -1,0 +1,51 @@
+{
+  "paging_metadata": {
+    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9DdXN0b21TdWJtb2RlbHw"
+  },
+  "result": [
+    {
+      "idShort": "CustomSubmodel",
+      "description": [
+        {
+          "language": "en",
+          "text": "The Submodel HierarchicalStructures identified by its semanticId. The Submodel idShort can be picked freely."
+        }
+      ],
+      "id": "https://mm-software.com/submodel/000-001/CustomSubmodel",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/CustomSubmodel/Submodel/Template/0/1"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+              }
+            ]
+          },
+          "kind": "TemplateQualifier",
+          "type": "SMT/Cardinality",
+          "valueType": "xs:string",
+          "value": "ZeroToOne"
+        },
+        {
+          "kind": "TemplateQualifier",
+          "type": "EditIdShort",
+          "valueType": "xs:string",
+          "value": "True"
+        }
+      ],
+      "modelType": "Submodel"
+    }
+  ]
+}

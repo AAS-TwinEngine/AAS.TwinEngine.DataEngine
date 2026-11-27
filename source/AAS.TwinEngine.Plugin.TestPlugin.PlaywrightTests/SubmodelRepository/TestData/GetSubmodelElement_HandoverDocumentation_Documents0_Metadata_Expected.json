@@ -1,0 +1,49 @@
+{
+  "description": [
+    {
+      "language": "en",
+      "text": "This SubmodelElementCollection holds the information for a VDI 2770 Document entity"
+    }
+  ],
+  "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0173-1#02-ABI500#003/0173-1#01-AHF579#003"
+      }
+    ]
+  },
+  "supplementalSemanticIds": [
+    {
+      "type": "ExternalReference",
+      "keys": [
+        {
+          "type": "GlobalReference",
+          "value": "0173-1#02-ABI500#003~0/0173-1#01-AHF579#003"
+        },
+        {
+          "type": "GlobalReference",
+          "value": "https://api.eclass-cdp.com/0173-1-02-ABI500-003/0173-1-01-AHF579-003"
+        }
+      ]
+    }
+  ],
+  "qualifiers": [
+    {
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+          }
+        ]
+      },
+      "type": "SMT/Cardinality",
+      "valueType": "xs:string",
+      "value": "OneToMany"
+    }
+  ],
+  "modelType": "SubmodelElementCollection"
+}

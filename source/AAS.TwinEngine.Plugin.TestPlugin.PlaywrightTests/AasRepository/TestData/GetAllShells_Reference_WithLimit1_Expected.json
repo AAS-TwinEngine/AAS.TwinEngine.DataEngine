@@ -1,0 +1,16 @@
+{
+  "paging_metadata": {
+    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vaWRzL2Fhcy8wMDAtMDAx"
+  },
+  "result": [
+    {
+      "type": "ModelReference",
+      "keys": [
+        {
+          "type": "AssetAdministrationShell",
+          "value": "https://mm-software.com/ids/aas/000-001"
+        }
+      ]
+    }
+  ]
+}

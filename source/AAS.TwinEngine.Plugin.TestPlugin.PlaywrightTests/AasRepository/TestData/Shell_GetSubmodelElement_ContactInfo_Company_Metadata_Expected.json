@@ -1,0 +1,21 @@
+{
+  "idShort": "Company",
+  "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0173-1#02-AAW001#001"
+      }
+    ]
+  },
+  "qualifiers": [
+    {
+      "kind": "ConceptQualifier",
+      "type": "Multiplicity",
+      "valueType": "xs:string",
+      "value": "ZeroToOne"
+    }
+  ],
+  "modelType": "MultiLanguageProperty"
+}

@@ -1,0 +1,66 @@
+{
+  "DocumentClassifications": [
+    {
+      "ClassId": "CLS-001",
+      "ClassificationSystem": "IEC-61360"
+    },
+    {
+      "ClassId": "CLS-002",
+      "ClassificationSystem": "ISO-13584"
+    }
+  ],
+  "DocumentIds": [
+    {
+      "DocumentDomainId": "a3f1c2b4-9d81-4e5a-b6f2-01ac9e11d001",
+      "DocumentIdentifier": "DOC2025A001",
+      "DocumentIsPrimary": true
+    },
+    {
+      "DocumentDomainId": "b7e92d10-3c45-4a8f-9f21-02bc9e11d002",
+      "DocumentIdentifier": "CERTX94B21",
+      "DocumentIsPrimary": false
+    }
+  ],
+  "DocumentVersions": [
+    {
+      "DigitalFiles": [
+        {
+          "contentType": "application/pdf",
+          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
+        }
+      ],
+      "Language": [
+        "en"
+      ],
+      "OrganizationOfficialName": "M&M Germany",
+      "OrganizationShortName": "M&M",
+      "PreviewFile": {
+        "contentType": "image/jpeg",
+        "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
+      },
+      "StatusSetDate": "2023-01-01",
+      "StatusValue": "Released",
+      "Version": "1"
+    },
+    {
+      "DigitalFiles": [
+        {
+          "contentType": "application/pdf",
+          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.pdf"
+        }
+      ],
+      "Language": [
+        "en"
+      ],
+      "OrganizationOfficialName": "M&M India",
+      "OrganizationShortName": "M&M",
+      "PreviewFile": {
+        "contentType": "image/jpeg",
+        "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/dummy_document.jpg"
+      },
+      "StatusSetDate": "2024-05-05",
+      "StatusValue": "InReview",
+      "Version": "1.1"
+    }
+  ]
+}

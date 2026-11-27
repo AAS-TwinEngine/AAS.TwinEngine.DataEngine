@@ -1,0 +1,28 @@
+{
+  "idShort": "RoleOfContactPerson",
+  "description": [
+    {
+      "language": "en",
+      "text": "enumeration: 0173-1#07-AAS927#001 (administrativ contact), 0173-1#07-AAS928#001 (commercial contact), 0173-1#07-AAS929#001 (other contact), 0173-1#07-AAS930#001 (hazardous goods contact), 0173-1#07-AAS931#001 (technical contact). Note: the above mentioned ECLASS enumeration should be declared as “open” for further addition. ECLASS enumeration IRDI is preferable. If no IRDI available, custom input as String may also be accepted."
+    }
+  ],
+  "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+      {
+        "type": "GlobalReference",
+        "value": "0173-1#02-AAO204#003"
+      }
+    ]
+  },
+  "qualifiers": [
+    {
+      "kind": "ConceptQualifier",
+      "type": "Multiplicity",
+      "valueType": "xs:string",
+      "value": "ZeroToOne"
+    }
+  ],
+  "valueType": "xs:string",
+  "modelType": "Property"
+}

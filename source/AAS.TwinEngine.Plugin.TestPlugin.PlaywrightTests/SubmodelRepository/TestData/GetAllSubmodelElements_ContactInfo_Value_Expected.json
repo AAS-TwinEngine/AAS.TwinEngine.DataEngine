@@ -1,0 +1,159 @@
+{
+  "paging_metadata": {
+    "cursor": null
+  },
+  "result": {
+    "ContactInformation0": {
+      "AddressOfAdditionalLink": "https://www.mm-software.com/mobile-arbeitsmaschinen/",
+      "Company": [
+        {
+          "de": "M&M Software aus dem Plugin"
+        },
+        {
+          "en": "M&M software"
+        }
+      ],
+      "Department": [
+        {
+          "de": "Marketing"
+        }
+      ],
+      "Email": {
+        "EmailAddress": "john.doe@example.com",
+        "TypeOfEmailAddress": "0173-1#07-AAS754#001"
+      },
+      "IPCommunication__00__": {
+        "AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
+        "AvailableTime": [
+          {
+            "de": "8:00 AM to 6:00 PM"
+          }
+        ],
+        "TypeOfCommunication": "Chat"
+      },
+      "NameOfContact": [
+        {
+          "en": "John Doe"
+        }
+      ],
+      "Phone0": {
+        "AvailableTime": [
+          {
+            "de": "Dienstags bis Donnerstags, 9-17 Uhr"
+          }
+        ],
+        "TelephoneNumber": [
+          {
+            "en": "234-567-8901"
+          }
+        ],
+        "TypeOfTelephone": "Office"
+      },
+      "Phone1": {
+        "AvailableTime": [
+          {
+            "de": "Montags, 10-16 Uhr"
+          }
+        ],
+        "TelephoneNumber": [
+          {
+            "en": "345-678-9012"
+          }
+        ],
+        "TypeOfTelephone": "Mobile"
+      },
+      "RoleOfContactPerson": "0173-1#07-AAS931#001",
+      "StateCounty": [
+        {
+          "de": "Bayern"
+        }
+      ],
+      "Street": [
+        {
+          "de": "Bahnhofstraße 25"
+        }
+      ],
+      "Zipcode": [
+        {
+          "de": "80335"
+        }
+      ]
+    },
+    "ContactInformation1": {
+      "AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
+      "Company": [
+        {
+          "de": "M&M Software aus dem Plugin"
+        },
+        {
+          "en": "M&M software"
+        }
+      ],
+      "Department": [
+        {
+          "de": "Marketing"
+        }
+      ],
+      "Email": {
+        "EmailAddress": "john.doe@example.com",
+        "TypeOfEmailAddress": "0173-1#07-AAS754#001"
+      },
+      "IPCommunication__00__": {
+        "AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
+        "AvailableTime": [
+          {
+            "de": "8:00 AM to 6:00 PM"
+          }
+        ],
+        "TypeOfCommunication": "Chat"
+      },
+      "NameOfContact": [
+        {
+          "en": "John Doe"
+        }
+      ],
+      "Phone0": {
+        "AvailableTime": [
+          {
+            "de": "Dienstags bis Donnerstags, 9-17 Uhr"
+          }
+        ],
+        "TelephoneNumber": [
+          {
+            "en": "234-567-8901"
+          }
+        ],
+        "TypeOfTelephone": "Office"
+      },
+      "Phone1": {
+        "AvailableTime": [
+          {
+            "de": "Montags, 10-16 Uhr"
+          }
+        ],
+        "TelephoneNumber": [
+          {
+            "en": "345-678-9012"
+          }
+        ],
+        "TypeOfTelephone": "Mobile"
+      },
+      "RoleOfContactPerson": "0173-1#07-AAS931#001",
+      "StateCounty": [
+        {
+          "de": "Bayern"
+        }
+      ],
+      "Street": [
+        {
+          "de": "Bahnhofstraße 25"
+        }
+      ],
+      "Zipcode": [
+        {
+          "de": "80335"
+        }
+      ]
+    }
+  }
+}

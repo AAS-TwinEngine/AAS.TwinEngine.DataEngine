@@ -1,0 +1,40 @@
+{
+  "AddressOfAdditionalLink": "https://www.mm-software.com/more-the-newsroom/",
+  "Company": [
+    {
+      "de": "M&M Software aus dem Plugin"
+    },
+    {
+      "en": "M&M software"
+    }
+  ],
+  "Department": [
+    {
+      "de": "Marketing"
+    }
+  ],
+  "Email": {},
+  "IPCommunication__00__": {},
+  "NameOfContact": [
+    {
+      "en": "John Doe"
+    }
+  ],
+  "Phone": {},
+  "RoleOfContactPerson": "0173-1#07-AAS931#001",
+  "StateCounty": [
+    {
+      "de": "Bayern"
+    }
+  ],
+  "Street": [
+    {
+      "de": "Bahnhofstraße 25"
+    }
+  ],
+  "Zipcode": [
+    {
+      "de": "80335"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "ModelReference",
+  "keys": [
+    {
+      "type": "Submodel",
+      "value": "https://mm-software.com/submodel/000-001/HandoverDocumentation"
+    },
+    {
+      "type": "SubmodelElementList",
+      "value": "Documents"
+    },
+    {
+      "type": "SubmodelElementCollection",
+      "value": "0"
+    }
+  ]
+}

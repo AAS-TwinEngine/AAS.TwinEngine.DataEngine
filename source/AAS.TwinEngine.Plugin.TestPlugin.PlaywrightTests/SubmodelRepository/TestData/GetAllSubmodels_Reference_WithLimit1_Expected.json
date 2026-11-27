@@ -1,0 +1,16 @@
+{
+  "paging_metadata": {
+    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9DdXN0b21TdWJtb2RlbHw"
+  },
+  "result": [
+    {
+      "type": "ModelReference",
+      "keys": [
+        {
+          "type": "Submodel",
+          "value": "https://mm-software.com/submodel/000-001/CustomSubmodel"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,327 @@
+{
+  "paging_metadata": {
+    "cursor": "aHR0cHM6Ly9tbS1zb2Z0d2FyZS5jb20vc3VibW9kZWwvMDAwLTAwMS9DdXN0b21TdWJtb2RlbHw"
+  },
+  "result": [
+    {
+      "ArbitraryRange": {
+        "min": 0.5,
+        "max": 962
+      },
+      "ArcheType": "000-001 ArcheType",
+      "EntryNode": {
+        "statements": {
+          "HasPart": {
+            "first": {
+              "type": "ModelReference",
+              "keys": [
+                {
+                  "type": "Submodel",
+                  "value": "https://mm-software.com/submodel/000-003/CustomSubmodel"
+                },
+                {
+                  "type": "SubmodelElementList",
+                  "value": "Markings"
+                },
+                {
+                  "type": "SubmodelElementCollection",
+                  "value": "0"
+                },
+                {
+                  "type": "Property",
+                  "value": "DesignationOfCertificateOrApproval"
+                }
+              ]
+            },
+            "second": {
+              "type": "ModelReference",
+              "keys": [
+                {
+                  "type": "Submodel",
+                  "value": "https://mm-software.com/submodel/000-003/ContactInformation"
+                },
+                {
+                  "type": "SubmodelElementCollection",
+                  "value": "ContactInformation0"
+                },
+                {
+                  "type": "Property",
+                  "value": "NameOfContact"
+                }
+              ]
+            }
+          },
+          "IsPartOf": {
+            "first": {
+              "type": "ExternalReference",
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://www.mm-software.com/"
+                }
+              ]
+            },
+            "second": {
+              "type": "ModelReference",
+              "keys": [
+                {
+                  "type": "Submodel",
+                  "value": "https://mm-software.com/submodel/000-003/CustomSubmodel"
+                },
+                {
+                  "type": "Property",
+                  "value": "ArcheType"
+                }
+              ]
+            }
+          },
+          "Node": {
+            "statements": {
+              "BulkCount": 52467,
+              "HasPart": {
+                "first": {
+                  "type": "ModelReference",
+                  "keys": []
+                },
+                "second": {
+                  "type": "ModelReference",
+                  "keys": []
+                }
+              },
+              "IsPartOf": {
+                "first": {
+                  "type": "ModelReference",
+                  "keys": []
+                },
+                "second": {
+                  "type": "ModelReference",
+                  "keys": []
+                }
+              },
+              "Node": {
+                "entityType": "SelfManagedEntity",
+                "globalAssetId": "https://mm-software.com/ids/assets/000-003"
+              },
+              "SameAs": {
+                "first": {
+                  "type": "ModelReference",
+                  "keys": []
+                },
+                "second": {
+                  "type": "ModelReference",
+                  "keys": []
+                }
+              }
+            },
+            "entityType": "SelfManagedEntity",
+            "globalAssetId": "https://mm-software.com/ids/assets/000-002"
+          },
+          "SameAs": {
+            "first": {
+              "type": "ExternalReference",
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://company.com"
+                }
+              ]
+            },
+            "second": {
+              "type": "ExternalReference",
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://www.mm-software.com/"
+                }
+              ]
+            }
+          }
+        },
+        "entityType": "SelfManagedEntity",
+        "globalAssetId": "https://mm-software.com/ids/assets/000-003"
+      },
+      "Header": {
+        "contentType": "text/markdown"
+      },
+      "Markings": [
+        {
+          "ArbitraryRangeString": {
+            "min": "2",
+            "max": "10"
+          },
+          "DesignationOfCertificateOrApproval": "KEMA99IECEX1105/128",
+          "ExpiryDate": "2032-01-01",
+          "IssueDate": "2022-01-01",
+          "MarkingAdditionalText": "0044",
+          "MarkingFile": {
+            "contentType": "image/png",
+            "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/checkmark.png"
+          },
+          "MarkingName": "0173-1#07-DAA603#004"
+        }
+      ],
+      "MultipleTemplateMarkings": [
+        {
+          "DesignationOfCertificateOrApproval": "TEMPLATE-001:1",
+          "MarkingName": "CE"
+        },
+        {
+          "DesignationOfCertificateOrApproval": "",
+          "MarkingName": "UKCA"
+        }
+      ],
+      "OperatingConditionsOfReliabilityCharacteristics": {
+        "ArbitraryRangeDate": {
+          "min": "2010-02-02",
+          "max": "2030-12-31"
+        },
+        "CompanyLogo": {
+          "contentType": "EMPTY",
+          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/example/logo/MM_Logo.svg"
+        },
+        "MinimumRatedVoltage": 12.5,
+        "ModelReference": {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://mm-software.com/submodel/000-003/HandoverDocumentation"
+            },
+            {
+              "type": "SubmodelElementList",
+              "value": "TechnicalPropertyAreas"
+            },
+            {
+              "type": "SubmodelElementCollection",
+              "value": "0"
+            }
+          ]
+        },
+        "Paragraph": {
+          "contentType": "text/markdown"
+        },
+        "ProductClassName": [
+          {
+            "de": "Name der Produktklasse im verwendeten Klassifizierungssystem"
+          },
+          {
+            "en": "Name of product class in the used classification system"
+          }
+        ],
+        "RatedVoltage": 56.5
+      },
+      "Single-TemplateLanguage": [
+        "en"
+      ],
+      "SingleTemplateMarking": [
+        {
+          "DesignationOfCertificateOrApproval": "TEMPLATE-001",
+          "MarkingName": "CE"
+        }
+      ],
+      "Target_model": {
+        "type": "ModelReference",
+        "keys": [
+          {
+            "type": "Submodel",
+            "value": "https://mm-software.com/submodel/000-002/ContactInformation"
+          }
+        ]
+      },
+      "TemplateLanguages": [
+        "en",
+        "de",
+        "fr",
+        "es",
+        "it"
+      ],
+      "TemplateValueProperties": {
+        "CoManagedEntity": {
+          "statements": {
+            "Statement": "Template-owned statement"
+          },
+          "entityType": "CoManagedEntity"
+        },
+        "ExternalReference": {
+          "type": "ExternalReference",
+          "keys": [
+            {
+              "type": "GlobalReference",
+              "value": "https://www.mm-software.com/"
+            }
+          ]
+        },
+        "MixedEntity": {
+          "statements": {
+            "Statement": "000-001 plugin statement"
+          },
+          "entityType": "SelfManagedEntity",
+          "globalAssetId": "https://mm-software.com/ids/assets/template-component",
+          "specificAssetIds": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/manufacturer-id"
+                  }
+                ]
+              },
+              "name": "Manufacturer",
+              "value": "M&M Software"
+            },
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/serial-id"
+                  }
+                ]
+              },
+              "name": "SerialNumber",
+              "value": "000-001-SERIAL"
+            },
+            {
+              "name": "UnmappedIdentifier",
+              "value": "Kept from template"
+            }
+          ]
+        },
+        "NullPlaceholder": "000-001 null resolved",
+        "ResolvedEntity": {
+          "entityType": "SelfManagedEntity",
+          "globalAssetId": "https://mm-software.com/ids/assets/000-001",
+          "specificAssetIds": [
+            {
+              "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://mm-software.com/template-values/manufacturer-id"
+                  }
+                ]
+              },
+              "name": "Manufacturer",
+              "value": "M&M Software"
+            }
+          ]
+        },
+        "ResolvedFile": {
+          "contentType": "image/jpeg",
+          "value": "https://raw.githubusercontent.com/AAS-TwinEngine/AAS.TwinEngine.DataEngine/refs/heads/main/examples/shared/data/product1.jpg"
+        },
+        "ResolvedRange": {
+          "min": 0,
+          "max": 100
+        },
+        "UnresolvedBlob": {
+          "contentType": "text/plain"
+        }
+      }
+    }
+  ]
+}

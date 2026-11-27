@@ -65,6 +65,28 @@ public abstract class ApiTestBase : IAsyncLifetime
     }
 
     /// <summary>
+    /// Asserts that a GET request returns 200 and a body equal to the expected JSON file in "{area}/TestData"
+    /// </summary>
+    protected async Task AssertContentAsExpectedAsync(string url, string area, string expectedFileName)
+    {
+        var response = await ApiContext.GetAsync(url);
+
+        Assert.True(response.Status == 200, $"Expected 200 for {url} but got {response.Status}: {await response.TextAsync()}");
+        var json = JsonDocument.Parse(await response.TextAsync());
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), area, "TestData", expectedFileName));
+    }
+
+    /// <summary>
+    /// Asserts that a GET request returns the expected HTTP status code
+    /// </summary>
+    protected async Task AssertStatusAsync(string url, int expectedStatus)
+    {
+        var response = await ApiContext.GetAsync(url);
+
+        Assert.True(response.Status == expectedStatus, $"Expected {expectedStatus} for {url} but got {response.Status}: {await response.TextAsync()}");
+    }
+
+    /// <summary>
     /// Asserts that an JsonDocument is equals to the expected JSON content from a file
     /// </summary>
     protected static async Task CompareJsonAsync(JsonDocument actualDoc, string fullPath)
