@@ -107,6 +107,37 @@ public abstract class AasRepositoryControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task GetShellReferenceByIdAsync_ReturnsModelReferenceToShellAsync()
+    {
+        // Arrange
+        const string AasIdentifier = "aHR0cHM6Ly9leGFtcGxlLmNvbS9pZHMvYWFzLzExNzBfMTE2MF8zMDUyXzY1NjgvdGVzdC9hYXM=";
+        using var messageHandler = new FakeHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(TestData.CreatePluginResponseForShellDescriptor())
+        }));
+        using var httpClient = new HttpClient(messageHandler);
+        httpClient.BaseAddress = new Uri("https://testendpoint.com");
+        const string HttpClientName = $"{HttpClientNames.PluginDataProviderPrefix}TestPlugin1";
+        _ = _httpClientFactory.CreateClient(HttpClientName).Returns(httpClient);
+        _ = _mockTemplateProvider.GetShellTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateShellTemplate());
+        _ = _mockTemplateProvider.GetAssetInformationTemplateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TestData.CreateAssetInformationTemplate());
+        var expectedShellId = JsonNode.Parse(TestData.CreateShellResponse())!["id"]!.GetValue<string>();
+
+        // Act
+        var response = await _client.GetAsync($"/shells/{AasIdentifier}/$reference");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.Equal("ModelReference", json["type"]?.GetValue<string>());
+        var key = Assert.Single(json["keys"]!.AsArray());
+        Assert.Equal("AssetAdministrationShell", key!["type"]?.GetValue<string>());
+        Assert.Equal(expectedShellId, key["value"]?.GetValue<string>());
+    }
+
+    [Fact]
     public async Task GetShellByIdAsync_ReturnsInternalServerErrorAsync_WhenErrorWhileExtractionOfProductIdAsync()
     {
         // Arrange

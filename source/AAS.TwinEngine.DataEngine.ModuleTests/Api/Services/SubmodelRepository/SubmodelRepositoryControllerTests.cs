@@ -567,6 +567,142 @@ public abstract class SubmodelRepositoryControllerTests : IDisposable
         return WebEncoders.Base64UrlEncode(bytes);
     }
 
+    [Fact]
+    public async Task GetSubmodelElementReferenceAsync_WithListIndexPath_ReturnsModelReferenceAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+        var expected = JsonNode.Parse("""
+            {
+              "type": "ModelReference",
+              "keys": [
+                { "type": "Submodel", "value": "ContactInformation" },
+                { "type": "SubmodelElementList", "value": "Markings" },
+                { "type": "SubmodelElementCollection", "value": "1" },
+                { "type": "Property", "value": "ContactName" }
+              ]
+            }
+            """);
+
+        var response = await _client.GetAsync($"{CreateSubmodelElementPath(SubmodelId, "Markings[1].ContactName")}/$reference");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonNode>();
+        Assert.True(JsonNode.DeepEquals(expected, json), json?.ToJsonString());
+    }
+
+    [Fact]
+    public async Task GetSubmodelValueOnlyAsync_ReturnsUnnamedValueObjectAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+        var expected = JsonNode.Parse("""
+            { "Markings": [ { "ContactName": "First template marking" }, { "ContactName": "Second template marking" } ] }
+            """);
+
+        var response = await _client.GetAsync($"/submodels/{SubmodelId}/$value");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonNode>();
+        Assert.True(JsonNode.DeepEquals(expected, json), json?.ToJsonString());
+    }
+
+    [Fact]
+    public async Task GetSubmodelPathAsync_ReturnsIdShortPathsAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+
+        var response = await _client.GetAsync($"/submodels/{SubmodelId}/$path");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<string[]>();
+        Assert.Equal(["Markings", "Markings[0]", "Markings[0].ContactName", "Markings[1]", "Markings[1].ContactName"], json);
+    }
+
+    [Fact]
+    public async Task GetSubmodelMetadataAsync_ReturnsSubmodelWithoutElementsAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+
+        var response = await _client.GetAsync($"/submodels/{SubmodelId}/$metadata");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(json);
+        Assert.Equal("ContactInformation", json["id"]?.GetValue<string>());
+        Assert.False(json.ContainsKey("submodelElements"));
+    }
+
+    [Theory]
+    [InlineData("$metadata?level=deep")]
+    [InlineData("$metadata?extent=withBlobValue")]
+    [InlineData("$reference?level=deep")]
+    [InlineData("submodel-elements/Markings%5B0%5D.ContactName/$path")]
+    public async Task GetSubmodelContentAsync_WithUnsupportedModifierCombination_Returns400Async(string relativePath)
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateSubmodelWithTemplateDefinedMarkings());
+
+        var response = await _client.GetAsync($"/submodels/{SubmodelId}/{relativePath}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // Annotated relationships have no value-filling handler, so they are placed in a template-owned list (more than one item),
+    // which the pipeline serves directly from the template.
+    [Fact]
+    public async Task GetSubmodelElementReferenceAsync_WithAnnotationPath_ReturnsModelReferenceAsync()
+    {
+        const string SubmodelId = "Q29udGFjdEluZm9ybWF0aW9u";
+        var relationships = new SubmodelElementList(
+            typeValueListElement: AasSubmodelElements.AnnotatedRelationshipElement,
+            idShort: "Relations",
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://example.com/idta/relations")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            value: [CreateAnnotatedRelationship("First note"), CreateAnnotatedRelationship("Second note")]);
+        _ = _mockTemplateProvider.GetFilteredSubmodelTemplateAsync(Arg.Any<string>(), Arg.Any<SubmodelQueryOptions?>(), Arg.Any<CancellationToken>())
+            .Returns(CreateSubmodelWithElements(relationships));
+        var expected = JsonNode.Parse("""
+            {
+              "type": "ModelReference",
+              "keys": [
+                { "type": "Submodel", "value": "ContactInformation" },
+                { "type": "SubmodelElementList", "value": "Relations" },
+                { "type": "AnnotatedRelationshipElement", "value": "1" },
+                { "type": "Property", "value": "Note" }
+              ]
+            }
+            """);
+
+        var response = await _client.GetAsync($"{CreateSubmodelElementPath(SubmodelId, "Relations[1].Note")}/$reference");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonNode>();
+        Assert.True(JsonNode.DeepEquals(expected, json), json?.ToJsonString());
+    }
+
+    private static AnnotatedRelationshipElement CreateAnnotatedRelationship(string note)
+    {
+        var reference = new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "urn:example:related")]);
+        return new AnnotatedRelationshipElement(
+            first: reference,
+            second: reference,
+            semanticId: new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "http://example.com/idta/relations/relation")]),
+            qualifiers: [new Qualifier(type: "Cardinality", valueType: DataTypeDefXsd.String, value: "One")],
+            annotations:
+            [
+                new Property(DataTypeDefXsd.String, idShort: "Note", value: note),
+                new Property(DataTypeDefXsd.String, idShort: "Other", value: "other")
+            ]);
+    }
+
     private static string CreateSubmodelElementPath(string submodelIdentifier, string idShortPath)
         => $"/submodels/{submodelIdentifier}/submodel-elements/{Uri.EscapeDataString(idShortPath)}";
 }

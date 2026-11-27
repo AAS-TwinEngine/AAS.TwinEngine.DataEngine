@@ -1,0 +1,47 @@
+meta {
+  name: Get All Submodel Elements $path
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/$path
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 100
+  ~cursor: 
+  ~level: deep
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a list of idShort paths", function () {
+    expect(res.body.result).to.be.an('array');
+    res.body.result.forEach(function (path) {
+      expect(path).to.be.a('string');
+      expect(path.split(/[.\[]/)[0]).to.not.equal('Nameplate');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the idShort paths (`$path`) of the submodel elements as a paged list.
+  
+  Allowed query parameters: `limit`, `cursor`, `level` (core|deep).
+}

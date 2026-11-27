@@ -1,0 +1,37 @@
+{
+  "idShort": "HandoverDocumentation",
+  "description": [
+    {
+      "language": "en",
+      "text": "The Submodel defines a set meta data for the handover of documentation from the manufacturer to the operator for industrial equipment"
+    }
+  ],
+  "administration": {
+    "version": "2",
+    "revision": "0",
+    "templateId": "https://admin-shell.io/idta-02004-2-0"
+  },
+  "id": "https://mm-software.com/submodel/000-001/HandoverDocumentation",
+  "kind": "Instance",
+  "semanticId": {
+    "type": "ModelReference",
+    "keys": [
+      {
+        "type": "Submodel",
+        "value": "0173-1#01-AHF578#003"
+      }
+    ]
+  },
+  "supplementalSemanticIds": [
+    {
+      "type": "ExternalReference",
+      "keys": [
+        {
+          "type": "GlobalReference",
+          "value": "https://api.eclass-cdp.com/0173-1-01-AHF578-003"
+        }
+      ]
+    }
+  ],
+  "modelType": "Submodel"
+}

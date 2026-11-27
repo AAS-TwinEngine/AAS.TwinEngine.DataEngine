@@ -415,6 +415,54 @@ public class SubmodelTemplateServiceTests
             _sut.GetSubmodelTemplateAsync(SubmodelId, path, null, CancellationToken.None));
     }
 
+    [Fact]
+    public async Task GetSubmodelTemplateAsync_ResolvesNestedListIndices()
+    {
+        var inner = new SubmodelElementList(AasSubmodelElements.Property, idShort: "Row", value: [new Property(DataTypeDefXsd.Int, value: "1"), new Property(DataTypeDefXsd.Int, value: "2")]);
+        var submodel = new Submodel(SubmodelId, submodelElements:
+        [
+            new SubmodelElementList(AasSubmodelElements.SubmodelElementList, idShort: "Matrix", value: [inner]),
+            new Property(DataTypeDefXsd.String, idShort: "Other")
+        ]);
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>()).Returns(submodel);
+
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, "Matrix[0][1]", null, CancellationToken.None);
+
+        var matrix = Assert.IsType<SubmodelElementList>(Assert.Single(result.SubmodelElements!));
+        Assert.Equal("Matrix", matrix.IdShort);
+    }
+
+    [Fact]
+    public async Task GetSubmodelTemplateAsync_ThrowsInternalDataProcessingException_WhenNestedIndexTargetsNonList()
+    {
+        var submodel = TestData.CreateSubmodelWithModel3DList();
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>()).Returns(submodel);
+
+        await Assert.ThrowsAsync<InternalDataProcessingException>(() =>
+            _sut.GetSubmodelTemplateAsync(SubmodelId, "Model3D[0][0]", null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetSubmodelTemplateAsync_TraversesAnnotatedRelationshipAnnotations()
+    {
+        var reference = new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "urn:a")]);
+        var relationship = new AnnotatedRelationshipElement(
+            first: reference,
+            second: reference,
+            idShort: "Rel",
+            annotations: [new Property(DataTypeDefXsd.String, idShort: "Note"), new Property(DataTypeDefXsd.String, idShort: "Other")]);
+        var submodel = new Submodel(SubmodelId, submodelElements: [relationship, new Property(DataTypeDefXsd.String, idShort: "Sibling")]);
+        _mappingProvider.GetTemplateId(SubmodelId).Returns(TemplateId);
+        _templateProvider.GetFilteredSubmodelTemplateAsync(TemplateId, null, Arg.Any<CancellationToken>()).Returns(submodel);
+
+        var result = await _sut.GetSubmodelTemplateAsync(SubmodelId, "Rel.Note", null, CancellationToken.None);
+
+        var resultRelationship = Assert.IsType<AnnotatedRelationshipElement>(Assert.Single(result.SubmodelElements!));
+        Assert.Equal("Note", Assert.Single(resultRelationship.Annotations!).IdShort);
+    }
+
     #endregion
 
     #region ValidateSemanticIdFilter

@@ -1,0 +1,39 @@
+meta {
+  name: Get Submodel $metadata
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/$metadata
+  body: none
+  auth: inherit
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns submodel metadata without elements", function () {
+    expect(res.body).to.be.an('object');
+    expect(res.body).to.have.property('modelType');
+    expect(res.body).to.not.have.property('submodelElements');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the Nameplate submodel of Product1 without its `submodelElements` (`$metadata`).
+  
+  `level` must NOT be sent and `extent=withBlobValue` is rejected (HTTP 400).
+}

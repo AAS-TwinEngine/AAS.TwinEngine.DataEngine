@@ -1,0 +1,34 @@
+{
+  "paging_metadata": {
+    "cursor": "Q29udGFjdEluZm9ybWF0aW9uMA"
+  },
+  "result": [
+    {
+      "idShort": "ContactInformation0",
+      "description": [
+        {
+          "language": "en",
+          "text": "The SMC “ContactInformation” contains information on how to contact the manufacturer or an authorised service provider, e.g. when a maintenance service is required"
+        }
+      ],
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations/ContactInformation"
+          }
+        ]
+      },
+      "qualifiers": [
+        {
+          "kind": "ConceptQualifier",
+          "type": "Multiplicity",
+          "valueType": "xs:string",
+          "value": "OneToMany"
+        }
+      ],
+      "modelType": "SubmodelElementCollection"
+    }
+  ]
+}

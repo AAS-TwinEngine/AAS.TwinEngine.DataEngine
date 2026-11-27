@@ -189,6 +189,27 @@ The [Nameplate](../aas/Nameplate.xml) and [TechnicalData](../aas/TechnicalData.x
 
 ---
 
+## Content modifier requests ($metadata, $value, $reference, $path)
+
+Requests for the content-modifier routes live in these folders (all use the Product1 Nameplate data; every request has `assert`/`tests` blocks validating status and body shape):
+
+- `Submodel Repository/Content Modifiers` — `/submodels`, `/submodels/{id}`, `/submodels/{id}/submodel-elements` and `/submodels/{id}/submodel-elements/{idShortPath}` with each of `$metadata`, `$value`, `$reference`, `$path`. It also contains element-path variants: leaf property (`CountryOfOrigin`) `$value`/`$metadata`/`$reference`, MultiLanguageProperty (`ManufacturerName`) `$value`, and list-index `$reference` (`Markings[0].MarkingName`) and `$path` (`Markings`).
+- `Aas Repository/Content Modifiers` — `/shells/$reference`, `/shells/{aasId}/$reference` and `/shells/{aasId}/submodels/{id}/...` with `$metadata`, `$value`, `$reference`, `$path` (submodel, all elements, single element).
+- `Negative cases` (inside each folder) — requests that must return HTTP 400.
+
+Validation rules enforced by the server:
+
+| Suffix       | Rules                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `$metadata`  | `level` must not be sent at all; `extent=withBlobValue` is rejected (HTTP 400)                               |
+| `$reference` | `level=deep` is rejected; `level` omitted or `core` is fine                                                  |
+| `$value`     | `level` and `extent` are allowed                                                                             |
+| `$path`      | `level` is allowed; on an element only valid for collection, list and entity elements (leaf returns HTTP 400) |
+
+Optional query parameters are stored disabled (`~` prefix) in the requests; enable them in Bruno as needed.
+
+---
+
 ## Troubleshooting
 
 #### Bruno shows `SSL/TLS handshake failed`

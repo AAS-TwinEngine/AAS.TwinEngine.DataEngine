@@ -1,0 +1,44 @@
+meta {
+  name: Get Submodel Element $value
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$value
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: deep
+  ~extent: withBlobValue
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier}}
+  submodelIdentifier: {{submodelIdentifierContact}}
+  idShortPath: ContactInformation1
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns the collection value as a plain object", function () {
+    expect(res.body).to.be.an('object');
+    expect(res.body).to.not.have.property('modelType');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the value-only representation (`$value`) of the `ContactInformation1` collection.
+  
+  Allowed query parameters: `level` (core|deep), `extent` (withoutBlobValue|withBlobValue).
+}

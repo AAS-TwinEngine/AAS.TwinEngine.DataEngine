@@ -12,6 +12,8 @@ public abstract class ApiTestBase : IAsyncLifetime
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = false };
 
+    private IPlaywright _playwright = null!;
+
     protected IAPIRequestContext ApiContext { get; private set; } = null!;
     protected string BaseUrl { get; private set; } = Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:8085";
 
@@ -24,10 +26,10 @@ public abstract class ApiTestBase : IAsyncLifetime
     public async Task InitializeAsync()
     {
         // Initialize Playwright
-        var playwright = await Playwright.CreateAsync();
+        _playwright = await Playwright.CreateAsync();
 
         // Create API request context
-        ApiContext = await playwright.APIRequest.NewContextAsync(new()
+        ApiContext = await _playwright.APIRequest.NewContextAsync(new()
         {
             BaseURL = BaseUrl,
             IgnoreHTTPSErrors = true,
@@ -44,7 +46,11 @@ public abstract class ApiTestBase : IAsyncLifetime
         SubmodelIdentifierCustomSubmodel = Base64EncodeUrl("https://mm-software.com/submodel/000-001/CustomSubmodel");
     }
 
-    public async Task DisposeAsync() => await ApiContext.DisposeAsync();
+    public async Task DisposeAsync()
+    {
+        await ApiContext.DisposeAsync();
+        _playwright.Dispose();
+    }
 
     /// <summary>
     /// Base64 URL encodes a string
@@ -62,6 +68,28 @@ public abstract class ApiTestBase : IAsyncLifetime
     {
         ArgumentNullException.ThrowIfNull(response);
         //Assert.True(response.Ok, $"Expected successful response but got {response.Status}: {response.StatusText}");
+    }
+
+    /// <summary>
+    /// Asserts that a GET request returns 200 and a body equal to the expected JSON file in "{area}/TestData"
+    /// </summary>
+    protected async Task AssertContentAsExpectedAsync(string url, string area, string expectedFileName)
+    {
+        var response = await ApiContext.GetAsync(url);
+
+        Assert.True(response.Status == 200, $"Expected 200 for {url} but got {response.Status}: {await response.TextAsync()}");
+        var json = JsonDocument.Parse(await response.TextAsync());
+        await CompareJsonAsync(json, Path.Combine(Directory.GetCurrentDirectory(), area, "TestData", expectedFileName));
+    }
+
+    /// <summary>
+    /// Asserts that a GET request returns the expected HTTP status code
+    /// </summary>
+    protected async Task AssertStatusAsync(string url, int expectedStatus)
+    {
+        var response = await ApiContext.GetAsync(url);
+
+        Assert.True(response.Status == expectedStatus, $"Expected {expectedStatus} for {url} but got {response.Status}: {await response.TextAsync()}");
     }
 
     /// <summary>

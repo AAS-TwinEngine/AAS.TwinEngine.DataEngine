@@ -1,0 +1,39 @@
+meta {
+  name: Get Submodel Element $metadata
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$metadata
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: AddressInformation
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns element metadata without value", function () {
+    expect(res.body).to.be.an('object');
+    expect(res.body).to.have.property('modelType');
+    expect(res.body).to.not.have.property('value');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the `AddressInformation` collection without its `value` (`$metadata`).
+  
+  `level` must NOT be sent and `extent=withBlobValue` is rejected (HTTP 400).
+}

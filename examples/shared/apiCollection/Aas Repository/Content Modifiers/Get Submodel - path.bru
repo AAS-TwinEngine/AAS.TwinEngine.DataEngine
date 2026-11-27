@@ -1,0 +1,50 @@
+meta {
+  name: Get Submodel $path
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/shells/:aasIdentifier/submodels/:submodelIdentifier/$path
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~level: deep
+}
+
+params:path {
+  aasIdentifier: {{aasIdentifier-1}}
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns idShort paths as strings", function () {
+    expect(res.body).to.be.an('array');
+    res.body.forEach(function (path) {
+      expect(path).to.be.a('string');
+    });
+  });
+
+  test("paths are relative to the submodel", function () {
+    res.body.forEach(function (path) {
+      expect(path.split(/[.\[]/)[0]).to.not.equal('Nameplate');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the idShort paths (`$path`) of all submodel elements of the Nameplate submodel of Product1.
+  
+  Allowed query parameter: `level` (core|deep).
+}

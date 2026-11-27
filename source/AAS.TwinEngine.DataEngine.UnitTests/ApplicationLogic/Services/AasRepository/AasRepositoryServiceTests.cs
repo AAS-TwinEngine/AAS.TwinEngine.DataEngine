@@ -96,6 +96,34 @@ public class AasRepositoryServiceTests
     }
 
     [Fact]
+    public async Task GetSubmodelElementReferenceByAasIdAsync_WhenSubmodelBelongsToAas_ReturnsReferenceFromSubmodelRepository()
+    {
+        const string submodelId = "submodel-1";
+        const string idShortPath = "Group.Child";
+        var queryOptions = new SubmodelQueryOptions(Level.deep.ToString(), Extent.withoutBlobValue.ToString());
+        _templateService.GetSubmodelRefByIdAsync(AasIdentifier, Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelId)], null)]);
+        var expected = new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, submodelId), new Key(KeyTypes.SubmodelElementCollection, "Group")]);
+        _submodelRepositoryService.GetSubmodelElementReferenceAsync(submodelId, idShortPath, queryOptions, Arg.Any<CancellationToken>()).Returns(expected);
+
+        var result = await _sut.GetSubmodelElementReferenceByAasIdAsync(AasIdentifier, submodelId, idShortPath, queryOptions, CancellationToken.None);
+
+        Assert.Same(expected, result);
+    }
+
+    [Fact]
+    public async Task GetSubmodelElementReferenceByAasIdAsync_WhenSubmodelDoesNotBelongToAas_ThrowsAndDoesNotLoadElement()
+    {
+        _templateService.GetSubmodelRefByIdAsync(AasIdentifier, Arg.Any<CancellationToken>())
+            .Returns([new Reference(ReferenceTypes.ModelReference, [new Key(KeyTypes.Submodel, "other-submodel")], null)]);
+
+        await Assert.ThrowsAsync<SubmodelNotFoundException>(() =>
+            _sut.GetSubmodelElementReferenceByAasIdAsync(AasIdentifier, "submodel-1", "Group", null, CancellationToken.None));
+
+        await _submodelRepositoryService.DidNotReceiveWithAnyArgs().GetSubmodelElementReferenceAsync(default!, default!, default, default);
+    }
+
+    [Fact]
     public async Task GetSubmodelByAasIdAsync_WhenSubmodelBelongsToAas_ForwardsLevelAndExtentToSubmodelRepository()
     {
         const string submodelId = "submodel-1";

@@ -1,0 +1,43 @@
+meta {
+  name: Get All Submodel Elements $value
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/$value
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 100
+  ~cursor: 
+  ~level: deep
+  ~extent: withBlobValue
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns the element values as an object", function () {
+    expect(res.body.result).to.be.an('object');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the value-only representation (`$value`) of the top-level submodel elements of the Nameplate submodel.
+  
+  Allowed query parameters: `limit`, `cursor`, `level` (core|deep), `extent` (withoutBlobValue|withBlobValue).
+}

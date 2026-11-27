@@ -164,6 +164,37 @@ public class SubmodelElementHelperTests
         Equal("Item0", result!.IdShort);
     }
 
+    [Theory]
+    [InlineData("Matrix[1][0]")]
+    [InlineData("Matrix%5B1%5D%5B0%5D")]
+    public void GetElementByIdShort_WithNestedBracketIndices_ReturnsInnerListElement(string idShort)
+    {
+        var matrix = new SubmodelElementList(
+            idShort: "Matrix",
+            typeValueListElement: AasSubmodelElements.SubmodelElementList,
+            value: [
+                new SubmodelElementList(AasSubmodelElements.Property, value: [new Property(idShort: "A", valueType: DataTypeDefXsd.String)]),
+                new SubmodelElementList(AasSubmodelElements.Property, value: [new Property(idShort: "B", valueType: DataTypeDefXsd.String)]),
+            ]
+        );
+
+        var result = _sut.GetElementByIdShort([matrix], idShort);
+
+        Equal("B", result!.IdShort);
+    }
+
+    [Fact]
+    public void GetElementByIdShort_WithNestedIndexOnNonList_ThrowsException()
+    {
+        var list = new SubmodelElementList(
+            idShort: "MyList",
+            typeValueListElement: AasSubmodelElements.Property,
+            value: [new Property(idShort: "Item0", valueType: DataTypeDefXsd.String)]
+        );
+
+        Throws<InternalDataProcessingException>(() => _sut.GetElementByIdShort([list], "MyList[0][0]"));
+    }
+
     [Fact]
     public void GetElementFromListByIndex_ValidIndex_ReturnsElement()
     {
@@ -245,6 +276,18 @@ public class SubmodelElementHelperTests
 
         NotNull(result);
         Single(result!);
+    }
+
+    [Fact]
+    public void GetChildElements_AnnotatedRelationship_ReturnsAnnotations()
+    {
+        var annotation = new Property(idShort: "Note", valueType: DataTypeDefXsd.String);
+        var reference = new Reference(ReferenceTypes.ExternalReference, [new Key(KeyTypes.GlobalReference, "urn:a")]);
+        var relationship = new AnnotatedRelationshipElement(first: reference, second: reference, idShort: "Rel", annotations: [annotation]);
+
+        var result = _sut.GetChildElements(relationship);
+
+        Same(annotation, Single(result!));
     }
 
     [Fact]

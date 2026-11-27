@@ -1,0 +1,15 @@
+{
+  "idShort": "ContactInformations",
+  "id": "https://mm-software.com/submodel/000-001/ContactInformation",
+  "kind": "Instance",
+  "semanticId": {
+    "type": "ModelReference",
+    "keys": [
+      {
+        "type": "Submodel",
+        "value": "https://admin-shell.io/zvei/nameplate/1/0/ContactInformations"
+      }
+    ]
+  },
+  "modelType": "Submodel"
+}

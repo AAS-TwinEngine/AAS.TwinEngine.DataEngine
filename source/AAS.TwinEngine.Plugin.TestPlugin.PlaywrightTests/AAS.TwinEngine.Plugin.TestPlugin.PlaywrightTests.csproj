@@ -149,6 +149,252 @@
     <None Update="Discovery\TestData\GetSpecificAssetIdByAasIdentifier_Expected.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="AasRepository\TestData\GetAllShells_Reference_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\GetShell_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Metadata_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Path_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Reference_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetAllSubmodelElements_ContactInfo_Value_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Path_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Reference_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Value_ExtentWithBlobValue_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_ContactInfo_Value_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_HandoverDocumentation_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_HandoverDocumentation_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_HandoverDocumentation_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodel_HandoverDocumentation_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_Company_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_Company_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_Company_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_ContactInformation1_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_ContactInformation1_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_ContactInformation1_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_ContactInformation1_Reference_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_ContactInformation1_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_ContactInformation1_Value_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_RoleOfContactPerson_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_RoleOfContactPerson_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_ContactInfo_RoleOfContactPerson_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_HandoverDocumentation_Documents0_DocumentIds1_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_HandoverDocumentation_Documents0_DocumentIds1_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_HandoverDocumentation_Documents0_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_HandoverDocumentation_Documents0_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_HandoverDocumentation_Documents0_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AasRepository\TestData\Shell_GetSubmodelElement_HandoverDocumentation_Documents0_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Metadata_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Path_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Reference_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodelElements_ContactInfo_Value_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_Metadata_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_Path_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_Reference_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetAllSubmodels_Value_WithLimit1_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Path_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Reference_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Value_ExtentWithBlobValue_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_ContactInfo_Value_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_HandoverDocumentation_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_HandoverDocumentation_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_HandoverDocumentation_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodel_HandoverDocumentation_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_Company_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_Company_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_Company_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation1_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation1_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation1_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation1_Reference_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation1_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_ContactInformation1_Value_LevelCore_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_RoleOfContactPerson_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_RoleOfContactPerson_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_ContactInfo_RoleOfContactPerson_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_HandoverDocumentation_Documents0_DocumentIds1_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_HandoverDocumentation_Documents0_DocumentIds1_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_HandoverDocumentation_Documents0_Metadata_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_HandoverDocumentation_Documents0_Path_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_HandoverDocumentation_Documents0_Reference_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SubmodelRepository\TestData\GetSubmodelElement_HandoverDocumentation_Documents0_Value_Expected.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
 
   </ItemGroup>
 

@@ -1,9 +1,11 @@
-﻿using System.Text.Json;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Requests;
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Responses;
 using AAS.TwinEngine.DataEngine.Api.Shared;
+using AAS.TwinEngine.DataEngine.Api.Shared.ContentModifiers;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.MappingProfiles;
 using AAS.TwinEngine.DataEngine.Api.SubmodelRepository.Responses;
 using AAS.TwinEngine.DataEngine.ApplicationLogic.Exceptions.Application;
@@ -23,6 +25,31 @@ public class AasRepositoryHandler(
 {
     public async Task<ShellsDto> GetShellsByAssetIdsAsync(GetShellsByAssetIdsRequest request, CancellationToken cancellationToken)
     {
+        var shells = await FetchShellsAsync(request, cancellationToken).ConfigureAwait(false);
+
+        return shells.ToDto();
+    }
+
+    public async Task<PagedContentDto> GetShellReferencesAsync(GetShellsByAssetIdsRequest request, CancellationToken cancellationToken)
+    {
+        var shells = await FetchShellsAsync(request, cancellationToken).ConfigureAwait(false);
+
+        return new PagedContentDto
+        {
+            PagingMetaData = new PagingMetaDataDto { Cursor = shells.PagingMetaData?.Cursor },
+            Result = new JsonArray([.. (shells.Result ?? []).Select(shell => (JsonNode)ContentSerializer.SerializeShellReference(shell))])
+        };
+    }
+
+    public async Task<JsonNode> GetShellReferenceByIdAsync(GetShellRequest request, CancellationToken cancellationToken)
+    {
+        var shell = await GetShellByIdAsync(request, cancellationToken).ConfigureAwait(false);
+
+        return ContentSerializer.SerializeShellReference(shell);
+    }
+
+    private async Task<Shells> FetchShellsAsync(GetShellsByAssetIdsRequest request, CancellationToken cancellationToken)
+    {
         request.Limit.ValidateLimit(logger);
         request.Cursor?.ValidateCursor(logger);
 
@@ -36,11 +63,9 @@ public class AasRepositoryHandler(
             IdShort = request.IdShort
         };
 
-        var shells = await aasRepositoryService
+        return await aasRepositoryService
             .GetShellsByFiltersAsync(filter, request.Limit, request.Cursor, cancellationToken)
             .ConfigureAwait(false);
-
-        return shells.ToDto();
     }
 
     public Task<IAssetAdministrationShell> GetShellByIdAsync(GetShellRequest request, CancellationToken cancellationToken)
@@ -87,7 +112,14 @@ public class AasRepositoryHandler(
             async (aasId, submodelId) => await aasRepositoryService.GetSubmodelByAasIdAsync(aasId, submodelId, queryOptions, cancellationToken).ConfigureAwait(false));
     }
 
-    public Task<SubmodelElementsDto> GetAllSubmodelElementsByAasIdAsync(GetAllSubmodelElementsByAasRequest request, CancellationToken cancellationToken)
+    public async Task<SubmodelElementsDto> GetAllSubmodelElementsByAasIdAsync(GetAllSubmodelElementsByAasRequest request, CancellationToken cancellationToken)
+    {
+        var page = await FetchAllSubmodelElementsByAasIdAsync(request, cancellationToken).ConfigureAwait(false);
+
+        return page.ToDto();
+    }
+
+    private Task<SubmodelElementsPage> FetchAllSubmodelElementsByAasIdAsync(GetAllSubmodelElementsByAasRequest request, CancellationToken cancellationToken)
     {
         request.Limit.ValidateLimit(logger);
         request.Cursor?.ValidateCursor(logger);
@@ -98,9 +130,9 @@ public class AasRepositoryHandler(
             request.AasIdentifier,
             request.SubmodelId,
             "submodel elements By AasID",
-            async (aasId, submodelId) => (await aasRepositoryService
+            async (aasId, submodelId) => await aasRepositoryService
                 .GetAllSubmodelElementsByAasIdAsync(aasId, submodelId, queryOptions, request.Limit, request.Cursor, cancellationToken)
-                .ConfigureAwait(false)).ToDto());
+                .ConfigureAwait(false));
     }
 
     public Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(GetSubmodelElementByAasRequest request, CancellationToken cancellationToken)
@@ -126,6 +158,69 @@ public class AasRepositoryHandler(
             request.SubmodelIdentifier,
             "file By AasID",
             async (aasId, submodelId) => await aasRepositoryService.GetFileAttachmentByAasIdAsync(aasId, submodelId, decodedIdShortPath, cancellationToken).ConfigureAwait(false));
+    }
+
+    public async Task<JsonNode> GetSubmodelContentByAasIdAsync(GetSubmodelByAasRequest request, Content content, CancellationToken cancellationToken)
+    {
+        ContentModifierValidator.Validate(content, request.Level, request.Extent, logger);
+        var effectiveRequest = request with
+        {
+            Level = ContentModifierValidator.ResolveLevel(content, request.Level),
+            Extent = ContentModifierValidator.ResolveExtent(content, request.Extent)
+        };
+
+        var submodel = await GetSubmodelByAasIdAsync(effectiveRequest, cancellationToken).ConfigureAwait(false);
+
+        return ContentSerializer.SerializeSubmodel(submodel, content);
+    }
+
+    public async Task<PagedContentDto> GetAllSubmodelElementsContentByAasIdAsync(GetAllSubmodelElementsByAasRequest request, Content content, CancellationToken cancellationToken)
+    {
+        ContentModifierValidator.Validate(content, request.Level, request.Extent, logger);
+        var effectiveRequest = request with
+        {
+            Level = ContentModifierValidator.ResolveLevel(content, request.Level),
+            Extent = ContentModifierValidator.ResolveExtent(content, request.Extent)
+        };
+
+        var page = await FetchAllSubmodelElementsByAasIdAsync(effectiveRequest, cancellationToken).ConfigureAwait(false);
+        var submodelId = request.SubmodelId.DecodeBase64Url(logger);
+
+        return new PagedContentDto
+        {
+            PagingMetaData = new PagingMetaDataDto { Cursor = page.PagingMetaData?.Cursor },
+            Result = ContentSerializer.SerializeSubmodelElements(page.Result ?? [], content, submodelId)
+        };
+    }
+
+    public async Task<JsonNode?> GetSubmodelElementContentByAasIdAsync(GetSubmodelElementByAasRequest request, Content content, CancellationToken cancellationToken)
+    {
+        ContentModifierValidator.Validate(content, request.Level, request.Extent, logger);
+        var effectiveRequest = request with
+        {
+            Level = ContentModifierValidator.ResolveLevel(content, request.Level),
+            Extent = ContentModifierValidator.ResolveExtent(content, request.Extent)
+        };
+
+        var decodedIdShortPath = Uri.UnescapeDataString(request.IdShortPath ?? string.Empty);
+
+        if (content == Content.Reference)
+        {
+            decodedIdShortPath.ValidateIdShortPath(nameof(request.IdShortPath), logger);
+            var queryOptions = new SubmodelQueryOptions(effectiveRequest.Level.ToString(), effectiveRequest.Extent.ToString());
+
+            var reference = await GetResourceByIdAsync(
+                request.AasIdentifier,
+                request.SubmodelId,
+                "submodel element reference By AasID",
+                async (aasId, submodelId) => await aasRepositoryService.GetSubmodelElementReferenceByAasIdAsync(aasId, submodelId, decodedIdShortPath, queryOptions, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
+
+            return ContentSerializer.SerializeReference(reference);
+        }
+
+        var element = await GetSubmodelElementByAasIdAsync(effectiveRequest, cancellationToken).ConfigureAwait(false);
+
+        return ContentSerializer.SerializeSubmodelElement(element, content, decodedIdShortPath);
     }
 
     private Task<T> GetResourceByIdAsync<T>(

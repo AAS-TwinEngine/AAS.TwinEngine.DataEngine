@@ -62,12 +62,27 @@ public class SubmodelRepositoryService(
     {
         return await ExecuteWithExceptionHandlingAsync(async () =>
         {
-            var reducedSubmodelTemplate = await submodelTemplateService.GetSubmodelTemplateAsync(submodelId, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
-
-            var submodelWithValues = await BuildSubmodelWithValuesAsync(reducedSubmodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
+            var submodelWithValues = await BuildReducedSubmodelWithValuesAsync(submodelId, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
 
             return semanticIdHandler.Extract(submodelWithValues, idShortPath);
         }, ex => new SubmodelElementNotFoundException(ex)).ConfigureAwait(false);
+    }
+
+    public async Task<IReference> GetSubmodelElementReferenceAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        return await ExecuteWithExceptionHandlingAsync(async () =>
+        {
+            var submodelWithValues = await BuildReducedSubmodelWithValuesAsync(submodelId, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
+
+            return SubmodelElementReferenceBuilder.Build(submodelWithValues, submodelId, idShortPath);
+        }, ex => new SubmodelElementNotFoundException(ex)).ConfigureAwait(false);
+    }
+
+    private async Task<ISubmodel> BuildReducedSubmodelWithValuesAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken)
+    {
+        var reducedSubmodelTemplate = await submodelTemplateService.GetSubmodelTemplateAsync(submodelId, idShortPath, queryOptions, cancellationToken).ConfigureAwait(false);
+
+        return await BuildSubmodelWithValuesAsync(reducedSubmodelTemplate, submodelId, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<SubmodelList> GetAllSubmodelsAsync(SubmodelSearchFilter? filter, SubmodelQueryOptions? queryOptions, int limit, string? cursor, CancellationToken cancellationToken)

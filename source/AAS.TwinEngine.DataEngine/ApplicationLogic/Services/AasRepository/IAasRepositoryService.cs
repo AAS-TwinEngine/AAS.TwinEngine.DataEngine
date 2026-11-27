@@ -24,6 +24,8 @@ public interface IAasRepositoryService
 
     Task<ISubmodelElement> GetSubmodelElementByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, SubmodelQueryOptions queryOptions, CancellationToken cancellationToken);
 
+    Task<IReference> GetSubmodelElementReferenceByAasIdAsync(string aasIdentifier, string submodelIdentifier, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken);
+
     Task<FileAttachmentResult> GetFileAttachmentByAasIdAsync(string aasIdentifier, string submodelId, string idShortPath, CancellationToken cancellationToken);
 
     Task<FileAttachmentResult> GetThumbnailAsync(string aasIdentifier, CancellationToken cancellationToken);

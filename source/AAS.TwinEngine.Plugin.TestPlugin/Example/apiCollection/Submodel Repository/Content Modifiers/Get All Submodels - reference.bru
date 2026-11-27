@@ -1,0 +1,45 @@
+meta {
+  name: Get All Submodels $reference
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/$reference
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 5
+  ~cursor: 
+  ~idShort: 
+  ~semanticId: 
+  ~level: core
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a paged list of submodel references", function () {
+    expect(res.body.result).to.be.an('array');
+    res.body.result.forEach(function (ref) {
+      expect(ref.type).to.equal('ModelReference');
+      expect(ref.keys).to.be.an('array').that.is.not.empty;
+      expect(ref.keys[0].type).to.equal('Submodel');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns a model reference (`$reference`) for every submodel.
+  
+  Allowed query parameters: `limit`, `cursor`, `idShort`, `semanticId`, `level` (omitted or `core`; `deep` is rejected with HTTP 400).
+}

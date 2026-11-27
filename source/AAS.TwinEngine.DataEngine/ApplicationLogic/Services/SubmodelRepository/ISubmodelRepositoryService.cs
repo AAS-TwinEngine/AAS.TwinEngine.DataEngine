@@ -11,6 +11,8 @@ public interface ISubmodelRepositoryService
 
     Task<ISubmodelElement> GetSubmodelElementAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken);
 
+    Task<IReference> GetSubmodelElementReferenceAsync(string submodelId, string idShortPath, SubmodelQueryOptions? queryOptions, CancellationToken cancellationToken);
+
     Task<SubmodelList> GetAllSubmodelsAsync(
         SubmodelSearchFilter? filter,
         SubmodelQueryOptions? queryOptions,

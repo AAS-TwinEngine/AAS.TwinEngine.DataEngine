@@ -1,0 +1,43 @@
+meta {
+  name: Get All Submodels $path
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/$path
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~limit: 5
+  ~cursor: 
+  ~idShort: 
+  ~semanticId: 
+  ~level: deep
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a paged list of idShort paths", function () {
+    expect(res.body.result).to.be.an('array');
+    res.body.result.forEach(function (path) {
+      expect(path).to.be.a('string');
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the idShort paths (`$path`) of the submodel elements of all submodels.
+  
+  Allowed query parameters: `limit`, `cursor`, `idShort`, `semanticId`, `level` (core|deep).
+}

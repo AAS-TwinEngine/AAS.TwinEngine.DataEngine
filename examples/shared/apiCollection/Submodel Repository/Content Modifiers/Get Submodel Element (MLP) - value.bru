@@ -1,0 +1,37 @@
+meta {
+  name: Get Submodel Element (MLP) $value
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{DataEngineBaseUrl}}/submodels/:submodelIdentifier/submodel-elements/:idShortPath/$value
+  body: none
+  auth: inherit
+}
+
+params:path {
+  submodelIdentifier: {{submodelIdentifierNameplate-1}}
+  idShortPath: ManufacturerName
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns the language-string value", function () {
+    expect(res.body).to.not.equal(null);
+    expect(typeof res.body).to.equal('object');
+    expect(res.body).to.not.have.property('modelType');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Returns the value-only representation (`$value`) of the MultiLanguageProperty `ManufacturerName`: the language strings without `modelType`/`idShort` metadata.
+}

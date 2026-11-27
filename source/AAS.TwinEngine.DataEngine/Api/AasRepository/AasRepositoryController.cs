@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json.Nodes;
 
 using AAS.TwinEngine.DataEngine.Api.AasRepository.Handler;
@@ -17,6 +17,8 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 using NSwag.Annotations;
+
+using ContentModifier = AAS.TwinEngine.DataEngine.Api.Shared.ContentModifiers.Content;
 
 namespace AAS.TwinEngine.DataEngine.Api.AasRepository;
 
@@ -166,7 +168,7 @@ public class AasRepositoryController(
     [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<JsonObject>> GetSubmodelByAasIdAsync(
         [FromRoute] string aasIdentifier,
-        [FromRoute] string submodelIdentifier,
+        [FromRoute] string submodelIdentifier,  
         CancellationToken cancellationToken,
         [FromQuery] Level level = Level.deep,
         [FromQuery] Extent extent = Extent.withoutBlobValue)
@@ -269,5 +271,390 @@ public class AasRepositoryController(
         var request = new GetFileByPathByAasIdRequest(aasIdentifier, submodelIdentifier, idShortPath);
         var attachment = await aasRepositoryHandler.GetFileByPathByAasIdAsync(request, cancellationToken).ConfigureAwait(false);
         return new FileContentStreamResult(attachment, ContentDispositionType.attachment);
+    }
+
+    /// <summary>
+    /// Returns References to all Asset Administration Shells
+    /// </summary>
+    /// <param name="assetIds">A list of specific Asset identifiers. Each Asset identifier is a base64-url-encoded SpecificAssetId</param>
+    /// <param name="idShort">The Asset Administration Shell’s IdShort</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">ModelReferences of the requested Asset Administration Shells</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("$reference")]
+    [ProducesResponseType(typeof(PagedContentDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<PagedContentDto>> GetShellsReferenceAsync(
+        [FromQuery] string[]? assetIds,
+        [FromQuery] string? idShort,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit)
+    {
+        logger.LogInformation("Start request to get shell references (assetIds/idShort filters)");
+        var request = new GetShellsByAssetIdsRequest(assetIds, idShort, limit, cursor);
+        var response = await aasRepositoryHandler.GetShellReferencesAsync(request, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Returns a specific Asset Administration Shell as a Reference
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">ModelReference of the requested Asset Administration Shell</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/$reference")]
+    [ProducesResponseType(typeof(Reference), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<JsonNode>> GetShellReferenceByIdAsync([FromRoute] string aasIdentifier, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Start request to get shell reference");
+        var request = new GetShellRequest(aasIdentifier);
+        var response = await aasRepositoryHandler.GetShellReferenceByIdAsync(request, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Returns the Submodel's metadata elements
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="level">Not allowed for Content=Metadata; a request containing it is rejected.</param>
+    /// <param name="extent">Only withoutBlobValue is allowed for Content=Metadata.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Requested Submodel in the Metadata representation</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/$metadata")]
+    [ProducesResponseType(typeof(Submodel), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public Task<ActionResult<JsonNode>> GetSubmodelMetadataByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null,
+        [FromQuery] Extent? extent = null)
+        => GetSubmodelContentByAasIdAsync(new GetSubmodelByAasRequest(aasIdentifier, submodelIdentifier, level, extent), ContentModifier.Metadata, cancellationToken);
+
+    /// <summary>
+    /// Returns the Submodel's ValueOnly representation
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="level">Determines the structural depth of the respective resource content.</param>
+    /// <param name="extent">Determines to which extent the resource is being serialized.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Requested Submodel in the ValueOnly representation</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/$value")]
+    [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public Task<ActionResult<JsonNode>> GetSubmodelValueOnlyByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null,
+        [FromQuery] Extent? extent = null)
+        => GetSubmodelContentByAasIdAsync(new GetSubmodelByAasRequest(aasIdentifier, submodelIdentifier, level, extent), ContentModifier.Value, cancellationToken);
+
+    /// <summary>
+    /// Returns the Submodel as a Reference
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="level">Only core is allowed for Content=Reference.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">ModelReference of the requested Submodel</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/$reference")]
+    [ProducesResponseType(typeof(Reference), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public Task<ActionResult<JsonNode>> GetSubmodelReferenceByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null)
+        => GetSubmodelContentByAasIdAsync(new GetSubmodelByAasRequest(aasIdentifier, submodelIdentifier, level, null), ContentModifier.Reference, cancellationToken);
+
+    /// <summary>
+    /// Returns the Submodel in the Path notation
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel’s unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="level">Determines the structural depth of the respective resource content.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">IdShortPaths of the requested Submodel</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/$path")]
+    [ProducesResponseType(typeof(string[]), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), (int)HttpStatusCode.InternalServerError)]
+    public Task<ActionResult<JsonNode>> GetSubmodelPathByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null)
+        => GetSubmodelContentByAasIdAsync(new GetSubmodelByAasRequest(aasIdentifier, submodelIdentifier, level, null), ContentModifier.Path, cancellationToken);
+
+    /// <summary>
+    /// Returns the metadata attributes of all submodel elements
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="level">Not allowed for Content=Metadata; a request containing it is rejected.</param>
+    /// <param name="extent">Only withoutBlobValue is allowed for Content=Metadata.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Submodel elements in the Metadata representation</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/$metadata")]
+    [ProducesResponseType(typeof(PagedContentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<ActionResult<PagedContentDto>> GetAllSubmodelElementsMetadataByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit,
+        [FromQuery] Level? level = null,
+        [FromQuery] Extent? extent = null)
+        => GetAllSubmodelElementsContentByAasIdAsync(new GetAllSubmodelElementsByAasRequest(aasIdentifier, submodelIdentifier, limit, cursor, level, extent), ContentModifier.Metadata, cancellationToken);
+
+    /// <summary>
+    /// Returns all submodel elements in their ValueOnly representation
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="level">Determines the structural depth of the respective resource content.</param>
+    /// <param name="extent">Determines to which extent the resource is being serialized.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Submodel elements in the ValueOnly representation</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/$value")]
+    [ProducesResponseType(typeof(PagedContentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<ActionResult<PagedContentDto>> GetAllSubmodelElementsValueOnlyByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit,
+        [FromQuery] Level? level = null,
+        [FromQuery] Extent? extent = null)
+        => GetAllSubmodelElementsContentByAasIdAsync(new GetAllSubmodelElementsByAasRequest(aasIdentifier, submodelIdentifier, limit, cursor, level, extent), ContentModifier.Value, cancellationToken);
+
+    /// <summary>
+    /// Returns the References of all submodel elements
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="level">Only core is allowed for Content=Reference.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">ModelReferences of the submodel elements</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/$reference")]
+    [ProducesResponseType(typeof(PagedContentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<ActionResult<PagedContentDto>> GetAllSubmodelElementsReferenceByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit,
+        [FromQuery] Level? level = null)
+        => GetAllSubmodelElementsContentByAasIdAsync(new GetAllSubmodelElementsByAasRequest(aasIdentifier, submodelIdentifier, limit, cursor, level, null), ContentModifier.Reference, cancellationToken);
+
+    /// <summary>
+    /// Returns all submodel elements in the Path notation
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="limit">The maximum number of elements in the response array</param>
+    /// <param name="cursor">A server-generated identifier retrieved from pagingMetadata that specifies from which position the result listing should continue</param>
+    /// <param name="level">Determines the structural depth of the respective resource content.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">IdShortPaths of the submodel elements</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/$path")]
+    [ProducesResponseType(typeof(PagedContentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<ActionResult<PagedContentDto>> GetAllSubmodelElementsPathByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken,
+        [FromQuery] int limit = GeneralConfig.DefaultPaginationLimit,
+        [FromQuery] Level? level = null)
+        => GetAllSubmodelElementsContentByAasIdAsync(new GetAllSubmodelElementsByAasRequest(aasIdentifier, submodelIdentifier, limit, cursor, level, null), ContentModifier.Path, cancellationToken);
+
+    /// <summary>
+    /// Returns the metadata attributes of a specific submodel element from the Submodel at a specified path
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="idShortPath">IdShort path to the submodel element (dot-notation)</param>
+    /// <param name="level">Not allowed for Content=Metadata; a request containing it is rejected.</param>
+    /// <param name="extent">Only withoutBlobValue is allowed for Content=Metadata.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Requested submodel element in the Metadata representation</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/{idShortPath}/$metadata")]
+    [ProducesResponseType(typeof(ISubmodelElement), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetSubmodelElementMetadataByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null,
+        [FromQuery] Extent? extent = null)
+        => GetSubmodelElementContentByAasIdAsync(new GetSubmodelElementByAasRequest(aasIdentifier, submodelIdentifier, idShortPath, level, extent), ContentModifier.Metadata, cancellationToken);
+
+    /// <summary>
+    /// Returns a specific submodel element from the Submodel at a specified path in the ValueOnly representation
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="idShortPath">IdShort path to the submodel element (dot-notation)</param>
+    /// <param name="level">Determines the structural depth of the respective resource content.</param>
+    /// <param name="extent">Determines to which extent the resource is being serialized.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Requested submodel element in the ValueOnly representation</response>
+    /// <response code="400">Bad Request, e.g. the modifier is not defined for the element type.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/{idShortPath}/$value")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetSubmodelElementValueOnlyByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null,
+        [FromQuery] Extent? extent = null)
+        => GetSubmodelElementContentByAasIdAsync(new GetSubmodelElementByAasRequest(aasIdentifier, submodelIdentifier, idShortPath, level, extent), ContentModifier.Value, cancellationToken);
+
+    /// <summary>
+    /// Returns the Reference of a specific submodel element from the Submodel at a specified path
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="idShortPath">IdShort path to the submodel element (dot-notation)</param>
+    /// <param name="level">Only core is allowed for Content=Reference.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">ModelReference of the requested submodel element</response>
+    /// <response code="400">Bad Request, e.g. the request parameters of the format of the request body is wrong.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/{idShortPath}/$reference")]
+    [ProducesResponseType(typeof(Reference), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetSubmodelElementReferenceByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null)
+        => GetSubmodelElementContentByAasIdAsync(new GetSubmodelElementByAasRequest(aasIdentifier, submodelIdentifier, idShortPath, level, null), ContentModifier.Reference, cancellationToken);
+
+    /// <summary>
+    /// Returns a specific submodel element from the Submodel at a specified path in the Path notation
+    /// </summary>
+    /// <param name="aasIdentifier">The Asset Administration Shell's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="submodelIdentifier">The Submodel's unique id (UTF8-BASE64-URL-encoded)</param>
+    /// <param name="idShortPath">IdShort path to the submodel element (dot-notation)</param>
+    /// <param name="level">Determines the structural depth of the respective resource content.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">IdShortPaths of the requested submodel element and its children</response>
+    /// <response code="400">Bad Request, e.g. the modifier is not defined for the element type.</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal Server Error</response>
+    [HttpGet("{aasIdentifier}/submodels/{submodelIdentifier}/submodel-elements/{idShortPath}/$path")]
+    [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ServiceErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetSubmodelElementPathByAasIdAsync(
+        [FromRoute] string aasIdentifier,
+        [FromRoute] string submodelIdentifier,
+        [FromRoute] string idShortPath,
+        CancellationToken cancellationToken,
+        [FromQuery] Level? level = null)
+        => GetSubmodelElementContentByAasIdAsync(new GetSubmodelElementByAasRequest(aasIdentifier, submodelIdentifier, idShortPath, level, null), ContentModifier.Path, cancellationToken);
+
+    private async Task<ActionResult<JsonNode>> GetSubmodelContentByAasIdAsync(GetSubmodelByAasRequest request, ContentModifier content, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get Submodel with Content={Content} through superpath for AAS", content);
+        var response = await aasRepositoryHandler.GetSubmodelContentByAasIdAsync(request, content, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    private async Task<ActionResult<PagedContentDto>> GetAllSubmodelElementsContentByAasIdAsync(GetAllSubmodelElementsByAasRequest request, ContentModifier content, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get All Submodel Elements with Content={Content} through superpath for AAS", content);
+        var response = await aasRepositoryHandler.GetAllSubmodelElementsContentByAasIdAsync(request, content, cancellationToken).ConfigureAwait(false);
+        return Ok(response);
+    }
+
+    private async Task<IActionResult> GetSubmodelElementContentByAasIdAsync(GetSubmodelElementByAasRequest request, ContentModifier content, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get Submodel Element with Content={Content} through superpath for AAS", content);
+        var response = await aasRepositoryHandler.GetSubmodelElementContentByAasIdAsync(request, content, cancellationToken).ConfigureAwait(false);
+
+        // A ValueOnly property without value serializes to JSON null, which Ok() would turn into 204.
+        return new JsonResult(response);
     }
 }

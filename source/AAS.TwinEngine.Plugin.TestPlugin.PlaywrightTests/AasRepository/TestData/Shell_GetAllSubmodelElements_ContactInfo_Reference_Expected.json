@@ -1,0 +1,33 @@
+{
+  "paging_metadata": {
+    "cursor": null
+  },
+  "result": [
+    {
+      "type": "ModelReference",
+      "keys": [
+        {
+          "type": "Submodel",
+          "value": "https://mm-software.com/submodel/000-001/ContactInformation"
+        },
+        {
+          "type": "SubmodelElementCollection",
+          "value": "ContactInformation0"
+        }
+      ]
+    },
+    {
+      "type": "ModelReference",
+      "keys": [
+        {
+          "type": "Submodel",
+          "value": "https://mm-software.com/submodel/000-001/ContactInformation"
+        },
+        {
+          "type": "SubmodelElementCollection",
+          "value": "ContactInformation1"
+        }
+      ]
+    }
+  ]
+}
